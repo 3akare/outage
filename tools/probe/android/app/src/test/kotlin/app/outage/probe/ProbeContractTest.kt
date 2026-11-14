@@ -42,6 +42,15 @@ class ProbeContractTest {
     }
 
     @Test
+    fun PR6_rows_are_put_in_time_order_inside_a_boot_before_counting() {
+        fun r(id: Long, kind: String, mono: Long, boot: Int = 1, f: Map<String, Any?> = emptyMap()) = LogRow(id, kind, mono, 0, boot, f)
+        // the PLUG row (id 2) is written one second late with the earlier broadcast time
+        val rows = listOf(r(1, "JOB_START", 2_000), r(2, "PLUG", 1_000, f = mapOf("charging" to true)), r(3, "JOB_STOP", 10_000), r(4, "NOTE", 5, 2), r(5, "NOTE", 1, 2))
+        assertEquals(listOf(2L, 1L, 3L, 5L, 4L), ArmedRatio.timeOrder(rows).map { it.id })
+        assertEquals(ArmedRatio.Totals(9_000, 8_000), ArmedRatio.compute(rows))
+    }
+
+    @Test
     fun PR7_export_file_round_trips_the_shared_sample_exactly() {
         val (device, rows) = sampleRows()
         assertEquals(Json.encode(sample()), Contract.exportFile(device, rows))

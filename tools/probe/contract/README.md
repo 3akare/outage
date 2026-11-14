@@ -47,4 +47,6 @@ Fields by kind (all optional unless stated):
 
 `plug` values: `AC`, `USB`, `WIRELESS`, `DOCK`, `NONE`, `UNKNOWN`. `charging` is true when the phone reports a plug other than `NONE`.
 
+Order: rows are in time order only inside one boot, by `monoMs`. The reference logger writes its `PLUG` row one second after the broadcast, with the broadcast time, so its `id` can come after the job row the same unplug caused. Readers sort with `timeOrder` (TypeScript `parse.ts`, Kotlin `ArmedRatio.timeOrder`).
+
 `SESSION kind=restart` means the app process started again while the sensor was meant to be on. The analysis counts the time since the previous row as not armed (design section 7).

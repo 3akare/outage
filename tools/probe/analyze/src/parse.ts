@@ -23,7 +23,22 @@ export function parseRow(v: unknown): Row | string {
   return { id: v.id, kind: v.kind as Kind, monoMs: v.monoMs, wallMs: v.wallMs, bootCount: v.bootCount, fields };
 }
 
-/** Parse an export file. Invalid rows are counted, never guessed; rows are put in id order. */
+/**
+ * Put rows in time order. Boots follow each other in id order, and inside one boot `monoMs` is the true order. Ids alone
+ * are not enough: the reference logger writes its PLUG row one second after the broadcast, with the broadcast time, so
+ * its id comes after the job row it caused (found by the emulator run, 2026-11-14).
+ */
+export function timeOrder(rows: Row[]): Row[] {
+  const byId = [...rows].sort((a, b) => a.id - b.id);
+  const out: Row[] = [];
+  let run: Row[] = [];
+  const flush = () => { out.push(...run.sort((a, b) => a.monoMs - b.monoMs || a.id - b.id)); run = []; };
+  for (const r of byId) { if (run.length && r.bootCount !== run[0].bootCount) flush(); run.push(r); }
+  flush();
+  return out;
+}
+
+/** Parse an export file. Invalid rows are counted, never guessed; rows are put in time order (see timeOrder). */
 export function parseExport(v: unknown): { data: Export; problems: string[] } {
   const problems: string[] = [];
   if (!isObj(v) || v.version !== 1 || !Array.isArray(v.devices)) throw new Error('not a probe export (version 1)');
@@ -40,8 +55,7 @@ export function parseExport(v: unknown): { data: Export; problems: string[] } {
       if (seen.has(r.id)) continue; // duplicate upload
       seen.add(r.id); rows.push(r);
     }
-    rows.sort((a, b) => a.id - b.id);
-    devices.push({ device: { alias: dev.alias, maker: String(dev.maker ?? ''), brand: String(dev.brand ?? ''), androidSdk: Number(dev.androidSdk ?? 0) }, rows });
+    devices.push({ device: { alias: dev.alias, maker: String(dev.maker ?? ''), brand: String(dev.brand ?? ''), androidSdk: Number(dev.androidSdk ?? 0) }, rows: timeOrder(rows) });
   }
   return { data: { version: 1, devices }, problems };
 }

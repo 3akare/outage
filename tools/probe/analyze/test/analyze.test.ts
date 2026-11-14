@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { analyzeDevice } from '../src/analyze.ts';
 import { gate } from '../src/gate.ts';
 import { plugLag, plugToStart, unplugToStop } from '../src/pairing.ts';
-import { parseExport, parseRow } from '../src/parse.ts';
+import { parseExport, parseRow, timeOrder } from '../src/parse.ts';
 import { deviceMarkdown, summaryMarkdown } from '../src/report.ts';
 import { nearestRank } from '../src/stats.ts';
 import { ratio, segments, steps, totals } from '../src/timeline.ts';
@@ -111,6 +111,24 @@ describe('PR4 analyze_pairing', () => {
     const m6 = unplugToStop(rows);
     expect(m6.pairs.map((p) => p.delayMs)).toEqual([2_000]);
     expect(m6.missed).toEqual([8]);
+  });
+
+  it('PR4 a reference row written after the job row (later id, earlier time) still pairs, after time ordering', () => {
+    // emulator run 2026-11-14: unplug broadcast at 988.0 s, JOB_STOP row id 2 at 988.4 s, PLUG row id 3 written 1 s later with 988.0 s
+    const raw = log('e', 'x', [plugIn(0), stop(988_400, 'CONSTRAINT_CHARGING', false), plugOut(988_000), ['JOB_START', 1_002_300, { charging: true }], plugIn(1_002_000)]).rows;
+    const rows = timeOrder(raw);
+    expect(rows.map((r) => r.id)).toEqual([1, 3, 2, 5, 4]);
+    expect(unplugToStop(rows).pairs.map((p) => p.delayMs)).toEqual([400]);
+    expect(plugToStart(rows).pairs.map((p) => p.delayMs)).toEqual([300]);
+    // the job reacting before the broadcast reaches the app (emulator: 0.44 s) pairs with a negative delay
+    const early = timeOrder(log('f', 'x', [plugIn(0), ['JOB_START', 30_000, { charging: true }], stop(987_642, 'CONSTRAINT_CHARGING', false), plugOut(988_087)]).rows);
+    expect(unplugToStop(early).pairs.map((p) => p.delayMs)).toEqual([-445]);
+    // but never more than 10 s early, and never across an earlier plug event
+    const tooEarly = timeOrder(log('g', 'x', [plugIn(0), stop(10_000, 'CONSTRAINT_CHARGING', false), plugOut(25_000)]).rows);
+    expect(unplugToStop(tooEarly).pairs).toEqual([]);
+    // boots stay in id order even when the clock restarts
+    const boots = timeOrder(log('b', 'x', [note(5_000, 'a'), ['NOTE', 100, { text: 'b' }, 2], ['NOTE', 50, { text: 'c' }, 2]]).rows);
+    expect(boots.map((r) => r.id)).toEqual([1, 3, 2]);
   });
 
   it('PR4 a stop and its 1 s re-read that disagree count as plug lag', () => {

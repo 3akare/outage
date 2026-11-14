@@ -202,3 +202,16 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - The charger and Doze are faked with `dumpsys battery` and `deviceidle`, the commands Android's testing docs describe. After each scripted tap the script goes to the home screen and turns the screen off, so the app is not the visible app while it is measured. The database is pulled with `run-as` (debug build), converted to the contract export by `db-to-export.py`, and analysed. The report goes into the run summary and an artifact.
 - The probe gained an automation path: `am start` extras do what the tester's taps do, and the path is ignored unless the build is debuggable.
 - Limit, stated in ADR 0013: stock Android only. No maker battery manager, and no real Doze timing.
+
+## 2026-11-14 emulator smoke runs: two fixes and one finding
+- Run 1 hung at boot. `avdmanager` and the emulator looked in different AVD folders. Fixed with `ANDROID_AVD_HOME` and a 300 s boot timeout.
+- Run 2 (`dumpsys battery set`): apps saw AC, but JobScheduler recorded "Considered charging: false", so the job never started. The scripted notes were also lost, because `am start` without `--activity-single-top` does not deliver extras to an open activity. Fixed: the charger is now driven through the emulator's battery hardware (`adb emu power`), and taps use single-top.
+- Run 3 (Android 15 emulator, short time scale) gave real results:
+  - **M8 confirmed:** "IllegalArgumentException: An expedited job can only have network and storage-not-low constraints".
+  - **Broadcasts:** the reference logger saw every plug change (26 in, 27 out).
+  - **Job vs broadcast:** the job stops about 0.44 s before the app receives the power-disconnected broadcast, and starts about 0.44 s before power-connected.
+  - **Finding to verify, not a fact yet:** with emulated AC and the level rising from 41% to 89% over 16 minutes, the charging-constraint job never started. It started first at about 90%, then right away on plug-ins at 91% and 93%. JobScheduler keeps "power connected", "battery charging" and "considered charging" apart (`dumpsys jobscheduler`). I could not confirm the rule from the docs. If real phones behave the same, the job alone misses cuts below 90% and Station mode's receivers become the main sensor. The next emulator run tests this directly (plug-ins at 55% and at 92%), and the Samsung run will show it on real hardware.
+- **Analysis bug found:** pairing used row ids, but the reference `PLUG` row is written 1 s late with the earlier time, and the job can react before the broadcast. Fixed:
+  - rows are now put in time order within a boot (`timeOrder`, TypeScript and Kotlin);
+  - pairing accepts a job event up to 10 s before the reference event, with a negative delay.
+  - New tests: TypeScript PR4, Kotlin PR6. 14 TypeScript and 7 Kotlin tests pass.

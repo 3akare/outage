@@ -76,7 +76,20 @@ object ArmedRatio {
 
     private fun isRestart(r: LogRow) = r.kind == "SESSION" && (r.fields["kind"] == "restart" || r.fields["kind"] == "start")
 
-    fun compute(rows: List<LogRow>): Totals {
+    /** Time order: boots in id order, monoMs inside a boot (same rule as parse.ts timeOrder; the PLUG row is written late). */
+    fun timeOrder(rows: List<LogRow>): List<LogRow> {
+        val out = ArrayList<LogRow>(rows.size)
+        var run = ArrayList<LogRow>()
+        for (r in rows.sortedBy { it.id }) {
+            if (run.isNotEmpty() && r.bootCount != run[0].bootCount) { out.addAll(run.sortedWith(compareBy({ it.monoMs }, { it.id }))); run = ArrayList() }
+            run.add(r)
+        }
+        out.addAll(run.sortedWith(compareBy({ it.monoMs }, { it.id })))
+        return out
+    }
+
+    fun compute(input: List<LogRow>): Totals {
+        val rows = timeOrder(input)
         var charging = false
         var armed = false
         var chargingMs = 0L
