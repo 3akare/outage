@@ -1,5 +1,5 @@
 {
-  "_comment": "Dependencies the human approved. npm packages in `allowed`, Gradle coordinates (group:artifact) in `gradleAllowed`, Gradle plugin ids in `gradlePluginsAllowed`. Anything else needs the human: the dependency guard asks before it is installed. Add an entry only after the human approves it. Stack: native Kotlin app, Cloudflare Worker, TypeScript, Vitest + fast-check, h3-js (ADR 0012). 2026-11-14: the human chose Biome for lint and format. @outage/* are this repository's own workspace packages, not external dependencies.",
+  "_comment": "Dependencies the human approved. npm packages in `allowed`, Gradle coordinates (group:artifact) in `gradleAllowed`, Gradle plugin ids in `gradlePluginsAllowed`. Anything else needs the human: the dependency guard asks before it is installed. Add an entry only after the human approves it. Stack: native Kotlin app, Cloudflare Worker, TypeScript, Vitest + fast-check, h3-js (ADR 0012). 2026-11-14: the human chose Biome for lint and format. @outage/* are this repository's own workspace packages, not external dependencies. 2026-11-14: the human approved Jetpack Compose (BOM, ui, foundation, material3, the Compose compiler plugin, and the activity and lifecycle bridges Compose needs to host screens and ViewModels). Navigation libraries are not included.",
   "allowed": [
     "typescript",
     "vitest",
@@ -21,14 +21,27 @@
   "gradleAllowed": [
     "junit:junit",
     "androidx.core:core-ktx",
-    "androidx.annotation:annotation"
+    "androidx.annotation:annotation",
+    "androidx.compose:compose-bom",
+    "androidx.compose.ui:ui",
+    "androidx.compose.ui:ui-graphics",
+    "androidx.compose.ui:ui-tooling",
+    "androidx.compose.ui:ui-tooling-preview",
+    "androidx.compose.ui:ui-test-junit4",
+    "androidx.compose.ui:ui-test-manifest",
+    "androidx.compose.foundation:foundation",
+    "androidx.compose.material3:material3",
+    "androidx.activity:activity-compose",
+    "androidx.lifecycle:lifecycle-viewmodel-compose",
+    "androidx.lifecycle:lifecycle-runtime-compose",
+    "androidx.lifecycle:lifecycle-runtime-ktx"
   ],
   "gradlePluginsAllowed": [
     "com.android.application",
-    "com.android.library"
+    "com.android.library",
+    "org.jetbrains.kotlin.plugin.compose"
   ],
   "pendingApproval": [
-    "androidx.compose (Jetpack Compose, Material 3)",
     "com.uber:h3",
     "com.google.firebase:firebase-messaging",
     "org.jetbrains.kotlinx:kotlinx-serialization-json",

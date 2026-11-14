@@ -40,7 +40,7 @@ To confirm with the docs servers: registering a battery-changed `BroadcastReceiv
 | `PlugObserver` | Kotlin foreground receiver in the sensor package: `onPlugChange(type)`. No sensor job, no Outbox. |
 | `ReplayPlayer` | Plays `replay.json` frames and the unplug track with speed control. |
 | `DemoAlarm` | Calls the app's test alarm path with a "Demo" label. |
-| `DemoScreens` | Jetpack Compose screens (needs human approval, ADR 0012) with a `DemoViewModel`: Judge home, replay, unplug, explanation panel, banner. |
+| `DemoScreens` | Jetpack Compose screens (approved 2026-11-14) with a `DemoViewModel`: Judge home, replay, unplug, explanation panel, banner. |
 
 ## 4. Unplug scenario
 

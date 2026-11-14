@@ -4,7 +4,7 @@ Rules: only real dependencies are listed. Tasks in the same wave run in parallel
 
 Highest reasoning effort for tasks 3 and 6. Checkpoint before task 6. Plan mode first for task 2 and 8.
 
-Depends on `sensor-android` (task 9), `alerts-and-light-alarm` (tasks 1, 4), `area-cells` (task 8), `event-ingest` (task 4). The image share card is blocked until the human decides; do the text fallback first. Jetpack Compose needs human approval (ADR 0012).
+Depends on `sensor-android` (task 9), `alerts-and-light-alarm` (tasks 1, 4), `area-cells` (task 8), `event-ingest` (task 4). The image share card is blocked until the human decides; do the text fallback first. Jetpack Compose is approved (2026-11-14).
 
 ## Wave 1
 

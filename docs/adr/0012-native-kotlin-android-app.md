@@ -42,7 +42,7 @@ tools/probe/android    Throwaway probe app (Kotlin, Views)
 ## Consequences
 - **Spec edits.** Every spec that named Expo, React Native, EAS, the JS layer or `modules/outage-sensor` is updated in the same change (alerts, sensor-android, station-mode, onboarding, home-watch, power-log, demo-mode, field-telemetry, detection-engine, event-ingest, area-cells, feasibility-probe). ADR 0008 and ADR 0001 carry an "Amended by ADR 0012" line.
 - **The feasibility gate ADR moves from 0012 to 0013.**
-- **Approved by this ADR (toolchain only):** Kotlin, Gradle, the Android Gradle plugin, AndroidX core libraries, JUnit 4 for unit tests. Everything else needs the human, one by one, before it is added: Jetpack Compose and Material 3, `com.uber:h3`, Firebase Messaging, kotlinx-serialization (or hand-written JSON), a Kotlin linter.
+- **Approved by this ADR (toolchain only):** Kotlin, Gradle, the Android Gradle plugin, AndroidX core libraries, JUnit 4 for unit tests. Approved later by the human (2026-11-14): Jetpack Compose and Material 3. Everything else needs the human, one by one, before it is added: `com.uber:h3`, Firebase Messaging, kotlinx-serialization (or hand-written JSON), a Kotlin linter.
 - **Human actions:** create a Firebase project and a service-account key for FCM (when alerts are built); create a release keystore (when a signed release is built); allow a GitHub Actions workflow to attach release files.
 - **Lost:** React Native tooling and lint rules; the free EAS quota is no longer needed.
 - **New risk:** more Kotlin written without a device or emulator. Mitigation: CI compiles on every push and I read the build log; the probe is the first real measurement on a phone.

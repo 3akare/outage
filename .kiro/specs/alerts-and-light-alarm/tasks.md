@@ -40,7 +40,7 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 - [ ] 5. Subscriptions in the area actor: schema, follow and unfollow endpoints, strict validation, `PUSH_SENT` memory, deferred-send alarm, push hook from `area-cells` outputs, delete-my-data. Test L7.
   - Depends on: 7, `area-cells` 9, `event-ingest` 4
   - Requirements: R6, R8, R10
-- [ ] 8. Screens (Jetpack Compose needs human approval, ADR 0012) and `net` package: channel creation, permission flow, FCM token registration and refresh, follow and quiet-hours screens, Test Light Alarm, Alarm check list, in-app prompt for denied notifications, string pack wiring; JVM unit tests for the follow request against the contract fixtures.
+- [ ] 8. Screens (Jetpack Compose, approved 2026-11-14) and `net` package: channel creation, permission flow, FCM token registration and refresh, follow and quiet-hours screens, Test Light Alarm, Alarm check list, in-app prompt for denied notifications, string pack wiring; JVM unit tests for the follow request against the contract fixtures.
   - Depends on: 4, 2, `event-ingest` 10
   - Requirements: R1.7, R5, R6.1, R6.2, R7, R9
 

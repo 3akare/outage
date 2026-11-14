@@ -18,7 +18,7 @@ flowchart LR
     SY[Public outage sync] --> AO
 ```
 
-- `TimelineBuilder` and `Stats` are pure Kotlin classes in the app's log package, with no Android types. They take events and a clock and return intervals and numbers, so JUnit 4 tests (`./gradlew testDebugUnitTest`) cover them, including seeded random orderings. The screens are Jetpack Compose screens (needs human approval, ADR 0012) driven by a `PowerLogViewModel`.
+- `TimelineBuilder` and `Stats` are pure Kotlin classes in the app's log package, with no Android types. They take events and a clock and return intervals and numbers, so JUnit 4 tests (`./gradlew testDebugUnitTest`) cover them, including seeded random orderings. The screens are Jetpack Compose screens (approved 2026-11-14) driven by a `PowerLogViewModel`.
 - Storage is plain `SQLiteOpenHelper` (`android.database.sqlite`): the sensor's database or a second local database (decided in task 2). Room needs human approval (ADR 0012). It is separate from the Outbox, so ack and upload never change the log.
 - Freezer Guard uses `AlarmManager` and a `BroadcastReceiver` because the Sensor job does not run when the phone is unplugged.
 

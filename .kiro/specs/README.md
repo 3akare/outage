@@ -19,6 +19,7 @@ Build order follows the master brief, Part I. The probe comes first and gates th
 | 10 | `web-and-area-pages` | 4 | W1 to W9 | area-cells, engine |
 | 11 | `demo-mode` | 4 | DM1 to DM7 | engine, web |
 | 12 | `field-telemetry` | 4 | F1 to F8 | sensor, area-cells, onboarding |
+| 13 | `app-shell` | 3 | AS1 to AS8 | none (feature specs plug into it) |
 
 Bugfix Specs (`bugfix-YYYYMMDD-<slug>`) are added by the daily field run and by hand.
 
@@ -39,6 +40,6 @@ Bugfix Specs (`bugfix-YYYYMMDD-<slug>`) are added by the daily field run and by 
 
 - Run Analyze Requirements on each spec. It runs in Kiro IDE and in the Kiro CLI, not in Kiro Web (https://kiro.dev/docs/specs/). Run the Correctness pass in Kiro IDE for `detection-engine`.
 - Review ADR 0005 (detection parameters), ADR 0006 and 0007 (sharding, public map floor), ADR 0008 (Firebase and push storage), ADR 0009 (Home Watch pairing data), ADR 0011 (telemetry data).
-- Approve new dependencies when a task asks: `com.uber:h3`, Firebase Messaging, Jetpack Compose and Material 3, QR libraries, share-card libraries (ADR 0012).
+- Approve new dependencies when a task asks: `com.uber:h3`, Firebase Messaging, QR libraries, share-card libraries (ADR 0012).
 - Create secrets: `INSTALL_TOKEN_SECRET`, `PROBE_TOKEN`, `FIELD_READ_TOKEN`, `FCM_SERVICE_ACCOUNT` (Firebase service-account key, Wrangler secret); the Firebase project for push; `.kiroignore`.
 - Verify facts used in public text: the tariff bands (NERC), the Lagos area centre coordinates, the GridWatch figures.

@@ -16,7 +16,7 @@ flowchart LR
     S --> F[Finish + Alarm check list]
 ```
 
-A small state machine (`OnboardingFlow`, a pure Kotlin class with no Android types) decides the next step from the facts: consent given, permissions granted, exemption state, previous skips. Screens are thin Jetpack Compose screens (needs human approval, ADR 0012) driven by an `OnboardingViewModel`. State is stored on the phone after every step (R1.5).
+A small state machine (`OnboardingFlow`, a pure Kotlin class with no Android types) decides the next step from the facts: consent given, permissions granted, exemption state, previous skips. Screens are thin Jetpack Compose screens (approved 2026-11-14) driven by an `OnboardingViewModel`. State is stored on the phone after every step (R1.5).
 
 ## 2. Verified platform facts
 

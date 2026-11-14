@@ -228,3 +228,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 
 ## 2026-11-14 dependency guard fix (human approved)
 - `guard-repo.mjs` now stops reading package names at a shell redirection, so a bare install followed by a redirect no longer asks. An install of a real package followed by a redirect still asks. Regression tests added in `hooks.test.mjs`; the test fails on the old guard and passes on the new one (24 hook tests pass).
+
+## 2026-11-14 app-shell spec and Compose approval (human)
+- Human approved Jetpack Compose with Material 3 and asked for the missing app-shell spec. Recorded in `.kiro/approved-dependencies.json` (Compose BOM, ui, foundation, material3, the Compose compiler plugin, and the activity and lifecycle bridges; no navigation library), `tech.md`, ADR 0012, and the specs that had "Compose needs approval".
+- New spec `.kiro/specs/app-shell/` (requirements R1 to R9, design with router, feature slots, delete registry, theme and status style, tests AS1 to AS8, 8 tasks). Gap it fills: no spec owned the home screen, navigation, settings, delete-my-data, theme or icon. Listed in `.kiro/specs/README.md` and `docs/traceability.md`. spec-lint passes.

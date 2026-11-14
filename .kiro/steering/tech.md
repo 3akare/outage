@@ -17,7 +17,7 @@ Decided in `docs/adr/0012-native-kotlin-android-app.md`.
 
 ## Rules
 - Never guess a platform API from memory. Confirm with a docs server (see `docs-servers.md`): Cloudflare docs, Context7 for Android, Kotlin, Compose, Gradle, Firebase, fast-check, Vitest and H3. Put the doc URL in a code comment for any non-obvious platform API.
-- Ask the human before adding any dependency or external service. Confirm a free tier first. The toolchain approved by ADR 0012 is Kotlin, Gradle, the Android Gradle plugin, AndroidX core libraries and JUnit 4. Compose, `com.uber:h3`, Firebase Messaging and any Kotlin linter are not yet approved.
+- Ask the human before adding any dependency or external service. Confirm a free tier first. The toolchain approved by ADR 0012 is Kotlin, Gradle, the Android Gradle plugin, AndroidX core libraries and JUnit 4. Jetpack Compose with Material 3 is approved (human, 2026-11-14; artifacts in `.kiro/approved-dependencies.json`). `com.uber:h3`, Firebase Messaging, a navigation library and any Kotlin linter are not yet approved.
 - Secrets live in Wrangler secrets and GitHub Actions secrets. Never commit them.
 - Batch events and use Durable Objects only for active cells, to stay inside Cloudflare free limits.
 - Prefer the simplest design that meets the spec.

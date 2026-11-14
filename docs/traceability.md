@@ -192,6 +192,19 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R3.1, R3.4 | `PR7_export_file_round_trips_the_shared_sample_exactly`, `PR7_upload_body_has_the_contract_shape_and_respects_the_batch_limit` | 7 | test written (`tools/probe/android/app/src/test/`) |
 | R1, R2, R6 (M1 to M14 on a phone) | `docs/probe-checklist.md` | 5, 6, 8 | needs a device (task 8) |
 
+## app-shell
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R1 | AS1 | `AS1_start_routing` | 2 | planned |
+| R3.3 | AS2 | `AS2_router_back` | 2 | planned |
+| R1.3 | AS3 | `AS3_unknown_routes` | 2 | planned |
+| R6.2 | AS4 | `AS4_status_style_complete` | 3 | planned |
+| R2 | AS5 | `AS5_home_state` | 5 | planned |
+| R5 | AS6 | `AS6_delete_all` | 7 | planned |
+| R7 | AS7 | `AS7_strings` | 4 | planned |
+| R6.3 | AS8 | device or UI check | 8 | planned |
+
 <!-- BEGIN GENERATED: detection properties (.kiro/scripts/traceability.mjs) -->
 ## Detection properties P1 to P12 (generated)
 
