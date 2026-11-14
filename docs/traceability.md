@@ -97,3 +97,92 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R1.4, R3 | L10 | `L10_replay_equivalence` | 3 | planned |
 | R1.2, R9 | L11 | `L11_channel_config` | 4 | planned |
 | R6.6, R10.5 | L12 | `L12_string_pack` | 2, 6 | planned |
+
+## power-log
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R1, R2 | PL1 | `PL1_timeline_pure` | 4 | planned |
+| R1.2 | PL2 | `PL2_intervals_cover_time` | 4 | planned |
+| R2.2, R2.4 | PL3 | `PL3_no_outage_without_evidence` | 4 | planned |
+| R3 | PL4 | `PL4_daily_stats` | 6 | planned |
+| R4 | PL5 | `PL5_light_score` | 6 | planned |
+| R5 | PL6 | `PL6_promise_copy` | 6 | planned |
+| R6 | PL7 | `PL7_freezer_guard_lifecycle` | 7 | planned |
+| R1.3, R8.2 | PL8 | `PL8_no_wall_clock_upload` | 8 | planned |
+| R8 | PL9 | `PL9_share_card_privacy` | 8 | planned |
+
+## home-watch
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R2.4, R2.5 | H1 | `H1_offline_never_off` | 3 | planned |
+| R2.6, R2.7 | H2 | `H2_state_order_independent` | 3 | planned |
+| R2.2, R2.3, R3 | H3 | `H3_non_power_events_ignored` | 3 | planned |
+| R2.8 | H4 | `H4_state_independent_of_area` | 3 | planned |
+| R1.2, R1.5 | H5 | `H5_pairing_rules` | 2, 4 | planned |
+| R5, R8.3 | H6 | `H6_push_once_per_change` | 6 | planned |
+| R6 | H7 | `H7_alarm_multiplexer` | 5 | planned |
+| R1.10, R7.4 | H8 | `H8_delete_removes_pairs` | 4 | planned |
+
+## onboarding
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R1, R4.3 | O1 | `O1_flow_machine` | 3 | planned |
+| R3.3, R12.2 | O2 | `O2_no_coordinates_stored` | 5 | planned |
+| R4.3, R5.3 | O3 | `O3_no_register_before_consent` | 3 | planned |
+| R7.1 | O4 | `O4_maker_matching` | 4 | planned |
+| R7.3, R7.4 | O5 | `O5_guide_labels` | 4 | planned |
+| R8.2, R8.6 | O6 | `O6_self_test_isolated` | 2 | planned |
+| R1.5 | O7 | `O7_resume` | 3 | planned |
+| R10 | O8 | `O8_reonboarding_skips` | 3 | planned |
+
+## web-and-area-pages
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R1.4, R3 | W1 | `W1_page_without_script` | 4 | planned |
+| R4.3, R11.1 | W2 | `W2_public_privacy` | 4, 7 | planned |
+| R2 | W3 | `W3_five_states` | 4 | planned |
+| R9 | W4 | `W4_cache_ttl` | 5 | planned |
+| R6.4, R6.6 | W5 | `W5_replay_matches_engine` | 9 | planned |
+| R6.2, R6.8 | W6 | `W6_simulated_separation` | 10 | planned |
+| R10.3, R11.5 | W7 | `W7_sitemap_robots` | 3, 8 | planned |
+| R1.6, R11.2, R11.3 | W8 | `W8_headers_and_escaping` | 2 | planned |
+| R4.4 | W9 | `W9_cell_page_indistinguishable` | 4 | planned |
+
+## demo-mode
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R2 | DM1 | `DM1_all_labeled` | 4 | planned |
+| R4.4, R4.6 | DM2 | `DM2_default_params` | 3 | planned |
+| R5 | DM3 | `DM3_no_real_writes` | 4 | planned |
+| R4 | DM4 | `DM4_plan_confirms_and_restores` | 3 | planned |
+| R5.6 | DM5 | `DM5_one_real_drop` | 3 | planned |
+| R6 | DM6 | `DM6_sanitizer` | 2 | planned |
+| R7 | DM7 | `DM7_replay_in_sync` | 5 | planned |
+
+## field-telemetry
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R1, R2 | F1 | `F1_aggregate_privacy_and_size` | 1, 4 | planned |
+| R2.5, R3 | F2 | `F2_upload_idempotent` | 4, 5 | planned |
+| R4 | F3 | `F3_percentiles_and_ratio` | 2 | planned |
+| R5 | F4 | `F4_outage_classes` | 3 | planned |
+| R6 | F5 | `F5_report_pure_and_clean` | 6 | planned |
+| R8 | F6 | `F6_signature_dedup` | 6 | planned |
+| R4.3, R10 | F7 | `F7_gate_statuses` | 2 | planned |
+| R7.5, R6.6 | F8 | `F8_admin_auth_and_aliases` | 5 | planned |
+
+## feasibility-probe
+
+| Requirement | Test | Task | Status |
+|---|---|---|---|
+| R5, R6 (M1) | `PR1 analyze_armed_ratio` | 3 | planned |
+| R5, R6 (M2) | `PR2 analyze_nearest_rank` | 3 | planned |
+| R5 | `PR3 analyze_segments` | 3 | planned |
+| R6 | `PR4 analyze_pairing` | 3 | planned |
+| R8 | `PR5 analyze_gate` | 3 | planned |
