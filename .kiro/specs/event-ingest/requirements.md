@@ -61,8 +61,8 @@ It does not decide whether an outage happened. That belongs to `detection-engine
 3. THE rate limit SHALL NOT drop a detection event while state events are being limited. WHERE the bucket is short, state events SHALL be dropped before detection events.
 
 ### R7 Routing and handoff
-1. THE Ingest API SHALL route each event to the cell actor named by the event's own `cell`, so that a retried event always reaches the same actor.
-2. WHEN a batch contains several cells, THE Ingest API SHALL make one actor call per cell.
+1. THE Ingest API SHALL route each event to the area actor named by the res-7 parent of the event's own `cell`, so that a retried event always reaches the same actor. (AMENDED 2026-11-14 by `area-cells`: before this, routing was by the res-8 cell. Everywhere this spec says "cell actor" read "area actor".)
+2. WHEN a batch contains several parents, THE Ingest API SHALL make one actor call per parent.
 3. WHEN the cell actor accepts a detection event, THE cell actor SHALL pass it to the detection engine through a `DetectionPort` interface with its event time and the receive time.
 4. THE Ingest API SHALL NOT contain detection logic.
 

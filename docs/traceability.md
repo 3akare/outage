@@ -63,3 +63,20 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R3.5, R4.3, R8 | D4 | `D4_labels` | 7 | planned |
 | R16 | D5 | `D5_settle_equivalence` | 14 | planned |
 | R12.3 | D6 | `D6_push_once` | 13 | planned |
+
+## area-cells
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R4.1 to R4.4 | A1 | `A1_scope_selection` | 4 | planned |
+| R4.6 | A2 | `A2_no_confirmed_for_sparse_cell` | 4 | planned |
+| R4.5 | A3 | `A3_open_outage_keeps_scope` | 4 | planned |
+| R6.1 to R6.3 | A4 | `A4_link_rule` | 5 | planned |
+| R6.4, R6.6 | A5 | `A5_groups_deterministic` | 5 | planned |
+| R7.3, R7.4 | A6 | `A6_notice_convergence` | 7 | planned |
+| R7.5, R8 | A7 | `A7_hints_never_confirm_alone` | 6 | planned |
+| R9 | A8 | `A8_public_view_privacy` | 8 | planned |
+| R10 | A9 | `A9_push_dedup` | 9 | planned |
+| R3.2, R5 | A10 | `A10_move_closes_old_cell` | 3 | planned |
+| R12 | A11 | `A11_delete_removes_install` | 9 | planned |
+| R11 | A12 | `A12_deferred_evaluation_equivalence` | 9 | planned |

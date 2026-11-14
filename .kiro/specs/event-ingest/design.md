@@ -4,6 +4,8 @@ Status: APPROVED by delegation on 2026-11-14. Based on `requirements.md`. Tasks 
 
 ## 1. Overview
 
+> AMENDED 2026-11-14 by `area-cells` (ADR 0006): the "cell actor" below is the **area actor**, one per res-7 parent, holding its seven res-8 cells. Events are grouped by parent, the `DETECTION_EVENT` and `INSTALL_STATE` tables gain a `cell` column, and idempotency stays (install, seq) within the actor. Ingest task 1 of `area-cells` applies this to the code plan.
+
 ```mermaid
 flowchart LR
     S[Sensor Outbox<br/>Kotlin SQLite] --> U[Uploader<br/>TypeScript]
