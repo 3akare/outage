@@ -1,0 +1,19 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "pre-compaction-notes",
+      "description": "Part E (IDE, CLI v3.1+): before a conversation is compacted, save a snapshot into docs/session-notes.md and tell the summarizer what to keep. Decisions and open questions are written into that file by the agent as they arise.",
+      "trigger": "PreCompact",
+      "action": { "type": "command", "command": "node .kiro/scripts/compaction.mjs pre" },
+      "timeout": 30
+    },
+    {
+      "name": "post-compaction-restore",
+      "description": "Part E (IDE, CLI v3.1+): after compaction, re-inject docs/session-notes.md into the conversation.",
+      "trigger": "PostCompact",
+      "action": { "type": "command", "command": "node .kiro/scripts/compaction.mjs post" },
+      "timeout": 30
+    }
+  ]
+}

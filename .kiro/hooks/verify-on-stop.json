@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "verify-on-stop",
+      "description": "Part E: when the agent stops and code changed, run typecheck, lint and test of the monorepo (root npm scripts), the traceability check and, if Kotlin changed, the Kotlin unit tests. Reports failures to the agent. Saves the result for push-to-main. Docs-only changes are skipped. Runs on Kiro Web.",
+      "trigger": "Stop",
+      "action": { "type": "command", "command": "node .kiro/scripts/verify.mjs" },
+      "timeout": 900
+    }
+  ]
+}

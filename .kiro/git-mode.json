@@ -1,0 +1,4 @@
+{
+  "_comment": "Part A of the brief. Mode \"main\": commit and push straight to main. When the human says \"switch to PRs\", change mode to \"pr\": one branch per spec task wave, one PR per wave, and the push-to-main hook stops pushing.",
+  "mode": "main"
+}

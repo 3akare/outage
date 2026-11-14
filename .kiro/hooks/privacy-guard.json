@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "privacy-guard",
+      "description": "Part E: block writes that store raw coordinates, phone numbers or names, or add forbidden permissions (microphone, fine or background location, contacts, phone state, accelerometer). Rules: .kiro/steering/privacy.md. Exit 2 blocks the write. Runs on Kiro Web.",
+      "trigger": "PreToolUse",
+      "matcher": "write",
+      "action": { "type": "command", "command": "node .kiro/scripts/guard-privacy.mjs" },
+      "timeout": 15
+    }
+  ]
+}

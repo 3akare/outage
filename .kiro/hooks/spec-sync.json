@@ -1,0 +1,23 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "spec-sync (agent, spec tools)",
+      "description": "Part E: after a spec tool call (IDE and CLI), keep design.md and tasks.md in step with the changed document and keep every property ID mapped to a test.",
+      "trigger": "PostToolUse",
+      "matcher": "spec",
+      "action": {
+        "type": "agent",
+        "prompt": "A spec document was just changed. Update the other documents of the same spec so they agree with it: design.md (data model, Mermaid sequence diagrams, error handling, testing strategy) and tasks.md (real dependencies only, every requirement covered by a task, every property ID has a task that writes its test). Keep every property ID mapped to a named test in docs/traceability.md. Do not weaken or drop an acceptance criterion or a property. If a change needs a threshold, stored-data or dependency decision, write the options in an ADR and ask the human."
+      }
+    },
+    {
+      "name": "spec-sync (notice, file writes)",
+      "description": "Kiro Web writes specs with ordinary file tools. This command speaks only when the written path is a spec document and tells the agent what to keep in sync.",
+      "trigger": "PostToolUse",
+      "matcher": "write",
+      "action": { "type": "command", "command": "node .kiro/scripts/spec-sync-notice.mjs" },
+      "timeout": 15
+    }
+  ]
+}

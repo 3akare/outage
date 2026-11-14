@@ -186,3 +186,24 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R5 | `PR3 analyze_segments` | 3 | planned |
 | R6 | `PR4 analyze_pairing` | 3 | planned |
 | R8 | `PR5 analyze_gate` | 3 | planned |
+
+<!-- BEGIN GENERATED: detection properties (.kiro/scripts/traceability.mjs) -->
+## Detection properties P1 to P12 (generated)
+
+Scanned 0 test file(s) under packages/detection. A property counts when a test title names its ID.
+
+| ID | Test file | Test title | Status |
+|---|---|---|---|
+| P1 | - | - | no tests yet |
+| P2 | - | - | no tests yet |
+| P3 | - | - | no tests yet |
+| P4 | - | - | no tests yet |
+| P5 | - | - | no tests yet |
+| P6 | - | - | no tests yet |
+| P7 | - | - | no tests yet |
+| P8 | - | - | no tests yet |
+| P9 | - | - | no tests yet |
+| P10 | - | - | no tests yet |
+| P11 | - | - | no tests yet |
+| P12 | - | - | no tests yet |
+<!-- END GENERATED -->

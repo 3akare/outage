@@ -1,0 +1,20 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "push-to-main",
+      "description": "Part E and Part A: if checks pass and the tree is dirty, ask, then commit and push to main (never forced). The question appears only when the tree is dirty, the branch is main and .kiro/git-mode.json says \"main\". Refuses when checks fail, secrets or personal data are found in the content, or secret-bearing files are present. Uses the message in .commit-message.txt (Conventional Commits).",
+      "trigger": "Stop",
+      "action": { "type": "command", "command": "node .kiro/scripts/push-to-main.mjs" },
+      "timeout": 900,
+      "confirm": {
+        "question": "Commit the changed files and push to main?",
+        "confirmCommand": "node .kiro/scripts/push-confirm.mjs push",
+        "options": [
+          { "id": "push", "label": "Yes, commit and push", "run": true },
+          { "id": "skip", "label": "Not this time", "run": false }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "_comment": "Packages named by the master brief (stack: Expo + TypeScript, Cloudflare Worker, Vitest + fast-check, H3, Expo push). Anything else needs the human: the dependency guard asks before it is installed. Add a package here only after the human approves it.",
+  "allowed": [
+    "typescript",
+    "vitest",
+    "fast-check",
+    "wrangler",
+    "h3-js",
+    "expo",
+    "expo-modules-core",
+    "expo-notifications",
+    "expo-constants",
+    "react",
+    "react-native",
+    "@types/react",
+    "@cloudflare/workers-types"
+  ],
+  "allowedTools": ["vitest", "tsc", "wrangler", "expo", "eas", "eas-cli"],
+  "pendingApproval": [
+    "expo-location",
+    "expo-camera",
+    "react-native-qrcode-svg",
+    "react-native-svg",
+    "react-native-view-shot",
+    "expo-sharing",
+    "eslint",
+    "typescript-eslint",
+    "prettier"
+  ]
+}

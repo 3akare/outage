@@ -1,0 +1,29 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "repo-guards (writes)",
+      "description": "Extra to Part E, enforcing Part A.4 and Part H: block gitignoring /.kiro, block skipped tests, ask before adding a dependency that is not on .kiro/approved-dependencies.json.",
+      "trigger": "PreToolUse",
+      "matcher": "write",
+      "action": { "type": "command", "command": "node .kiro/scripts/guard-repo.mjs" },
+      "timeout": 15
+    },
+    {
+      "name": "repo-guards (shell)",
+      "description": "Block removing or ignoring /.kiro; ask before deleting tests, installing unapproved packages, running unapproved npx tools, or creating Cloudflare resources.",
+      "trigger": "PreToolUse",
+      "matcher": "shell",
+      "action": { "type": "command", "command": "node .kiro/scripts/guard-repo.mjs" },
+      "timeout": 15
+    },
+    {
+      "name": "repo-guards (deletes)",
+      "description": "Ask before deleting a test file or anything under /.kiro.",
+      "trigger": "PreToolUse",
+      "matcher": "delete",
+      "action": { "type": "command", "command": "node .kiro/scripts/guard-repo.mjs" },
+      "timeout": 15
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "paid-service-check",
+      "description": "Part E: if the prompt (USER_PROMPT) mentions a new service or SDK, inject \"Budget is zero: confirm a free tier first\". Runs on Kiro Web.",
+      "trigger": "UserPromptSubmit",
+      "action": { "type": "command", "command": "node .kiro/scripts/paid-service-check.mjs" },
+      "timeout": 10
+    }
+  ]
+}

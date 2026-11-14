@@ -1,0 +1,37 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "kotlin-check (file save)",
+      "description": "Part E (IDE and CLI v3, Post File Save): run the Kotlin unit tests after a change under modules/**.kt.",
+      "trigger": "PostFileSave",
+      "matcher": "modules/.*\\.kt$",
+      "action": { "type": "command", "command": "node .kiro/scripts/kotlin-check.mjs" },
+      "timeout": 600
+    },
+    {
+      "name": "kotlin-check (write tool)",
+      "description": "Same check for Kiro Web, where file-save triggers do not run. Debounced against the file-save hook.",
+      "trigger": "PostToolUse",
+      "matcher": "write",
+      "action": { "type": "command", "command": "node .kiro/scripts/kotlin-check.mjs" },
+      "timeout": 600
+    },
+    {
+      "name": "demo-label-check (file save)",
+      "description": "Part E (IDE and CLI v3, Post File Save): fail if a simulated event in tools/sim lacks simulated: true (property P9, .kiro/steering/demo-mode.md).",
+      "trigger": "PostFileSave",
+      "matcher": "tools/sim/.*\\.(ts|mjs|js)$",
+      "action": { "type": "command", "command": "node .kiro/scripts/demo-label-check.mjs" },
+      "timeout": 30
+    },
+    {
+      "name": "demo-label-check (write tool)",
+      "description": "Same check for Kiro Web. Debounced against the file-save hook.",
+      "trigger": "PostToolUse",
+      "matcher": "write",
+      "action": { "type": "command", "command": "node .kiro/scripts/demo-label-check.mjs" },
+      "timeout": 30
+    }
+  ]
+}

@@ -21,6 +21,12 @@ A task is done only when ALL of these are true:
 - Keep `main` demo-ready. Never push a red commit.
 - When unsure about a product or algorithm choice, write the options in an ADR and ask the human. Do not guess on thresholds, privacy or money.
 
+## Session habits (hooks depend on these)
+- Record decisions and open questions in `docs/session-notes.md` as they arise. The compaction hooks snapshot and restore that file.
+- Keep `docs/status.md` current (milestone, gate, next step, active specs). The session-context hook prints it.
+- At the end of a task, the `kiro-log` hook writes the log entry and `.commit-message.txt`; `push-to-main` commits and pushes after the human confirms. Hooks are described in `.kiro/hooks/README.md`.
+- A hook that blocks you is right until the human says otherwise. Fix the cause. Never add an `allow` marker or edit a hook script to get around a block.
+
 ## Ask the human before
 Adding any dependency or service, changing detection thresholds, changing what data is stored, or deleting tests.
 

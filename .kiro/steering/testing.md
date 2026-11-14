@@ -12,3 +12,5 @@ fileMatchPattern: "**/*.test.ts"
 - Never delete or skip a test without asking the human.
 - Pin fast-check seeds when a failure is found, and add the shrunk case as a regression test.
 - Simulated events must carry `simulated: true`.
+- Property tests read the number of runs from `process.env.FC_NUM_RUNS` (default 100). The `detection-tests` hook uses 100 and the `property-suite-full` hook and CI use 2000.
+- Test titles name the property ID first, for example `P3_order_and_delay_independence`. The `property-traceability` hook reads the titles.

@@ -1,0 +1,38 @@
+# Build output and tooling caches
+node_modules/
+dist/
+build/
+coverage/
+.expo/
+.wrangler/
+*.tsbuildinfo
+.gradle/
+local.properties
+apps/mobile/android/build/
+apps/mobile/android/app/build/
+modules/outage-sensor/android/build/
+
+# Binaries
+*.apk
+*.aab
+
+# Secrets and local config. Real secrets live in Wrangler secrets and EAS secrets.
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+*.pem
+*.p12
+*.jks
+*.keystore
+service-account*.json
+google-services.json
+
+# Logs
+*.log
+
+# Written by the kiro-log hook and consumed by the push-to-main hook
+.commit-message.txt
+
+# NOTE: never ignore /.kiro. It is the evidence judges score (the evidence-guard hook blocks it).

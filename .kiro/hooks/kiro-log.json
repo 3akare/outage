@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "kiro-log",
+      "description": "Part E and Part H.4: append to docs/kiro-log.md what was done and which spec, steering, hook, skill or agent shaped it. Also prepares the commit message for push-to-main. Loop guard in the prompt: it does nothing when the log is already current. Disable this hook (\"enabled\": false) if a session ever loops.",
+      "trigger": "Stop",
+      "action": {
+        "type": "agent",
+        "prompt": "Log check. Only act if files in the repo changed during this turn and docs/kiro-log.md has no entry for those changes yet. If nothing changed, or you already wrote a log entry for this work, reply with the single line \"log up to date\" and do nothing else (this prevents a loop). Otherwise: (1) append a dated entry to docs/kiro-log.md that says what was done and names the spec, steering file, hook, skill, agent, ADR or docs-server fact that shaped it, plus open questions for the human; (2) write a one-line Conventional Commit message to .commit-message.txt in the form `type(scope): summary [spec:<name> task:<n>]` (this file is gitignored and consumed by the push-to-main hook); (3) if a decision was made that is not in an ADR, add a short ADR in docs/adr/ (context, decision, alternatives, consequences); (4) update docs/traceability.md when a property, test or task changed status. Keep the entry short and factual."
+      }
+    }
+  ]
+}

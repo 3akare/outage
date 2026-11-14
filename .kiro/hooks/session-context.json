@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "session-context",
+      "description": "Part E: print the current milestone, open tasks of the active specs and the latest field report summary when a session starts. Runs on Kiro Web.",
+      "trigger": "SessionStart",
+      "action": { "type": "command", "command": "node .kiro/scripts/session-context.mjs" },
+      "timeout": 20
+    }
+  ]
+}
