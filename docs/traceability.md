@@ -186,6 +186,8 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R5 | `PR3 analyze_segments` | 3 | test written (`tools/probe/analyze/test/analyze.test.ts`) |
 | R6 | `PR4 analyze_pairing` | 3 | test written (`tools/probe/analyze/test/analyze.test.ts`) |
 | R8 | `PR5 analyze_gate` | 3 | test written (`tools/probe/analyze/test/analyze.test.ts`) |
+| R3.1, R3.3 | `R3.1 stores a batch and exports it back`, `R3.1 a retried upload is harmless`, `R3.1 SQLite store` (Workers runtime) | 4 | test written (`tools/probe/worker/test/`) |
+| R3.2 | `R3.2 R3.3 every route needs the token`, `R3.2 the token is required in the runtime too` | 4 | test written (`tools/probe/worker/test/`) |
 
 <!-- BEGIN GENERATED: detection properties (.kiro/scripts/traceability.mjs) -->
 ## Detection properties P1 to P12 (generated)
