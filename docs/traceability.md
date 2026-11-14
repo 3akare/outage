@@ -14,3 +14,17 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R6.2, R6.4 | S6 | `S6_non_detection_plugs_silent` | TBD | planned |
 | R9.1 | S7 | `S7_seq_monotonic_across_restarts` | TBD | planned |
 | R7 | S8 | `S8_confidence_rules` | TBD | planned |
+
+## event-ingest
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R3 | I1 | `I1_event_time_formula` | 4 | planned |
+| R5 | I2 (supports P4) | `I2_idempotent_any_batching` | 5 | planned |
+| R4 | I3 | `I3_elapsed_bounds` | 2 | planned |
+| R6 | I4 | `I4_bucket_invariants` | 5 | planned |
+| R8 | I5 | `I5_batch_isolation` | 4 | planned |
+| R9.7, R10, R4.3 | I6 (supports P9) | `I6_excluded_events` | 5 | planned |
+| R9 | I7 | `I7_uploader_convergence` | 6 | planned |
+| R1 | I8 | `I8_strict_schema` | 2 | planned |
+| R11 | I9 | `I9_write_behind_state` | 7 | planned |
