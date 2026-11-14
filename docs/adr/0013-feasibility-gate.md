@@ -22,5 +22,16 @@ The brief's gate: armed at least 90% on one phone, plug-in to job-start p95 at m
 - **Limit of the emulator:** emulator numbers are stock Android. They show whether the job reacts to charger changes and how long that takes, not what a phone maker adds.
 - **Before/after comparison:** M4 has no "before" run on the Samsung if the exemption is applied from the start. The analysis reports the exempt and not-exempt time separately, in case both occur.
 
+## Interim findings (emulator, not the gate result)
+From run 43611121113 (`docs/probe/2026-11-14-emu-api35.md`, Android 15 emulator, 94 minutes):
+1. **Unplug is seen at once once armed.** 6 of 6 job stops came about 0.4 s after the emulated unplug, before the app received the power-disconnected broadcast. Stop reason `CONSTRAINT_CHARGING` each time.
+2. **Arming after plug-in is slow.** After a plug-in the charging-constraint job started about 992 s (16.5 min) later, in both long charges (at 70% and 80%). In the earlier short run it started about 985 s after the first plug-in. `dumpsys jobscheduler` showed "Power connected: true, Battery charging: false" during that wait. Short charges of 40 s almost never armed the job (0 of 10 at 55%, 3 of 10 at 92%). The battery exemption did not change the delay.
+3. **Not confirmed:** whether a real phone has the same delay. The emulator reports no charging current, and the system may use a timer instead. The cause is not taken from documentation. The Samsung run (everyday mode) answers it.
+4. **M8:** an expedited job with the charging constraint is refused (`IllegalArgumentException`), as documented.
+5. **M9:** alarm audio started 27 ms after the job start, with the app in the background and the screen off (emulator, no audio device).
+6. **Reference receivers** (Station mode's mechanism) logged every plug change within a second.
+
+If the Samsung shows the same 16-minute arming delay, a cut that comes soon after a plug-in is invisible to the job sensor. Station mode's receivers would then be the main sensor rather than the backup, which changes ADR 0001 and ADR 0004. That is a decision for the human, with options, in task 9.
+
 ## Result
 Pending. To be filled in task 9 from `docs/probe/summary.md`.

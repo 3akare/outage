@@ -215,3 +215,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
   - rows are now put in time order within a boot (`timeOrder`, TypeScript and Kotlin);
   - pairing accepts a job event up to 10 s before the reference event, with a negative delay.
   - New tests: TypeScript PR4, Kotlin PR6. 14 TypeScript and 7 Kotlin tests pass.
+
+## 2026-11-14 full emulator run (94 min)
+- Run 5 passed (after fixing a `set -e` bug in my own script, found when run 4 stopped after 45 minutes). The report is in `docs/probe/2026-11-14-emu-api35.md`, and the findings are in ADR 0013 "Interim findings".
+- Main result: once armed, the job sees an unplug within about 0.4 s. Arming after a plug-in took about 992 s (16.5 min) on the emulator, so short charges are mostly unarmed. That corrects my earlier "starts only at 90%" reading: the 90% start in run 3 also came about 985 s after plug-in.
+- Not known: whether real phones share this delay (the emulator has no charging current). The Samsung run decides it.
