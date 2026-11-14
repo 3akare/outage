@@ -16,7 +16,7 @@ Three concerns are kept apart so each is testable:
 
 The pure core takes a `Clock` and a `Facts` snapshot as arguments, which keeps `kotlin-check` fast and removes timing flakiness.
 
-Station mode (foreground service) will add a second driver that feeds the same state machine from a dynamic `ACTION_POWER_DISCONNECTED` receiver. That is out of scope here (OQ2); the state machine is built so it can be plugged in.
+Station mode (foreground service) adds a second driver that feeds the same state machine from dynamic power receivers. It is specified in `.kiro/specs/station-mode/` (OQ2). That spec adds inputs `PowerDisconnected`, `PowerConnected` and `Heartbeat`, a `source` field on events, and a `mode` on charge sessions; see its design section 4 and 7. Implement `sensor-android` task 4 so the state machine takes a `Source` and extra inputs without restructuring.
 
 ## 2. Verified platform facts
 

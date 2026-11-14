@@ -28,3 +28,15 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R9 | I7 | `I7_uploader_convergence` | 6 | planned |
 | R1 | I8 | `I8_strict_schema` | 2 | planned |
 | R11 | I9 | `I9_write_behind_state` | 7 | planned |
+
+## station-mode
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R4.2 | T1 | `T1_single_unplug_any_interleaving` | 2 | planned |
+| R3.2 | T2 | `T2_receiver_unplug_any_battery` | 2 | planned |
+| R3.6 | T3 | `T3_mismatch_emits_nothing` | 2 | planned |
+| R3.3, R4.3 | T4 | `T4_single_replug_per_drop` | 2 | planned |
+| R1.2, R4.5 | T5 (supports S7) | `T5_mode_changes_are_silent` | 2 | planned |
+| R5 | T6 | `T6_heartbeat_cadence` | 2 | planned |
+| R5.2 | T7 | `T7_heartbeat_vs_silence_limit` | 2 | planned |
