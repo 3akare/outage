@@ -35,6 +35,7 @@ This spec extends `sensor-android`. It adds a second driver for the same state m
 3. THE notification text SHALL contain no location, install ID or personal data.
 4. WHEN notification permission is denied on Android 13 or higher, THE Sensor SHALL still run the service and SHALL report `NOTIFICATION_HIDDEN` in diagnostics so the app can explain it.
 5. THE Sensor SHALL NOT show this notification in normal mode.
+6. WHILE Station mode is enabled, THE Sensor SHALL NOT show the per-unplug "Power just went?" prompt and SHALL NOT ring a Light Alarm. (Added 2026-11-14 by `alerts-and-light-alarm`; nobody answers a station's prompt, and Home Watch handles stations.)
 
 ### R3 Direct plug observation
 **User story:** As the detection engine, I want a full spare phone to report a power cut.

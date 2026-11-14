@@ -80,3 +80,20 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R3.2, R5 | A10 | `A10_move_closes_old_cell` | 3 | planned |
 | R12 | A11 | `A11_delete_removes_install` | 9 | planned |
 | R11 | A12 | `A12_deferred_evaluation_equivalence` | 9 | planned |
+
+## alerts-and-light-alarm
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R1 | L1 | `L1_one_prompt_per_unplug` | 3 | planned |
+| R3.1, R3.2 | L2 | `L2_ring_iff_conditions` | 3 | planned |
+| R3.3, R3.5 | L3 | `L3_alarm_has_no_network` | 4 | planned |
+| R2 | L4 | `L4_first_answer_wins` | 3 | planned |
+| R7 | L5 | `L5_quiet_window` | 6 | planned |
+| R6 | L6 | `L6_push_planning` | 6 | planned |
+| R8.2, R10.2 | L7 | `L7_token_hygiene_and_delete` | 5 | planned |
+| R8.1, R8.3 | L8 | `L8_batching_and_retry` | 7 | planned |
+| R4.1, R4.2 | L9 | `L9_expiry_and_reboot` | 3 | planned |
+| R1.4, R3 | L10 | `L10_replay_equivalence` | 3 | planned |
+| R1.2, R9 | L11 | `L11_channel_config` | 4 | planned |
+| R6.6, R10.5 | L12 | `L12_string_pack` | 2, 6 | planned |

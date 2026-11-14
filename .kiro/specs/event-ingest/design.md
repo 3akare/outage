@@ -80,6 +80,8 @@ type EventResult    = { seq: number; status: 'accepted'|'duplicate'|'rejected'; 
 type EventsResponse = { results: EventResult[]; retryAfterMs?: number };
 ```
 
+AMENDED 2026-11-14 by `alerts-and-light-alarm`: the `type` union also includes `'LABEL'` with `refSeq: number` and `answer: 'YES'|'NO'` (strict schema, I8 updated). `LABEL` is uploaded promptly, stored as a row, and passed to the area actor as an engine `Label`.
+
 Headers: `Authorization: Bearer <installToken>`. No cookies. The Worker never reads or logs IP or user agent.
 
 Token: `token = base64url(HMAC-SHA256(secret, installId))`. Verification is a constant-time compare.

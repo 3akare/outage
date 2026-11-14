@@ -222,6 +222,8 @@ The install ID and H3 cell are added by the JS layer when it builds the ingest p
 
 Retention: events and telemetry older than 7 days are deleted on start and on ack (R9.5, R10.5).
 
+> AMENDED 2026-11-14 by `alerts-and-light-alarm`: `EVENT.type` and the JS `SensorEvent.type` also allow `LABEL`, with columns `ref_seq` and `answer` (`YES`|`NO`). `LABEL` events are written by the native prompt actions, not by the state machine. The native alarm path also reads `REPLUG` events from the state machine output. See that spec, section 4.
+
 ## 8. Interfaces
 
 ```ts
