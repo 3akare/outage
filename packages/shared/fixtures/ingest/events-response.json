@@ -1,0 +1,19 @@
+{
+  "results": [
+    {
+      "seq": 1,
+      "status": "accepted"
+    },
+    {
+      "seq": 3,
+      "status": "duplicate"
+    },
+    {
+      "seq": 6,
+      "status": "rejected",
+      "code": "RATE_LIMITED",
+      "permanent": false
+    }
+  ],
+  "retryAfterMs": 20000
+}

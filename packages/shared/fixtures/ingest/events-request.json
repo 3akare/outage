@@ -1,0 +1,68 @@
+{
+  "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+  "events": [
+    {
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "seq": 1,
+      "type": "ARMED",
+      "elapsedMs": 1200,
+      "cell": "88589c984dfffff",
+      "confidence": "HIGH",
+      "timeQuality": "OK"
+    },
+    {
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "seq": 2,
+      "type": "DISARMED",
+      "elapsedMs": 800,
+      "cell": "88589c984dfffff",
+      "confidence": "HIGH",
+      "timeQuality": "OK",
+      "stopReason": "JOB_TIMEOUT",
+      "reason": "job_stopped"
+    },
+    {
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "seq": 3,
+      "type": "UNPLUG",
+      "elapsedMs": 0,
+      "cell": "88589c984dfffff",
+      "confidence": "HIGH",
+      "timeQuality": "OK",
+      "schedulingDelayMs": null,
+      "batteryPct": 64,
+      "plugType": "AC"
+    },
+    {
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "seq": 4,
+      "type": "BATTERY_FULL",
+      "elapsedMs": 604800000,
+      "cell": "88589c984dfffff",
+      "confidence": "LOW",
+      "timeQuality": "OK",
+      "batteryPct": 100
+    },
+    {
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "seq": 5,
+      "type": "REPLUG",
+      "elapsedMs": 350,
+      "cell": "88589c984dfffff",
+      "confidence": "HIGH",
+      "timeQuality": "OK",
+      "schedulingDelayMs": 1500
+    },
+    {
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "seq": 6,
+      "type": "LABEL",
+      "elapsedMs": 42000,
+      "cell": "88589c984dfffff",
+      "confidence": "HIGH",
+      "timeQuality": "OK",
+      "refSeq": 3,
+      "answer": "YES"
+    }
+  ]
+}

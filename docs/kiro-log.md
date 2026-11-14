@@ -232,3 +232,19 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-14 app-shell spec and Compose approval (human)
 - Human approved Jetpack Compose with Material 3 and asked for the missing app-shell spec. Recorded in `.kiro/approved-dependencies.json` (Compose BOM, ui, foundation, material3, the Compose compiler plugin, and the activity and lifecycle bridges; no navigation library), `tech.md`, ADR 0012, and the specs that had "Compose needs approval".
 - New spec `.kiro/specs/app-shell/` (requirements R1 to R9, design with router, feature slots, delete registry, theme and status style, tests AS1 to AS8, 8 tasks). Gap it fills: no spec owned the home screen, navigation, settings, delete-my-data, theme or icon. Listed in `.kiro/specs/README.md` and `docs/traceability.md`. spec-lint passes.
+
+## 2026-11-14 event-ingest tasks 2 to 5 and 7 to 9 (parallel sub-agent, checked by me)
+- Built by a sub-agent from the `event-ingest` spec, ADR 0002, 0003 and 0006, and the `alerts-and-light-alarm` LABEL amendment. Cloudflare and fast-check APIs were confirmed with the docs servers.
+- Code:
+  - `packages/shared`: strict hand-written wire validator and H3 helpers, with contract fixtures in `fixtures/ingest/`.
+  - `workers/api`: HMAC install token; register, events and delete handlers; event time computed from receive time; routing by res-7 parent.
+  - Area actor: SQLite idempotency, token bucket with detection first, write-behind armed state with budget shedding, `DetectionPort` with a no-op implementation.
+  - Registry actor: revocation set and daily counters.
+- Verified by me after the sub-agent:
+  - 19 shared tests and 52 Worker tests pass, including I1 to I6, I8 and I9.
+  - The Wrangler test-harness integration test runs the real Worker and both actors.
+  - Typecheck and Biome are clean.
+  - Fixes: `fast-check` added to `workers/api` dev dependencies; the test script sets a writable `XDG_CONFIG_HOME`, because wrangler wrote to read-only `/root/.config`.
+- Decisions beyond the spec (sub-agent notes): reject code `BAD_FIELD`; free-text fields limited to `[A-Za-z0-9_.:-]{1,40}`, so no coordinates or sentences fit; DISARMED wins ties; a registry actor with a 15 s revocation cache that fails closed with 503. ADR 0003 has an addendum on revocation storage.
+- Open for the human: the register limit (R2.5) reads `cf-connecting-ip` only to hash it into an in-memory key, never stored or logged. The design says the Worker never reads IP. Keep it, or drop the limit?
+- Not done: task 6 (Kotlin uploader), task 10 (app wiring), task 11 (docs and load run).

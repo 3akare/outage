@@ -19,15 +19,17 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R3 | I1 | `I1_event_time_formula` | 4 | planned |
-| R5 | I2 (supports P4) | `I2_idempotent_any_batching` | 5 | planned |
-| R4 | I3 | `I3_elapsed_bounds` | 2 | planned |
-| R6 | I4 | `I4_bucket_invariants` | 5 | planned |
-| R8 | I5 | `I5_batch_isolation` | 4 | planned |
-| R9.7, R10, R4.3 | I6 (supports P9) | `I6_excluded_events` | 5 | planned |
+| R3 | I1 | `I1_event_time_formula` | 4 | test written (`workers/api/test/handlers.test.ts`) |
+| R5 | I2 | `I2_idempotent_any_batching` | 5 | test written (`workers/api/test/core.test.ts`) |
+| R4 | I3 | `I3_elapsed_bounds` | 2 | test written (`packages/shared/test/ingest.test.ts`) |
+| R6 | I4 | `I4_bucket_invariants` | 5 | test written (`workers/api/test/core.test.ts`) |
+| R8 | I5 | `I5_batch_isolation` | 4 | test written (`workers/api/test/handlers.test.ts`) |
+| R9.7, R10, R4.3 | I6 (supports P9) | `I6_excluded_events` | 5 | test written (`workers/api/test/core.test.ts`) |
 | R9 | I7 | `I7_uploader_convergence` | 6 | planned |
-| R1 | I8 | `I8_strict_schema` | 2 | planned |
-| R11 | I9 | `I9_write_behind_state` | 7 | planned |
+| R1 | I8 | `I8_strict_schema` | 2 | test written (`packages/shared/test/ingest.test.ts`) |
+| R11 | I9 | `I9_write_behind_state` | 7 | test written (`workers/api/test/core.test.ts`) |
+| R7, R8, R12.1 | - | `workers/api/test/integration.test.ts` (Workers runtime) | 8 | test written |
+| R12, R13 | - | `workers/api/test/delete.test.ts` | 9 | test written |
 
 ## station-mode
 

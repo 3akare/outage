@@ -5,8 +5,14 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
   "durable_objects": {
-    "bindings": [{ "name": "AREA", "class_name": "AreaActor" }]
+    "bindings": [
+      { "name": "AREA", "class_name": "AreaActor" },
+      { "name": "REGISTRY", "class_name": "RegistryActor" }
+    ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AreaActor"] }]
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["AreaActor"] },
+    { "tag": "v2", "new_sqlite_classes": ["RegistryActor"] }
+  ]
   // Secret set by the human, never in this file: wrangler secret put INSTALL_TOKEN_SECRET
 }
