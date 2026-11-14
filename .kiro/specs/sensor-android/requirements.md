@@ -1,6 +1,6 @@
 # Requirements: sensor-android
 
-Status: DRAFT for human review (Markdown Review). Design follows in `design.md`.
+Status: APPROVED by delegation on 2026-11-14 (human: "make the right decisions"). Open questions resolved below. Design in `design.md`, tasks in `tasks.md`.
 
 ## Introduction
 
@@ -119,9 +119,10 @@ This analysis was done by Kiro Web reading the brief. Kiro's Analyze Requirement
 | G9 | `BATTERY_FULL` then unplug or replug semantics. | R3.2, R4.4. |
 | G10 | Delete-my-data and privacy not stated. | R12. |
 
-## Open questions for the human
+## Decisions on open questions (2026-11-14)
 
-- **OQ1** Is Android < 12 a supported target, or should the app require 12+? R7 assumes supported but low confidence.
-- **OQ2** Station mode foreground service: should it be a separate spec? Assumed yes (`station-mode`), with this spec exposing only the hook point (R8.3).
-- **OQ3** Events from an earlier boot have lost time (R9.4). Confirm they are excluded from detection and kept for telemetry only.
-- **OQ4** Test dependencies for the Kotlin module: plain JUnit4 with seeded random loops needs nothing new. A property library (Kotest) needs your approval.
+- **OQ1 Android < 12:** supported at `LOW` confidence (R7). `minSdk` follows the Expo SDK. How detection weighs `LOW` events is decided in the `detection-engine` spec, not here.
+- **OQ2 Station mode:** a separate spec, `station-mode`. This spec only provides the hook point (R8.3) and a state machine that a second driver can feed.
+- **OQ3 Events across a reboot:** kept for telemetry only and excluded from detection (R9.4). `event-ingest` must carry `timeQuality` and drop `LOST` events from detection input.
+- **OQ4 Kotlin test tooling:** plain JUnit4 with seeded random loops. No new dependency. Detection property tests use fast-check.
+- **Plug-state re-read after a stop:** not included. If the probe shows the plug state lags the stop callback, the lag value and any re-read are decided from that data in a new ADR before being added. It changes event timing, so it is not guessed.

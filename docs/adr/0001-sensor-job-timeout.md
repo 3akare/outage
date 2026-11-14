@@ -1,11 +1,11 @@
 # ADR 0001: Handling the JobScheduler execution time limit
 
-Status: PROPOSED. Needs a human decision after the feasibility probe.
+Status: ACCEPTED for the feasibility probe only (2026-11-14). Re-evaluate against the milestone-1 gate with probe data.
 
 ## Context
 The Sensor keeps a charging-constraint job running so that its stop is the signal (see `.kiro/specs/sensor-android/design.md`). Android may stop a running job with `STOP_REASON_TIMEOUT` after about 10 minutes (longer on Android 12+ when the system is idle). Each timeout opens a short gap between stop and the next start, which lowers armed time. The milestone-1 gate needs armed time >= 90%.
 
-## Decision (provisional)
+## Decision
 Reschedule immediately on every non-charging stop and log each gap. Measure gap lengths in the probe. Do not change the approach until the data exists.
 
 ## Alternatives

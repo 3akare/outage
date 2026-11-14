@@ -1,6 +1,6 @@
 # Design: sensor-android
 
-Status: DRAFT. Based on `requirements.md`. Review requirements first (Markdown Review); tasks come after both are approved.
+Status: APPROVED by delegation on 2026-11-14. Based on `requirements.md`. Tasks in `tasks.md`.
 
 ## 1. Overview
 
@@ -299,8 +299,8 @@ Other tests:
 
 Cross-package: the `tools/sim` event generator must produce `SensorEvent` shapes equal to the shared type, and `event-ingest` contract tests use the same fixtures. `docs/traceability.md` links requirement, property, test and task.
 
-## 12. Items needing your decision
+## 12. Decisions taken (2026-11-14)
 
-1. ADR 0001: how to handle the roughly 10-minute job timeout (options in the ADR).
-2. OQ1 to OQ4 in `requirements.md`.
-3. Whether the bounded plug-state re-read is allowed if the probe shows lag (it adds delay to event time).
+1. ADR 0001: option 1 (reschedule on timeout) accepted for the probe only.
+2. Android < 12 supported at `LOW` confidence. Station mode is its own spec. Pre-reboot events are telemetry only. JUnit4 only, no new test dependency.
+3. No plug-state re-read until probe data justifies it, through a new ADR.

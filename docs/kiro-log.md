@@ -18,3 +18,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Docs verified: `JobParameters` stop reasons and the warning against relying on them, `BatteryManager` plug constants. Job time limit and delay figures come from community sources and are marked for probe confirmation.
 - Shaped by: master brief Part F (sensor-android), `android-background.md`, `event-time.md`, `privacy.md` steering.
 - Not done: `tasks.md`, because the brief requires human review of requirements and design first.
+
+## 2026-11-14 sensor-android decisions and tasks
+- Human delegated the open decisions. Resolved OQ1 to OQ4 and the plug-state re-read question in `requirements.md` and `design.md` section 12. ADR 0001 set to accepted for the probe only.
+- Wrote `.kiro/specs/sensor-android/tasks.md`: 12 tasks in 7 waves with real dependencies and a Mermaid graph.
+- Decisions kept inside the brief: no new dependency (JUnit4), no threshold change, no stored-data change.
+- Follow-ups created: specs `station-mode`, `event-ingest` (must carry `timeQuality`), `detection-engine` (decide `LOW` confidence weighting).
