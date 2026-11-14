@@ -1,0 +1,12 @@
+{
+  // Ingest Worker (event-ingest). Area actors per H3 res-7 parent (ADR 0006), SQLite-backed (free plan only allows these):
+  // https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/
+  "name": "outage-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "durable_objects": {
+    "bindings": [{ "name": "AREA", "class_name": "AreaActor" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AreaActor"] }]
+  // Secret set by the human, never in this file: wrangler secret put INSTALL_TOKEN_SECRET
+}

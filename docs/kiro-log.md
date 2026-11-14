@@ -220,3 +220,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Run 5 passed (after fixing a `set -e` bug in my own script, found when run 4 stopped after 45 minutes). The report is in `docs/probe/2026-11-14-emu-api35.md`, and the findings are in ADR 0013 "Interim findings".
 - Main result: once armed, the job sees an unplug within about 0.4 s. Arming after a plug-in took about 992 s (16.5 min) on the emulator, so short charges are mostly unarmed. That corrects my earlier "starts only at 90%" reading: the 90% start in run 3 also came about 985 s after plug-in.
 - Not known: whether real phones share this delay (the emulator has no charging current). The Samsung run decides it.
+
+## 2026-11-14 start of event-ingest and detection-engine (human: "Go")
+- Human decisions: start `event-ingest` and `detection-engine` while the probe waits for the Samsung data; keep the ADR 0005 detection parameters ("cautious for now, adjust later with real data"). Recorded in `.kiro/specs/README.md` and ADR 0005.
+- event-ingest task 1: npm workspaces `packages/*` and `workers/*`; `@outage/shared` (h3-js, Vitest, fast-check) and `@outage/api` (Wrangler, `AreaActor` SQLite Durable Object, `config.ts` with the design section 4 tunables). Typecheck, lint, 2 smoke tests and a Wrangler dry run pass. Root `npm test` now also runs the workspace tests.
+- Hook finding: the dependency guard treats a shell redirect that follows a bare package-install command (stderr to stdout) as a package name. I ran the command without the redirect and did not edit the guard. Fix proposed to the human (ignore shell redirections when parsing), with a regression test.

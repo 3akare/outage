@@ -8,7 +8,7 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 
 ## Wave 1 (no dependencies)
 
-- [ ] 1. Scaffold `packages/shared` (TypeScript strict, Vitest, fast-check) and `workers/api` (Wrangler, SQLite-backed DO migration, `config.ts` with the tunables). Root scripts for typecheck, lint and test.
+- [x] 1. Scaffold `packages/shared` (TypeScript strict, Vitest, fast-check) and `workers/api` (Wrangler, SQLite-backed DO migration, `config.ts` with the tunables). Root scripts for typecheck, lint and test.
   - Requirements: R1.4, R11.6
 
 ## Wave 2 (needs 1)

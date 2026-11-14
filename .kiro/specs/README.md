@@ -2,7 +2,7 @@
 
 Every feature has `requirements.md`, `design.md` and `tasks.md`. Status: all APPROVED by delegation on 2026-11-14 ("make the right decisions"), except where a note says a human step is open. No application code exists yet.
 
-Build order follows the master brief, Part I. The probe comes first and gates the rest.
+Build order follows the master brief, Part I. The probe comes first and gates the rest. Exception approved by the human on 2026-11-14: `event-ingest` and `detection-engine` start while the probe waits for the Samsung data, because neither depends on which sensor wins (job or Station-mode receivers). `sensor-android` still waits for the gate (ADR 0013).
 
 | # | Spec | Milestone | Property IDs | Depends on |
 |---|---|---|---|---|
