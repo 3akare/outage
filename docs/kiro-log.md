@@ -180,3 +180,14 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-14 probe release, export only
 - Human decisions: publish the probe APK as a GitHub pre-release so it installs from a link on the phone; collect results with `Export file` only, with no Worker for now. The checklist now has an "export only" mode and install steps. The Worker code stays tested but is not deployed, so no `PROBE_TOKEN` is needed yet.
 - Release: tag `probe-v0.0.1` (matches `versionName`) triggers `.github/workflows/android.yml`, which builds, tests and lints, then attaches `outage-probe-debug.apk` to a pre-release. Debug-signed: a later probe build with the same debug key installs over it only if built on the same runner key; if Android refuses the update, uninstall first (the log rows on the phone are lost, so export before).
+
+## 2026-11-14 gate amended for the hardware available (ADR 0013, PROPOSED)
+- The human has only a Samsung, no other testers, and no control over grid power. Human decisions, recorded in ADR 0013:
+  - Samsung counts for the maker check.
+  - The 12 hours of charging may add up over several days.
+  - The 20 plug-ins may include an emulator run.
+  - The Samsung runs in "everyday mode" (set up once, then normal use, export now and then).
+- Tecno and Infinix stay an open risk.
+- `tools/probe/analyze` gate code changed (maker check renamed to `oem`; the summary prints whether Tecno or Infinix was tested). New test "PR5 amended gate": three 4-hour days in separate boots add up to 12 h and pass. 13 tests pass.
+- ADR 0013 now exists as PROPOSED, with the amendment only. The `sensor-engineer` prompt now waits for `Status: ACCEPTED` with a Result section, so the ADR existing no longer opens the sensor work early.
+- The checklist's Samsung steps are taken from `oem-guide.json` (dontkillmyapp.com/samsung), not written from memory.

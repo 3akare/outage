@@ -8,9 +8,11 @@ Milestone 1 asks one question before anything else is built: does the charging-c
 
 ## Gate (from the brief, Part I milestone 1)
 
-- Armed time divided by charging time is at least 90% on at least one phone.
-- Plug-in to job-start delay has p95 of at most 60 seconds.
-- Tecno or Infinix works after battery exemption.
+- Armed time divided by charging time is at least 90% on at least one phone, over at least 12 hours of charging in total (the hours may come from several days).
+- Plug-in to job-start delay has p95 of at most 60 seconds, over at least 20 plug-ins (real phone plus the emulator run).
+- A Samsung, Tecno or Infinix phone works after its battery exemption.
+
+Amended by the human on 2026-11-14 (ADR 0013): the only phone available is a Samsung, power is not under the human's control, and there are no other testers. Tecno and Infinix stay an open risk until a field-test user has one. An emulator run in GitHub Actions adds controlled plug-ins on stock Android; it cannot show maker battery managers.
 
 IF the gate fails, THEN stop, write an ADR with options (fallback: foreground service in Station mode), and ask the human. The kill criterion (armed below 50% on every phone, even with exemption and the fallback) means stop and rethink the sensor.
 

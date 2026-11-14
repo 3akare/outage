@@ -22,5 +22,5 @@ const date = get('--date', new Date().toISOString().slice(0, 10));
 mkdirSync(out, { recursive: true });
 for (const d of results) writeFileSync(path.join(out, `${date}-${d.alias}.md`), deviceMarkdown(d));
 writeFileSync(path.join(out, 'summary.md'), summaryMarkdown(results, g, problems));
-console.log(`gate ${g.overall}: armed ${g.armed.verdict}, delay ${g.delay.verdict}, Tecno/Infinix ${g.transsion.verdict}${g.kill.triggered ? ', KILL CRITERION TRIGGERED' : ''}`);
+console.log(`gate ${g.overall}: armed ${g.armed.verdict}, delay ${g.delay.verdict}, maker ${g.oem.verdict}${g.kill.triggered ? ', KILL CRITERION TRIGGERED' : ''}`);
 console.log(`wrote ${results.length + 1} file(s) to ${out}`);

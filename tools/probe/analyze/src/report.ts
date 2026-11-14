@@ -41,9 +41,10 @@ export function summaryMarkdown(devices: readonly DeviceResult[], g: Gate, probl
   const L: string[] = ['# Probe summary', ''];
   L.push(`Gate: **${g.overall}**`, '');
   L.push('| Check | Verdict | Detail |', '|---|---|---|');
-  L.push(`| Armed at least 90% over 12 h on one phone | ${g.armed.verdict} | ${esc(g.armed.detail)} |`);
+  L.push(`| Armed at least 90% over 12 h of charging (in total) on one phone | ${g.armed.verdict} | ${esc(g.armed.detail)} |`);
   L.push(`| Plug-in to job start p95 at most 60 s | ${g.delay.verdict} | ${esc(g.delay.detail)} |`);
-  L.push(`| Tecno or Infinix works after the exemption | ${g.transsion.verdict} | ${esc(g.transsion.detail)} |`);
+  L.push(`| Samsung, Tecno or Infinix works after the exemption | ${g.oem.verdict} | ${esc(g.oem.detail)} |`);
+  L.push(`| Tecno or Infinix tested | ${devices.some((d) => /tecno|infinix/i.test(`${d.maker} ${d.brand}`)) ? 'yes' : 'no (open risk, ADR 0013)'} | |`);
   L.push(`| Kill criterion (every phone under 50%) | ${g.kill.triggered ? 'TRIGGERED' : 'not triggered'} | ${esc(g.kill.detail)} |`, '');
   L.push('## Devices', '', '| Alias | Maker | SDK | Charging h | Armed ratio | Exempt ratio | M2 p95 s | Replugs |', '|---|---|---|---|---|---|---|---|');
   for (const d of devices) L.push(`| ${d.alias} | ${esc(d.maker)} | ${d.androidSdk} | ${h(d.overall.totals.chargingMs)} | ${pct(d.overall.armedRatio)} | ${pct(d.exempt.armedRatio)} | ${s(d.m2.delay.p95)} | ${d.m2.delay.n} |`);

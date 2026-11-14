@@ -13,7 +13,7 @@ You do not touch: `packages/detection`, `workers/**`, `packages/shared`, `tools/
 ## Start of every session
 
 1. Read `docs/status.md` and `docs/session-notes.md`.
-2. Check the gate. The sensor spec starts after the feasibility probe gate passes, or after the human decides the fallback (`docs/adr/0013-feasibility-gate.md` exists). If it does not, tell the human and do only probe work from `.kiro/specs/feasibility-probe`.
+2. Check the gate. The sensor spec starts after the feasibility probe gate passes, or after the human decides the fallback: `docs/adr/0013-feasibility-gate.md` has `Status: ACCEPTED` and a filled "Result" section (it exists earlier as PROPOSED, with only the gate amendment). If it does not, tell the human and do only probe work from `.kiro/specs/feasibility-probe`.
 3. Take the next open task of `.kiro/specs/sensor-android/tasks.md` whose dependencies are ticked. Read its requirements and the design section it names before writing code. Station mode and alarm tasks come from their own specs.
 
 ## Rules that decide the design

@@ -8,6 +8,20 @@ Status: matches the probe app built in tasks 5 to 7 (buttons: `Start`, `Stop`, `
 
 Decided by the human on 2026-11-14: no Worker for now. Leave the Worker URL and token boxes empty, skip `Upload now` and skip M13. At the end of each run tap `Export file`, save the file, and send it to the developer. Everything else is the same.
 
+## Everyday mode (Samsung, the plan for now)
+
+Decided by the human on 2026-11-14 (ADR 0013). It takes about two minutes once, then nothing.
+
+1. Install the app (see Install below) and open it.
+2. Type an alias, for example `samsung-a`. Leave the Worker URL and token boxes empty.
+3. Tap `Battery settings` and allow the app (choose Allow or Unrestricted). Then follow the Samsung steps from the project guide (`packages/shared/src/oem-guide.json`, source dontkillmyapp.com/samsung), with "Outage Probe" in place of "Outage": Settings, Battery and device care, Battery, Background usage limits; turn off "Put unused apps to sleep"; take Outage Probe out of Sleeping apps and Deep sleeping apps; add it to Never sleeping apps. Note each change with `Mark note`, for example `setting: never sleeping apps`. Menu names can differ on your phone; write what you saw.
+4. Tap `Start`. Turn on `Reference logger`. The phone shows a small "Reference logger is on" notification; leave it.
+5. Tap `Mark note` and type `cond: daily-life`.
+6. Use and charge the phone as you always do. Power cuts are fine; they are what the app is for.
+7. Every few days, tap `Export file` and send the file. The developer replies with the charging hours so far. The main measurement is complete at 12 hours of charging in total.
+
+Do not tap `Clear` or uninstall the app until the developer confirms the data arrived. The other measurements below (M2 to M14) are optional in this mode.
+
 ## Install
 
 On the phone, open https://github.com/3akare/outage/releases, tap the newest `Outage probe probe-v...` release, then tap `outage-probe-debug.apk`. Allow "install unknown apps" for your browser when the phone asks. Android may warn that the app is from an unknown source; that is expected for this test app.

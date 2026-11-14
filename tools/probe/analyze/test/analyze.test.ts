@@ -131,22 +131,39 @@ describe('PR5 analyze_gate', () => {
 
   it('PR5 pass: a Tecno phone armed 95% for 12 h with the exemption and 20 fast replugs', () => {
     const g = gate([longRun('tecno-a', 'TECNO', 0.95 * H, true)]);
-    expect([g.armed.verdict, g.delay.verdict, g.transsion.verdict, g.kill.triggered, g.overall]).toEqual(['pass', 'pass', 'pass', false, 'PASS']);
+    expect([g.armed.verdict, g.delay.verdict, g.oem.verdict, g.kill.triggered, g.overall]).toEqual(['pass', 'pass', 'pass', false, 'PASS']);
   });
 
   it('PR5 fail: armed 85%, slow replugs; the kill criterion is separate and triggers below 50% on every phone', () => {
     const g = gate([longRun('pix', 'Google', 0.85 * H, false, 20, 90_000)]);
-    expect([g.armed.verdict, g.delay.verdict, g.transsion.verdict, g.overall]).toEqual(['fail', 'fail', 'not measured', 'FAIL']);
+    expect([g.armed.verdict, g.delay.verdict, g.oem.verdict, g.overall]).toEqual(['fail', 'fail', 'not measured', 'FAIL']);
     expect(g.kill.triggered).toBe(false);
     const k = gate([longRun('a', 'Samsung', 0.4 * H, false), longRun('b', 'Infinix', 0.45 * H, true)]);
     expect(k.kill.triggered).toBe(true);
-    expect(k.transsion.verdict).toBe('fail');
+    expect(k.oem.verdict).toBe('fail');
+  });
+
+  it('PR5 amended gate: a Samsung counts for the maker check, and 12 h of charging can come from several days', () => {
+    const items: Parameters<typeof log>[2] = [note(0, 'cond: daily-life')];
+    // three days, 4 h of charging each, in separate boots; armed 95% of each hour
+    for (let day = 0; day < 3; day++) {
+      const b = day + 1;
+      items.push(['SESSION', 0, { kind: 'restart' }, b], plugIn(1_000, b));
+      let t = 1_000;
+      for (let i = 0; i < 4; i++) { items.push(['JOB_START', t, { charging: true, exempt: true }, b], ['JOB_STOP', t + 0.95 * H, { charging: true, stopReasonName: 'TIMEOUT', exempt: true }, b]); t += H; }
+      items.push(plugOut(t, b));
+    }
+    const d = analyzeDevice(log('sam', 'samsung', items));
+    expect(d.byCond[0].totals.chargingMs).toBe(12 * H);
+    const g = gate([d]);
+    expect([g.armed.verdict, g.oem.verdict]).toEqual(['pass', 'pass']);
+    expect(summaryMarkdown([d], g, [])).toContain('| Tecno or Infinix tested | no (open risk, ADR 0013) |');
   });
 
   it('PR5 not enough data: under 12 h of charging and under 20 replugs is "not measured", never pass', () => {
     const d = analyzeDevice(log('s', 'TECNO', [plugIn(0), start(10_000, true), plugOut(H), stop(H + 1_000, 'CONSTRAINT_CHARGING', false, true)]));
     const g = gate([d]);
-    expect([g.armed.verdict, g.delay.verdict, g.transsion.verdict, g.overall]).toEqual(['not measured', 'not measured', 'not measured', 'INCOMPLETE']);
+    expect([g.armed.verdict, g.delay.verdict, g.oem.verdict, g.overall]).toEqual(['not measured', 'not measured', 'not measured', 'INCOMPLETE']);
     expect(g.kill.triggered).toBe(false);
     expect(gate([]).overall).toBe('INCOMPLETE');
   });
