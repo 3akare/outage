@@ -3,7 +3,7 @@
 // Heuristic: every object literal with `type: 'UNPLUG' | 'REPLUG' | 'ARMED' | 'DISARMED' | 'BATTERY_FULL' | 'LABEL' | 'REPORT'`
 // must contain `simulated: true` (or `simulated,` spread from a typed factory) inside the same braces.
 import { readPayload, toolKind, extractWrites, say, readText, debounced, ROOT } from './lib.mjs';
-import { readdirSync, existsSync, statSync } from 'node:fs';
+import { readdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 
 export const EVENT_TYPE = /\btype\s*:\s*['"`](UNPLUG|REPLUG|ARMED|DISARMED|BATTERY_FULL|LABEL|REPORT)['"`]/g;

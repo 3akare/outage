@@ -11,7 +11,7 @@ Active specs: feasibility-probe
 - Steering (15 files), 13 specs with requirements, design and tasks, ADRs 0001 to 0011, hooks and tests for the hook scripts, three skills (oem-battery-guide, field-report, release-apk) with scripts and tests, three custom agents (sensor-engineer, detection-auditor, pitch-writer), MCP config (cloudflare-docs, context7 live; github disabled until a token exists), the grid-sensing Power, spec-lint. 147 tests pass with `npm test`.
 
 ## Waiting for the human
-- Trust the workspace and open the repo as the project root, or agents, steering, skills and MCP will not load. Optional: set `GITHUB_MCP_TOKEN` and enable the github server. Confirm `claude-opus-4.8` is available. Choose a license (none is declared).
+- Trust the workspace and open the repo as the project root, or agents, steering, skills and MCP will not load. Optional: set `GITHUB_MCP_TOKEN` and enable the github server. Confirm `claude-opus-4.8` is available. License: `LICENSE` is a custom view-only license (risks in docs/kiro-log.md); check the Kiroween 2026 rules page before submitting.
 - Analyze Requirements on each spec (IDE or CLI), Correctness pass on detection-engine (IDE).
 - Create `.kiroignore` (the write is denied for the agent by a permission rule, source kiro-scope:kiroignore; contents in `docs/kiroignore.suggested`).
 - Verify the OEM battery steps on real phones (oem-battery-guide `verified[]` is empty for every maker).

@@ -57,7 +57,10 @@ test('mcp.json: Agent Plugins shape, same schema version as plugin.json, no secr
     if (s.type !== 'stdio') {
       const u = new URL(s.url); assert.equal(u.protocol, 'https:'); assert.equal(u.username, ''); assert.equal(u.hash, '');
       assert.deepEqual(Object.keys(s).filter((k) => !['type', 'url', 'headers'].includes(k)), [], 'closed variant');
-      for (const [h, v] of Object.entries(s.headers || {})) assert.ok(!/\$\{/.test(h + v), 'no placeholder expansion in headers'), assert.deepEqual(findSecrets(`${h}: ${v}`), []);
+      for (const [h, v] of Object.entries(s.headers || {})) {
+        assert.ok(!/\$\{/.test(h + v), 'no placeholder expansion in headers');
+        assert.deepEqual(findSecrets(`${h}: ${v}`), []);
+      }
     }
   }
   assert.deepEqual(Object.keys(m.mcpServers), ['context7']);
@@ -95,9 +98,11 @@ test('the numbers in blackout-detection match the project ADR table', () => {
   assert.equal(rows(skill).length, 7);
 });
 
-test('the README states what is not verified and does not claim a license', () => {
+test('the README states what is not verified and points to the repository license, not an open one', () => {
   const r = readFileSync(path.join(power, 'README.md'), 'utf8');
   assert.match(r, /has not been verified on real phones yet|not been verified on real phones/);
-  assert.match(r, /No license is declared|None is declared yet/);
+  assert.match(r, /repository `LICENSE` \(view-only\)/);
+  assert.ok(!/\b(MIT|Apache|GPL|BSD)\b/.test(r), 'the README must not claim an open source license');
+  assert.ok(!('license' in JSON.parse(readFileSync(path.join(power, 'plugin.json'), 'utf8'))), 'plugin.json has no license field');
   assert.match(r, /Needs Kiro IDE or Kiro CLI v3/);
 });

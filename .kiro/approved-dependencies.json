@@ -1,5 +1,5 @@
 {
-  "_comment": "Packages named by the master brief (stack: Expo + TypeScript, Cloudflare Worker, Vitest + fast-check, H3, Expo push). Anything else needs the human: the dependency guard asks before it is installed. Add a package here only after the human approves it.",
+  "_comment": "Packages named by the master brief (stack: Expo + TypeScript, Cloudflare Worker, Vitest + fast-check, H3, Expo push). Anything else needs the human: the dependency guard asks before it is installed. Add a package here only after the human approves it. 2026-11-14: the human asked for a linter; Biome (lint and format in one tool) was chosen over ESLint plus Prettier, so eslint, typescript-eslint and prettier are not used.",
   "allowed": [
     "typescript",
     "vitest",
@@ -13,18 +13,24 @@
     "react",
     "react-native",
     "@types/react",
-    "@cloudflare/workers-types"
+    "@cloudflare/workers-types",
+    "@biomejs/biome"
   ],
-  "allowedTools": ["vitest", "tsc", "wrangler", "expo", "eas", "eas-cli"],
+  "allowedTools": [
+    "vitest",
+    "tsc",
+    "wrangler",
+    "expo",
+    "eas",
+    "eas-cli",
+    "biome"
+  ],
   "pendingApproval": [
     "expo-location",
     "expo-camera",
     "react-native-qrcode-svg",
     "react-native-svg",
     "react-native-view-shot",
-    "expo-sharing",
-    "eslint",
-    "typescript-eslint",
-    "prettier"
+    "expo-sharing"
   ]
 }

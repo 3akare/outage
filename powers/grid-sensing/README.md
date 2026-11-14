@@ -31,4 +31,4 @@ cp packages/shared/src/oem-guide.json powers/grid-sensing/skills/oem-battery-gui
 cp .kiro/skills/oem-battery-guide/scripts/validate-guide.mjs powers/grid-sensing/skills/oem-battery-guide/scripts/validate-guide.mjs
 ```
 
-License: the repository's license, once the human chooses one. None is declared yet, so `plugin.json` has no `license` field.
+License: see the repository `LICENSE` (view-only). `plugin.json` has no `license` field because its schema is closed and a custom license does not fit an SPDX id.

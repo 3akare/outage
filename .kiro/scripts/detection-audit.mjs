@@ -57,10 +57,12 @@ const stripComments = (t) => t.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^
 /** Evaluate a numeric literal expression such as 90_000, 1/1800, 604_800_000, 0.001. No eval. */
 export function num(expr) {
   const e = expr.replace(/_/g, '').replace(/\s+/g, '');
-  let m;
-  if ((m = /^(-?\d+(?:\.\d+)?(?:e\d+)?)$/i.exec(e))) return Number(m[1]);
-  if ((m = /^(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/.exec(e))) return Number(m[1]) / Number(m[2]);
-  if ((m = /^(\d+(?:\.\d+)?)\*(\d+(?:\.\d+)?)(?:\*(\d+(?:\.\d+)?))?(?:\*(\d+(?:\.\d+)?))?$/.exec(e))) return m.slice(1).filter(Boolean).reduce((a, b) => a * Number(b), 1);
+  const plain = /^(-?\d+(?:\.\d+)?(?:e\d+)?)$/i.exec(e);
+  if (plain) return Number(plain[1]);
+  const ratio = /^(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/.exec(e);
+  if (ratio) return Number(ratio[1]) / Number(ratio[2]);
+  const product = /^(\d+(?:\.\d+)?)\*(\d+(?:\.\d+)?)(?:\*(\d+(?:\.\d+)?))?(?:\*(\d+(?:\.\d+)?))?$/.exec(e);
+  if (product) return product.slice(1).filter(Boolean).reduce((acc, x) => acc * Number(x), 1);
   return NaN;
 }
 

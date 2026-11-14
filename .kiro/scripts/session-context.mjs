@@ -26,7 +26,7 @@ if (existsSync(specsDir)) {
     totalOpen += open.length;
     if (active.includes(name)) {
       lines.push(`  ${name}: ${done} done, ${open.length} open`);
-      open.slice(0, 3).forEach((m) => lines.push(`    - task ${m[1]}: ${m[2].replace(/\*\*/g, '').slice(0, 90)}`));
+      for (const m of open.slice(0, 3)) lines.push(`    - task ${m[1]}: ${m[2].replace(/\*\*/g, '').slice(0, 90)}`);
     }
   }
   out.push(`Open tasks across ${names.length} specs: ${totalOpen}`);

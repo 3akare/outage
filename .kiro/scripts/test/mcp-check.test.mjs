@@ -1,5 +1,5 @@
 // Tests for mcp-check.mjs against a local mock MCP server (Streamable HTTP, JSON and SSE responses, sessions, auth).
-import { test, before, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { spawnSync, execFile } from 'node:child_process';

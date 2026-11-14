@@ -1,6 +1,6 @@
 // Stop (after the human confirms, expensive): run the full fast-check property suite for the detection engine
 // with many runs per property, and report failures. Part B: "run the property suite" (also run headless in CI).
-import { say, run, exists, tail, readState, writeState } from './lib.mjs';
+import { say, run, exists, tail, writeState } from './lib.mjs';
 import { readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 

@@ -7,6 +7,13 @@
     "test:guide": "node .kiro/skills/oem-battery-guide/scripts/validate-guide.mjs",
     "probe:install": "npm --prefix tools/probe/app ci && npm --prefix tools/probe/worker ci && npm --prefix tools/probe/analyze ci",
     "probe:typecheck": "npm --prefix tools/probe/app run typecheck && npm --prefix tools/probe/worker run typecheck && npm --prefix tools/probe/analyze run typecheck",
-    "probe:test": "npm --prefix tools/probe/analyze test"
+    "probe:test": "npm --prefix tools/probe/analyze test",
+    "lint": "biome lint .",
+    "typecheck": "npm run probe:typecheck",
+    "format:check": "biome format ."
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "devDependencies": {
+    "@biomejs/biome": "2.6.7"
   }
 }
