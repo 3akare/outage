@@ -24,16 +24,16 @@ Ask the human before adding any dependency beyond the ADR 0012 toolchain (Kotlin
 
 ## Wave 3 (needs 1)
 
-- [ ] 5. Kotlin `ProbeJobService`, `ProbeLog`, scheduling, reschedule on stop, stop reason, plug and battery facts, standby bucket, exemption, expedited attempt (M8).
+- [x] 5. Kotlin `ProbeJobService`, `ProbeLog`, scheduling, reschedule on stop, stop reason, plug and battery facts, standby bucket, exemption, expedited attempt (M8).
   - Depends on: 1
   - Requirements: R1, R6
-- [ ] 6. Kotlin `ReferenceService` with receivers, plug after one second, notification, switch; `AlarmTest`; full-screen intent check.
+- [x] 6. Kotlin `ReferenceService` with receivers, plug after one second, notification, switch; `AlarmTest`; full-screen intent check.
   - Depends on: 1
   - Requirements: R2, R6
 
 ## Wave 4 (needs 5, 6, 4)
 
-- [ ] 7. Debug screen, uploader, export file, notes, live armed ratio, all in plain Views. The workflow from task 1 builds the APK; the human downloads and installs it. Must also provide what section 8 of `docs/probe-checklist.md` lists: `UPLOAD` rows with duration and network type, a mismatch counter for M14, the expedited and full-screen lines, and `NOTE` rows stored exactly as typed.
+- [x] 7. Debug screen, uploader, export file, notes, live armed ratio, all in plain Views. The workflow from task 1 builds the APK; the human downloads and installs it. Must also provide what section 8 of `docs/probe-checklist.md` lists: `UPLOAD` rows with duration and network type, a mismatch counter for M14, the expedited and full-screen lines, and `NOTE` rows stored exactly as typed.
   - Depends on: 4, 5, 6
   - Requirements: R3, R4
 

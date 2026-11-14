@@ -42,7 +42,7 @@ Fields by kind (all optional unless stated):
 | `BATTERY` | `source` (`RECEIVER` or `JOB_RECHECK`), `plug`, `charging`, `batteryPct`, `recheckOf` (row id of the `JOB_STOP` it re-reads one second later) |
 | `NOTE` | `text` exactly as typed. Forms: `cond: <label>`, `setting: ...`, `step: ...`, `problem: ...` |
 | `ALARM_TEST` | `phase` (`ARMED`, `RANG`, `NO_AUDIO`, `STOPPED`), `delayMs` (replug to audio start), `error` |
-| `SESSION` | `kind` (`start`, `restart`, `sensor_on`, `sensor_off`, `reference_on`, `reference_off`, `expedited`, `exemption`), `ok`, `error`, `fullScreen`, `exempt`, `maker`, `brand`, `androidSdk` |
+| `SESSION` | `kind` (`start`, `restart`, `sensor_on`, `sensor_off`, `reference_on`, `reference_off`, `expedited`, `exemption`, `export`), `ok`, `error`, `fullScreen`, `exempt`, `maker`, `brand`, `androidSdk` |
 | `UPLOAD` | `ok`, `status`, `rows`, `durationMs`, `network` (`WIFI`, `CELLULAR`, `OTHER`, `NONE`) |
 
 `plug` values: `AC`, `USB`, `WIRELESS`, `DOCK`, `NONE`, `UNKNOWN`. `charging` is true when the phone reports a plug other than `NONE`.

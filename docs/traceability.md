@@ -188,6 +188,9 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R8 | `PR5 analyze_gate` | 3 | test written (`tools/probe/analyze/test/analyze.test.ts`) |
 | R3.1, R3.3 | `R3.1 stores a batch and exports it back`, `R3.1 a retried upload is harmless`, `R3.1 SQLite store` (Workers runtime) | 4 | test written (`tools/probe/worker/test/`) |
 | R3.2 | `R3.2 R3.3 every route needs the token`, `R3.2 the token is required in the runtime too` | 4 | test written (`tools/probe/worker/test/`) |
+| R4.3, R5 | `PR6_live_armed_ratio_matches_the_analysis_on_the_shared_sample`, `PR6_restart_gap_is_not_armed_and_reboot_gap_is_not_counted` | 5, 7 | test written (`tools/probe/android/app/src/test/`) |
+| R3.1, R3.4 | `PR7_export_file_round_trips_the_shared_sample_exactly`, `PR7_upload_body_has_the_contract_shape_and_respects_the_batch_limit` | 7 | test written (`tools/probe/android/app/src/test/`) |
+| R1, R2, R6 (M1 to M14 on a phone) | `docs/probe-checklist.md` | 5, 6, 8 | needs a device (task 8) |
 
 <!-- BEGIN GENERATED: detection properties (.kiro/scripts/traceability.mjs) -->
 ## Detection properties P1 to P12 (generated)

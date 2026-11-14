@@ -2,7 +2,7 @@
 
 For the person holding the phones. Spec: `.kiro/specs/feasibility-probe/` (requirements R6 define M1 to M14, design section 5 gives the method). This file is a script: do the steps in order, write on the log sheet, and use the app's buttons. You do not need to understand the numbers. The analysis script reads the app's log.
 
-Status: written before the probe app exists. Button names come from requirement R4 and may change by a word in task 7. If a button is missing, write that down in the Problems box and carry on.
+Status: matches the probe app built in tasks 5 to 7 (buttons: `Start`, `Stop`, `Reference logger` switch, `Mark note`, `Upload now`, `Export file`, `Alarm test`, `Stop alarm`, `Battery settings`, `Clear`). Not yet run on a phone. If something on screen differs from this file, write it in the Problems box and carry on.
 
 ## 0. What this test decides
 
@@ -47,7 +47,7 @@ Notes on the matrix
 
 1. Install the probe APK. Open the project's GitHub Releases page on the phone and download `outage-probe-debug.apk` from the newest release. Allow "install unknown apps" for the app you use to open the file.
 2. Open the app. Allow notifications when asked. Do not grant anything else.
-3. Enter the device alias, maker and Android version if the app asks for them.
+3. Type the device alias, the Worker URL and the probe token into the three boxes at the top. The developer gives you the URL and the token privately. The app reads the maker and Android version itself.
 4. Charge the phone to between 30% and 60% before the first timed run, unless the step says 100%.
 5. Tap `Mark note` and type exactly: `cond: baseline`. This is the condition label. For every later condition use the same form: `cond: <name>`, for example `cond: after-exemption` or `cond: idle-30min`.
 6. Check the debug screen shows: sensor on, current plug state, job state. If the sensor shows off, tap `Start`.
@@ -127,10 +127,10 @@ The app tries this itself when you start the sensor. Open the debug screen and l
 ### M9 Alarm audio from the background
 1. Turn the phone volume to a middle level. Put the phone on a table.
 2. Note `cond: alarm-bg`.
-3. In the app, tap `Alarm test` and choose a delay of 60 seconds if asked.
+3. In the app, tap `Alarm test`. The screen says it is armed: the next plug-in rings.
 4. Swipe the app away from recent apps. Turn the screen off.
 5. Unplug, wait 10 seconds, plug in.
-6. Listen. Write the delay between plugging in and the sound, or "no sound". Tap the stop button on the notification if there is one.
+6. Listen. Write the delay between plugging in and the sound, or "no sound". The sound stops by itself after 10 seconds, or open the app and tap `Stop alarm`.
 7. Repeat 3 times. Note: `step: M9 <what happened>`.
 
 ### M10 Plug-in after 30 minutes idle
@@ -201,7 +201,7 @@ This list is for task 7 and the Kotlin tasks, so the checklist and the app agree
 | `Mark note` with free text; rows keep the time | all, section 3 | 7 |
 | Notes are logged as `NOTE` rows exactly as typed | analysis grouping by `cond:` | 3, 7 |
 | `Upload now` logs an `UPLOAD` row with the request duration in ms and the network type | M13 | 7 |
-| `Alarm test` button, optional delay | M9 | 6 |
+| `Alarm test` and `Stop alarm` buttons (arms one ring on the next plug-in) | M9 | 6 |
 | Debug screen lines: expedited result, full-screen allowed, job starts and stops, stop reasons, live armed ratio, mismatch counter | M1, M3, M5, M8, M12, M14 | 5, 7 |
 | Plug type, battery status, standby bucket and exemption state in every job row | M3, M11, ADR 0001 | 5 |
 | Reference-logger switch | M2, M6, M7 | 6, 7 |

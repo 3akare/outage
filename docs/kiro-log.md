@@ -157,3 +157,22 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - The routes live in `src/handler.ts`, which has no runtime imports and is tested with an in-memory store (5 tests). `src/index.ts` is the Durable Object.
 - The task said "tests with a local Wrangler run". `wrangler dev` is a server, and the sandbox refuses to start servers. Wrangler's `createTestHarness()` (https://developers.cloudflare.com/workers/testing/test-harness/get-started/) runs the real Worker and SQLite object inside a test that exits. Two integration tests pass: insert, harmless retry, export identical to the shared sample, and the token required. No new dependency: `createTestHarness` ships in `wrangler`, and `vitest` was already approved.
 - Not done, needs the human: deploying (`wrangler deploy`) and setting `wrangler secret put PROBE_TOKEN`. Both need a Cloudflare account login. The Worker is removed after the gate decision (task 10).
+
+## 2026-11-14 probe Android app (feasibility-probe tasks 5, 6, 7)
+- `tools/probe/android`: plain Views, platform classes only, no libraries.
+  - Task 5: `ProbeJobService` uses the charging constraint and never finishes. `onStopJob` records the stop reason (API 31+), plug, battery, standby bucket, exemption, screen state and both battery sources (M14) before anything else. One second later it re-reads the plug (M6) and re-queues the job only if none is pending.
+  - Task 5: `Scheduler` builds the persisted job and runs the M8 test. The docs say an expedited job may only use network, storage-not-low and persistence constraints, so a refusal is expected. The probe records what each phone does, then cancels the test job.
+  - Task 5: `ProbeLog` (SQLite, written synchronously), `ProbeApp` (logs `SESSION start` or `restart`, which the analysis needs), and `Facts` (every API guarded by level).
+  - Task 6: `ReferenceService` is a `specialUse` foreground service. Its power receivers log the time the broadcast arrived and the plug now and one second later. A switch turns it off. `AlarmTest` arms one ring: the next job start plays the default alarm sound with the alarm usage for 10 seconds (M9).
+  - Task 7: `MainActivity` shows every checklist button and the debug lines (live armed ratio, counters, M8, M12, M14, last 50 rows). `Uploader` sends batches of up to 500 over `HttpURLConnection`, marks rows only after a 200, and logs `UPLOAD` rows (M13). Export uses the system file picker, so no storage permission is needed.
+- Every Android API was checked first, using the Context7 Android reference and developer.android.com. The URLs are in the code comments.
+- A small JSON encoder and parser (`Json.kt`) avoid both a new dependency and the platform `org.json`, which is a stub in JVM tests.
+- Verified by running:
+  - The build passes compile, 6 JUnit tests and Android Lint with 0 errors (`.kiro/scripts/android-sandbox.sh gradle tools/probe/android ...`).
+  - `PR6` checks that the on-phone armed ratio equals the analysis result on the shared sample (0.9494).
+  - `PR7` checks that the export file reproduces the shared sample byte for byte.
+  - The APK is 0.9 MiB with a v2 signature (debug key), checked with `apk-info.mjs`.
+- Lint: fixed the missing icon, and marked the battery-exemption request (deliberate for a sideloaded probe) and a static-context false positive as intended, with reasons. Left as warnings: the SDK 36 target and Gradle 9.4.1 (the versions ADR 0012 pinned), and the backup attribute.
+- `docs/probe-checklist.md` updated to the real buttons: alias, URL and token boxes; `Stop alarm`.
+- Committed as one commit for tasks 5 to 7, because the three depend on each other and an intermediate commit would not build.
+- Not verified: anything on a phone, including whether the job, receivers, foreground service and alarm behave as intended. That is task 8. `MainActivity` uses the deprecated `startActivityForResult`, because the replacement needs AndroidX.
