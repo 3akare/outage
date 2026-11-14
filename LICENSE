@@ -1,36 +1,21 @@
-Outage View-Only License
+MIT License
 
-Copyright (c) 2026 3akare. All rights reserved.
+Copyright (c) 2026 3akare
 
-This license applies to every file in this repository, including source code,
-specifications, documentation, configuration and data (the "Work").
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-1. Permission. During the evaluation period, you may view the Work in a web
-   browser on the hosting service where the Owner published it, for the sole
-   purpose of reading and judging it as part of the Kiroween 2026 hackathon.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-2. No other rights. Except for the viewing permitted in section 1, you may not
-   copy, clone, download, fork, mirror, archive, scrape, run, build, install,
-   modify, translate, adapt, redistribute, sublicense, sell, or otherwise use
-   the Work or any part of it, and you may not use it to train or evaluate any
-   machine learning system. Nothing here transfers any ownership, patent,
-   trademark or other right.
-
-3. Evaluation period. It begins when the Owner first publishes the Work and
-   ends, without notice, when the Owner makes the repository private or removes
-   it from public view. When it ends, all permission in section 1 ends, and
-   anyone holding a copy made in breach of this license must delete it.
-
-4. Hosting service terms. The Owner may host the Work on a service whose own
-   terms let visitors perform some actions (for example, forking a public
-   repository on GitHub). Those terms do not widen this license. Any action
-   beyond viewing remains outside the permission granted here, to the extent
-   the law allows the Owner to restrict it.
-
-5. Builds and services. Application builds and online services the Owner
-   publishes are separate from the Work and are covered by their own terms.
-
-6. No warranty. The Work is provided "as is", without warranty of any kind.
-   The Owner is not liable for any claim arising from it.
-
-Contact: the Owner, through the GitHub account 3akare.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

@@ -31,4 +31,4 @@ cp packages/shared/src/oem-guide.json powers/grid-sensing/skills/oem-battery-gui
 cp .kiro/skills/oem-battery-guide/scripts/validate-guide.mjs powers/grid-sensing/skills/oem-battery-guide/scripts/validate-guide.mjs
 ```
 
-License: see the repository `LICENSE` (view-only). `plugin.json` has no `license` field because its schema is closed and a custom license does not fit an SPDX id.
+License: MIT (see the repository `LICENSE`).

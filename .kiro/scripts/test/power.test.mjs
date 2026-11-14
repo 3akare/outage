@@ -28,7 +28,7 @@ test('plugin.json: closed schema, required fields, and the keywords the brief as
   assert.ok(manifest.author.name);
   assert.ok(Array.isArray(manifest.keywords) && manifest.keywords.every((k) => typeof k === 'string' && k));
   for (const must of ['outage', 'charging sensor', 'blackout detection']) assert.ok(manifest.keywords.includes(must), `brief keyword: ${must}`);
-  assert.equal(manifest.license, undefined, 'the human has not chosen a license');
+  assert.equal(manifest.license, 'MIT');
 });
 
 test('skills: each immediate child of skills/ has SKILL.md whose name equals the folder; nothing is nested deeper', () => {
@@ -41,7 +41,7 @@ test('skills: each immediate child of skills/ has SKILL.md whose name equals the
     const fm = Object.fromEntries(m[1].split('\n').map((l) => [l.slice(0, l.indexOf(':')), l.slice(l.indexOf(':') + 1).trim()]));
     assert.equal(fm.name, n); assert.ok(fm.description.length >= 80 && fm.description.length <= 1024, `${n} description ${fm.description.length}`);
     assert.match(fm.description, /\bUse when\b/);
-    assert.equal(fm.license, undefined);
+    assert.equal(fm.license, 'MIT');
     const nested = walk(path.join(dir, n)).filter((f) => path.basename(f) === 'SKILL.md' && f !== path.join(dir, n, 'SKILL.md'));
     assert.deepEqual(nested, []);
     for (const ref of new Set([...text.matchAll(/`((?:references|scripts)\/[A-Za-z0-9_./-]+)`/g)].map((x) => x[1]))) assert.ok(existsSync(path.join(dir, n, ref)), `${n}: missing ${ref}`);
@@ -98,11 +98,9 @@ test('the numbers in blackout-detection match the project ADR table', () => {
   assert.equal(rows(skill).length, 7);
 });
 
-test('the README states what is not verified and points to the repository license, not an open one', () => {
+test('the README states what is not verified and points to the repository MIT license', () => {
   const r = readFileSync(path.join(power, 'README.md'), 'utf8');
   assert.match(r, /has not been verified on real phones yet|not been verified on real phones/);
-  assert.match(r, /repository `LICENSE` \(view-only\)/);
-  assert.ok(!/\b(MIT|Apache|GPL|BSD)\b/.test(r), 'the README must not claim an open source license');
-  assert.ok(!('license' in JSON.parse(readFileSync(path.join(power, 'plugin.json'), 'utf8'))), 'plugin.json has no license field');
+  assert.match(r, /MIT/);
   assert.match(r, /Needs Kiro IDE or Kiro CLI v3/);
 });

@@ -12,7 +12,7 @@
     "typecheck": "npm run probe:typecheck",
     "format:check": "biome format ."
   },
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "2.6.7"
   }

@@ -1,6 +1,7 @@
 ---
 name: blackout-detection
 description: Decide from many phones' charging events whether grid power is out, with a Poisson test on simultaneous drops, and when it came back. Use when designing or testing a blackout or power-cut detector from crowd sensors, choosing a baseline rate and thresholds, computing the minimum number of simultaneous unplugs for an alert, defining restore evidence that ignores generators and inverters, or writing property-based tests (fast-check) for such an engine.
+license: MIT
 ---
 
 # Blackout detection from charging events

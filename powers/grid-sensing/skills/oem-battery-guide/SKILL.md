@@ -1,6 +1,7 @@
 ---
 name: oem-battery-guide
 description: Exact per-maker steps to stop the phone from killing a background sensor app, for Tecno, Infinix, itel, Samsung, Xiaomi (Redmi, POCO) and Google Pixel. Use when writing an onboarding battery screen, adding or verifying a maker's steps, answering why a background app stops on a Tecno, Infinix or itel phone, or when low armed time shows up on one phone maker.
+license: MIT
 ---
 
 # OEM battery guide

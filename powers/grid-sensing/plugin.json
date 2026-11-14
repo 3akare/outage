@@ -9,6 +9,7 @@
   },
   "homepage": "https://github.com/3akare/outage",
   "repository": "https://github.com/3akare/outage",
+  "license": "MIT",
   "keywords": [
     "outage",
     "charging sensor",

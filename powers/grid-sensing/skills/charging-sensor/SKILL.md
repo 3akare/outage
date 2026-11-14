@@ -1,6 +1,7 @@
 ---
 name: charging-sensor
 description: Design and review an Android sensor that detects mains power loss from the phone's charging state, using a JobScheduler job with a charging constraint whose stop is the signal. Use when building or debugging a charging-stop or unplug detector, handling job stop reasons, plug types, battery-full cases, monotonic event time, reboots and process death, a foreground-service receiver for phones that sit at 100%, or a native alarm that rings offline when power returns.
+license: MIT
 ---
 
 # Charging sensor (Android)

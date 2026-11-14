@@ -1,6 +1,7 @@
 ---
 name: field-report
 description: Turn one day of Outage field telemetry into a Markdown report in docs/field/YYYY-MM-DD.md, with armed time, restore delay, alarm outcomes, false alarms, misses, gate status, and a Bugfix Spec for each new failure. Use for the daily 07:00 scheduled run, the /field-test command, or when asked to review a field test day, explain low armed time, or save a recorded outage as a replay fixture candidate.
+license: MIT
 compatibility: Needs Node 20+ and network access to the Worker admin endpoint. Needs the FIELD_READ_TOKEN secret in the environment; never print it.
 metadata:
   project: outage
