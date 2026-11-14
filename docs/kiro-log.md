@@ -130,3 +130,15 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Tooling updated: dependency guard now checks Gradle coordinates and plugin ids against `.kiro/approved-dependencies.json` (`gradleAllowed`, `gradlePluginsAllowed`); `kotlin-check` and `verify` run the Gradle tests through the sandbox script; privacy scan rules use Kotlin and Android APIs; the release skill is rewritten for a tagged Gradle build on GitHub Actions with signing secrets (`release-apk`, preflight tests rewritten); the field-report check blocks FCM registration tokens; the `sensor-engineer` agent now owns `apps/android/**` and `tools/probe/android/**`.
 - Removed: `tools/probe/app` (Expo scaffold), `modules/`, `.expo` ignores, EAS references. `rg` for Expo, React Native, EAS, prebuild, Metro, `.tsx`, `apps/mobile`, `modules/outage-sensor` finds only this log and ADR 0012, and one rejected alternative in ADR 0008.
 - Verified on GitHub: run on commit dcb78de passed both workflows (`checks`: Biome, 148 tests, spec-lint, probe packages; `android`: compile, unit test, lint, APK uploaded). Probe task 1 is done. The release-to-GitHub step (tag `probe-v*`) has not been exercised yet.
+
+## 2026-11-14 Kiro loading tested live
+- Problem: Kiro Web treats `/projects/sandbox` as the project root, and the repo's `.kiro` sits one level down, so the hooks were never seen.
+- Fix: `.kiro/scripts/link-workspace-root.sh` links `steering`, `hooks`, `skills`, `agents`, `specs` and `scripts` into `/projects/sandbox/.kiro` (relative links; Kiro's own `settings` folder is left alone).
+- Live results after linking:
+  - Steering: the five always-on files (tech, structure, product, privacy, definition-of-done) were injected into the next turn.
+  - Hooks: real tool calls were blocked by `secrets-guard` (an AWS-key-shaped string), `privacy-guard` (`RECORD_AUDIO` in a manifest), `test-guard` (`it.skip`) and `evidence-guard` (`.kiro/` in a `.gitignore`). None of the four files was written.
+  - Skills: `field-report`, `oem-battery-guide` and `release-apk` loaded from the linked folder. `release-apk` preflight ran and correctly failed on the missing `apps/android` build files and `release.yml`.
+  - Agents: `detection-auditor` returned `VERDICT: NOT APPLICABLE YET` (no engine yet). `sensor-engineer` respected the gate (no ADR 0013 yet, so probe work only), picked probe task 5, named its build command and its write scope. `pitch-writer` separated provable claims from unproven ones and wrote nothing.
+- Found while testing: links changed in the middle of a turn are not picked up until the next message. Removing and re-adding the links mid-turn left the hooks unloaded for the rest of that turn.
+- Correction: I said earlier that the custom agents were not loaded. That was wrong: this session's agent list already included all three.
+- Not covered: MCP from `.kiro/settings/mcp.json`. Kiro denies writes to the root `.kiro/settings`, so `mcp-call.mjs` stays the route here; both servers answered live earlier today. Not yet observed: the Stop hooks (`verify-on-stop`, `kiro-log`) and the PostToolUse checks.
