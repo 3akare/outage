@@ -4,20 +4,20 @@ Status: APPROVED by delegation on 2026-11-14 (human: "make the right decisions")
 
 ## Introduction
 
-The Sensor is a Kotlin Expo Module (`modules/outage-sensor`). It watches whether a phone is charging and emits events when charging stops or resumes. When grid power dies, every charging phone in an area stops charging at once. The Sensor turns that into timestamped events that `event-ingest` and `detection-engine` consume.
+The Sensor is the `sensor` package of the native Kotlin app (`apps/android`, ADR 0012). It watches whether a phone is charging and emits events when charging stops or resumes. When grid power dies, every charging phone in an area stops charging at once. The Sensor turns that into timestamped events that `event-ingest` and `detection-engine` consume.
 
 The Sensor does not decide whether an outage happened. It reports facts and its confidence in them.
 
 ## Glossary
 
-- **Sensor**: the `outage-sensor` module.
+- **Sensor**: the `sensor` package of `apps/android`.
 - **Job**: the JobScheduler job with the charging constraint (`setRequiresCharging(true)`).
 - **Detection plug**: AC or dock power. USB-from-computer and wireless are non-detection plugs.
 - **Event types**: `ARMED`, `UNPLUG`, `BATTERY_FULL`, `REPLUG`, `DISARMED`.
 - **Armed**: the Job is scheduled or running while the phone is on a detection plug.
 - **Elapsed**: monotonic milliseconds from `SystemClock.elapsedRealtime()`. Never wall clock.
 - **Confidence**: `HIGH` (Android 12+ stop reason, corroborated) or `LOW` (inferred).
-- **Outbox**: the on-device queue of events not yet acknowledged by JS.
+- **Outbox**: the on-device queue of events not yet acknowledged by the app's uploader.
 
 ## Requirements
 
@@ -45,7 +45,7 @@ The Sensor does not decide whether an outage happened. It reports facts and its 
 **User story:** As a user, I want to know when power returns, so that my Light Alarm can ring.
 1. WHEN the Job starts while charging on a detection plug after an `UNPLUG`, THE Sensor SHALL emit `REPLUG` with the scheduling delay in milliseconds.
 2. IF the plug-in time is unknown, THEN THE Sensor SHALL emit `REPLUG` with `schedulingDelayMs` null and the Job start time as the event time.
-3. WHEN `REPLUG` is emitted, THE Sensor SHALL deliver it to JS immediately if the app process is alive, so that the Light Alarm can ring without network.
+3. WHEN `REPLUG` is emitted, THE Sensor SHALL hand it to the Light Alarm immediately, in the same process, so that the alarm can ring without network.
 4. WHEN the Job starts after a `BATTERY_FULL` stop, THE Sensor SHALL emit `ARMED` and not `REPLUG`.
 
 ### R5 Other stops are gaps
@@ -79,10 +79,10 @@ The Sensor does not decide whether an outage happened. It reports facts and its 
 **User story:** As `event-ingest`, I want ordered, idempotent events with trustworthy times.
 1. THE Sensor SHALL assign each event a persisted, strictly increasing sequence number that survives restarts.
 2. THE Sensor SHALL record each event with its elapsed-time stamp and boot identifier. It SHALL NOT record or send wall-clock time.
-3. WHEN JS reads events, THE Sensor SHALL return `elapsedMs` as the time since the event, computed at read time.
+3. WHEN the uploader reads events, THE Sensor SHALL return `elapsedMs` as the time since the event, computed at read time.
 4. IF an event was recorded in an earlier boot, THEN THE Sensor SHALL mark its time `LOST`, and such events SHALL be kept for telemetry only.
-5. THE Sensor SHALL keep events in the Outbox until JS acknowledges them by sequence number, and SHALL drop events older than 7 days.
-6. THE Sensor SHALL NOT include location, phone number, name or any identifier except the install ID set by JS.
+5. THE Sensor SHALL keep events in the Outbox until the uploader acknowledges them by sequence number, and SHALL drop events older than 7 days.
+6. THE Sensor SHALL NOT include location, phone number, name or any identifier except the install ID set by the app.
 
 ### R10 Telemetry for field tests
 **User story:** As the field-test owner, I want armed time and delays measured on every device.
@@ -92,9 +92,9 @@ The Sensor does not decide whether an outage happened. It reports facts and its 
 4. THE Sensor SHALL expose diagnostics: Android version, manufacturer, standby bucket, battery-exemption state, stop-reason counts, and recent gaps.
 5. THE Sensor SHALL cap telemetry storage to 7 days.
 
-### R11 JS interface
-**User story:** As the app developer, I want a small, typed interface.
-1. THE Sensor SHALL expose `start`, `stop`, `setInstallId`, `getPendingEvents(limit)`, `ackEvents(upToSeq)`, `getTelemetry(periodMs)`, `getDiagnostics`, and an `onEvent` listener.
+### R11 Controller interface
+**User story:** As the app developer, I want a small, typed Kotlin interface.
+1. THE Sensor SHALL expose a `SensorController` with `start`, `stop`, `setInstallId`, `getPendingEvents(limit)`, `ackEvents(upToSeq)`, `getTelemetry(periodMs)`, `getDiagnostics`, and an event listener.
 2. WHEN `stop` is called, THE Sensor SHALL cancel the Job and emit a final `DISARMED` with reason `USER_STOPPED`.
 3. IF `start` is called while already started, THEN THE Sensor SHALL do nothing and report the current state.
 
@@ -113,7 +113,7 @@ This analysis was done by Kiro Web reading the brief. Kiro's Analyze Requirement
 | G3 | Reboot, app update and process death were unspecified. | R1.3, R5.3, R5.4, R9.4. |
 | G4 | Moving from AC to USB or wireless is a stop but not a grid signal. | R6.4. |
 | G5 | "Scheduling delay" undefined when plug-in time is unknown. | R4.2. |
-| G6 | Who assigns sequence numbers and when JS may be dead. | R9.1. The module owns them. |
+| G6 | Who assigns sequence numbers and when the UI may not be running. | R9.1. The sensor owns them. |
 | G7 | Retention of unsent events. | R9.5 uses the 7-day limit from event-ingest. |
 | G8 | Light Alarm needs REPLUG without network, with app maybe alive. | R4.3. |
 | G9 | `BATTERY_FULL` then unplug or replug semantics. | R3.2, R4.4. |
@@ -121,7 +121,7 @@ This analysis was done by Kiro Web reading the brief. Kiro's Analyze Requirement
 
 ## Decisions on open questions (2026-11-14)
 
-- **OQ1 Android < 12:** supported at `LOW` confidence (R7). `minSdk` follows the Expo SDK. How detection weighs `LOW` events is decided in the `detection-engine` spec, not here.
+- **OQ1 Android < 12:** supported at `LOW` confidence (R7). `minSdk` is 26 (ADR 0012). How detection weighs `LOW` events is decided in the `detection-engine` spec, not here.
 - **OQ2 Station mode:** a separate spec, `station-mode`. This spec only provides the hook point (R8.3) and a state machine that a second driver can feed.
 - **OQ3 Events across a reboot:** kept for telemetry only and excluded from detection (R9.4). `event-ingest` must carry `timeQuality` and drop `LOST` events from detection input.
 - **OQ4 Kotlin test tooling:** plain JUnit4 with seeded random loops. No new dependency. Detection property tests use fast-check.

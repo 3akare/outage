@@ -30,9 +30,9 @@ for (const name of ['typecheck', 'lint', 'test']) {
   const r = run('npm', ['run', '--silent', name], { timeout: 600000, env });
   steps.push({ name, status: r.code === 0 ? 'pass' : 'fail', out: r.code === 0 ? '' : tail(r.out, 60, 3000) });
 }
-if (changed.some((p) => /^modules\/.*\.kt$/.test(p))) {
+if (changed.some((p) => /^(apps\/android|tools\/probe\/android)\/.*\.kts?$/.test(p))) {
   const r = run('node', ['.kiro/scripts/kotlin-check.mjs', '--run'], { timeout: 600000 });
-  const failed = /KOTLIN TESTS FAILED/.test(r.out);
+  const failed = /KOTLIN BUILD OR TESTS FAILED/.test(r.out);
   steps.push({ name: 'kotlin', status: failed ? 'fail' : /skipped/i.test(r.out) ? 'none' : 'pass', out: failed ? tail(r.out, 60, 3000) : '' });
 }
 if (exists('.kiro/scripts/traceability.mjs')) {

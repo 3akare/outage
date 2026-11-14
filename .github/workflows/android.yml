@@ -1,0 +1,49 @@
+# Builds the Android projects with the free GitHub-hosted runner (ADR 0012).
+# Debug-signed probe APK for the feasibility test; real signed releases are added with the app.
+name: android
+
+on:
+  push:
+    branches: [main]
+    tags: ['probe-v*']
+    paths: ['tools/probe/android/**', 'apps/android/**', 'packages/shared/src/oem-guide.json', '.github/workflows/android.yml']
+  pull_request:
+    paths: ['tools/probe/android/**', 'apps/android/**', 'packages/shared/src/oem-guide.json', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/probe/android
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Compile, unit test, lint
+        run: ./gradlew --no-daemon :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+      - name: Name the APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/outage-probe-debug.apk"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: outage-probe-debug
+          path: ${{ runner.temp }}/outage-probe-debug.apk
+          if-no-files-found: error
+      - name: Publish to a GitHub Release (tags probe-v* only)
+        if: startsWith(github.ref, 'refs/tags/probe-v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP/outage-probe-debug.apk" \
+            --repo "$GITHUB_REPOSITORY" --title "Outage probe $GITHUB_REF_NAME" \
+            --notes "Debug-signed probe build for the Milestone 1 feasibility test. Not the product." --prerelease
+    # The release step needs contents: write
+    permissions:
+      contents: write

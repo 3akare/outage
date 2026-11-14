@@ -13,7 +13,7 @@ flowchart LR
       R[StationService<br/>Receiver driver] -->|PowerDisconnected / PowerConnected / Heartbeat| SM
     end
     SM[SensorStateMachine<br/>pure Kotlin] --> DB[OutboxStore]
-    DB --> UP[Uploader in JS]
+    DB --> UP[Uploader, net package]
 ```
 
 Both drivers write to the same Outbox through the same state machine, so de-duplication, sequence numbers and ordering come from one place.
@@ -27,7 +27,7 @@ Both drivers write to the same Outbox through the same state machine, so de-dupl
 | `BOOT_COMPLETED` receivers cannot launch `dataSync`, `camera`, `mediaPlayback`, `phoneCall`, `mediaProjection` or `microphone` services. `specialUse` is not on the list. | same |
 | `systemExempted` needs special roles (device owner, exact-alarm permission, etc.). Not usable. | service-types page |
 
-To confirm with the docs server before implementing: manifest declarations and `startForeground(id, notification, type)` signature, `ACTION_POWER_CONNECTED` / `ACTION_POWER_DISCONNECTED` delivery to dynamic receivers, `onTimeout` for `specialUse`, `START_STICKY` behaviour, the foreground-start exemptions for `BOOT_COMPLETED`, the Android 13 notification permission and notification-channel importance rules, and the Expo config-plugin way to add manifest entries.
+To confirm with the docs server before implementing: manifest declarations and `startForeground(id, notification, type)` signature, `ACTION_POWER_CONNECTED` / `ACTION_POWER_DISCONNECTED` delivery to dynamic receivers, `onTimeout` for `specialUse`, `START_STICKY` behaviour, the foreground-start exemptions for `BOOT_COMPLETED`, the Android 13 notification permission and notification-channel importance rules, and the manifest entries for a foreground service and a receiver in `apps/android`.
 
 ## 3. Key design decisions
 
@@ -95,21 +95,21 @@ sequenceDiagram
 sequenceDiagram
     participant User
     participant App
-    participant Mod as outage-sensor module
+    participant Ctl as StationController (sensor package)
     participant OS as Android
     User->>App: tap "Make this a station"
-    App->>Mod: setStationMode(true)
-    Mod->>Mod: persist mode = ON
-    Mod->>OS: startForegroundService (app is visible)
+    App->>Ctl: setStationMode(true)
+    Ctl->>Ctl: persist mode = ON
+    Ctl->>OS: startForegroundService (app is visible)
     alt started
-        OS-->>Mod: onStartCommand
-        Mod->>OS: startForeground(notification, specialUse)
-        Mod-->>App: state RUNNING
+        OS-->>Ctl: onStartCommand
+        Ctl->>OS: startForeground(notification, specialUse)
+        Ctl-->>App: state RUNNING
         App->>App: check battery exemption, show steps if missing
     else rejected
-        OS-->>Mod: ForegroundServiceStartNotAllowedException
-        Mod->>Mod: log FGS_START_BLOCKED, stay Job-only
-        Mod-->>App: state BLOCKED + reason
+        OS-->>Ctl: ForegroundServiceStartNotAllowedException
+        Ctl->>Ctl: log FGS_START_BLOCKED, stay Job-only
+        Ctl-->>App: state BLOCKED + reason
     end
 ```
 
@@ -141,8 +141,8 @@ sequenceDiagram
 | `PowerReceiver` | Dynamic receiver. On each broadcast reads `PowerFacts` and sends `PowerConnected` or `PowerDisconnected` to the state machine. |
 | `StationModeStore` | Persists the mode flag in the `STATE` table (`sensor-android` data model). |
 | `BootReceiver` (extended) | On boot starts the Job, and the service when the mode is ON. |
-| Expo config plugin | Adds the manifest entries: service with `specialUse` and its property, permissions, receiver. |
-| JS API | `setStationMode(enabled)`, `getStationState()` returning `{ enabled, running, blockedReason? }`. |
+| `AndroidManifest.xml` | Declares the service with `specialUse` and its property, the permissions and the receiver, in `apps/android`. |
+| `StationController` | Kotlin API used by the app screens: `setStationMode(enabled)` and `getStationState()` returning `StationState(enabled, running, blockedReason?)`. |
 
 ## 7. Data model changes
 
@@ -160,7 +160,7 @@ Notification text (fixed strings, no variables): title "Outage station", body "W
 
 | Failure | Behavior |
 |---|---|
-| `ForegroundServiceStartNotAllowedException` | Record `FGS_START_BLOCKED`, stay Job-only, report `BLOCKED` to JS. No retry loop (R9.2). |
+| `ForegroundServiceStartNotAllowedException` | Record `FGS_START_BLOCKED`, stay Job-only, report `BLOCKED` to the app screens. No retry loop (R9.2). |
 | Service killed by OS | `START_STICKY` restart if the OS allows. Gap recorded `PROCESS_DEATH`. |
 | `onTimeout` callback | Stop and restart the service, record `FGS_TIMEOUT` (R6.4). |
 | Broadcast received but plug still a detection plug | No `UNPLUG`. Count `STATION_BROADCAST_MISMATCH` (R3.6). If the probe shows this lag is common, add the bounded re-read through a new ADR, not here. |
@@ -182,7 +182,7 @@ Station mode's own armed-time target is not set here. The probe measures it, and
 
 ## 10. Testing strategy
 
-Station properties use IDs `T1` to `T7`. Kotlin JVM tests in plain JUnit4 with seeded random sequences, as in `sensor-android` (no new dependency). Test names include the ID.
+Station properties use IDs `T1` to `T7`. Kotlin JVM unit tests (JUnit 4) with seeded random sequences, as in `sensor-android` (no new dependency). Test names include the ID.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|
@@ -194,6 +194,6 @@ Station properties use IDs `T1` to `T7`. Kotlin JVM tests in plain JUnit4 with s
 | T6 | With a fake clock, while armed, heartbeats are produced at the configured interval and never while not armed. | R5 | `T6_heartbeat_cadence` |
 | T7 | Heartbeat interval times 3 is at most 30 minutes for any configured value allowed by the config validator. | R5.2 | `T7_heartbeat_vs_silence_limit` |
 
-Other tests: manifest check (no `dataSync`, only listed permissions, no mic/location) as a script run by the `verify-on-stop` hook; JS contract test for `setStationMode` and `getStationState`; device checklist in `docs/probe-checklist.md` for R1, R2, R6 and the probe items above.
+Other tests: manifest check (no `dataSync`, only listed permissions, no mic/location) as a script run by the `verify-on-stop` hook; JVM unit test for `StationController` (`setStationMode` and `getStationState`) with a fake service launcher; device checklist in `docs/probe-checklist.md` for R1, R2, R6 and the probe items above.
 
 Traceability: `docs/traceability.md`.

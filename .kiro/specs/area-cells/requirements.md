@@ -152,4 +152,5 @@ Done by Kiro Web. Run Kiro's Analyze Requirements in IDE on this file and record
 - **Link rule:** 3 co-outages in 7 days, links limited to one parent in this version.
 - **Public rule:** publish only scopes with 3 or more members (ADR 0007). This is a privacy rule; the human should confirm it.
 - **Manual-report hint:** 2 distinct installs in 10 minutes (starting value, a detection-adjacent threshold, so flagged in ADR 0006).
-- **No new dependency.** `h3-js` is in the approved stack. It is used lazily and only on the Worker for neighbors, with pure-TypeScript parent and validity code for the hot path.
+- **Phone side.** The app (Kotlin) looks up its own cell with `com.uber:h3`, which needs human approval (ADR 0012). The Worker re-checks every cell with its own helpers.
+- **No new dependency on the Worker side.** `h3-js` is in the approved stack. It is used lazily and only on the Worker for neighbors, with pure-TypeScript parent and validity code for the hot path.

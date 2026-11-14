@@ -2,7 +2,7 @@
 
 Rules: only real dependencies are listed. Tasks in the same wave run in parallel. A task is done only per `definition-of-done.md`. Commit after each, for example `feat(station): receiver unplug at any battery [spec:station-mode task:3]`.
 
-Highest reasoning effort for tasks 2, 3, 4. Checkpoint before tasks 2 and 3. Plan mode first for task 1 and task 3 (each touches more than 3 files). Confirm every Android and Expo API with the docs servers and put the doc URL in a comment.
+Highest reasoning effort for tasks 2, 3, 4. Checkpoint before tasks 2 and 3. Plan mode first for task 1 and task 3 (each touches more than 3 files). Confirm every Android API with the docs servers and put the doc URL in a comment.
 
 This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (task 2). Do not start a task here until its dependency exists. No new dependency is needed.
 
@@ -23,7 +23,7 @@ This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (tas
 - [ ] 3. `StationService`, `PowerReceiver`, notification channel and strings, `StationModeStore`, guarded receiver registration, `START_STICKY`, `onTimeout` handling, blocked-start handling.
   - Depends on: 2, `sensor-android` task 7
   - Requirements: R1, R2, R3, R6, R9
-- [ ] 4. Expo config plugin for manifest entries (service with `specialUse` and its property, permissions, receiver) and a manifest check script.
+- [ ] 4. Manifest entries in `apps/android` (service with `specialUse` and its property, permissions, receiver) and a manifest check script.
   - Depends on: 2
   - Requirements: R2.1, R10.2
 
@@ -32,7 +32,7 @@ This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (tas
 - [ ] 5. Boot restore and heartbeat scheduling: extend `BootReceiver`; run heartbeat inside the service while armed; reuse `Recovered` input.
   - Depends on: 3
   - Requirements: R1.3, R5, R6.1
-- [ ] 6. JS API `setStationMode`, `getStationState`, diagnostics `stationMode`, `NOTIFICATION_HIDDEN`, `FGS_START_BLOCKED`; JS contract test.
+- [ ] 6. `StationController` (`setStationMode`, `getStationState`), diagnostics `stationMode`, `NOTIFICATION_HIDDEN`, `FGS_START_BLOCKED`; JUnit 4 test with a fake service launcher.
   - Depends on: 3, 4, `sensor-android` task 9
   - Requirements: R1.5, R2.4, R8.1
 
@@ -44,7 +44,7 @@ This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (tas
 
 ## Wave 6
 
-- [ ] 8. Update `docs/traceability.md` (T1 to T7), `docs/kiro-log.md`, `docs/probe-checklist.md` (Station section: unplug at 100%, Doze, OEMs, boot), and `modules/outage-sensor/README.md`.
+- [ ] 8. Update `docs/traceability.md` (T1 to T7), `docs/kiro-log.md`, `docs/probe-checklist.md` (Station section: unplug at 100%, Doze, OEMs, boot), and `apps/android/README.md`.
   - Depends on: 5, 6, 7
   - Requirements: all
 
@@ -54,9 +54,9 @@ This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (tas
 graph LR
     T1[1 shared types + source] --> T2[2 state machine]
     T2 --> T3[3 service + receiver]
-    T2 --> T4[4 config plugin]
+    T2 --> T4[4 manifest]
     T3 --> T5[5 boot + heartbeat]
-    T3 --> T6[6 JS API]
+    T3 --> T6[6 StationController]
     T4 --> T6
     T5 --> T7[7 delete + privacy check]
     T6 --> T7

@@ -7,8 +7,10 @@ import { readPayload, toolKind, extractWrites, deletedPaths, shellCommand, block
 
 const payload = readPayload();
 const kind = toolKind(payload);
-const approved = readJson('.kiro/approved-dependencies.json', { allowed: [], allowedTools: [] });
+const approved = readJson('.kiro/approved-dependencies.json', { allowed: [], allowedTools: [], gradleAllowed: [], gradlePluginsAllowed: [] });
 const allowed = new Set(approved.allowed);
+const gradleAllowed = new Set(approved.gradleAllowed || []);
+const gradlePluginsAllowed = new Set(approved.gradlePluginsAllowed || []);
 const allowedTools = new Set(approved.allowedTools || []);
 
 const TEST_FILE = /(\.(test|spec)\.[a-z]+$|Test\.kt$|(^|\/)(__tests__|test|tests)\/)/;
@@ -62,11 +64,19 @@ if (kind === 'write') {
       const added = [...after].filter((n) => !before.has(n) && !allowed.has(n));
       if (added.length) ask(`Adding dependencies not on the approved list (.kiro/approved-dependencies.json): ${added.join(', ')}. Confirm a free tier and approve, or choose another way.`);
     }
-    // gradle
+    // gradle: dependency coordinates (group:artifact) and plugin ids must be on the approved lists (ADR 0012)
     if (/\.(gradle|gradle\.kts)$/.test(w.path) || /(^|\/)libs\.versions\.toml$/.test(w.path)) {
       const prev = readText(w.path, '');
-      const lines = w.content.split('\n').filter((l) => /\b(implementation|api|testImplementation|compileOnly|kapt|ksp)\s*\(?\s*['"]/.test(l) && !prev.includes(l.trim()));
-      if (lines.length) ask(`Adding Gradle dependencies: ${lines.map((l) => l.trim()).slice(0, 3).join(' | ')}. Ask the human before adding a dependency.`);
+      const added = w.content.split('\n').filter((l) => !prev.includes(l.trim()));
+      const unknown = [];
+      for (const l of added) {
+        const dep = /\b(implementation|api|testImplementation|androidTestImplementation|compileOnly|runtimeOnly|kapt|ksp|debugImplementation|coreLibraryDesugaring)\s*\(?\s*['"]([\w.-]+):([\w.-]+)(?::[^'"]*)?['"]/.exec(l);
+        if (dep && !gradleAllowed.has(`${dep[2]}:${dep[3]}`)) unknown.push(`${dep[2]}:${dep[3]}`);
+        const plugin = /\bid\s*\(\s*['"]([\w.-]+)['"]\s*\)/.exec(l);
+        if (plugin && !gradlePluginsAllowed.has(plugin[1])) unknown.push(`plugin ${plugin[1]}`);
+        else if (/\b(implementation|api|testImplementation)\s*\(\s*libs\./.test(l)) unknown.push(`${l.trim()} (version catalog entry cannot be checked)`);
+      }
+      if (unknown.length) ask(`Adding Gradle dependencies or plugins not on the approved list (.kiro/approved-dependencies.json): ${[...new Set(unknown)].slice(0, 4).join(', ')}. Ask the human before adding a dependency.`);
     }
   }
 }
@@ -92,14 +102,8 @@ if (kind === 'shell') {
     const unknown = pkgs.map(pkgName).filter((n) => !allowed.has(n));
     if (unknown.length) ask(`Installing packages not on the approved list: ${unknown.join(', ')}. Ask the human; confirm a free tier first.`);
   }
-  const ex = cmd.match(/\bnpx\s+(?:--yes\s+|-y\s+)?expo\s+install\b([^;&|]*)/);
-  if (ex) {
-    const pkgs = ex[1].trim().split(/\s+/).filter((a) => a && !a.startsWith('-'));
-    const unknown = pkgs.map(pkgName).filter((n) => !allowed.has(n));
-    if (unknown.length) ask(`expo install of packages not on the approved list: ${unknown.join(', ')}. Ask the human.`);
-  }
   const nx = cmd.match(/\bnpx\s+((?:--?[\w-]+\s+)*)([@\w./-]+)/);
-  if (nx && !ex) {
+  if (nx) {
     const tool = pkgName(nx[2]);
     if (!allowedTools.has(tool) && !allowed.has(tool) && !/^(--no-install)$/.test(tool)) ask(`npx would download and run "${tool}", which is not on the approved list. Ask the human.`);
   }

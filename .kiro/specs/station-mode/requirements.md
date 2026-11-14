@@ -109,4 +109,4 @@ Done by Kiro Web. Kiro's Analyze Requirements runs in the IDE; run it on this fi
 - `UNPLUG` at 95% or more is allowed only from the Receiver driver, since the plug state is observed and not inferred.
 - Heartbeat interval starts at 600,000 ms (10 minutes), a tunable that satisfies R5.2.
 - Events gain an optional `source` field (`RECEIVER` or `JOB`). This amends the `sensor-android` data model and the `event-ingest` wire format; the amendments are tasks 1 of this spec.
-- No new dependency. Receivers and service use the Android platform and Expo Modules.
+- No new dependency. Receivers and service use the Android platform APIs only.

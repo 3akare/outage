@@ -45,7 +45,7 @@ Notes on the matrix
 
 ## 3. Setup, same for every phone
 
-1. Install the probe APK (the developer builds it with EAS and sends you the file). Allow "install unknown apps" for the app you use to open the file.
+1. Install the probe APK. Open the project's GitHub Releases page on the phone and download `outage-probe-debug.apk` from the newest release. Allow "install unknown apps" for the app you use to open the file.
 2. Open the app. Allow notifications when asked. Do not grant anything else.
 3. Enter the device alias, maker and Android version if the app asks for them.
 4. Charge the phone to between 30% and 60% before the first timed run, unless the step says 100%.

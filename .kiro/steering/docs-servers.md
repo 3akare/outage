@@ -1,7 +1,7 @@
 ---
 inclusion: auto
 name: docs-servers
-description: Use when writing, reviewing or debugging code that calls a platform API (Cloudflare Workers, Durable Objects, Wrangler, Expo, Expo Modules, React Native, Android, fast-check, Vitest, H3), or when a documentation URL is needed for a code comment or an ADR.
+description: Use when writing, reviewing or debugging code that calls a platform API (Cloudflare Workers, Durable Objects, Wrangler, Android, Kotlin, Jetpack Compose, Gradle, Firebase Cloud Messaging, JUnit, fast-check, Vitest, H3), or when a documentation URL is needed for a code comment or an ADR.
 ---
 
 # Documentation servers
@@ -13,8 +13,8 @@ Rule from the brief: never guess a platform API from memory when a docs server c
 | Question about | Source | How |
 |---|---|---|
 | Cloudflare Workers, Durable Objects, Wrangler, limits, pricing | `cloudflare-docs` MCP server | tool `search_cloudflare_documentation` |
-| Expo, Expo Modules, `expo-notifications`, React Native, fast-check, Vitest, H3 (`h3-js`) | `context7` MCP server | tools `resolve-library-id` then `query-docs` |
-| Android (JobScheduler, BatteryManager, notifications, alarms, foreground services) | Official pages on developer.android.com | web fetch. No MCP server was verified for Android. |
+| Android (JobScheduler, BatteryManager, notifications, alarms, foreground services), Kotlin, Jetpack Compose, Gradle and the Android Gradle plugin, Firebase Cloud Messaging, JUnit, fast-check, Vitest, H3 | `context7` MCP server | tools `resolve-library-id` then `query-docs` |
+| Release notes and compatibility tables (Android Gradle plugin, target API levels) | Official pages on developer.android.com | web fetch |
 | Kiro itself (hooks, specs, skills, agents, MCP) | https://kiro.dev/docs/ | web fetch |
 | GitHub issues for Bugfix Specs | `github` MCP server (read-only, disabled until a token exists) | see `docs/mcp-servers.md` |
 
@@ -34,9 +34,13 @@ The tool refuses names that look like they change something. Check all servers w
 |---|---|
 | fast-check | `/dubzzz/fast-check` |
 | h3-js | `/uber/h3-js` |
-| Expo (SDK, Expo Modules) | `/expo/expo`, docs site `/websites/expo_dev` |
-| expo-notifications | `/websites/expo_dev_versions_sdk_notifications` |
-| React Native | `/react/react-native-website` |
+| Android Developers (guides) | `/websites/developer_android`, `/websites/developer_android_topic` |
+| Android Developer Reference (classes and methods) | `/websites/developer_android_reference` |
+| Jetpack Compose | `/websites/developer_android_develop_ui_compose` |
+| Kotlin | `/jetbrains/kotlin-web-site` |
+| Gradle | `/websites/gradle_current_userguide` |
+| Firebase Android SDK | `/firebase/firebase-android-sdk` |
+| JUnit 4 | `/junit-team/junit4` |
 | Vitest | `/vitest-dev/vitest` |
 
 Re-resolve with `resolve-library-id` if a query returns nothing. Pass a precise question to `query-docs`; ask for the exact function and its parameters.

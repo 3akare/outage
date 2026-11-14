@@ -14,7 +14,7 @@ const FORBIDDEN = [
   ['hex identifier (32+ characters)', /\b[0-9a-f]{32,}\b/i],
   ['H3 cell index', /\b8[0-9a-f]{14}\b/],
   ['coordinate pair', /-?\d{1,2}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/],
-  ['Expo push token', /Expo(?:nent)?PushToken\[/],
+  ['FCM registration token', /\b[\w-]{11}:APA91[\w-]{20,}/],
   ['install id field', /\binstall_?id\b\s*[:=]/i],
   ['phone number', /(?<![\w.])\+?\d[\d\s-]{9,}\d(?![\w.])/],
 ];

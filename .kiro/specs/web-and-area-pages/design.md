@@ -143,13 +143,19 @@ type Replay = {
     events: { alias: string; type: string }[];
     explanation?: Explanation;      // from the engine, counts only
   }[];
+  // Used by the app's Demo mode (demo-mode design section 4). Offsets are from the judge's own unplug, not from the file start.
+  unplug?: {
+    simulated: true;
+    phones: { alias: string; role: 'SIMULATED_NEIGHBOR' }[];
+    frames: { offsetMs: number; cells: { cell: string; state: 'NORMAL'|'POSSIBLE'|'CONFIRMED'|'RESTORED'|'SPOT_ONLY' }[]; events: { alias: string; type: string }[]; explanation?: Explanation }[];
+  };
 };
 ```
 
 - When the field test has no recording yet, `source` is `SYNTHETIC` and the page says so. The brief's rule: "states the device count honestly".
 - Frames come from the real engine, not from hand-written states (W5).
 - The banner "Simulated replay" is in the HTML, not injected by script, and in `<title>`.
-- The same file feeds the app's Judge mode (`demo-mode`).
+- The same file feeds the app's Judge mode (`demo-mode`). `tools/sim` writes it with the real engine.
 
 ## 8. Security and headers
 

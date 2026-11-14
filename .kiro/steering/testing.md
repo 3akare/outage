@@ -1,11 +1,11 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "**/*.test.ts"
+fileMatchPattern: ["**/*.test.ts", "**/src/test/**/*.kt"]
 ---
 
 # Testing rules
 
-- Vitest runs unit tests. fast-check runs property tests.
+- TypeScript: Vitest runs unit tests and fast-check runs property tests. Kotlin: JUnit 4 on the JVM (`./gradlew testDebugUnitTest`). Kotlin test names start with the requirement or property ID, for example `fun R3_2_job_stop_is_recorded_before_reschedule()`.
 - Detection requires property tests. Each one names its property ID (P1 to P12) in the test title, for example `it('P3 order and delay independence', ...)`.
 - Generators must cover: baseline-rate human unplugs, true outages with up to 2 s jitter, generator restarts spread over minutes, phones delivering hours late, duplicates, noisy devices.
 - Golden fixtures of real outages are replayed in CI. Large fixtures go in `fixtures/large/` (ignored from context).

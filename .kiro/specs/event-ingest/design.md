@@ -8,7 +8,7 @@ Status: APPROVED by delegation on 2026-11-14. Based on `requirements.md`. Tasks 
 
 ```mermaid
 flowchart LR
-    S[Sensor Outbox<br/>Kotlin SQLite] --> U[Uploader<br/>TypeScript]
+    S[Sensor Outbox<br/>Kotlin SQLite] --> U[Uploader<br/>Kotlin]
     U -->|POST /v1/events| W[Worker<br/>validate, auth, route]
     W -->|one RPC per cell| C[Cell actor<br/>Durable Object]
     C -->|DetectionPort| D[detection engine<br/>packages/detection]
@@ -16,7 +16,7 @@ flowchart LR
 
 - The **Worker** is stateless. It authenticates, validates each event, computes event time, groups events by cell, and calls each cell actor once.
 - The **cell actor** owns idempotency, rate limiting, armed state and stored detection events for one cell. It calls the engine through `DetectionPort`.
-- The **Uploader** lives in `packages/shared` (pure, injectable transport and clock) so Vitest and fast-check can drive it. `apps/mobile` wires it to the real network and the Sensor module.
+- The **Uploader** lives in `apps/android` (Kotlin, injectable transport and clock) so JUnit can drive it with a fake transport. The event schema and API shapes are covered by contract fixtures in `packages/shared/fixtures/`, read by the Worker tests (Vitest) and the app tests (JUnit). The H3 cell on the phone comes from `com.uber:h3` (needs human approval, ADR 0012).
 
 ## 2. Verified platform facts
 
@@ -219,11 +219,11 @@ type IngestedEvent = {
 
 AMENDED 2026-11-14 by the `detection-engine` spec: `DetectionPort.handle` also receives `ARMED` and `DISARMED` state events, because the engine rebuilds armed intervals from them. The type below gains `ARMED | DISARMED` and an optional `simulated` marker is never passed (ingest rejects it). The detection spec decides what happens next. Until it exists, a `NoopDetectionPort` records events only, so ingest can be built and tested alone.
 
-```ts
-// packages/shared/src/uploader.ts
-interface Transport { post(req: EventsRequest, token: string): Promise<EventsResponse | HttpError> }
-interface OutboxPort { getPending(limit: number): Promise<SensorEvent[]>; ack(upToSeq: number): Promise<void> }
-class Uploader { constructor(outbox, transport, clock, rng, config); flush(): Promise<void> }
+```kotlin
+// apps/android (Kotlin), shape only
+interface Transport { fun post(req: EventsRequest, token: String): Result }   // EventsResponse or HttpError
+interface OutboxPort { fun getPending(limit: Int): List<SensorEvent>; fun ack(upToSeq: Long) }
+class Uploader(outbox: OutboxPort, transport: Transport, clock: Clock, rng: Random, config: UploaderConfig) { fun flush() }
 ```
 
 ## 10. Residual risks
@@ -248,6 +248,6 @@ Property IDs `I1` to `I9` belong to this spec. Each test title names its ID. The
 | I8 | Any extra field in an event is rejected, and no wire event field can carry a location or a wall-clock time. | R1 | `I8_strict_schema` |
 | I9 | For any batch and state flush timing, the stored armed state equals the last state event by event time, and unchanged state causes no write. | R11 | `I9_write_behind_state` |
 
-Other tests: token verify and constant-time compare; register stores nothing; delete removes all rows for an install in listed cells and invalidates the token (R12); counters hold no install IDs (R13); shared schema parses golden fixtures also used by the sensor module's JS contract test; end-to-end test using Miniflare or `wrangler dev` locally (confirm tooling with the docs server).
+Other tests: token verify and constant-time compare; register stores nothing; delete removes all rows for an install in listed cells and invalidates the token (R12); counters hold no install IDs (R13); the Worker (Vitest) and the app (JUnit) both parse the contract fixtures in `packages/shared/fixtures/`; I7 runs in JUnit with a seeded random failure pattern over a fake transport; end-to-end test using Miniflare or `wrangler dev` locally (confirm tooling with the docs server).
 
 Traceability: `docs/traceability.md` links requirement, property, test and task.

@@ -12,7 +12,7 @@ Three concerns are kept apart so each is testable:
 |---|---|---|---|
 | `SensorStateMachine` | Pure Kotlin. Input: lifecycle facts. Output: events and actions (reschedule, etc.). | none | JVM unit tests |
 | Android adapters | `ChargingJobService`, `PowerFacts` (battery + plug), `Scheduler`, `OutboxStore` (SQLite), boot receiver | yes | instrumented, and the field probe |
-| `OutageSensorModule` | Expo Module bridge, typed JS API | Expo Modules | JS contract test |
+| `SensorController` | In-process facade the app calls: start, stop, read and acknowledge events | none | JVM unit test with fake adapters |
 
 The pure core takes a `Clock` and a `Facts` snapshot as arguments, which keeps `kotlin-check` fast and removes timing flakiness.
 
@@ -38,8 +38,8 @@ To verify with the docs MCP before the implementing task: `Settings.Global.BOOT_
 2. **Timeouts are expected.** About every 10 minutes Android may stop the job with `TIMEOUT`. The Sensor reschedules and logs a short `DISARMED` gap. This lowers armed time and is the main risk for the 90% gate. The probe measures it. See ADR 0001.
 3. **Corroborate, do not trust.** On a charging-constraint stop, read the plug state. Only `plugged == 0` (or plug moved to a non-detection type) confirms the unplug (R3.3).
 4. **Record first, then act.** `onStopJob` writes the record to SQLite before rescheduling (R2).
-5. **Module owns sequence numbers**, so events exist when JS is dead (R9.1).
-6. **Event times come from elapsed time only.** The module stores `recordedElapsedMs` and `bootCount`, and computes `elapsedMs = now − recordedElapsedMs` when JS reads. Across a reboot the time is `LOST` (R9.4).
+5. **The sensor owns sequence numbers**, so events exist when no screen is open (R9.1).
+6. **Event times come from elapsed time only.** The sensor stores `recordedElapsedMs` and `bootCount`, and computes `elapsedMs = now − recordedElapsedMs` when the uploader reads. Across a reboot the time is `LOST` (R9.4).
 7. **No new dependencies.** SQLite through `android.database`, JSON through the platform. Test with JUnit4 plus seeded random loops (OQ4).
 
 ## 4. State machine
@@ -73,7 +73,7 @@ sequenceDiagram
     participant SM as SensorStateMachine
     participant Facts as PowerFacts
     participant DB as OutboxStore
-    participant JS as JS layer (app)
+    participant App as App (uploader, Light Alarm)
 
     OS->>Svc: onStartJob (charging)
     Svc->>Facts: read plug, battery%
@@ -86,13 +86,13 @@ sequenceDiagram
     SM->>SM: plug==0 confirms, battery<95
     SM-->>DB: UNPLUG (HIGH) written first
     Svc->>OS: reschedule Job (requiresCharging)
-    Svc-->>JS: onEvent(UNPLUG)
+    Svc-->>App: event(UNPLUG)
     Note over OS,Svc: Grid power returns
     OS->>Svc: onStartJob (charging)
     Svc->>SM: JobStarted(facts, elapsed)
     SM-->>DB: REPLUG (schedulingDelayMs)
-    Svc-->>JS: onEvent(REPLUG) immediate if alive
-    JS->>JS: Light Alarm rings (no network)
+    Svc-->>App: event(REPLUG) immediate, same process
+    App->>App: Light Alarm rings (no network)
 ```
 
 ### 5.2 Non-charging stop (gap)
@@ -201,42 +201,44 @@ erDiagram
     CHARGE_SESSION ||--o{ ARMED_INTERVAL : contains
 ```
 
-JS-facing event (what `getPendingEvents` returns):
+The event the app reads (what `getPendingEvents` returns):
 
-```ts
-type SensorEvent = {
-  seq: number;
-  type: 'ARMED' | 'UNPLUG' | 'BATTERY_FULL' | 'REPLUG' | 'DISARMED';
-  elapsedMs: number;          // time since the event, computed at read time
-  timeQuality: 'OK' | 'LOST'; // LOST after reboot; telemetry only
-  confidence: 'HIGH' | 'LOW';
-  stopReason: string | null;
-  batteryPct: number;
-  plugType: 'AC' | 'USB' | 'WIRELESS' | 'DOCK' | 'NONE';
-  schedulingDelayMs: number | null;
-  reason: string | null;
-};
+```kotlin
+data class SensorEvent(
+    val seq: Long,
+    val type: EventType,            // ARMED, UNPLUG, BATTERY_FULL, REPLUG, DISARMED (LABEL, see the amendment below)
+    val elapsedMs: Long,            // time since the event, computed at read time
+    val timeQuality: TimeQuality,   // OK, or LOST after a reboot; telemetry only
+    val confidence: Confidence,     // HIGH, LOW
+    val stopReason: String?,
+    val batteryPct: Int,
+    val plugType: PlugType,         // AC, USB, WIRELESS, DOCK, NONE
+    val schedulingDelayMs: Long?,
+    val reason: String?,
+)
 ```
 
-The install ID and H3 cell are added by the JS layer when it builds the ingest payload. This keeps the Kotlin module free of location data (R9.6). The shared type lives in `packages/shared` and the Kotlin type must match it.
+The install ID and H3 cell are added by the Uploader (app code outside the `sensor` package) when it builds the ingest payload. This keeps the sensor free of location data (R9.6). The wire shape is defined in `packages/shared`, and a contract fixture test reads the same JSON in Kotlin and in the Worker so the two types cannot drift.
 
 Retention: events and telemetry older than 7 days are deleted on start and on ack (R9.5, R10.5).
 
-> AMENDED 2026-11-14 by `alerts-and-light-alarm`: `EVENT.type` and the JS `SensorEvent.type` also allow `LABEL`, with columns `ref_seq` and `answer` (`YES`|`NO`). `LABEL` events are written by the native prompt actions, not by the state machine. The native alarm path also reads `REPLUG` events from the state machine output. See that spec, section 4.
+> AMENDED 2026-11-14 by `alerts-and-light-alarm`: `EVENT.type` and `SensorEvent.type` also allow `LABEL`, with columns `ref_seq` and `answer` (`YES`|`NO`). `LABEL` events are written by the native prompt actions, not by the state machine. The native alarm path also reads `REPLUG` events from the state machine output. See that spec, section 4.
 
 ## 8. Interfaces
 
-```ts
-// modules/outage-sensor/src/index.ts
-start(): Promise<{ state: SensorState }>;
-stop(): Promise<void>;
-setInstallId(id: string): Promise<void>;
-getPendingEvents(limit: number): Promise<SensorEvent[]>;
-ackEvents(upToSeq: number): Promise<void>;
-getTelemetry(periodMs: number): Promise<{ chargingMs: number; armedMs: number; armedRatio: number; replugDelaysMs: number[] }>;
-getDiagnostics(): Promise<Diagnostics>;
-addListener('onEvent', cb): Subscription;
-deleteAllData(): Promise<void>;
+```kotlin
+// apps/android/app/src/main/kotlin/.../sensor/SensorController.kt
+interface SensorController {
+    fun start(): SensorState
+    fun stop()
+    fun setInstallId(id: String)
+    fun getPendingEvents(limit: Int): List<SensorEvent>
+    fun ackEvents(upToSeq: Long)
+    fun getTelemetry(periodMs: Long): Telemetry   // chargingMs, armedMs, armedRatio, replugDelaysMs
+    fun getDiagnostics(): Diagnostics
+    fun addListener(listener: (SensorEvent) -> Unit): AutoCloseable
+    fun deleteAllData()
+}
 ```
 
 Kotlin core (pure):
@@ -259,7 +261,7 @@ class SensorStateMachine(clock: Clock) { fun step(input: Input, facts: Facts): O
 | Duplicate `start()` | No-op (R11.3). |
 | Corrupt database | Move aside, create fresh, record `DB_RESET` gap. Sequence resumes from a timestamp-seeded floor, so `(installId, seq)` never repeats. |
 | Reboot | Events from before the reboot get `timeQuality = LOST`. |
-| JS dead when event happens | Event stays in Outbox. Drained on next JS start. |
+| No screen open when the event happens | The job service records it. The Uploader drains the Outbox on the next app start or upload run. |
 | Outbox grows without network | Capped by the 7-day retention. |
 
 ## 10. Risks and the probe
@@ -296,7 +298,7 @@ Other tests:
 | Time | `elapsedMs` computed at read time; cross-boot events `LOST` | R9.2 to R9.4 |
 | Outbox | ack removes up to seq; 7-day retention | R9.5 |
 | Telemetry | armed ratio with synthetic intervals | R10 |
-| Bridge | JS contract test of the typed API against a fake native module | R11 |
+| Controller | JVM unit test of `SensorController` against fake adapters, including the immediate `REPLUG` hand-off | R11 |
 | Device | probe checklist run on real phones (not CI) | R1, R5, R8 |
 
 Cross-package: the `tools/sim` event generator must produce `SensorEvent` shapes equal to the shared type, and `event-ingest` contract tests use the same fixtures. `docs/traceability.md` links requirement, property, test and task.

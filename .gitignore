@@ -3,20 +3,16 @@ node_modules/
 dist/
 build/
 coverage/
-.expo/
 .wrangler/
 *.tsbuildinfo
 .gradle/
 local.properties
-apps/mobile/android/build/
-apps/mobile/android/app/build/
-modules/outage-sensor/android/build/
 
 # Binaries
 *.apk
 *.aab
 
-# Secrets and local config. Real secrets live in Wrangler secrets and EAS secrets.
+# Secrets and local config. Real secrets live in Wrangler secrets and GitHub Actions secrets.
 .env
 .env.*
 !.env.example

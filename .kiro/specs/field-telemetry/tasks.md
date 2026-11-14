@@ -8,7 +8,7 @@ Depends on `sensor-android` (tasks 6, 10), `event-ingest` (tasks 2, 4), `area-ce
 
 ## Wave 1
 
-- [ ] 1. Shared schema `DeviceDay` and the strict validator; shared fixtures. Test F1 (schema part).
+- [ ] 1. Shared schema `DeviceDay` and the strict validator in `packages/shared`; contract fixtures in `packages/shared/fixtures/` read by both TypeScript and Kotlin tests. Test F1 (schema part).
   - Depends on: `event-ingest` 2
   - Requirements: R1, R2, R3.4
 - [ ] 2. Metric functions: `nearestRank`, armed ratio, gap histogram helpers, gate evaluation. Tests F3, F7.
@@ -20,7 +20,7 @@ Depends on `sensor-android` (tasks 6, 10), `event-ingest` (tasks 2, 4), `area-ce
 
 ## Wave 2
 
-- [ ] 4. Phone aggregator and daily uploader, using opt-in from onboarding. Tests F1, F2 (client part).
+- [ ] 4. Phone aggregator and daily uploader in Kotlin (JUnit 4), using opt-in from onboarding. Tests F1, F2 (client part).
   - Depends on: 1, `sensor-android` 6, `sensor-android` 10, `onboarding` 3
   - Requirements: R1, R2
 - [ ] 5. Worker: `POST /v1/telemetry`, telemetry actor, `GET /v1/admin/field/:day` with token and per-request aliases, delete-my-data support. Tests F2 (server part), F8.

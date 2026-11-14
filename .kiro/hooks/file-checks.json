@@ -3,9 +3,9 @@
   "hooks": [
     {
       "name": "kotlin-check (file save)",
-      "description": "Part E (IDE and CLI v3, Post File Save): run the Kotlin unit tests after a change under modules/**.kt.",
+      "description": "Part E (IDE and CLI v3, Post File Save): run the Kotlin unit tests after a change under apps/android or tools/probe/android (**.kt).",
       "trigger": "PostFileSave",
-      "matcher": "modules/.*\\.kt$",
+      "matcher": "(apps/android|tools/probe/android)/.*\\.kt$",
       "action": { "type": "command", "command": "node .kiro/scripts/kotlin-check.mjs" },
       "timeout": 600
     },

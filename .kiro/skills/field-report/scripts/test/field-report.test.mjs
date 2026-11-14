@@ -54,7 +54,7 @@ test('checkReport: blocks identifiers, cells, coordinates, tokens and phone numb
   assert.match(checkReport(GOOD + `\ninstall ${id}\n`).join('\n'), /install ID/);
   assert.match(checkReport(GOOD + '\ncell 88a5ea0b8dfffff\n').join('\n'), /H3 cell/);
   assert.match(checkReport(GOOD + '\nat 6.5095, 3.3711\n').join('\n'), /coordinate pair/);
-  assert.match(checkReport(GOOD + '\nExponentPushToken[abcdef]\n').join('\n'), /push token/);
+  assert.match(checkReport(GOOD + '\n' + 'abcdefghijk' + ':' + 'APA91' + 'b'.repeat(30) + '\n').join('\n'), /FCM registration token/);
   assert.match(checkReport(GOOD + '\ncall +234 801 234 5678\n').join('\n'), /phone number/);
   assert.match(checkReport(GOOD + '\ninstall_id: x\n').join('\n'), /install id field/);
 });

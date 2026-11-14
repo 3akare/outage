@@ -4,7 +4,7 @@ Status: APPROVED by delegation on 2026-11-14. Design in `design.md`, tasks in `t
 
 ## Introduction
 
-Judge mode lets a judge see Outage work in under a minute with no setup. It starts from the first screen of the app and from the web page. It replays a recorded outage, and when a judge unplugs their own phone it adds labeled simulated neighbors so the judge sees the area go to "Confirmed" on their own device, using the real detection engine with the real thresholds.
+Judge mode lets a judge see Outage work in under a minute with no setup. It starts from the first screen of the app and from the web page. It replays a recorded outage, and when a judge unplugs their own phone it adds labeled simulated neighbors so the judge sees the area go to "Confirmed" on their own device. The frames shown are produced at build time by the real detection engine with the real thresholds; the phone does not run the engine.
 
 Everything in Judge mode is labeled as simulated, and none of it can enter real history or statistics.
 
@@ -14,6 +14,7 @@ Everything in Judge mode is labeled as simulated, and none of it can enter real 
 - **Replay**: the recorded outage played back from a fixture.
 - **Simulated neighbor**: a labeled fake phone created for the demo.
 - **Demo session**: one run of Judge mode, in memory only.
+- **Unplug track**: the part of the replay file that holds the simulated neighbors' drops and replugs, as offsets from the judge's own unplug, with engine decisions per frame.
 - **Fixture**: a sanitized recording of an outage in the shared fixture format.
 
 ## Requirements
@@ -43,17 +44,17 @@ Everything in Judge mode is labeled as simulated, and none of it can enter real 
 **User story:** As a judge, I want to pull my own charger and see the area react.
 1. WHILE Judge mode is open and the phone is charging on a detection plug, THE app SHALL show "Unplug your charger".
 2. WHEN the judge unplugs, THE app SHALL detect it within 1 second from the phone's battery state, using a foreground observer and no sensor job.
-3. THE app SHALL then create simulated neighbors and give most of them a drop within 2 seconds of the judge's drop, with seeded jitter.
-4. THE app SHALL run the real detection engine, with its default parameters, on the judge's real drop and the simulated drops.
-5. THE app SHALL show "Confirmed" on the judge's own device within 5 seconds of the unplug, and show the engine's explanation.
-6. THE scenario SHALL use a number of simulated neighbors and droppers that pass the engine's thresholds as they are. THE app SHALL NOT change thresholds, bypass the engine or hard-code a decision.
-7. WHEN the judge plugs back in, THE app SHALL give the simulated neighbors replugs spread within the restore window, run the engine, and show "Restored".
+3. THE app SHALL then play the unplug track from the replay file, in which most simulated neighbors drop within 2 seconds of the judge's drop, with jitter fixed in the file.
+4. THE unplug track SHALL be produced at build time by the real detection engine, with its default parameters, on the judge's drop and the simulated drops. THE app SHALL NOT run the engine.
+5. THE app SHALL show "Confirmed" on the judge's own device within 5 seconds of the unplug, and show the engine's explanation stored in the track.
+6. THE track SHALL use a number of simulated neighbors and droppers that pass the engine's thresholds as they are. THE build SHALL NOT change thresholds, bypass the engine or hard-code a decision.
+7. WHEN the judge plugs back in, THE app SHALL play the track's replug frames, in which the simulated neighbors replug within the restore window, and show "Restored".
 8. WHEN the judge answered "Yes, wake me when it's back" in the demo prompt, THE app SHALL ring the real Light Alarm sound path on the judge's replug, labeled "Demo".
 9. IF the phone cannot be charging (for example an emulator), THEN THE app SHALL offer "Simulate unplug" buttons that behave the same and are labeled simulated.
 
 ### R5 Isolation
 **User story:** As the owner of the real data, I want demos to leave no trace in it.
-1. THE demo session SHALL use its own engine instance and its own in-memory state.
+1. THE demo session SHALL use its own in-memory playback state and SHALL read only the replay file.
 2. THE demo session SHALL NOT write to the Outbox, the power-log, the labels, the subscriptions, the install record, or any server.
 3. THE demo session SHALL NOT call the Worker except to fetch static replay data when online.
 4. WHEN Judge mode closes, THE app SHALL discard the demo state.
@@ -69,8 +70,8 @@ Everything in Judge mode is labeled as simulated, and none of it can enter real 
 
 ### R7 Build and sync
 1. THE replay file SHALL be built from a fixture by running the real engine, in the build step of `web-and-area-pages` task 9.
-2. THE app SHALL bundle the replay file, and the web page SHALL serve the same file with the same hash.
-3. THE build SHALL fail if the replay file's decisions differ from a fresh engine run.
+2. THE app SHALL include the replay file as an asset, and the web page SHALL serve the same file with the same hash.
+3. THE build SHALL fail if the replay file's decisions, including the unplug track, differ from a fresh engine run.
 
 ### R8 Telemetry and privacy
 1. THE demo session SHALL send no telemetry.
@@ -82,7 +83,7 @@ Done by Kiro Web. Run Analyze Requirements in IDE on this file and record the re
 
 | # | Gap in the brief | Fix |
 |---|---|---|
-| G1 | "Simulated neighbors who drop within 2 s so they see Confirmed" could be a faked result. | R4.4 to R4.6: the real engine, the real thresholds, enough simulated phones to pass them. |
+| G1 | "Simulated neighbors who drop within 2 s so they see Confirmed" could be a faked result. | R4.4 to R4.6: the real engine produces the track at build time, with the real thresholds and enough simulated phones to pass them. |
 | G2 | A judge's real phone may have a real armed Sensor, so the demo could duplicate prompts and events. | R5.5, R5.6. |
 | G3 | The sensor job is too slow for an instant demo. | R4.2 uses a foreground battery observer. |
 | G4 | A real Lagos recording exposes homes. | R6.2 to R6.4. |
@@ -91,15 +92,16 @@ Done by Kiro Web. Run Analyze Requirements in IDE on this file and record the re
 | G7 | Simulated and real data must never mix (P9). | R5, plus tests DM3 and DM5. |
 | G8 | iPhone judges cannot run the app. | R1.3 and the web replay. |
 | G9 | Emulators and judges without a charger. | R4.9. |
+| G10 | The phone does not run the engine (ADR 0012), so a live engine in Judge mode is gone. | R4.3 to R4.7 and R5.1 play frames the engine produced at build time; R7.3 checks them. "Phone evaluates the engine in demo mode" removed by ADR 0012. |
 
 ## Decisions (2026-11-14)
 
 | Item | Value |
 |---|---|
 | Simulated neighbors | 9 phones armed with the judge's phone, 6 of them drop (7 drops of 10 armed, which passes the Confirmed rule for n = 10 under the prior in ADR 0005, needing 5) |
-| Neighbor drop jitter | uniform 0 to 2,000 ms after the judge's drop, seeded |
+| Neighbor drop jitter | uniform 0 to 2,000 ms after the judge's drop, seeded when `tools/sim` builds the track |
 | Restore spread | neighbor replugs within 20 seconds of the judge's replug |
 | Demo alarm label | "Demo" in the notification text |
 
-- The scenario numbers are chosen to pass the engine, never the other way round. If ADR 0005 values change, task 3 recomputes them and a test checks the scenario still confirms.
+- The scenario numbers are chosen to pass the engine, never the other way round. If ADR 0005 values change, task 3 recomputes them, the build regenerates the track, and a test checks the scenario still confirms.
 - The sanitizer replaces cells by their res-7 parent. The replay map shows seven-cell groups, not homes.

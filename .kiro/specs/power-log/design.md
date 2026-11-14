@@ -6,21 +6,21 @@ Status: APPROVED by delegation on 2026-11-14. Based on `requirements.md`. Tasks 
 
 ```mermaid
 flowchart LR
-    SE[Sensor events<br/>UNPLUG REPLUG ARMED DISARMED] --> TB[TimelineBuilder pure]
+    SE[Sensor events<br/>UNPLUG REPLUG ARMED DISARMED] --> TB[TimelineBuilder pure Kotlin]
     AN[Answers YES/NO] --> TB
     MR[Manual reports] --> TB
     AO[Area outages cache] --> TB
     TB --> DB[(Local SQLite timeline)]
     DB --> ST[Stats pure: daily, month, score, promise]
-    ST --> UI[Screens + share card]
+    ST --> UI[Compose screens + share card]
     DB --> FG[Freezer Guard scheduler]
     FG --> AM[AlarmManager inexact]
     SY[Public outage sync] --> AO
 ```
 
-- `TimelineBuilder` and `Stats` are pure TypeScript in `packages/shared` and run on the phone. They take events and a clock and return intervals and numbers, so Vitest and fast-check cover them.
-- Storage is the module database or a second local SQLite (decided in task 2). It is separate from the Outbox, so ack and upload never change the log.
-- Freezer Guard needs native code because the Sensor job does not run when the phone is unplugged.
+- `TimelineBuilder` and `Stats` are pure Kotlin classes in the app's log package, with no Android types. They take events and a clock and return intervals and numbers, so JUnit 4 tests (`./gradlew testDebugUnitTest`) cover them, including seeded random orderings. The screens are Jetpack Compose screens (needs human approval, ADR 0012) driven by a `PowerLogViewModel`.
+- Storage is plain `SQLiteOpenHelper` (`android.database.sqlite`): the sensor's database or a second local database (decided in task 2). Room needs human approval (ADR 0012). It is separate from the Outbox, so ack and upload never change the log.
+- Freezer Guard uses `AlarmManager` and a `BroadcastReceiver` because the Sensor job does not run when the phone is unplugged.
 
 ## 2. Verified platform facts
 
@@ -29,7 +29,7 @@ flowchart LR
 | `setAndAllowWhileIdle()` is an inexact alarm: it never fires before the trigger time and on Android 12+ fires within one hour of it unless battery saver or Doze applies. Exact alarms need `SCHEDULE_EXACT_ALARM`, which is denied by default on new Android 13+ installs; `USE_EXACT_ALARM` is only for calendar and alarm-clock apps. | https://developer.android.com/training/scheduling/alarms , https://developer.android.com/about/versions/14/changes/schedule-exact-alarms |
 | Nigeria's service bands: A 20 h, B 16 h, C 12 h, D 8 h, E 4 h minimum per day (public reports; not the regulator's text). | https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/ |
 
-To confirm with the docs servers: `AlarmManager.canScheduleExactAlarms`, the `ELAPSED_REALTIME_WAKEUP` alarm type, receiver registration for the alarm intent, `Intent` for the exact-alarm settings page, and Expo SQLite or React Native storage choices. Verify NERC band wording against NERC publications.
+To confirm with the docs servers: `AlarmManager.canScheduleExactAlarms`, the `ELAPSED_REALTIME_WAKEUP` alarm type, receiver registration for the alarm intent, `Intent` for the exact-alarm settings page, and the `SQLiteOpenHelper` migration API (`onUpgrade`). All unverified. Verify NERC band wording against NERC publications.
 
 ## 3. Timeline model
 
@@ -111,7 +111,7 @@ Day length at daylight changes uses local midnight to local midnight, so a day c
 ```mermaid
 sequenceDiagram
     participant TL as Timeline
-    participant FG as FreezerGuard (native)
+    participant FG as FreezerGuard (Kotlin)
     participant AM as AlarmManager
     participant R as AlarmReceiver
     participant N as Notification
@@ -122,7 +122,7 @@ sequenceDiagram
         FG->>AM: cancel
     else alarm fires
         AM->>R: broadcast
-        R->>R: still open? (reads module DB)
+        R->>R: still open? (reads the log database)
         R->>N: show alert on freezer-guard channel
         R->>R: respect quiet hours unless override
     end
@@ -154,7 +154,7 @@ sequenceDiagram
 ## 8. Share card
 
 - Fixed layout: Light Score, hours of power, outage count, "estimate, N days", link. No location or name.
-- With approved libraries: render a hidden view to an image and open the share sheet. Without them: share a text message with the same facts.
+- Image share (task 9): draw the card to a `Bitmap` with the platform `Canvas` and open the share sheet with an `Intent` and a `FileProvider` (AndroidX core). Unverified; the human decides before it is built. Without it: share a text message with the same facts through `Intent.ACTION_SEND` (unverified).
 
 ## 9. Error handling
 
@@ -172,7 +172,7 @@ sequenceDiagram
 
 ## 10. Testing strategy
 
-Property IDs `PL1` to `PL9`. TypeScript tests in Vitest and fast-check; the Freezer Guard receiver logic in JVM tests where possible.
+Property IDs `PL1` to `PL9`. JUnit 4 tests with seeded random inputs for `TimelineBuilder` and `Stats`; the Freezer Guard receiver logic in JVM tests where possible. The upload payload shape (PL8) is checked against the fixtures in `packages/shared/fixtures/`.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|
@@ -186,6 +186,6 @@ Property IDs `PL1` to `PL9`. TypeScript tests in Vitest and fast-check; the Free
 | PL8 | No `device_ms` or location appears in any uploaded payload (`REPORT`). | R1.3, R8.2 | `PL8_no_wall_clock_upload` |
 | PL9 | The share card text and image data contain no location, area name or install ID. | R8 | `PL9_share_card_privacy` |
 
-Other tests: band config validates and has sources; a 400-day performance test for stats; a rebuild-from-raw equality test; screens snapshot tests; device checklist for the alarm timing (screen off, Doze), reporting how late the alert arrives.
+Other tests: band config validates and has sources; a 400-day performance test for stats; a rebuild-from-raw equality test; screen state tests on the `PowerLogViewModel`; device checklist for the alarm timing (screen off, Doze), reporting how late the alert arrives.
 
 Traceability: `docs/traceability.md`.

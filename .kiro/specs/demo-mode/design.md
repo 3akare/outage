@@ -11,34 +11,36 @@ flowchart LR
     H --> U[Unplug your phone]
     R --> F[replay.json bundled]
     U --> PO[Plug observer, foreground]
-    U --> SN[Scenario generator, seeded]
-    SN --> DE[Detection engine, default params, in memory]
-    PO --> DE
-    DE --> V[Status + explanation view]
+    U --> UT[Unplug track in replay.json]
+    PO --> DS[DemoSession plays frames]
+    UT --> DS
+    DS --> V[Status + explanation view]
     U --> DA[Demo alarm]
+    SIM[tools/sim at build time<br/>real engine, default params] --> F
+    SIM --> UT
 ```
 
-The demo session is a closed box: its own engine state, its own clock input, its own screens. The only real device features it touches are the battery observer and the alarm sound.
+The demo session is a closed box: it reads only the replay file, plays its frames on its own clock, and draws its own Compose screens. The phone never runs the detection engine. The only real device features it touches are the battery observer and the alarm sound.
 
 ## 2. Verified facts and sources
 
 | Fact | Source |
 |---|---|
 | A foreground observer can read plug state from the sticky `ACTION_BATTERY_CHANGED` intent (`EXTRA_PLUGGED`: AC 1, USB 2, wireless 4, dock 8). | https://developer.android.com/reference/android/os/BatteryManager |
-| The engine is a pure function, so the app can run it with no server (`detection-engine` R1). | `.kiro/specs/detection-engine/requirements.md` |
+| The engine is a pure function, so `tools/sim` can run it at build time with no server (`detection-engine` R1). | `.kiro/specs/detection-engine/requirements.md` |
 
-To confirm with the docs servers: how to register a battery-changed receiver from an Expo module and deliver events to JS, and how to bundle a JSON asset in an Expo app.
+To confirm with the docs servers: registering a battery-changed `BroadcastReceiver` in code from a foreground screen and unregistering it, and reading a JSON file from app assets with `AssetManager`. Unverified.
 
 ## 3. Components
 
 | Component | Responsibility |
 |---|---|
-| `DemoSession` | Owns the in-memory engine state, the simulated phones, the clock, and the banner state. Pure TypeScript with injected clock and seed. |
-| `ScenarioGenerator` | Given a seed, creates `N` simulated neighbors, their `ARMED` history before the drop, their drops with jitter, and their replugs. All objects have `simulated: true`. |
-| `PlugObserver` | Native foreground receiver exposed by the module: `onPlugChange(type)`. No sensor job, no Outbox. |
-| `ReplayPlayer` | Plays `replay.json` frames with speed control. |
-| `DemoAlarm` | Calls the module's test alarm path with a "Demo" label. |
-| `DemoScreens` | Judge home, replay, unplug, explanation panel, banner. |
+| `DemoSession` | Kotlin class. Owns the playback position, the clock, and the banner state. Reads only the replay file. Injected clock. Holds no engine. |
+| `ScenarioGenerator` | In `tools/sim` (TypeScript, build time only). Given a seed, creates `N` simulated neighbors, their `ARMED` history before the drop, their drops with jitter, and their replugs, runs the real engine and writes the unplug track. All objects have `simulated: true`. |
+| `PlugObserver` | Kotlin foreground receiver in the sensor package: `onPlugChange(type)`. No sensor job, no Outbox. |
+| `ReplayPlayer` | Plays `replay.json` frames and the unplug track with speed control. |
+| `DemoAlarm` | Calls the app's test alarm path with a "Demo" label. |
+| `DemoScreens` | Jetpack Compose screens (needs human approval, ADR 0012) with a `DemoViewModel`: Judge home, replay, unplug, explanation panel, banner. |
 
 ## 4. Unplug scenario
 
@@ -47,39 +49,34 @@ sequenceDiagram
     participant J as Judge
     participant PO as PlugObserver
     participant DS as DemoSession
-    participant SG as ScenarioGenerator
-    participant E as Detection engine (default params)
+    participant RF as replay.json unplug track
     participant UI as Screen
-    DS->>SG: create(seed, now): 9 simulated phones armed 5 min before
-    DS->>E: evaluate(ARMED events: judge + 9 simulated)
+    Note over RF: built by tools/sim with the real engine, default params
+    DS->>RF: load unplug track (9 simulated phones armed, 6 drop)
     J->>PO: unplugs charger
     PO-->>DS: plugChange(NONE) at t0
-    DS->>SG: schedule drops for 6 of 9 within 2 s (seeded jitter)
-    DS->>E: evaluate(UNPLUG judge at t0)
-    E-->>DS: no outage (single drop)
-    loop each simulated drop, in order
-        DS->>E: evaluate(UNPLUG simulated at t0 + jitter)
-        E-->>DS: decisions
+    DS->>UI: show judge's own drop, no outage yet (single drop)
+    loop each frame, in order, at t0 + frame offset
+        DS->>RF: next frame (simulated drop, decision, explanation)
+        DS->>UI: update counts and state
     end
-    E-->>DS: CONFIRMED with explanation (k=7, n=10, p, thresholds)
-    DS->>UI: show Confirmed, label Simulated, explanation
+    DS->>UI: show Confirmed (k=7, n=10, p, thresholds from the file), label Simulated
     J->>PO: plugs back
     PO-->>DS: plugChange(AC)
-    DS->>SG: schedule replugs for the 6 within 20 s
-    DS->>E: evaluate(REPLUGs)
-    E-->>DS: RESTORED
+    DS->>RF: replug frames (6 phones within 20 s)
+    DS->>UI: show Restored
     opt judge answered Yes in the demo prompt
         DS->>DemoAlarm: ring("Demo")
     end
 ```
 
-- The clock passed to the engine is the demo's own clock. The judge's real time offsets start at `t0`. No wall clock is used for decisions.
-- The scenario numbers come from a function `demoPlan(params)`, which finds the smallest set of simulated phones so that the engine's thresholds are met with a margin, so a change in parameters produces a new plan and the test (DM4) still passes. It never changes the parameters.
+- The frames carry offsets from the judge's unplug. The judge's real unplug time is `t0`. `DemoSession` shows each frame at `t0` plus its offset on its own clock. No decision is computed on the phone.
+- The scenario numbers come from a function `demoPlan(params)` in `tools/sim`, which finds the smallest set of simulated phones so that the engine's thresholds are met with a margin, so a change in parameters produces a new track and the test (DM4) still passes. It never changes the parameters.
 - The judge's unplug is shown on screen before any simulated drop, so the order is visible: "Your phone lost power. Simulated neighbors lose power too. The engine counts 7 of 10 phones within 2 seconds."
 
 ## 5. Recorded replay
 
-- The replay file is the one built by `web-and-area-pages` task 9 and has the type in that design (section 7).
+- The replay file is the one built by `web-and-area-pages` task 9 and has the type in that design (section 7), plus the unplug track (see section 7 below). The app includes it as an asset and reads it with `AssetManager` (unverified).
 - The player reads `frames` in order, scaled by speed. It shows the state, the phones as dots in cells (res-7 groups after sanitizing), and the explanation for each decision.
 - The "Your spot only" frame is explicit: one phone dot turns orange, the legend says "Only this phone lost power".
 
@@ -104,10 +101,10 @@ flowchart LR
 
 ## 7. Isolation rules in code
 
-- `DemoSession` imports only `packages/detection`, `packages/shared` types and the replay data. A dependency check test (like L3) fails if it imports the Outbox, the uploader, the timeline store, the subscription code or any network module.
+- `DemoSession` reads only the replay file and imports no networking, Outbox, storage of real events, or sensor class. A Kotlin architecture unit test (JUnit 4, `./gradlew testDebugUnitTest`) fails if the compiled class refers to any of them.
 - Storage is memory only. A test runs a full session and diffs all real stores (Outbox rows, timeline, labels, settings) before and after (DM3).
-- The module's `setDemoSession(true)` flag suppresses only the native prompt; it is cleared when the screen closes or the app is backgrounded for more than 30 seconds.
-- Every simulated event factory sets `simulated: true`. A lint-like test (`demo-label-check` hook script) fails if a factory in `tools/sim` or the demo code builds an event without it.
+- The `DemoFlag` in the app (a plain in-process flag, set by `DemoSession`) suppresses only the "Power just went?" prompt; it is cleared when the screen closes or the app is backgrounded for more than 30 seconds.
+- Every simulated event factory sets `simulated: true`. A lint-like test (`demo-label-check` hook script) fails if a factory in `tools/sim` builds an event without it. A Kotlin unit test fails if the app's loader accepts a replay file or track object without it.
 
 ## 8. Screens and copy
 
@@ -126,27 +123,27 @@ All text follows `copy.md`. The banner text is "Simulated replay" on the replay 
 |---|---|
 | Phone not charging | Show "Plug in your charger first" and the simulate button. |
 | Plug observer unavailable | Simulate buttons only. |
-| Replay file missing or unreadable | Show an error text; the unplug scenario still works since it is generated. |
+| Replay file missing or unreadable | Show an error text; the unplug scenario needs the same file, so it shows the same error and the simulate buttons are hidden. |
 | Audio blocked | The demo alarm shows a notification only and a message. |
 | App backgrounded mid-scenario | Pause the scenario; resume or restart on return. |
-| Plan cannot reach Confirmed (params changed) | The plan builder returns "not reachable"; the screen says so and the build test fails. |
+| Plan cannot reach Confirmed (params changed) | The plan builder returns "not reachable"; the replay build and its test fail, so no file ships. |
 | Judge's phone also has a real sensor | Real events recorded as usual; prompt suppressed during the session. |
 | Leaving mid-demo | State discarded. |
 
 ## 10. Testing strategy
 
-Property IDs `DM1` to `DM7`. Vitest and fast-check.
+Property IDs `DM1` to `DM7`. Vitest and fast-check for `tools/sim` and the replay build (DM2, DM4, DM6, DM7 build side). JUnit 4 for the app side (DM1, DM3, DM5, DM7 app side), reading the replay file and `packages/shared/fixtures/`.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|
-| DM1 | Every simulated phone, event, decision and frame in a demo session carries `simulated: true`, and every screen model includes the banner text. | R2 | `DM1_all_labeled` |
-| DM2 | The engine parameters used by a demo session equal the default parameters object exactly. | R4.4, R4.6 | `DM2_default_params` |
+| DM1 | Every simulated phone, event, decision and frame in the replay file carries `simulated: true`, and every screen state in a demo session includes the banner text. | R2 | `DM1_all_labeled` |
+| DM2 | The engine parameters used to build the replay file equal the default parameters object exactly. | R4.4, R4.6 | `DM2_default_params` |
 | DM3 | A full demo session leaves the Outbox, power-log, labels, subscriptions and install record unchanged. | R5 | `DM3_no_real_writes` |
-| DM4 | For any seed and any jitter up to 2 s, the generated plan reaches Confirmed within 5 s of the judge's unplug and Restored after the replugs, using the unmodified engine. | R4 | `DM4_plan_confirms_and_restores` |
-| DM5 | A session contains exactly one non-simulated drop (the judge's), or none in simulate mode. | R5.6 | `DM5_one_real_drop` |
+| DM4 | For any seed and any jitter up to 2 s, the plan built by `tools/sim` reaches Confirmed within 5 s of the judge's unplug and Restored after the replugs, using the unmodified engine. | R4 | `DM4_plan_confirms_and_restores` |
+| DM5 | A session shows exactly one non-simulated drop (the judge's), or none in simulate mode, and the file's drops are all simulated. | R5.6 | `DM5_one_real_drop` |
 | DM6 | The sanitizer's output contains no install ID, absolute date or res-8 cell, for any raw fixture. | R6 | `DM6_sanitizer` |
-| DM7 | The replay file bundled in the app equals the file served by the Worker (hash), and its decisions equal a fresh engine run. | R7 | `DM7_replay_in_sync` |
+| DM7 | The replay file included in the app equals the file served by the Worker (hash), and its decisions equal a fresh engine run. | R7 | `DM7_replay_in_sync` |
 
-Other tests: `DemoSession` dependency check; screens snapshot; the device checklist runs the unplug scenario on 3 phones and records the time to Confirmed on screen; the `/judge-demo` slash command walks both the app and web paths.
+Other tests: `DemoSession` architecture test (reads only the replay file, no networking, Outbox, real-event storage or sensor class); screen state tests on the `DemoViewModel`; the device checklist runs the unplug scenario on 3 phones and records the time to Confirmed on screen; the `/judge-demo` slash command walks both the app and web paths.
 
 Traceability: `docs/traceability.md`.

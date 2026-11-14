@@ -1,18 +1,11 @@
 {
-  "_comment": "Packages named by the master brief (stack: Expo + TypeScript, Cloudflare Worker, Vitest + fast-check, H3, Expo push). Anything else needs the human: the dependency guard asks before it is installed. Add a package here only after the human approves it. 2026-11-14: the human asked for a linter; Biome (lint and format in one tool) was chosen over ESLint plus Prettier, so eslint, typescript-eslint and prettier are not used.",
+  "_comment": "Dependencies the human approved. npm packages in `allowed`, Gradle coordinates (group:artifact) in `gradleAllowed`, Gradle plugin ids in `gradlePluginsAllowed`. Anything else needs the human: the dependency guard asks before it is installed. Add an entry only after the human approves it. Stack: native Kotlin app, Cloudflare Worker, TypeScript, Vitest + fast-check, h3-js (ADR 0012). 2026-11-14: the human chose Biome for lint and format.",
   "allowed": [
     "typescript",
     "vitest",
     "fast-check",
     "wrangler",
     "h3-js",
-    "expo",
-    "expo-modules-core",
-    "expo-notifications",
-    "expo-constants",
-    "react",
-    "react-native",
-    "@types/react",
     "@cloudflare/workers-types",
     "@biomejs/biome"
   ],
@@ -20,17 +13,24 @@
     "vitest",
     "tsc",
     "wrangler",
-    "expo",
-    "eas",
-    "eas-cli",
     "biome"
   ],
+  "gradleAllowed": [
+    "junit:junit",
+    "androidx.core:core-ktx",
+    "androidx.annotation:annotation"
+  ],
+  "gradlePluginsAllowed": [
+    "com.android.application",
+    "com.android.library"
+  ],
   "pendingApproval": [
-    "expo-location",
-    "expo-camera",
-    "react-native-qrcode-svg",
-    "react-native-svg",
-    "react-native-view-shot",
-    "expo-sharing"
+    "androidx.compose (Jetpack Compose, Material 3)",
+    "com.uber:h3",
+    "com.google.firebase:firebase-messaging",
+    "org.jetbrains.kotlinx:kotlinx-serialization-json",
+    "androidx.room",
+    "androidx.datastore",
+    "a Kotlin linter (ktlint or detekt)"
   ]
 }

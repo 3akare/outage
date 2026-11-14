@@ -4,7 +4,7 @@ Status: Quick Spec, generated without approval gates as the brief allows for thi
 
 ## Introduction
 
-Milestone 1 asks one question before anything else is built: does the charging-constraint job sensor work well enough on real phones, including Tecno and Infinix? The probe is a bare Expo app with a minimal Kotlin sensor, one Worker endpoint that stores raw events, and a debug screen. It measures the numbers the gate needs and settles the open questions in ADR 0001, ADR 0004 and the alert and alarm specs.
+Milestone 1 asks one question before anything else is built: does the charging-constraint job sensor work well enough on real phones, including Tecno and Infinix? The probe is a small native Kotlin Android app (plain Views, no libraries beyond the platform, built by GitHub Actions) with a minimal sensor, one Worker endpoint that stores raw events, and a debug screen. It measures the numbers the gate needs and settles the open questions in ADR 0001, ADR 0004 and the alert and alarm specs.
 
 ## Gate (from the brief, Part I milestone 1)
 
@@ -68,11 +68,11 @@ THE probe SHALL measure, per device and condition:
 4. THE Worker endpoint SHALL be removed after the gate decision, and the token rotated or deleted.
 
 ### R8 Output
-1. THE probe SHALL end with `docs/probe/summary.md` (all devices and conditions) and an ADR `docs/adr/0012-feasibility-gate.md` that states the gate result and the chosen path.
+1. THE probe SHALL end with `docs/probe/summary.md` (all devices and conditions) and an ADR `docs/adr/0013-feasibility-gate.md` that states the gate result and the chosen path.
 2. THE ADR SHALL update ADR 0001 and ADR 0004 with the measured facts, and list any new decision for the human.
 3. THE probe SHALL record the exact phones, Android versions and dates.
 
 ## Decisions
 - Use the human's phones; the matrix is whatever is available. The summary lists coverage gaps honestly.
-- The probe uses `tools/probe/app`, `tools/probe/worker` and `tools/probe/analyze`. These are outside the monorepo layout on purpose, since they are throwaway.
-- New dependencies: the bare Expo app and Wrangler are from the approved stack. No other library.
+- The probe uses `tools/probe/android`, `tools/probe/worker` and `tools/probe/analyze`. These are outside the monorepo layout on purpose, since they are throwaway.
+- New dependencies: none beyond the toolchain approved by ADR 0012 (Kotlin, Gradle, the Android Gradle plugin) and Wrangler, TypeScript and Vitest for the Worker and the analysis. The Android code uses only platform classes (`SQLiteOpenHelper`, `HttpURLConnection`, `JobScheduler`, plain Views).

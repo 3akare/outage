@@ -1,9 +1,15 @@
 {
   "name": "sensor-engineer",
-  "description": "Kotlin and Android only. Builds and tests the outage-sensor Expo Module (JobScheduler charging sensor, Station mode receiver driver, native Light Alarm, outbox) from the sensor-android, station-mode and alerts-and-light-alarm specs. Use for work under modules/outage-sensor and the Android side of the app. Hands TypeScript, Worker and detection work back.",
+  "description": "Kotlin and Android only. Builds and tests the native Kotlin Android app's sensor (JobScheduler charging sensor, Station mode receiver driver, native Light Alarm, outbox) and the throwaway feasibility probe app, from the sensor-android, station-mode, alerts-and-light-alarm and feasibility-probe specs. Use for work under apps/android and tools/probe/android. Hands TypeScript, Worker and detection work back.",
   "prompt": "file://./prompts/sensor-engineer.md",
   "model": "claude-opus-4.8",
-  "tools": ["read", "write", "shell", "web", "@context7"],
+  "tools": [
+    "read",
+    "write",
+    "shell",
+    "web",
+    "@context7"
+  ],
   "includeMcpJson": false,
   "includePowers": false,
   "mcpServers": {
@@ -13,7 +19,7 @@
   },
   "resources": [
     "file://.kiro/steering/**/*.md",
-    "file://modules/outage-sensor/AGENTS.md",
+    "file://apps/android/AGENTS.md",
     "file://.kiro/specs/sensor-android/requirements.md",
     "file://.kiro/specs/sensor-android/design.md",
     "file://.kiro/specs/sensor-android/tasks.md",
@@ -25,12 +31,98 @@
   ],
   "permissions": {
     "rules": [
-      { "capability": "fs_write", "match": ["**"], "exclude": ["modules/outage-sensor/**", "docs/probe-checklist.md", "docs/kiro-log.md", "docs/traceability.md", "docs/session-notes.md", "docs/adr/**", ".kiro/specs/sensor-android/tasks.md", ".kiro/specs/station-mode/tasks.md", ".kiro/specs/alerts-and-light-alarm/tasks.md", ".commit-message.txt"], "effect": "deny" },
-      { "capability": "fs_write", "match": ["modules/outage-sensor/**", "docs/probe-checklist.md", "docs/kiro-log.md", "docs/traceability.md", "docs/session-notes.md", "docs/adr/**", ".kiro/specs/sensor-android/tasks.md", ".kiro/specs/station-mode/tasks.md", ".kiro/specs/alerts-and-light-alarm/tasks.md", ".commit-message.txt"], "effect": "allow" },
-      { "capability": "shell", "match": ["git status*", "git diff*", "git log*", "git show*", "git add *", "git commit *", "git push origin main", "node --test *", "npm test*", "npm run *", "./gradlew *", "node .kiro/scripts/*", "ls *"], "effect": "allow" },
-      { "capability": "shell", "match": ["npm install *", "npm i *", "pnpm add *", "pnpm install *", "yarn add *", "npx expo install *", "npx wrangler * create *"], "effect": "ask" },
-      { "capability": "shell", "match": ["git push --force*", "git push -f*", "git reset --hard*", "git clean *", "rm -rf *", "sudo *"], "effect": "deny" },
-      { "capability": "mcp", "match": ["context7/*"], "effect": "allow" }
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          "apps/android/**",
+          "tools/probe/android/**",
+          ".github/workflows/android.yml",
+          "docs/probe-checklist.md",
+          "docs/kiro-log.md",
+          "docs/traceability.md",
+          "docs/session-notes.md",
+          "docs/adr/**",
+          ".kiro/specs/sensor-android/tasks.md",
+          ".kiro/specs/station-mode/tasks.md",
+          ".kiro/specs/alerts-and-light-alarm/tasks.md",
+          ".kiro/specs/feasibility-probe/tasks.md",
+          ".commit-message.txt"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "apps/android/**",
+          "tools/probe/android/**",
+          ".github/workflows/android.yml",
+          "docs/probe-checklist.md",
+          "docs/kiro-log.md",
+          "docs/traceability.md",
+          "docs/session-notes.md",
+          "docs/adr/**",
+          ".kiro/specs/sensor-android/tasks.md",
+          ".kiro/specs/station-mode/tasks.md",
+          ".kiro/specs/alerts-and-light-alarm/tasks.md",
+          ".kiro/specs/feasibility-probe/tasks.md",
+          ".commit-message.txt"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "git status*",
+          "git diff*",
+          "git log*",
+          "git show*",
+          "git add *",
+          "git commit *",
+          "git push origin main",
+          "node --test *",
+          "npm test*",
+          "npm run *",
+          "./gradlew *",
+          "node .kiro/scripts/*",
+          "ls *",
+          ".kiro/scripts/android-sandbox.sh *"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "npm install *",
+          "npm i *",
+          "pnpm add *",
+          "pnpm install *",
+          "yarn add *",
+          "npx wrangler * create *"
+        ],
+        "effect": "ask"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "git push --force*",
+          "git push -f*",
+          "git reset --hard*",
+          "git clean *",
+          "rm -rf *",
+          "sudo *"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "mcp",
+        "match": [
+          "context7/*"
+        ],
+        "effect": "allow"
+      }
     ]
   },
   "welcomeMessage": "sensor-engineer: Kotlin and Android only. I read docs/status.md, then the next open task in the sensor-android tasks.md."

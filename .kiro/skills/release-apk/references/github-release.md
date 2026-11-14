@@ -1,5 +1,7 @@
 # GitHub release with `gh api`
 
+The release workflow creates a draft release with the APK attached (see `gradle-release.md`). Use this file to publish that draft after the smoke test, or as a manual fallback if the workflow is unavailable.
+
 In this sandbox `gh pr` and `gh issue` subcommands fail (they use GraphQL); use REST endpoints through `gh api`. Replace `OWNER/REPO` with the repository (`3akare/outage`). Ask the human before publishing.
 
 ```bash

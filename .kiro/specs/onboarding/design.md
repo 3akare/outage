@@ -16,17 +16,17 @@ flowchart LR
     S --> F[Finish + Alarm check list]
 ```
 
-A small state machine (`OnboardingFlow`, pure TypeScript) decides the next step from the facts: consent given, permissions granted, exemption state, previous skips. Screens are thin. State is stored on the phone after every step (R1.5).
+A small state machine (`OnboardingFlow`, a pure Kotlin class with no Android types) decides the next step from the facts: consent given, permissions granted, exemption state, previous skips. Screens are thin Jetpack Compose screens (needs human approval, ADR 0012) driven by an `OnboardingViewModel`. State is stored on the phone after every step (R1.5).
 
 ## 2. Verified platform facts
 
 | Fact | Source |
 |---|---|
 | `ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` lets the user add the app to the exemption list directly. Google Play policy restricts it to apps whose core function is hurt. `ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS` opens the general list. `PowerManager.isIgnoringBatteryOptimizations()` reports the state. | https://developer.android.com/training/monitoring-device-state/doze-standby |
-| `expo-location` has `getLastKnownPositionAsync` (fast, may be stale) and `getCurrentPositionAsync` (may take seconds indoors). The location object has a `mocked` flag on Android. | https://docs.expo.dev/versions/latest/sdk/location/ |
+| `LocationManager.getLastKnownLocation(provider)` returns a cached location or null and may be old (API 1, needs coarse or fine location permission). `LocationManager.getCurrentLocation(provider, cancellationSignal, executor, consumer)` asks for one fresh fix (API 30; may take seconds indoors). | https://developer.android.com/reference/android/location/LocationManager |
 | Android 14 full-screen intent check: `NotificationManager.canUseFullScreenIntent()`. | https://developer.android.com/about/versions/14/behavior-changes-14 |
 
-To confirm with the docs servers: the Expo permission request APIs (location coarse-only on Android), `expo-notifications` permission and channel APIs, `Build.MANUFACTURER` and `Build.BRAND` values on Tecno, Infinix and itel phones, and the config plugin entries for `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`.
+To confirm with the docs servers (unverified): the runtime permission request for coarse-only location (`ACCESS_COARSE_LOCATION`) and `POST_NOTIFICATIONS` from a Compose screen, `NotificationChannel` creation, a mock-location check on `Location` (`isFromMockProvider`, newer `isMock`), `Build.MANUFACTURER` and `Build.BRAND` values on Tecno, Infinix and itel phones, and the manifest entry for `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`. On API 26 to 29 there is no `getCurrentLocation`; the fallback is the last known location or the map pick (unverified).
 
 ## 3. Flow state machine
 
@@ -54,15 +54,15 @@ Re-onboarding is the same machine. Steps whose facts are already true (permissio
 sequenceDiagram
     participant U as User
     participant A as App
-    participant L as expo-location
+    participant L as LocationManager
     participant H as H3 helper
     U->>A: Use my location once
     A->>L: request coarse foreground permission
     L-->>A: granted
     par fast path
-        A->>L: getLastKnownPositionAsync(maxAge, accuracy)
+        A->>L: getLastKnownLocation(provider), check age
     and slow path
-        A->>L: getCurrentPositionAsync(balanced)
+        A->>L: getCurrentLocation(provider, signal, executor, consumer)
     end
     Note over A: first usable result within 8 s wins
     A->>H: cellOf(lat, lng)
@@ -71,13 +71,15 @@ sequenceDiagram
     A-->>U: shows area name or "wide area"
 ```
 
-- If `mocked` is true, the app asks "Is this your area?" with the chosen name.
-- "Pick on the map": neighborhood list from the catalog (`web-and-area-pages` task 3), then an SVG hex grid of the cells around the neighborhood centre, tap to choose. The hex grid is drawn locally from `cellToBoundary`; no tiles, no network.
+- If the location is flagged as mock, the app asks "Is this your area?" with the chosen name.
+- "Pick on the map": neighborhood list from the catalog (`web-and-area-pages` task 3), then a hex grid of the cells around the neighborhood centre, drawn on a Compose canvas, tap to choose. The hex grid is drawn locally from the H3 cell boundary (`com.uber:h3`, needs human approval, ADR 0012); no tiles, no network.
 - The area name comes from the catalog. For a cell with no catalog name the label is "Your area".
 
 ## 5. Maker detection and the OEM guide
 
-File: `packages/shared/src/oem-guide.json`, used by the app and the `oem-battery-guide` skill.
+File: `packages/shared/src/oem-guide.json`, used by the app and the `oem-battery-guide` skill. A Gradle task copies it into the app assets at build time; there is no second copy in git (ADR 0012). The app reads it with hand-written JSON parsing (kotlinx-serialization needs human approval, ADR 0012).
+
+Shape (written as a type for reading; the app has matching Kotlin data classes):
 
 ```ts
 type OemGuide = {
@@ -95,7 +97,7 @@ type OemGuide = {
 
 - Matching is table-driven. Tecno, Infinix and itel are different brands; each has its own entry even if the steps match, so verification is per brand.
 - `verified` empty means the app shows "General steps. Names may differ on your phone." and the Kiro skill treats the entry as a to-do.
-- Exemption check uses the native `isIgnoringBatteryOptimizations` call exposed by the module. Autostart and background limits have no API; the checklist is user-confirmed and recorded in diagnostics.
+- Exemption check uses the native `isIgnoringBatteryOptimizations` call in the Kotlin sensor package. Autostart and background limits have no API; the checklist is user-confirmed and recorded in diagnostics.
 - Opening settings: try the direct request when the build includes the permission; otherwise open the settings list; if neither opens, show the written path.
 
 ## 6. Self-test
@@ -104,7 +106,7 @@ type OemGuide = {
 sequenceDiagram
     participant U as User
     participant A as App
-    participant M as outage-sensor module
+    participant M as Sensor package (Kotlin)
     participant S as Sensor state machine
     A->>M: beginSelfTest()
     M->>S: mode = SELF_TEST (events not emitted)
@@ -141,7 +143,7 @@ sequenceDiagram
 
 ## 8. Data model
 
-Phone only. A key-value record `onboarding` (above) in app storage, plus a `consent` record `{ version, atMs }`. Native module: a `diagnostics` table gains `self_test_results` and `battery_checklist`. No server data except the registration of `event-ingest`.
+Phone only. A key-value record `onboarding` (above) in `SharedPreferences`, plus a `consent` record `{ version, atMs }`. Sensor SQLite database: a `diagnostics` table gains `self_test_results` and `battery_checklist`. No server data except the registration of `event-ingest`.
 
 ## 9. Error handling
 
@@ -154,13 +156,12 @@ Phone only. A key-value record `onboarding` (above) in app storage, plus a `cons
 | Battery settings intent cannot open | Show the written path. |
 | Self-test sees nothing | Retry or skip. |
 | App killed mid-step | Resume the same step. |
-| Native module missing (dev build without it) | Skip native steps and show a developer warning. |
 | User changes the clock | Step times in diagnostics may look odd; no effect on the flow. |
 | Back button | Goes to the previous step without losing choices. |
 
 ## 10. Testing strategy
 
-Property IDs `O1` to `O8`, Vitest and fast-check for the flow machine and helpers.
+Property IDs `O1` to `O8`, JUnit 4 (`./gradlew testDebugUnitTest`) with seeded random generators for the flow machine and helpers. The OEM guide file is also checked by the skill's validator in Node.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|
@@ -173,6 +174,6 @@ Property IDs `O1` to `O8`, Vitest and fast-check for the flow machine and helper
 | O7 | Interrupting and resuming at any step restores the same step and choices. | R1.5 | `O7_resume` |
 | O8 | Re-onboarding with all permissions granted shows only Spot, Consent and Finish. | R10 | `O8_reonboarding_skips` |
 
-Other tests: the time budget as a unit test over recorded step times (reports, never fails the build); screens snapshot tests; a device checklist for the 60-second run with a stranger (milestone 3 gate), per-maker battery steps, self-test on each phone.
+Other tests: the time budget as a unit test over recorded step times (reports, never fails the build); screen state tests on the `OnboardingViewModel`; a device checklist for the 60-second run with a stranger (milestone 3 gate), per-maker battery steps, self-test on each phone.
 
 Traceability: `docs/traceability.md`.

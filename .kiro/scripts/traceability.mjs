@@ -14,7 +14,7 @@ function tests(dir, acc = []) {
     if (e.name === 'node_modules' || e.name.startsWith('.')) continue;
     const p = path.join(dir, e.name);
     if (e.isDirectory()) tests(p, acc);
-    else if (/\.(test|spec)\.(ts|tsx|mjs|js)$/.test(e.name)) acc.push(p);
+    else if (/\.(test|spec)\.(ts|mjs|js)$/.test(e.name)) acc.push(p);
   }
   return acc;
 }

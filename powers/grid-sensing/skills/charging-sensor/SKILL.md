@@ -17,7 +17,7 @@ When grid power dies, every phone charging in the area stops charging in the sam
 5. When the job starts again while charging after an unplug, that is the replug. Record the scheduling delay if you know when the plug-in happened.
 6. Only **detection plugs** count: wall chargers (AC) and docks. USB from a computer and wireless charging are kept in telemetry only.
 7. Use **elapsed time only**. Never send the phone's wall clock as event time. Store elapsed and the boot count; convert to "milliseconds since the event" when you hand events to the network layer. Events from before a reboot have lost time and must not be used for detection.
-8. Assign sequence numbers inside the module, persisted, strictly increasing, so (install id, sequence) is an idempotency key even when the app process is dead.
+8. Assign sequence numbers inside the sensor, persisted, strictly increasing, so (install id, sequence) is an idempotency key even when the app process is dead.
 
 ## A phone that sits at 100%
 
@@ -25,7 +25,7 @@ A spare phone left plugged in is at 100% almost all the time. A stop at 95% or m
 
 ## Alarm when power returns, offline
 
-The alarm is driven by the replug **event**, so it needs no exact-alarm permission. Keep the whole path native (no JavaScript, no network): play alarm audio directly with the alarm usage so it rings even if notification permission is denied, post an alarm-category notification as the visible layer, and use a full-screen intent only when `canUseFullScreenIntent()` is true (Android 14 limits it to calling and alarm apps). Expire a wake request after a day and on reboot.
+The alarm is driven by the replug **event**, so it needs no exact-alarm permission. Keep the whole path inside the service that sees the replug (no network, no server): play alarm audio directly with the alarm usage so it rings even if notification permission is denied, post an alarm-category notification as the visible layer, and use a full-screen intent only when `canUseFullScreenIntent()` is true (Android 14 limits it to calling and alarm apps). Expire a wake request after a day and on reboot.
 
 ## Structure that makes it testable
 

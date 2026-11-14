@@ -8,7 +8,7 @@ Three parts, kept apart so the alarm never depends on anything it does not need.
 
 ```mermaid
 flowchart LR
-    subgraph Phone native Kotlin no JS
+    subgraph Phone alarm path Kotlin
       SM[SensorStateMachine] -->|UNPLUG| PN[PromptNotifier]
       SM -->|REPLUG| AP[AlarmPolicy]
       PN --> NA[NotificationActionReceiver]
@@ -17,22 +17,23 @@ flowchart LR
       AP --> WS
       AP --> LA[LightAlarm: audio + notification + full-screen]
     end
-    subgraph Phone JS
+    subgraph Phone UI Kotlin
       UI[Settings: follow, quiet hours, test alarm, status]
       UI --> API[Worker API with install token]
+      FMS[FCM token and message receiver]
     end
     subgraph Worker
       API --> SUB[Subscriptions in area actor]
       AA[area actor pushes] --> PP[PushPlanner pure]
-      SUB --> PP --> EX[Expo push client]
-      EX -->|HTTPS| XP[Expo push service]
+      SUB --> PP --> FC[FCM client]
+      FC -->|HTTPS| FCM[FCM HTTP v1]
     end
-    XP --> FCM[FCM] --> Phone
+    FCM --> FMS
 ```
 
-- **Light Alarm** = `PromptNotifier`, `WakeStore`, `AlarmPolicy` and `LightAlarm`. All native, none uses the network.
+- **Light Alarm** = `PromptNotifier`, `WakeStore`, `AlarmPolicy` and `LightAlarm`. All Kotlin, none uses the network.
 - **Pushes** = Worker only for planning and sending. The phone only receives them.
-- **JS** supplies settings screens and calls. It is not in the alarm path.
+- **UI** (Compose screens in the `ui` package) supplies settings and calls the Worker through the `net` package. It is not in the alarm path.
 
 ## 2. Verified platform facts
 
@@ -41,11 +42,12 @@ flowchart LR
 | Apps targeting Android 14 may use full-screen intents only if they are calling or alarm apps. The store revokes the permission for others. `NotificationManager.canUseFullScreenIntent()` checks it, and `ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT` opens the settings page. | https://developer.android.com/about/versions/14/behavior-changes-14 |
 | Mutable pending intents without an explicit component throw on Android 14 targets. Implicit intents reach only exported components. | same |
 | `SCHEDULE_EXACT_ALARM` is denied by default for new apps that target Android 13+. `USE_EXACT_ALARM` is only for calendar and alarm-clock apps. The Light Alarm is triggered by an event, so it does not use exact alarms. | https://developer.android.com/about/versions/14/changes/schedule-exact-alarms |
-| Expo push on Android needs FCM v1 credentials. Limits: 600 notifications per second per project, 100 per request, 1,000 receipts per request, payload up to 4 KiB. A message whose `channelId` does not exist on the device is not displayed. Errors to handle: `DeviceNotRegistered`, `MessageRateExceeded`, `InvalidCredentials`. | https://docs.expo.dev/push-notifications/push-notifications-setup/ , https://docs.expo.dev/push-notifications/sending-notifications/ |
+| FCM HTTP v1 send is `POST https://fcm.googleapis.com/v1/projects/PROJECT_ID/messages:send` with an OAuth 2.0 access token in `Authorization: Bearer`. The body is `{ "message": { "token": ..., ... } }`. One request carries one message. Success returns the message `name`. | https://firebase.google.com/docs/cloud-messaging/send/v1-api |
+| FCM error codes: `INVALID_ARGUMENT` (400, includes a bad token and a payload too big), `UNREGISTERED` (404, drop the token), `SENDER_ID_MISMATCH` (403), `QUOTA_EXCEEDED` (429, back off at least 1 minute first), `UNAVAILABLE` (503, honor `Retry-After`, exponential back-off), `INTERNAL` (500). Payload limit 4096 bytes for most messages. `ttl` is whole seconds from 0 to 2,419,200. | https://firebase.google.com/docs/reference/fcm/rest/v1/ErrorCode |
 
-To confirm with the docs servers before implementing: `NotificationChannel.setSound` with `AudioAttributes.USAGE_ALARM`, `Notification.CATEGORY_ALARM`, `FLAG_INSISTENT` behavior, `MediaPlayer` or `Ringtone` with alarm usage and looping, `RingtoneManager.TYPE_ALARM` default, `setBypassDnd` and policy access, `PowerManager` wake lock rules inside a running `JobService`, behavior of Doze when charging resumes, Expo `getExpoPushTokenAsync` and channel creation (`expo-notifications`), the receipts endpoint, and the Cloudflare alarm API for delayed receipt checks.
+To confirm with the docs servers before implementing: `NotificationChannel.setSound` with `AudioAttributes.USAGE_ALARM`, `Notification.CATEGORY_ALARM`, `FLAG_INSISTENT` behavior, `MediaPlayer` or `Ringtone` with alarm usage and looping, `RingtoneManager.TYPE_ALARM` default, `setBypassDnd` and policy access, `PowerManager` wake lock rules inside a running `JobService`, behavior of Doze when charging resumes, the OAuth scope and token request for a service-account key signed with Web Crypto, the Android message fields for channel (`android.notification.channel_id`), priority and `ttl` (https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages), the app-side token API and `onNewToken` (Firebase Messaging, needs human approval, ADR 0012), and the Cloudflare alarm API for deferred sending. These are unverified until checked.
 
-## 3. Native layer
+## 3. Alarm layer
 
 ### 3.1 `AlarmPolicy` (pure Kotlin)
 
@@ -76,10 +78,10 @@ Rules enforced here and nowhere else:
 | Component | Responsibility |
 |---|---|
 | `PromptNotifier` | Builds the prompt on channel `power-check`, with two `PendingIntent`s to an explicit, non-exported `NotificationActionReceiver`, `FLAG_IMMUTABLE`, set to time out after the prompt timeout. |
-| `NotificationActionReceiver` | Maps the tapped action to `AlarmPolicy.Answer`, applies actions. Works with no JS. |
-| `WakeStore` | SQLite table in the module database: `unplug_seq`, `created_elapsed_ms`, `boot_count`, `expires_elapsed_ms`, `state` (`ARMED`, `FIRED`, `DROPPED`). |
+| `NotificationActionReceiver` | Maps the tapped action to `AlarmPolicy.Answer`, applies actions. Works with no app screen open. |
+| `WakeStore` | SQLite table in the app database: `unplug_seq`, `created_elapsed_ms`, `boot_count`, `expires_elapsed_ms`, `state` (`ARMED`, `FIRED`, `DROPPED`). |
 | `LightAlarm` | Starts looped alarm audio and the alarm notification. Holds a partial wake lock for at most the maximum ring time. |
-| `ChannelSetup` | Creates native channels at module start (also done from JS for push channels). |
+| `ChannelSetup` | Creates all notification channels, including the push channels, at app start and again before the alarm layer posts anything. |
 
 ### 3.3 Ring path (layers)
 
@@ -115,7 +117,7 @@ Layers, from most to least reliable:
 2. **Alarm notification** on `light-alarm` (highest importance, alarm category, lock-screen visible, "Stop" action). Shows the user what is ringing and offers Stop.
 3. **Full-screen intent** only if `canUseFullScreenIntent()` is true.
 
-Ring order is fixed: the `REPLUG` is written to the Outbox first (so the event is not lost), then the alarm starts. The alarm never waits for a network call, a JS call, or an upload.
+Ring order is fixed: the `REPLUG` is written to the Outbox first (so the event is not lost), then the alarm starts. The alarm never waits for a network call or an upload.
 
 The sound is the system default alarm ringtone. If it cannot be resolved, a short bundled sound is used.
 
@@ -152,7 +154,7 @@ erDiagram
     SUBSCRIPTION {
         text install_id
         text cell
-        text expo_token
+        text fcm_token
         text kinds "CONFIRMED,RESTORED"
         int quiet_start_min "0..1439, nullable"
         int quiet_end_min "0..1439, nullable"
@@ -164,7 +166,7 @@ erDiagram
         text episode_id
         text kind
         int sent_ms
-        text ticket_id "nullable until receipt checked"
+        text message_name "FCM response name, nullable"
     }
 ```
 
@@ -172,7 +174,7 @@ erDiagram
 - `PUSH_SENT` is the de-duplication memory (R6.4). It is pruned after 7 days.
 - Delete-my-data removes both tables' rows for the install, and removes labels.
 
-### 5.2 `PushPlanner` (pure TypeScript)
+### 5.2 `PushPlanner` (pure TypeScript, Worker only)
 
 ```ts
 plan(decisions: AreaPush[], subs: Subscription[], nowMs: number, sent: SentMemory): PlannedMessage[]
@@ -184,7 +186,7 @@ For each `AreaPush { cell, episodeId, kind, level, decisionTimeMs, precision }`:
 3. Select subscriptions for the cell with the kind enabled and not already in `sent` for (sub, episode, kind).
 4. Pick the channel: `alerts-quiet` if the subscriber's local time (`nowMs + tz_offset`) lies in the quiet window, else `alerts`.
 5. Build title and body from the string pack (`copy.md`): no install IDs, no number under 3, "wide area" when precision is `COARSE`.
-6. Set `data: { cell, episodeId, kind }`, `priority: 'high'`, `ttl` short enough that an old message is not delivered later (equal to the push-age rule, 600 seconds).
+6. Set `data: { cell, episodeId, kind }`, high priority, and a `ttl` short enough that an old message is not delivered later (equal to the push-age rule, 600 seconds). Field names for channel, priority and ttl in the Android part of the FCM message are unverified (see section 2).
 
 Quiet window test: with `local = (nowMs/60000 + tz_offset) mod 1440`; window `[s, e)` contains `local` if `s < e ? s <= local < e : local >= s || local < e`; `s == e` means no window.
 
@@ -194,45 +196,42 @@ Quiet window test: with `local = (nowMs/60000 + tz_offset) mod 1440`; window `[s
 sequenceDiagram
     participant AA as Area actor
     participant PP as PushPlanner
-    participant EX as Expo client
-    participant XP as Expo push service
+    participant FC as FCM client
+    participant G as FCM HTTP v1
     AA->>PP: plan(pushes, subs, now, sent)
-    PP-->>AA: messages (grouped in 100s)
-    loop each group
-        AA->>EX: send(group)
-        EX->>XP: POST /--/api/v2/push/send
-        XP-->>EX: tickets
-        EX-->>AA: tickets, per-message status
-        AA->>AA: record PUSH_SENT for accepted ones
+    PP-->>AA: messages
+    AA->>FC: access token (cached, from FCM_SERVICE_ACCOUNT)
+    loop each message, up to the invocation budget
+        AA->>FC: send(message)
+        FC->>G: POST /v1/projects/PROJECT_ID/messages:send
+        G-->>FC: message name or error
+        FC-->>AA: result
+        AA->>AA: record PUSH_SENT if accepted; UNREGISTERED deletes the subscription
     end
-    AA->>AA: set alarm +15 min to check receipts
-    Note over AA: later
-    AA->>EX: getReceipts(ticket ids, up to 1000)
-    EX->>XP: POST /--/api/v2/push/getReceipts
-    XP-->>EX: receipts
-    EX-->>AA: errors
-    AA->>AA: DeviceNotRegistered, delete subscription
+    AA->>AA: set alarm for the unsent rest or for retries
 ```
 
-- Request URL and receipt URL are the Expo push API (https://docs.expo.dev/push-notifications/sending-notifications/). Confirm the exact paths and headers with the docs server before writing the client.
-- Free-plan limits: at most 50 subrequests per invocation, so one invocation sends at most about 40 groups (4,000 messages) and defers the rest to an alarm. A cell with more followers than that is far beyond the field test.
-- Optional `Authorization: Bearer ${EXPO_ACCESS_TOKEN}` when the secret is set.
-- `MessageRateExceeded` or request failure: retry with back-off from the alarm; accepted messages are never resent because `PUSH_SENT` was written.
+- The request URL and headers are the FCM HTTP v1 API (https://firebase.google.com/docs/cloud-messaging/send/v1-api). The Worker builds the OAuth access token from the service-account key in the Wrangler secret `FCM_SERVICE_ACCOUNT`, signing with Web Crypto (ADR 0012). Confirm the token request and scope with the docs server before writing the client.
+- FCM HTTP v1 takes one message per request, and there is no receipt step: the response of each send says if the token is dead.
+- Free-plan limit: at most 50 subrequests per invocation. One invocation therefore sends at most about 45 messages (one subrequest for the access token, the rest for sends) and defers the rest to an alarm. A cell with more followers than that is beyond the field test; revisit before a wider launch.
+- `QUOTA_EXCEEDED`, `UNAVAILABLE`, `INTERNAL` or a failed request: retry with back-off from the alarm, starting at 1 minute (https://firebase.google.com/docs/reference/fcm/rest/v1/ErrorCode). Accepted messages are never resent because `PUSH_SENT` was written.
+- The key is read only from the secret and is never logged.
 - Tokens are never logged.
 
 ### 5.4 Follow API
 
-- `POST /v1/follow` with `{ cell, token, kinds, quietStartMin, quietEndMin, tzOffsetMin }` and the install token. The Worker validates the cell, checks that a public status exists for it or that the cell is valid (following before coverage is allowed so the install button works; pushes still need a public status), then writes the subscription in the owning area actor.
+- `POST /v1/follow` with `{ cell, fcmToken, kinds, quietStartMin, quietEndMin, tzOffsetMin }` and the install token. The Worker validates the cell, checks that a public status exists for it or that the cell is valid (following before coverage is allowed so the install button works; pushes still need a public status), then writes the subscription in the owning area actor.
 - `POST /v1/unfollow` with `{ cell }`.
+- `POST /v1/follow` is sent again with the new token when the app's token changes (R10.3, token refresh). The row for (`install_id`, `cell`) is replaced.
 - Rate limit like ingest. Strict schema, no extra fields. A token that fails validation is rejected without storing.
 - Both endpoints count toward the free request budget; follow changes are rare.
 
-## 6. JS layer
+## 6. App screens and token registration (Kotlin, `ui` and `net` packages)
 
-- `registerForPush()` creates channels first, then asks permission, then gets the Expo push token (confirm with the `expo-notifications` docs).
+- Token registration creates the channels first, then asks for notification permission, then obtains the FCM registration token and sends it with the follow call. When the token changes, the app sends it again for each followed cell. The Firebase Messaging dependency needs human approval (ADR 0012); its token API is unverified until checked with the docs.
 - Screens: Follow area, Quiet hours, "Test Light Alarm", "Alarm check" list (notification permission, alarm volume, full-screen allowed, battery exemption), and the in-app prompt for denied-notification users (R1.7).
 - Strings live in the string pack; Pidgin is optional. A test checks that every key exists in each language that is present.
-- No alarm logic in JS.
+- No alarm logic in the screens. They only call the alarm layer.
 
 ## 7. Error handling
 
@@ -246,9 +245,9 @@ sequenceDiagram
 | Two unplugs in a row | New prompt replaces old; old wake dropped if not rung. |
 | User taps an action after REPLUG | Ignored. |
 | Duplicate `REPLUG` event | The second finds the wake `FIRED` and does nothing. |
-| Expo returns `DeviceNotRegistered` | Remove subscription. |
-| Expo returns `InvalidCredentials` or `MismatchSenderId` | Stop sending, raise a counter, keep subscriptions. Needs the human (Firebase credentials). |
-| Request over 4 KiB | Cannot happen with the fixed message shape; test checks size. |
+| FCM returns `UNREGISTERED` | Remove subscription. |
+| FCM rejects the access token (401 or 403) or returns `SENDER_ID_MISMATCH` | Stop sending, raise a counter, keep subscriptions. Needs the human (Firebase credentials). |
+| Request over 4096 bytes | Cannot happen with the fixed message shape; test checks size. |
 | Push for a cell with no public status | Skipped, counted. |
 | Follow of an invalid cell | 400 with `BAD_CELL`. |
 | Follower count over one invocation's budget | Remaining messages deferred to an alarm. |
@@ -266,24 +265,24 @@ sequenceDiagram
 
 ## 9. Testing strategy
 
-Properties use IDs `L1` to `L12`. Kotlin tests: plain JUnit4 with seeded random loops (no new dependency). Server and JS tests: Vitest and fast-check. Test names include the ID.
+Properties use IDs `L1` to `L12`. Kotlin tests: JUnit 4 JVM unit tests with seeded random loops (no new dependency). Server tests: Vitest and fast-check. Contract fixtures in `packages/shared/fixtures/` (the `LABEL` event and the follow request) are read by both the Kotlin and the TypeScript tests. Test names include the ID.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|
 | L1 | Each distinct `UNPLUG` seq produces exactly one `ShowPrompt`; duplicates produce none; the prompt is removed by answer, `REPLUG` or timeout. | R1 | `L1_one_prompt_per_unplug` |
 | L2 | `Ring` happens iff the latest unplug has an unexpired YES, a later `REPLUG` arrives, and the wake is not yet fired; never twice for one wake; never without YES. | R3.1, R3.2 | `L2_ring_iff_conditions` |
-| L3 | The alarm path (`AlarmPolicy`, `WakeStore`, `LightAlarm`) has no dependency on network, JS or upload classes (dependency check), and runs with all of them replaced by throwing fakes. | R3.3, R3.5 | `L3_alarm_has_no_network` |
+| L3 | The alarm path (`AlarmPolicy`, `WakeStore`, `LightAlarm`) has no dependency on network or upload classes (dependency check), and runs with all of them replaced by throwing fakes. | R3.3, R3.5 | `L3_alarm_has_no_network` |
 | L4 | The first answer per unplug wins, later answers are ignored, answers after `REPLUG` are ignored, and exactly one `LABEL` is queued per unplug. | R2 | `L4_first_answer_wins` |
 | L5 | For any quiet window (including across midnight and `s == e`) and any UTC offset, `quietContains` matches a reference implementation, and the Light Alarm path never reads it. | R7 | `L5_quiet_window` |
 | L6 | The push list contains each (subscription, episode, kind) at most once, only for followers of the cell, only for `CONFIRMED` and `RESTORED`, with no install ID and no number under 3 in the text. | R6 | `L6_push_planning` |
-| L7 | `DeviceNotRegistered` removes the subscription, and delete-my-data removes every subscription and label for the install. | R8.2, R10.2 | `L7_token_hygiene_and_delete` |
-| L8 | For any follower count, messages are split into groups of at most 100, every eligible follower is covered exactly once, and retries after a failed request send none twice. | R8.1, R8.3 | `L8_batching_and_retry` |
+| L7 | `UNREGISTERED` removes the subscription, and delete-my-data removes every subscription and label for the install. | R8.2, R10.2 | `L7_token_hygiene_and_delete` |
+| L8 | For any follower count, sends are split into invocation-sized chunks, every eligible follower is covered exactly once, and retries after a failed request send none twice. | R8.1, R8.3 | `L8_batching_and_retry` |
 | L9 | A wake request past its expiry or from an earlier boot never rings. | R4.1, R4.2 | `L9_expiry_and_reboot` |
 | L10 | Replaying any sequence of state-machine events, answers and timeouts in a different interleaving that keeps per-unplug order gives the same ring decisions. | R1.4, R3 | `L10_replay_equivalence` |
 | L11 | Channel definitions: `power-check` has no sound and importance at most default; `light-alarm` has alarm usage and highest importance; push channels named in messages exist in the setup list. | R1.2, R9 | `L11_channel_config` |
 | L12 | Every string key exists in English and in each other language present; no message exceeds 4 KiB. | R6.6, R10.5 | `L12_string_pack` |
 
-Other tests: a notification action test using Robolectric-free fakes through the `NotificationActionReceiver` logic; the follow and unfollow API with strict schema (I8 style); an Expo client test with an injectable `fetch` that replays recorded response shapes from the docs; an end-to-end Judge-style scenario in `tools/sim`: simulated outage, push planned for followers, push recorded as simulated and never sent.
+Other tests: a notification action test using Robolectric-free fakes through the `NotificationActionReceiver` logic; the follow and unfollow API with strict schema (I8 style); an FCM client test with an injectable `fetch` that replays response shapes from the FCM docs; an end-to-end Judge-style scenario in `tools/sim`: simulated outage, push planned for followers, push recorded as simulated and never sent.
 
 Device checklist `docs/probe-checklist.md` adds: prompt appears quiet; Yes then replug rings with screen off and app closed, offline (airplane mode); No does not ring; ring survives lock; Stop works; test alarm; each OEM.
 

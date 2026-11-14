@@ -6,7 +6,7 @@ import path from 'node:path';
 
 const payload = readPayload();
 if (toolKind(payload) !== 'write') process.exit(0);
-const touched = extractWrites(payload).map((w) => w.path).filter((p) => p.startsWith('packages/detection/') && /\.(ts|tsx|json)$/.test(p));
+const touched = extractWrites(payload).map((w) => w.path).filter((p) => p.startsWith('packages/detection/') && /\.(ts|json)$/.test(p));
 if (!touched.length) process.exit(0);
 if (debounced('detection-tests:' + touched.join(','), 8000)) process.exit(0);
 

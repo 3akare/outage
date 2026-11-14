@@ -50,7 +50,10 @@ let msg = existsSync(msgFile) ? readFileSync(msgFile, 'utf8').trim() : '';
 if (!/^(feat|fix|test|docs|chore|refactor|perf|build|ci)(\([^)]+\))?!?: .+/.test(msg)) {
   msg = `chore: save work in progress [spec:none task:none]`;
 }
-const add = git(['add', '--', ...stage]);
+// A path that is gone from disk and from the index (already `git rm`-ed) matches nothing and would fail `git add`.
+// `-A` also stages deletions that are still unstaged.
+const addable = stage.filter((f) => existsSync(path.join(ROOT, f)) || git(['ls-files', '--', f]).out.trim());
+const add = addable.length ? git(['add', '-A', '--', ...addable]) : { code: 0, out: '' };
 if (add.code !== 0) { say('push-to-main: git add failed:\n' + add.out.slice(0, 800)); process.exit(0); }
 const staged = git(['diff', '--cached', '--name-only']).out.trim();
 if (!staged) { say('push-to-main: nothing staged.'); process.exit(0); }

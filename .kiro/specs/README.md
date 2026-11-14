@@ -39,6 +39,6 @@ Bugfix Specs (`bugfix-YYYYMMDD-<slug>`) are added by the daily field run and by 
 
 - Run Analyze Requirements on each spec. It runs in Kiro IDE and in the Kiro CLI, not in Kiro Web (https://kiro.dev/docs/specs/). Run the Correctness pass in Kiro IDE for `detection-engine`.
 - Review ADR 0005 (detection parameters), ADR 0006 and 0007 (sharding, public map floor), ADR 0008 (Firebase and push storage), ADR 0009 (Home Watch pairing data), ADR 0011 (telemetry data).
-- Approve new dependencies when a task asks: `expo-location`, `expo-camera`, QR libraries, share-card libraries.
-- Create secrets: `INSTALL_TOKEN_SECRET`, `PROBE_TOKEN`, `FIELD_READ_TOKEN`, optional `EXPO_ACCESS_TOKEN`; the Firebase project for push; `.kiroignore`.
+- Approve new dependencies when a task asks: `com.uber:h3`, Firebase Messaging, Jetpack Compose and Material 3, QR libraries, share-card libraries (ADR 0012).
+- Create secrets: `INSTALL_TOKEN_SECRET`, `PROBE_TOKEN`, `FIELD_READ_TOKEN`, `FCM_SERVICE_ACCOUNT` (Firebase service-account key, Wrangler secret); the Firebase project for push; `.kiroignore`.
 - Verify facts used in public text: the tariff bands (NERC), the Lagos area centre coordinates, the GridWatch figures.

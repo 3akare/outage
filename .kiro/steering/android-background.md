@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: ["modules/**", "apps/mobile/android/**"]
+fileMatchPattern: ["apps/android/**", "tools/probe/android/**"]
 ---
 
 # Android background design

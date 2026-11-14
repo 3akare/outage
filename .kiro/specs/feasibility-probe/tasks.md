@@ -2,13 +2,13 @@
 
 Rules: this is the first code in the repo, so the usual rule applies: commit after each task, tests pass, push to `main`. The probe code is throwaway (`tools/probe/`); the docs and ADR it produces are not.
 
-Highest reasoning effort for tasks 2 and 3 (Kotlin sensor). Checkpoint before tasks 2 and 3. Plan mode first for task 1. Confirm every Android, Expo and Cloudflare API with the docs servers and put the doc URL in a comment.
+Highest reasoning effort for tasks 2 and 3 (Kotlin sensor). Checkpoint before tasks 2 and 3. Plan mode first for task 1. Confirm every Android and Cloudflare API with the docs servers and put the doc URL in a comment.
 
-Ask the human before adding any dependency beyond Expo, TypeScript, Vitest and Wrangler. Human actions: set the Worker secret `PROBE_TOKEN` (`wrangler secret put PROBE_TOKEN`), build with EAS (an Expo account and EAS login), install the APK on the test phones.
+Ask the human before adding any dependency beyond the ADR 0012 toolchain (Kotlin, Gradle, the Android Gradle plugin), TypeScript, Vitest and Wrangler. Human actions: set the Worker secret `PROBE_TOKEN` (`wrangler secret put PROBE_TOKEN`), download the APK from the GitHub Release that the Actions workflow publishes, install it on the test phones.
 
 ## Wave 1
 
-- [x] 1. Scaffold `tools/probe/app` (bare Expo, TypeScript), `tools/probe/worker` (Wrangler, one SQLite-backed Durable Object), and `tools/probe/analyze` (Vitest). Root scripts for typecheck, lint, test. Plan mode first.
+- [ ] 1. Scaffold `tools/probe/android` (Kotlin, Gradle, plain Views), `tools/probe/worker` (Wrangler, one SQLite-backed Durable Object), and `tools/probe/analyze` (Vitest), plus `.github/workflows/android.yml` that builds and tests the APK and publishes it to a GitHub Release. Root scripts for typecheck, lint, test. Plan mode first.
   - Requirements: R1 to R5
 - [x] 2. `docs/probe-checklist.md`: the step-by-step tester script for M1 to M14 with a log sheet for each device, and the phone matrix table.
   - Requirements: R6, R8.3
@@ -33,7 +33,7 @@ Ask the human before adding any dependency beyond Expo, TypeScript, Vitest and W
 
 ## Wave 4 (needs 5, 6, 4)
 
-- [ ] 7. Debug screen, uploader, export file, notes, live armed ratio, and the EAS build profile for an APK. Human builds and installs. Must also provide what section 8 of `docs/probe-checklist.md` lists: `UPLOAD` rows with duration and network type, a mismatch counter for M14, the expedited and full-screen lines, and `NOTE` rows stored exactly as typed.
+- [ ] 7. Debug screen, uploader, export file, notes, live armed ratio, all in plain Views. The workflow from task 1 builds the APK; the human downloads and installs it. Must also provide what section 8 of `docs/probe-checklist.md` lists: `UPLOAD` rows with duration and network type, a mismatch counter for M14, the expedited and full-screen lines, and `NOTE` rows stored exactly as typed.
   - Depends on: 4, 5, 6
   - Requirements: R3, R4
 
@@ -45,7 +45,7 @@ Ask the human before adding any dependency beyond Expo, TypeScript, Vitest and W
 
 ## Wave 6
 
-- [ ] 9. Write `docs/probe/summary.md` and ADR 0012 (gate result and chosen path); update ADR 0001 and ADR 0004 with measured facts; list decisions for the human. If the gate fails, stop and write the options ADR.
+- [ ] 9. Write `docs/probe/summary.md` and ADR 0013 (gate result and chosen path); update ADR 0001 and ADR 0004 with measured facts; list decisions for the human. If the gate fails, stop and write the options ADR.
   - Depends on: 8
   - Requirements: R8
 - [ ] 10. Remove the probe Worker endpoint and token, or record that the human did; decide whether `tools/probe/` is deleted or archived; update `docs/kiro-log.md`.
@@ -67,7 +67,7 @@ graph LR
     T3 --> T8[8 field run, human]
     T7 --> T8
     T2 --> T8
-    T8 --> T9[9 summary + ADR 0012]
+    T8 --> T9[9 summary + ADR 0013]
     T9 --> T10[10 cleanup]
 ```
 

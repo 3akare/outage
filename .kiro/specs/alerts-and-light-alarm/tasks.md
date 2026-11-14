@@ -2,11 +2,11 @@
 
 Rules: only real dependencies are listed. Tasks in the same wave run in parallel. A task is done only per `definition-of-done.md`. Commit after each, for example `feat(alarm): ring only after YES [spec:alerts-and-light-alarm task:3]`.
 
-Highest reasoning effort for tasks 3, 4 and 5. Checkpoint before tasks 4 and 5. Plan mode first for tasks 1 and 5 (each touches more than 3 files). Confirm every Android, Expo and Cloudflare API with the docs servers and put the doc URL in a comment.
+Highest reasoning effort for tasks 3, 4 and 5. Checkpoint before tasks 4 and 5. Plan mode first for tasks 1 and 5 (each touches more than 3 files). Confirm every Android, FCM and Cloudflare API with the docs servers and put the doc URL in a comment.
 
-Depends on `sensor-android` (tasks 4, 5, 7, 9), `station-mode` (task 2), `event-ingest` (tasks 2, 4, 5, 8), `area-cells` (task 9) and `detection-engine` (task 1). No new dependency is added. Do not add a server SDK for Expo; use `fetch`.
+Depends on `sensor-android` (tasks 4, 5, 7, 9), `station-mode` (task 2), `event-ingest` (tasks 2, 4, 5, 8), `area-cells` (task 9) and `detection-engine` (task 1). No new dependency is added by this spec text. The Firebase Messaging app dependency needs human approval (ADR 0012). Do not add a server SDK for FCM; use `fetch`.
 
-Human actions before deploy (see requirements): Firebase project and FCM v1 key on EAS, optional `EXPO_ACCESS_TOKEN`.
+Human actions before deploy (see requirements): Firebase project, service-account key stored with `wrangler secret put FCM_SERVICE_ACCOUNT`, and approval of the Firebase Messaging dependency.
 
 ## Wave 1
 
@@ -28,19 +28,19 @@ Human actions before deploy (see requirements): Firebase project and FCM v1 key 
 
 ## Wave 3
 
-- [ ] 4. Native adapters: `PromptNotifier`, `NotificationActionReceiver`, SQLite `WakeStore`, `ChannelSetup`, `LightAlarm` (audio, notification, optional full-screen intent, wake lock, telemetry), wiring into `ChargingJobService` and `StationService`. Tests L3, L11. Device checks recorded in `docs/probe-checklist.md`.
+- [ ] 4. Kotlin adapters in `apps/android` (packages `alarm`, `sensor`): `PromptNotifier`, `NotificationActionReceiver`, SQLite `WakeStore`, `ChannelSetup`, `LightAlarm` (audio, notification, optional full-screen intent, wake lock, telemetry), wiring into `ChargingJobService` and `StationService`. Tests L3, L11 (JUnit 4). Device checks recorded in `docs/probe-checklist.md`.
   - Depends on: 3, `sensor-android` 7, `station-mode` 3
   - Requirements: R1, R2, R3, R4, R9.3
-- [ ] 7. Expo push client with injectable `fetch`: send in groups of 100, tickets, receipts, error mapping, back-off. Test L8.
+- [ ] 7. FCM HTTP v1 client with injectable `fetch`: access token from the `FCM_SERVICE_ACCOUNT` secret (Web Crypto), one message per request, error mapping (`UNREGISTERED`, `QUOTA_EXCEEDED`, `UNAVAILABLE`), back-off, deferral across invocations. Test L8.
   - Depends on: 6
   - Requirements: R8, R11
 
 ## Wave 4
 
-- [ ] 5. Subscriptions in the area actor: schema, follow and unfollow endpoints, strict validation, `PUSH_SENT` memory, receipt-check alarm, push hook from `area-cells` outputs, delete-my-data. Test L7.
+- [ ] 5. Subscriptions in the area actor: schema, follow and unfollow endpoints, strict validation, `PUSH_SENT` memory, deferred-send alarm, push hook from `area-cells` outputs, delete-my-data. Test L7.
   - Depends on: 7, `area-cells` 9, `event-ingest` 4
   - Requirements: R6, R8, R10
-- [ ] 8. JS layer: channel creation, permission flow, push token registration, follow and quiet-hours screens, Test Light Alarm, Alarm check list, in-app prompt for denied notifications, string pack wiring.
+- [ ] 8. Screens (Jetpack Compose needs human approval, ADR 0012) and `net` package: channel creation, permission flow, FCM token registration and refresh, follow and quiet-hours screens, Test Light Alarm, Alarm check list, in-app prompt for denied notifications, string pack wiring; JVM unit tests for the follow request against the contract fixtures.
   - Depends on: 4, 2, `event-ingest` 10
   - Requirements: R1.7, R5, R6.1, R6.2, R7, R9
 
@@ -58,9 +58,9 @@ graph LR
     T1 --> T6[6 PushPlanner]
     T2[2 string pack] --> T6
     T3 --> T4[4 native adapters + LightAlarm]
-    T6 --> T7[7 Expo client]
+    T6 --> T7[7 FCM client]
     T7 --> T5[5 subscriptions + sending]
-    T4 --> T8[8 JS layer]
+    T4 --> T8[8 app screens]
     T2 --> T8
     T5 --> T9[9 scenario + docs]
     T8 --> T9

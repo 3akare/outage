@@ -122,5 +122,6 @@ graph LR
 ## Not in this spec
 - Choosing the scope and pooling sparse cells and linked cells: `area-cells`.
 - Sending pushes: `alerts-and-light-alarm`.
+- Running the engine on the phone. The engine runs only in the Worker and in `tools/sim`. `tools/sim` writes `replay.json`, which the app (`demo-mode`) and the web page play.
 - The label wire format ("Yes" and "No" answers): `alerts-and-light-alarm` amends `event-ingest`.
 - Showing the five states: `web-and-area-pages`.

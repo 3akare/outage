@@ -12,8 +12,8 @@ flowchart LR
     AA --> PR[Pair table]
     HS --> PL[PushPlanner home variant]
     PR --> PL
-    PL --> EX[Expo push]
-    EX --> VW[Viewer phone]
+    PL --> FC[FCM HTTP v1]
+    FC --> VW[Viewer phone]
     VW -->|GET /v1/home/:pairId| W
     ST -->|POST /v1/pair/offer| W
     VW -->|POST /v1/pair/claim| W
@@ -26,9 +26,9 @@ Home Watch lives in the same area actor as the station's events. It adds three s
 | Fact | Source |
 |---|---|
 | Each Durable Object has one alarm. `setAlarm()` counts as one row written. | https://developers.cloudflare.com/durable-objects/platform/pricing/ (alarm row note), alarm API page to confirm |
-| Expo push limits and error handling are as in `alerts-and-light-alarm` design section 2. | https://docs.expo.dev/push-notifications/sending-notifications/ |
+| FCM HTTP v1 send limits and error codes are as in `alerts-and-light-alarm` design section 2. | https://firebase.google.com/docs/reference/fcm/rest/v1/ErrorCode |
 
-To confirm with the docs servers: the Durable Object alarm API (single alarm, rescheduling), and the Expo camera barcode scanner API and QR display library choices if the human approves them.
+To confirm with the docs servers: the Durable Object alarm API (single alarm, rescheduling), and the QR display and camera scan library choices if the human approves them (needs human approval, ADR 0012).
 
 ## 3. Pairing
 
@@ -45,7 +45,7 @@ sequenceDiagram
     W-->>S: { code, expiresAtMs }
     S->>S: show code (and QR if approved)
     V->>V: user enters or scans code
-    V->>W: POST /v1/pair/claim { code, expoToken, quiet window } (install token)
+    V->>W: POST /v1/pair/claim { code, fcmToken, quiet window } (install token)
     W->>A: claim(code hash, viewerInstall)
     alt valid and unused
         A->>A: create PAIR, delete OFFER
@@ -137,7 +137,7 @@ sequenceDiagram
     participant A as Area actor
     participant H as HomeState
     participant P as Home push planner
-    participant X as Expo
+    participant X as FCM
     W->>A: ingest(station events)
     A->>H: recompute state
     H-->>A: new state if changed
@@ -151,7 +151,7 @@ sequenceDiagram
     end
 ```
 
-- Same sender, receipts and token cleanup as `alerts-and-light-alarm`.
+- Same FCM sender and token cleanup as `alerts-and-light-alarm`.
 - Sent memory key: (pair, `stateVersion`), where `stateVersion` = the event time of the change.
 - Texts (English): "Home: power off since 2:14 p.m.", "Home: power is back since 2:41 p.m.", "Home station is offline". Time is rendered on the viewer's phone from `data.sinceMs`, so the push body carries a short text and the data field the exact time. A server-rendered time would need the viewer's time zone; the subscription already stores a UTC offset for quiet hours, so the body uses it.
 - Channels: `alerts` for `OFF` and `ON`, `alerts-quiet` for `OFFLINE` and for quiet hours.
@@ -170,7 +170,7 @@ erDiagram
         text pair_id PK
         text station_install
         text viewer_install
-        text viewer_token
+        text fcm_token
         int quiet_start_min
         int quiet_end_min
         int tz_offset_min
@@ -205,16 +205,16 @@ erDiagram
 | Viewer exceeds 5 stations or station exceeds 5 viewers | 409 with a plain message. |
 | Station moves to a new cell or parent | Pair rows follow the install; the state keeps working because station events carry the install. The new parent's actor needs the pair rows: a move triggers pair migration (the same removal request as area-cells R5.3 carries pairs). |
 | Station Station-mode turned off | State becomes `OFFLINE` after 30 minutes. |
-| Viewer token invalid (`DeviceNotRegistered`) | Pair kept but push disabled; the viewer app still shows state. After 7 days of failures, the pair is removed. |
+| Viewer token invalid (`UNREGISTERED`) | Pair kept but push disabled; the viewer app still shows state. After 7 days of failures, the pair is removed. |
 | Late old events | State updated, no push (R5.6). |
 | Duplicate events | State and sent memory are idempotent. |
 | Silence while the station is `OFF` | `OFFLINE` shows last known `OFF since X`. |
-| Expo error `InvalidCredentials` | Counter raised; human action (Firebase). |
+| FCM auth error (service-account key rejected) | Counter raised; human action (Firebase). |
 | DO eviction | State rebuilt from stored station events and persisted `STATION_STATE`. |
 
 ## 10. Testing strategy
 
-Property IDs `H1` to `H8`, Vitest and fast-check.
+Property IDs `H1` to `H8`, Vitest and fast-check (server side). The viewer and station screens in the Kotlin app have JUnit 4 tests on their `ViewModel`s, reading the pair and home-state shapes from `packages/shared/fixtures/`.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|
@@ -227,6 +227,6 @@ Property IDs `H1` to `H8`, Vitest and fast-check.
 | H7 | The multiplexed alarm fires at the earliest due timer, never later than the station silence limit plus one alarm granularity, and re-arms only when it changes. | R6 | `H7_alarm_multiplexer` |
 | H8 | Deleting data from either side leaves no pair, offer or push token for that install. | R1.10, R7.4 | `H8_delete_removes_pairs` |
 
-Other tests: the viewer wording for each state and time zone; a scenario in `tools/sim` (station goes off, router down, reconnects 2 hours later, state corrected); a 60-second push-latency measurement in the device checklist; Expo client reuse tests from `alerts`.
+Other tests: the viewer wording for each state and time zone; a scenario in `tools/sim` (station goes off, router down, reconnects 2 hours later, state corrected); a 60-second push-latency measurement in the device checklist; FCM sender reuse tests from `alerts`; Kotlin tests that parse the pair and home-state fixtures from `packages/shared/fixtures/`.
 
 Traceability: `docs/traceability.md`.

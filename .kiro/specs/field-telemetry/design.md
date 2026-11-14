@@ -6,7 +6,7 @@ Status: APPROVED by delegation on 2026-11-14. Based on `requirements.md`. Tasks 
 
 ```mermaid
 flowchart LR
-    SE[Sensor telemetry<br/>on the phone] --> AG[Aggregator pure<br/>device-day]
+    SE[Sensor telemetry<br/>on the phone] --> AG[Aggregator pure Kotlin<br/>device-day]
     AG --> UP[Uploader once per day]
     UP -->|POST /v1/telemetry| W[Worker]
     W --> TA[(Telemetry actor<br/>device-day rows)]
@@ -20,7 +20,7 @@ flowchart LR
     RG --> BS[Bugfix Spec per new failure]
 ```
 
-- The **aggregator** and the **report generator** are pure TypeScript in `packages/shared` and `tools/field`. They are tested without a phone or a server.
+- The **aggregator** runs on the phone. It is a pure Kotlin class in the app's telemetry package, tested with JUnit 4 (`./gradlew testDebugUnitTest`) without a device. The `DeviceDay` shape, its strict validator and the metric functions live in `packages/shared` (TypeScript, server side), and the **report generator** lives in `tools/field` (TypeScript). Both sides read the same `DeviceDay` examples in `packages/shared/fixtures/`, so the Kotlin output and the server schema cannot drift apart.
 - The **scheduled run** is a Kiro Web agent run, using `/field-test`. It calls the generator, writes files, and files Bugfix Specs. It never edits app code.
 
 ## 2. Verified facts and sources
@@ -36,6 +36,8 @@ To confirm: how a Kiro Web Schedule stores a prompt and secrets, the Bugfix Spec
 ## 3. Phone side
 
 ### Aggregate
+
+The type is written in TypeScript in `packages/shared` for the server schema. The Kotlin aggregator produces JSON of the same shape.
 
 ```ts
 type DeviceDay = {
@@ -190,11 +192,11 @@ No install IDs and no cells appear.
 
 ## 9. Testing strategy
 
-Property IDs `F1` to `F8`. Vitest and fast-check.
+Property IDs `F1` to `F8`. Vitest and fast-check for the Worker, `packages/shared` and `tools/field`. JUnit 4 for the phone aggregator (F1 client part, F2 client part), which also reads the `DeviceDay` fixtures from `packages/shared/fixtures/`.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|
-| F1 | The aggregator output has no location, cell, model, timestamp within the day or any field outside the schema, for any sensor telemetry input; size is at most 8 KiB. | R1, R2 | `F1_aggregate_privacy_and_size` |
+| F1 | The aggregator output has no location, cell, model, timestamp within the day or any field outside the schema, for any sensor telemetry input (Kotlin test) and the schema rejects anything else (TypeScript test); size is at most 8 KiB. | R1, R2 | `F1_aggregate_privacy_and_size` |
 | F2 | Uploading the same device-day any number of times leaves one row, equal to the last upload. | R2.5, R3 | `F2_upload_idempotent` |
 | F3 | `nearestRank` equals a reference, p95 is hidden below 20 samples, and the armed ratio is null below one hour of charging. | R4 | `F3_percentiles_and_ratio` |
 | F4 | Outage classification matches the table for every combination of label counts. | R5 | `F4_outage_classes` |

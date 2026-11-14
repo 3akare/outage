@@ -4,11 +4,11 @@ Rules: only real dependencies are listed. Tasks in the same wave can run in para
 
 Highest reasoning effort for tasks 3, 4, 7, 8. Create a checkpoint before tasks 4, 7, 8. Verify every Android API with a docs server first and put the URL in a code comment.
 
-Dependencies already covered by the brief's stack (Expo, TypeScript, Vitest, Gradle JUnit4) are not new. Ask the human before adding anything else.
+Dependencies approved by ADR 0012 (Kotlin, Gradle, the Android Gradle plugin, AndroidX core, JUnit 4) are not new. Ask the human before adding anything else.
 
 ## Wave 1 (no dependencies)
 
-- [ ] 1. Scaffold `modules/outage-sensor` as an Expo Module (Kotlin) with a JVM unit-test source set using JUnit4. Needs a Plan mode pass first (touches more than 3 files).
+- [ ] 1. Scaffold the `sensor` package in `apps/android` (Gradle project, JVM unit-test source set using JUnit 4; the project itself comes from the app scaffold, reuse the probe's Gradle settings). Needs a Plan mode pass first (touches more than 3 files).
   - Requirements: R11
 - [ ] 2. Add the `SensorEvent`, `SensorTelemetry` and `Diagnostics` types to `packages/shared`, matching design section 7.
   - Requirements: R9, R10, R11
@@ -42,7 +42,7 @@ Dependencies already covered by the brief's stack (Expo, TypeScript, Vitest, Gra
 
 ## Wave 5
 
-- [ ] 9. Expo module bridge and typed JS API (`start`, `stop`, `setInstallId`, `getPendingEvents`, `ackEvents`, `getTelemetry`, `getDiagnostics`, `onEvent`). JS contract test against a fake native module. Immediate `onEvent` delivery for `REPLUG` when the process is alive.
+- [ ] 9. `SensorController` (`start`, `stop`, `setInstallId`, `getPendingEvents`, `ackEvents`, `getTelemetry`, `getDiagnostics`, listener). JVM unit test against fake adapters. Immediate hand-off of `REPLUG` to the Light Alarm in the same process.
   - Depends on: 7, 8, 2
   - Requirements: R4.3, R11
 - [ ] 10. Diagnostics: Android version, manufacturer, standby bucket, battery-exemption state, stop-reason counts, recent gaps.
@@ -57,7 +57,7 @@ Dependencies already covered by the brief's stack (Expo, TypeScript, Vitest, Gra
 
 ## Wave 7
 
-- [ ] 12. Update `docs/traceability.md` (statuses and task IDs for S1 to S8), `docs/kiro-log.md`, and `modules/outage-sensor/README.md`. Write a device checklist `docs/probe-checklist.md` for the feasibility probe (not a CI test).
+- [ ] 12. Update `docs/traceability.md` (statuses and task IDs for S1 to S8), `docs/kiro-log.md`, and `apps/android/README.md`. The device checklist `docs/probe-checklist.md` for the feasibility probe already exists (not a CI test).
   - Depends on: 3, 4, 5, 9, 10, 11
   - Requirements: all
 
@@ -77,7 +77,7 @@ graph LR
     T6 --> T7
     T4 --> T8[8 recovery]
     T5 --> T8
-    T7 --> T9[9 bridge]
+    T7 --> T9[9 controller]
     T8 --> T9
     T7 --> T10[10 diagnostics]
     T9 --> T11[11 delete + privacy]

@@ -87,8 +87,8 @@ test('sensor-engineer: Kotlin and Android only (cannot write detection, Worker, 
   const write = a.permissions.rules.filter((r) => r.capability === 'fs_write');
   const deny = write.find((r) => r.effect === 'deny'), allow = write.find((r) => r.effect === 'allow');
   assert.deepEqual(deny.match, ['**']);
-  assert.ok(allow.match.every((m) => /^(modules\/outage-sensor\/\*\*|docs\/|\.kiro\/specs\/(sensor-android|station-mode|alerts-and-light-alarm)\/tasks\.md|\.commit-message\.txt)/.test(m)), allow.match.join());
-  for (const forbidden of ['packages/detection/x.ts', 'workers/api/x.ts', '.kiro/steering/x.md', '.kiro/hooks/x.json', 'apps/mobile/src/a.tsx', 'packages/shared/src/a.ts']) {
+  assert.ok(allow.match.every((m) => /^(apps\/android\/\*\*|tools\/probe\/android\/\*\*|\.github\/workflows\/android\.yml|docs\/|\.kiro\/specs\/(sensor-android|station-mode|alerts-and-light-alarm|feasibility-probe)\/tasks\.md|\.commit-message\.txt)/.test(m)), allow.match.join());
+  for (const forbidden of ['packages/detection/x.ts', 'workers/api/x.ts', '.kiro/steering/x.md', '.kiro/hooks/x.json', 'workers/api/src/page.ts', 'tools/probe/worker/src/index.ts', 'packages/shared/src/a.ts']) {
     assert.ok(!allow.match.some((m) => forbidden.startsWith(m.replace('**', ''))), `${forbidden} must not be writable`);
     assert.ok(!deny.exclude.some((m) => forbidden.startsWith(m.replace('**', ''))), `${forbidden} must stay denied`);
   }

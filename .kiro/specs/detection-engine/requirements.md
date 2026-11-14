@@ -4,7 +4,7 @@ Status: DRAFT requirements written in Kiro Web, APPROVED by delegation on 2026-1
 
 ## Introduction
 
-The detection engine decides, for one evaluation scope (an H3 cell or its parent), whether power is out and when it returned. It is a pure TypeScript function in `packages/detection`: no network, no storage, no wall clock. Every decision carries the numbers behind it.
+The detection engine decides, for one evaluation scope (an H3 cell or its parent), whether power is out and when it returned. It is a pure TypeScript function in `packages/detection`: no network, no storage, no wall clock. Every decision carries the numbers behind it. The engine runs in the Worker and in `tools/sim`. The phone does not run it. `tools/sim` writes `replay.json` for the app and the web page.
 
 The algorithm and the twelve properties P1 to P12 come from the master brief, Part G, and are copied in `.kiro/steering/detection.md`. This spec makes them precise enough to implement and test. Where the brief left a quantity undefined, the choice is listed under "Decisions" and in ADR 0005.
 

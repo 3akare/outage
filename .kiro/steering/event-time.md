@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: ["packages/detection/**", "workers/**", "modules/**"]
+fileMatchPattern: ["packages/detection/**", "workers/**", "apps/android/**", "tools/probe/**"]
 ---
 
 # Event time

@@ -86,7 +86,7 @@ Everything here works from one phone. The server is optional and only adds area 
 1. THE app SHALL produce a monthly share card with the Light Score, hours of power, outage count and the app link.
 2. THE card SHALL NOT contain a location, area name, install ID or the user's name.
 3. THE card SHALL say "estimate" and the number of days it covers.
-4. WHERE the image libraries are not approved, THE app SHALL share the same facts as text.
+4. WHERE image sharing is not built, THE app SHALL share the same facts as text.
 
 ### R9 Area outage sync
 1. WHEN the phone is online, THE app SHALL fetch public outages for the spot's cell from the Worker, for the last 30 days.
@@ -112,7 +112,7 @@ Done by Kiro Web. Run Analyze Requirements in IDE on this file and record the re
 | G5 | Freezer Guard could fire for every human unplug. | R6.8, R6.2 (only `OUT`). |
 | G6 | Tariff promises vary by source and change. | R5.5. |
 | G7 | "Never promise compensation." | R5.4. |
-| G8 | Share-card libraries may need approval. | R8.4. |
+| G8 | Image sharing may need human approval. | R8.4. |
 | G9 | The brief mentions a "Power is back" tap and manual reports without a spec. | R7. |
 | G10 | Inverters and switched-off sockets hide restores. | R2.5, R2.6, R7.2. |
 | G11 | Light Score needs a defined number of days. | R4.3. |
@@ -129,4 +129,4 @@ Done by Kiro Web. Run Analyze Requirements in IDE on this file and record the re
 | Band list | A 20 h, B 16 h, C 12 h, D 8 h, E 4 h minimum per day, from public Nigerian reports (https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/ and others). Secondary sources; the human verifies against NERC before release. |
 
 - `REPORT` events amend the sensor and ingest schemas (task 1). Only kind `OUT` is uploaded.
-- Share card libraries (`react-native-view-shot`, `expo-sharing`) are new dependencies. They are blocked until the human approves; the text share needs none.
+- The image share card is blocked until the human decides how it is built (a platform `Canvas` bitmap and `FileProvider` need no new library but are unverified); the text share needs none.

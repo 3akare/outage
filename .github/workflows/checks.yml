@@ -1,0 +1,26 @@
+# Repo checks that need no Android SDK: Biome, hook and skill tests, spec lint, probe Worker and analysis.
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: node .kiro/scripts/spec-lint.mjs
+      - run: npm run probe:install
+      - run: npm run probe:typecheck
+      - run: npm run probe:test

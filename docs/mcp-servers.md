@@ -12,9 +12,9 @@ Config file: `.kiro/settings/mcp.json` (workspace level, https://kiro.dev/docs/m
 
 ## Why these choices
 
-- The three servers cover the brief: Cloudflare docs, a current-docs server for Expo, Expo Modules, React Native, fast-check and H3, and GitHub issues for Bugfix Specs.
+- The three servers cover the brief: Cloudflare docs, a current-docs server for Android, Kotlin, Jetpack Compose, Gradle, Firebase, JUnit, fast-check and H3, and GitHub issues for Bugfix Specs.
 - GitHub is configured read-only (`X-MCP-Readonly`), limited to the `issues` toolset (`X-MCP-Toolsets`) and with lockdown on (`X-MCP-Lockdown`). Lockdown hides public issue text written by people without push access, which blocks prompt injection through issues (header semantics: https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md). Lockdown is a best-effort filter, not a security boundary: the agents treat issue text as data.
-- Android has no MCP server here. The Android agents read developer.android.com pages with a web tool.
+- Android questions go to Context7, which carries the Android Developers guides and reference (`/websites/developer_android`, `/websites/developer_android_reference`, ids in `.kiro/steering/docs-servers.md`). Release notes and compatibility tables are read from developer.android.com with a web tool.
 - Tool names with hyphens (`resolve-library-id`) do not match the pattern Kiro documents for MCP tools (`^[a-zA-Z][a-zA-Z0-9_]*$`). Kiro may sanitize them. Check the MCP panel once. If the tools are excluded, switch Context7 to its local server (`npx -y @upstash/context7-mcp`, which needs the human's approval as a dependency) or rely on `mcp-call.mjs`.
 
 ## What the human must do

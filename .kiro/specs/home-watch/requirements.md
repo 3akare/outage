@@ -24,7 +24,7 @@ The station's state is the power state of that one plug. It is not an area outag
 1. WHEN Station mode is on and the user taps "Pair with my phone", THE station app SHALL ask the Worker for an offer and show a short code and, where QR libraries are approved, a QR code of the same code.
 2. THE offer SHALL be valid for 10 minutes and for one successful claim.
 3. THE code SHALL be 10 characters from an alphabet without look-alike characters.
-4. WHEN a viewer enters or scans the code, THE viewer app SHALL claim the offer with its install token and push token.
+4. WHEN a viewer enters or scans the code, THE viewer app SHALL claim the offer with its install token and FCM token.
 5. IF a claim fails 5 times for one offer, THEN THE Worker SHALL burn the offer.
 6. THE Worker SHALL limit offers and claims per install with the ingest rate limit.
 7. THE QR payload and the code SHALL NOT carry the station's location other than the cell the viewer needs, and SHALL carry no install ID.
@@ -115,4 +115,4 @@ Done by Kiro Web. Run Analyze Requirements in IDE on this file and record the re
 | Push on `OFFLINE` | yes, silent channel |
 
 - Pairing stores new data: viewer-to-station links and push tokens. This is a stored-data change; ADR 0009 records it and the human should confirm.
-- QR display and scan libraries (`react-native-qrcode-svg`, `react-native-svg`, `expo-camera`) are blocked until the human approves. Code entry works without them.
+- QR display and scan libraries (a QR encoder and a camera scanner for the Kotlin app) need human approval (ADR 0012). Code entry works without them.

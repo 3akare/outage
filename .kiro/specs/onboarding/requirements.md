@@ -137,4 +137,4 @@ Done by Kiro Web. Run Analyze Requirements in IDE on this file and record the re
 - Diagnostics opt-in: off in public builds, on by default in field-test builds (a build flag). The human should confirm.
 - Backup restore of the spot (R10.4): off. Android backup is disabled for the app (`allowBackup=false`) so no install ID or spot is restored.
 - OEM guide verification: the steps shipped first are labeled general until a person verifies each on a device.
-- New dependencies: `expo-location` (first-party Expo SDK package) for the position. It needs the human's approval per the rules, although Expo-first-party; marked in tasks.
+- New dependencies: none for the position, which uses the platform `LocationManager`. `com.uber:h3` (cell lookup), Jetpack Compose with Material 3, and a JSON library need human approval (ADR 0012).

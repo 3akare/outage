@@ -17,7 +17,7 @@ flowchart LR
     L -->|export file| E
     E --> A[analyze script]
     A --> M[docs/probe/*.md + summary]
-    M --> ADR[ADR 0012 gate]
+    M --> ADR[ADR 0013 gate]
 ```
 
 Deliberately small: no state machine, no classification, no Outbox, no registration. Raw rows only.
@@ -42,8 +42,8 @@ To confirm with the docs servers: `JobInfo.Builder.setExpedited` with `setRequir
 | `ProbeJobService` | `onStartJob` returns true and stays running. `onStopJob` logs, then returns true to reschedule (and schedules explicitly). Logs the stop reason from `getStopReason()` when API 31+. |
 | `ReferenceService` | Foreground service, type `specialUse` with a property, dynamic receivers for connected, disconnected and battery changed. Logs plug state now and after 1 s. |
 | `ProbeLog` | SQLite table `log(id, kind, mono_ms, wall_ms, boot_count, fields_json)`, no extra libraries. |
-| `ProbeUploader` | JS batch upload to the Worker, retry, export to file. |
-| `DebugScreen` | React Native screen with the controls in R4. |
+| `ProbeUploader` | Kotlin batch upload to the Worker with `HttpURLConnection` on a background thread, retry, export to file. |
+| `MainActivity` | One Activity with programmatic Views (no layout libraries) and the controls in R4. |
 | `AlarmTest` | Button that rings alarm audio after a delay from a background-started context, for M9. |
 | `analyze` | TypeScript script with pure functions, tested with Vitest on fixtures. |
 | Worker `/probe/*` | One DO with SQLite: `INSERT` rows, export. Token check. |

@@ -1,5 +1,5 @@
 // PreToolUse (write, shell): block keys, tokens and .env values in tracked files.
-// Rules: Part A.5 of the brief. Secrets live in Wrangler secrets and EAS secrets.
+// Rules: Part A.5 of the brief. Secrets live in Wrangler secrets and GitHub Actions secrets.
 // Escape hatch for a reviewed false positive: `secrets-guard:allow <reason>` on the line.
 import { readPayload, toolKind, extractWrites, shellCommand, block } from './lib.mjs';
 import { findSecrets, sensitivePath, formatFindings } from './scan.mjs';
@@ -34,7 +34,7 @@ if (problems.length) {
   block([
     'secrets-guard: blocked. A secret or secret-bearing file would end up in a tracked file or in output.',
     ...problems,
-    'Use `wrangler secret put NAME` for Worker secrets and EAS secrets for builds. Read values from env at run time. Never print or commit them.',
+    'Use `wrangler secret put NAME` for Worker secrets and GitHub Actions secrets for builds. Read values from env at run time. Never print or commit them.',
     'If this is a reviewed false positive, add `secrets-guard:allow <reason>` on that line and ask the human.',
   ]);
 }

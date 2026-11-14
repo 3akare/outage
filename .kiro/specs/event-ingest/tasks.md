@@ -4,7 +4,7 @@ Rules: only real dependencies are listed. Tasks in the same wave run in parallel
 
 Highest reasoning effort for tasks 5, 6 and 8 (Durable Object). Plan mode first for tasks 1 and 9 (each touches more than 3 files). Confirm every Cloudflare and H3 API with the docs servers before use and put the doc URL in a comment.
 
-Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, Wrangler, h3-js) are not new. Ask the human before adding anything else, and do not add a schema validation library.
+Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, Wrangler, h3-js) are not new. The toolchain approved by ADR 0012 (Kotlin, Gradle, AndroidX core, JUnit 4) is not new. `com.uber:h3` (phone H3 cell) needs human approval (ADR 0012). Ask the human before adding anything else, and do not add a schema validation library.
 
 ## Wave 1 (no dependencies)
 
@@ -28,7 +28,7 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 - [ ] 5. Cell actor core: SQLite schema, idempotency by primary key, token bucket with detection-first policy, `DetectionPort` (receives detection and state events, per the `detection-engine` amendment) with `NoopDetectionPort`. Tests I2, I4, I6.
   - Depends on: 2
   - Requirements: R5, R6, R7.3, R7.4, R10
-- [ ] 6. Uploader in `packages/shared`: ordering, batching, back-off with jitter, send-time `elapsedMs`, ack policy, exclusion of simulated and LOST events. Tests I7.
+- [ ] 6. Uploader in `apps/android` (Kotlin, JUnit; contract fixtures in `packages/shared/fixtures/`): ordering, batching, back-off with jitter, send-time `elapsedMs`, ack policy, exclusion of simulated and LOST events. Tests I7.
   - Depends on: 2
   - Requirements: R9
 
@@ -49,7 +49,7 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 
 ## Wave 6 (needs 6, 9)
 
-- [ ] 10. Wire the Uploader into `apps/mobile` with the real transport and the `outage-sensor` module (after `sensor-android` task 9 exists). Registration flow on first start.
+- [ ] 10. Wire the Uploader in `apps/android` to the real transport and the Sensor package (after `sensor-android` task 9 exists). Registration flow on first start.
   - Depends on: 6, 9 and `sensor-android` task 9
   - Requirements: R2.1, R9
 

@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync, execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, cpSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, cpSync, readFileSync, existsSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -72,22 +72,22 @@ test('sensitivePath: env, keys, service accounts; examples allowed', () => {
 });
 
 test('findPrivacy: blocks coordinates near storage, PII fields and forbidden permissions in code', () => {
-  assert.equal(findPrivacy('apps/mobile/src/spot.ts', 'await AsyncStorage.setItem("p", JSON.stringify({lat, lng}))').length, 1);
-  assert.equal(findPrivacy('apps/mobile/src/spot.ts', 'console.log("pos", latitude)').length, 1);
+  assert.equal(findPrivacy('apps/android/app/src/main/kotlin/Spot.kt', 'prefs.edit().putString("p", JSONObject().put("lat", lat).put("lng", lng).toString()).apply()').length, 1);
+  assert.equal(findPrivacy('apps/android/app/src/main/kotlin/Spot.kt', 'Log.d("pos", "$latitude")').length, 1);
   assert.equal(findPrivacy('workers/api/src/a.ts', 'const phoneNumber = req.phone;').length, 1);
-  assert.equal(findPrivacy('apps/mobile/app.json', '"permissions": ["android.permission.RECORD_AUDIO"]').length, 1);
-  assert.equal(findPrivacy('apps/mobile/app.json', '"permissions": ["ACCESS_FINE_LOCATION"]').length, 1);
-  assert.equal(findPrivacy('modules/outage-sensor/android/A.kt', 'val s = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)').length, 1);
-  assert.equal(findPrivacy('apps/mobile/src/x.ts', 'const c = [6.5095, 3.3711];').length, 1);
+  assert.equal(findPrivacy('apps/android/app/src/main/AndroidManifest.xml', '<uses-permission android:name="android.permission.RECORD_AUDIO"/>').length, 1);
+  assert.equal(findPrivacy('apps/android/app/src/main/AndroidManifest.xml', '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>').length, 1);
+  assert.equal(findPrivacy('apps/android/app/src/main/kotlin/A.kt', 'val s = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)').length, 1);
+  assert.equal(findPrivacy('apps/android/app/src/main/kotlin/X.kt', 'val c = doubleArrayOf(6.5095, 3.3711)').length, 1);
 });
 
 test('findPrivacy: allows the cell-only flow, coarse location, tests, docs, catalog and the allow marker', () => {
-  assert.equal(findPrivacy('apps/mobile/src/spot.ts', 'const cell = cellOf(lat, lng);\nawait save(cell);').length, 0);
-  assert.equal(findPrivacy('apps/mobile/app.json', '"permissions": ["ACCESS_COARSE_LOCATION"]').length, 0);
-  assert.equal(findPrivacy('apps/mobile/src/spot.test.ts', 'console.log(latitude)').length, 0);
+  assert.equal(findPrivacy('apps/android/app/src/main/kotlin/Spot.kt', 'val cell = cellOf(lat, lng)\nsave(cell)').length, 0);
+  assert.equal(findPrivacy('apps/android/app/src/main/AndroidManifest.xml', '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>').length, 0);
+  assert.equal(findPrivacy('apps/android/app/src/test/kotlin/SpotTest.kt', 'println(latitude)').length, 0);
   assert.equal(findPrivacy('docs/privacy.md', 'phoneNumber lat lng').length, 0);
   assert.equal(findPrivacy('packages/shared/src/catalog/lagos.json', '"centre": [6.5095, 3.3711]').length, 0);
-  assert.equal(findPrivacy('apps/mobile/src/x.ts', 'console.log(lat) // privacy-guard:allow debug removed before commit').length, 0);
+  assert.equal(findPrivacy('apps/android/app/src/main/kotlin/X.kt', 'Log.d("x", "$lat") // privacy-guard:allow debug removed before commit').length, 0);
 });
 
 test('findUnlabeled: simulated events must carry simulated: true', () => {
@@ -100,10 +100,10 @@ test('findUnlabeled: simulated events must carry simulated: true', () => {
 
 // ---------- guard-privacy ----------
 test('guard-privacy: exit 2 with a message for a violating write, 0 otherwise', () => {
-  const bad = runScript(path.join(S, 'guard-privacy.mjs'), W('apps/mobile/src/a.ts', 'AsyncStorage.setItem("pos", JSON.stringify({ latitude, longitude }))'));
+  const bad = runScript(path.join(S, 'guard-privacy.mjs'), W('apps/android/app/src/main/kotlin/A.kt', 'prefs.edit().putString("pos", "$latitude,$longitude").apply()'));
   assert.equal(bad.status, 2);
   assert.match(bad.stderr, /privacy-guard: blocked/);
-  const good = runScript(path.join(S, 'guard-privacy.mjs'), W('apps/mobile/src/a.ts', 'const cell = cellOf(a, b);'));
+  const good = runScript(path.join(S, 'guard-privacy.mjs'), W('apps/android/app/src/main/kotlin/A.kt', 'const cell = cellOf(a, b);'));
   assert.equal(good.status, 0);
   const notWrite = runScript(path.join(S, 'guard-privacy.mjs'), SH('echo RECORD_AUDIO'));
   assert.equal(notWrite.status, 0);
@@ -146,7 +146,7 @@ test('guard-repo evidence: blocks gitignoring or removing /.kiro', () => {
 
 test('guard-repo tests: blocks skipped tests, asks before deleting tests', () => {
   assert.equal(runScript(path.join(S, 'guard-repo.mjs'), W('packages/detection/a.test.ts', "it.skip('P1', () => {})")).status, 2);
-  assert.equal(runScript(path.join(S, 'guard-repo.mjs'), W('modules/x/ATest.kt', '@Ignore\nfun t() {}')).status, 2);
+  assert.equal(runScript(path.join(S, 'guard-repo.mjs'), W('apps/android/app/src/test/kotlin/ATest.kt', '@Ignore\nfun t() {}')).status, 2);
   assert.equal(runScript(path.join(S, 'guard-repo.mjs'), W('packages/detection/a.test.ts', "it('P1 single unplug', () => {})")).status, 0);
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), DEL('packages/detection/a.test.ts'))), 'ask');
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('rm packages/detection/a.test.ts'))), 'ask');
@@ -155,14 +155,16 @@ test('guard-repo tests: blocks skipped tests, asks before deleting tests', () =>
 
 test('guard-repo deps: asks before installing packages that are not approved', () => {
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npm install lodash'))), 'ask');
-  assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npx expo install expo-location'))), 'ask');
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('pnpm add -D eslint'))), 'ask');
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npm install vitest@2.1.0 fast-check'))), null);
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npm install'))), null);
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npx --no-install vitest --run'))), null);
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npx some-random-tool'))), 'ask');
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npx wrangler kv namespace create CACHE'))), 'ask');
-  assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), W('modules/outage-sensor/android/build.gradle.kts', 'dependencies {\n  implementation("com.squareup.okhttp3:okhttp:4.12.0")\n}'))), 'ask');
+  assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), W('apps/android/app/build.gradle.kts', 'dependencies {\n  implementation("com.squareup.okhttp3:okhttp:4.12.0")\n}'))), 'ask');
+  assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), W('apps/android/app/build.gradle.kts', 'dependencies {\n  testImplementation("junit:junit:4.13.2")\n}'))), null);
+  assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), W('apps/android/app/build.gradle.kts', 'plugins {\n  id("com.android.application")\n  id("org.jetbrains.kotlin.android")\n}'))), 'ask');
+  assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), W('apps/android/app/build.gradle.kts', 'dependencies {\n  implementation(libs.okhttp)\n}'))), 'ask');
 });
 
 test('guard-repo deps: package.json writes ask only for new unapproved dependencies', () => {
@@ -259,6 +261,23 @@ test('push-to-main: commits and pushes a docs change to main with the prepared m
   assert.match(r.stdout, /committed and pushed to main: docs: add a note/);
   assert.equal(execFileSync('git', ['log', '-1', '--pretty=%s'], { cwd: sb.remote, encoding: 'utf8' }).trim(), 'docs: add a note [spec:none task:none]');
   assert.equal(existsSync(path.join(sb.dir, '.commit-message.txt')), false);
+});
+
+test('push-to-main: pushes deletions, both unstaged and already staged with git rm', () => {
+  const sb = sandbox({ withRemote: true });
+  writeFileSync(path.join(sb.dir, 'docs', 'keep.md'), 'keep\n');
+  writeFileSync(path.join(sb.dir, 'docs', 'gone1.md'), 'one\n');
+  writeFileSync(path.join(sb.dir, 'docs', 'gone2.md'), 'two\n');
+  writeFileSync(path.join(sb.dir, '.commit-message.txt'), 'docs: add notes [spec:none task:none]\n');
+  spawnSync('node', [sb.script('push-to-main.mjs')], { encoding: 'utf8', cwd: sb.dir });
+  unlinkSync(path.join(sb.dir, 'docs', 'gone1.md'));                                  // unstaged deletion
+  execFileSync('git', ['rm', '-q', 'docs/gone2.md'], { cwd: sb.dir });                // already staged
+  writeFileSync(path.join(sb.dir, '.commit-message.txt'), 'docs: remove notes [spec:none task:none]\n');
+  const r = spawnSync('node', [sb.script('push-to-main.mjs')], { encoding: 'utf8', cwd: sb.dir });
+  assert.match(r.stdout, /committed and pushed to main: docs: remove notes/);
+  const files = execFileSync('git', ['ls-tree', '-r', '--name-only', 'HEAD'], { cwd: sb.remote, encoding: 'utf8' });
+  assert.match(files, /docs\/keep\.md/);
+  assert.doesNotMatch(files, /gone1\.md|gone2\.md/);
 });
 
 test('push-to-main: refuses secret files, secrets in content, and pr mode; pushes nothing', () => {
