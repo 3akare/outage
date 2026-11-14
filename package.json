@@ -4,6 +4,9 @@
   "description": "Your phone charger is a power-grid sensor. Root scripts; the workspaces (apps, modules, workers, packages, tools) are added by the scaffolding tasks of each spec.",
   "scripts": {
     "test": "node --test \".kiro/scripts/test/*.test.mjs\" \".kiro/skills/test/*.test.mjs\" \".kiro/skills/*/scripts/test/*.test.mjs\" \"powers/*/skills/*/scripts/test/*.test.mjs\"",
-    "test:guide": "node .kiro/skills/oem-battery-guide/scripts/validate-guide.mjs"
+    "test:guide": "node .kiro/skills/oem-battery-guide/scripts/validate-guide.mjs",
+    "probe:install": "npm --prefix tools/probe/app ci && npm --prefix tools/probe/worker ci && npm --prefix tools/probe/analyze ci",
+    "probe:typecheck": "npm --prefix tools/probe/app run typecheck && npm --prefix tools/probe/worker run typecheck && npm --prefix tools/probe/analyze run typecheck",
+    "probe:test": "npm --prefix tools/probe/analyze test"
   }
 }

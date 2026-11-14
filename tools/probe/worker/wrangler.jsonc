@@ -1,0 +1,13 @@
+{
+  // Throwaway probe Worker (feasibility-probe R3). Remove after the gate decision (task 10).
+  // Durable Object with SQLite storage needs a new_sqlite_classes migration:
+  // https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/
+  "name": "outage-probe",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "durable_objects": {
+    "bindings": [{ "name": "PROBE_STORE", "class_name": "ProbeStore" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProbeStore"] }]
+  // The token is a secret and is never written here: wrangler secret put PROBE_TOKEN
+}

@@ -8,7 +8,7 @@ Ask the human before adding any dependency beyond Expo, TypeScript, Vitest and W
 
 ## Wave 1
 
-- [ ] 1. Scaffold `tools/probe/app` (bare Expo, TypeScript), `tools/probe/worker` (Wrangler, one SQLite-backed Durable Object), and `tools/probe/analyze` (Vitest). Root scripts for typecheck, lint, test. Plan mode first.
+- [x] 1. Scaffold `tools/probe/app` (bare Expo, TypeScript), `tools/probe/worker` (Wrangler, one SQLite-backed Durable Object), and `tools/probe/analyze` (Vitest). Root scripts for typecheck, lint, test. Plan mode first.
   - Requirements: R1 to R5
 - [ ] 2. `docs/probe-checklist.md`: the step-by-step tester script for M1 to M14 with a log sheet for each device, and the phone matrix table.
   - Requirements: R6, R8.3
