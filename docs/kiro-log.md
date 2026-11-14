@@ -256,3 +256,24 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - One `privacy-guard:allow` marker on the privacy-notice string in `strings.xml` (it contains the words "phone number" and "email"; reviewed false positive, to confirm with the human).
 - Found by the agent-config test: `pitch-writer` preloaded `docs/kiro-log.md`, which has grown past the custom-agent resource budget. It now reads the log on demand (its prompt already says so); the test now checks that instead.
 - Open for the human: the `ACCESS_NETWORK_STATE` permission (normal, no prompt) for the Offline label; the area cache stores a `simulated` flag; whether to move to compileSdk 37.
+
+## 2026-11-14 parallel batch: area-cells, web pages, onboarding and alarm strings (sub-agents, checked by me)
+- area-cells:
+  - Task 1: confirmed that ingest already routes by res-7 parent.
+  - Task 2: H3 bit helpers in `packages/shared/src/h3.ts`, tested against `h3-js` on 10,000+ random cells and all pentagons.
+  - Tasks 3, 7 and 8: membership and moves (A10), neighbour notices (A6), and the public view with its 3-member floor and "3+" phones (A8), in `workers/api/src/area/`.
+- web-and-area-pages:
+  - Tasks 2, 4 and 6: page kit with escaping and per-response CSP nonces (W8); status derivation and page renderers (W1, W2 pages part, W3, W9); SVG map.
+  - Task 3: catalog schema and generator. Every centre comes from a Nominatim (OpenStreetMap) page with its URL, and `checkedBy` is empty, so no area is listed until a person checks it (W7). Lekki is left out because no verifiable centre was found.
+  - Task 5: Cache API wrapper with an isolate fallback (W4), built but not ticked; it needs a deployed-domain check.
+- onboarding:
+  - Task 3: `OnboardingFlow` state machine with a persisted record (O1, O3, O7, O8).
+  - Task 4: OEM guide matching (O4, O5). The single `oem-guide.json` is copied into the app assets by a Gradle task, so there is no second copy in git.
+- alerts task 2: prompt, alarm and push strings plus a missing-key checker (L12).
+- Verified by me:
+  - `workers/api`: 126 tests, typecheck and Biome clean.
+  - `packages/shared`: 24 tests.
+  - `apps/android`: build, 71 JUnit tests, lint 0 errors.
+  - spec-lint: 0 errors.
+- Detection engine (separate, not in this commit): 126 of 128 tests pass. `D5_settle_equivalence` fails (seed 1989584878), so it stays uncommitted until fixed.
+- Open for the human: a person must check each catalog centre; whether a scope that stops being public sends a "normal" notice; whether a move keeps the phone armed; the re-onboarding skip rule.

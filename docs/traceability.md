@@ -75,11 +75,11 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R4.5 | A3 | `A3_open_outage_keeps_scope` | 4 | planned |
 | R6.1 to R6.3 | A4 | `A4_link_rule` | 5 | planned |
 | R6.4, R6.6 | A5 | `A5_groups_deterministic` | 5 | planned |
-| R7.3, R7.4 | A6 | `A6_notice_convergence` | 7 | planned |
+| R7.3, R7.4 | A6 | `A6_notice_convergence` | 7 | test written (`workers/api/test/area-neighbors.test.ts`) |
 | R7.5, R8 | A7 | `A7_hints_never_confirm_alone` | 6 | planned |
-| R9 | A8 | `A8_public_view_privacy` | 8 | planned |
+| R9 | A8 | `A8_public_view_privacy` | 8 | test written (`workers/api/test/area-view.test.ts`) |
 | R10 | A9 | `A9_push_dedup` | 9 | planned |
-| R3.2, R5 | A10 | `A10_move_closes_old_cell` | 3 | planned |
+| R3.2, R5 | A10 | `A10_move_closes_old_cell` | 3 | test written (`workers/api/test/area-members.test.ts`) |
 | R12 | A11 | `A11_delete_removes_install` | 9 | planned |
 | R11 | A12 | `A12_deferred_evaluation_equivalence` | 9 | planned |
 
@@ -98,7 +98,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R4.1, R4.2 | L9 | `L9_expiry_and_reboot` | 3 | planned |
 | R1.4, R3 | L10 | `L10_replay_equivalence` | 3 | planned |
 | R1.2, R9 | L11 | `L11_channel_config` | 4 | planned |
-| R6.6, R10.5 | L12 | `L12_string_pack` | 2, 6 | planned |
+| R6.6, R10.5 | L12 | `L12_string_pack` | 2, 6 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt`) |
 
 ## power-log
 
@@ -131,28 +131,28 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R1, R4.3 | O1 | `O1_flow_machine` | 3 | planned |
+| R1, R4.3 | O1 | `O1_flow_machine` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt`) |
 | R3.3, R12.2 | O2 | `O2_no_coordinates_stored` | 5 | planned |
-| R4.3, R5.3 | O3 | `O3_no_register_before_consent` | 3 | planned |
-| R7.1 | O4 | `O4_maker_matching` | 4 | planned |
-| R7.3, R7.4 | O5 | `O5_guide_labels` | 4 | planned |
+| R4.3, R5.3 | O3 | `O3_no_register_before_consent` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt`) |
+| R7.1 | O4 | `O4_maker_matching` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OemGuideTest.kt`) |
+| R7.3, R7.4 | O5 | `O5_guide_labels` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OemGuideTest.kt`) |
 | R8.2, R8.6 | O6 | `O6_self_test_isolated` | 2 | planned |
-| R1.5 | O7 | `O7_resume` | 3 | planned |
-| R10 | O8 | `O8_reonboarding_skips` | 3 | planned |
+| R1.5 | O7 | `O7_resume` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt`) |
+| R10 | O8 | `O8_reonboarding_skips` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt`) |
 
 ## web-and-area-pages
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R1.4, R3 | W1 | `W1_page_without_script` | 4 | planned |
-| R4.3, R11.1 | W2 | `W2_public_privacy` | 4, 7 | planned |
-| R2 | W3 | `W3_five_states` | 4 | planned |
-| R9 | W4 | `W4_cache_ttl` | 5 | planned |
+| R1.4, R3 | W1 | `W1_page_without_script` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
+| R4.3, R11.1 | W2 | `W2_public_privacy` | 4, 7 | partly: pages tested (`workers/api/test/web-pages.test.ts`); index part is task 7 |
+| R2 | W3 | `W3_five_states` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
+| R9 | W4 | `W4_cache_ttl` | 5 | unit tests (`workers/api/test/web-cache.test.ts`); deployed-domain check open |
 | R6.4, R6.6 | W5 | `W5_replay_matches_engine` | 9 | planned |
 | R6.2, R6.8 | W6 | `W6_simulated_separation` | 10 | planned |
-| R10.3, R11.5 | W7 | `W7_sitemap_robots` | 3, 8 | planned |
-| R1.6, R11.2, R11.3 | W8 | `W8_headers_and_escaping` | 2 | planned |
-| R4.4 | W9 | `W9_cell_page_indistinguishable` | 4 | planned |
+| R10.3, R11.5 | W7 | `W7_sitemap_robots` | 3, 8 | partly: catalog tested (`workers/api/test/web-catalog.test.ts`); routes are task 8 |
+| R1.6, R11.2, R11.3 | W8 | `W8_headers_and_escaping` | 2 | test written (`workers/api/test/web-kit.test.ts`) |
+| R4.4 | W9 | `W9_cell_page_indistinguishable` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
 
 ## demo-mode
 

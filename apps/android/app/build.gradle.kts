@@ -1,6 +1,27 @@
+import java.io.File
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
+}
+
+// The OEM battery guide has one copy in git: packages/shared/src/oem-guide.json (ADR 0012, onboarding R7.9).
+// This task copies it into generated assets at build time. Wiring: variant.sources.assets.addGeneratedSourceDirectory
+// https://developer.android.com/reference/tools/gradle-api/9.1/com/android/build/api/variant/SourceDirectories
+abstract class CopyOemGuide : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val guide: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun copy() {
+        val out = outputDir.get().asFile
+        out.mkdirs()
+        guide.get().asFile.copyTo(File(out, "oem-guide.json"), overwrite = true)
+    }
 }
 
 android {
@@ -35,6 +56,15 @@ android {
         // Pidgin (values-pcm) is optional and falls back to English per key (app-shell R7.2),
         // so a key missing from values-pcm is not an error. AS7 checks the opposite direction.
         disable += "MissingTranslation"
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        val copyGuide = tasks.register<CopyOemGuide>("copyOemGuide" + variant.name.replaceFirstChar { it.uppercase() }) {
+            guide.set(layout.projectDirectory.file("../../../packages/shared/src/oem-guide.json"))
+        }
+        variant.sources.assets?.addGeneratedSourceDirectory(copyGuide, CopyOemGuide::outputDir)
     }
 }
 

@@ -13,7 +13,7 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 - [ ] 1. Amend shared types for `LABEL`: `sensor-android` EVENT table and `SensorEvent` type, `event-ingest` strict schema allow-list and tests (I8), shared fixtures, and the engine `Label` mapping in `area-cells` routing. Update tasks 2 and 5 of ingest where they list event types.
   - Depends on: `sensor-android` 2, `event-ingest` 2, `detection-engine` 1
   - Requirements: R2.5
-- [ ] 2. String pack: English and optional Pidgin strings for the prompt, alarm, test, push texts, status list; a checker for missing keys. Test L12.
+- [x] 2. String pack: English and optional Pidgin strings for the prompt, alarm, test, push texts, status list; a checker for missing keys. Test L12.
   - Depends on: `event-ingest` 1
   - Requirements: R6.6, R10.5
 

@@ -8,9 +8,9 @@ This spec depends on `detection-engine` (tasks 1, 3, 13) and `event-ingest` (tas
 
 ## Wave 1 (needs event-ingest 1, 2 and detection-engine 1)
 
-- [ ] 1. Amend `event-ingest`: route by the res-7 parent (R7.1, I-tests), add `cell` to `DETECTION_EVENT` and `INSTALL_STATE`, rename "cell actor" to "area actor" in the design, and update fixtures. Update tasks 4, 5 and 8 of ingest where they name the cell actor.
+- [x] 1. Amend `event-ingest`: route by the res-7 parent (R7.1, I-tests), add `cell` to `DETECTION_EVENT` and `INSTALL_STATE`, rename "cell actor" to "area actor" in the design, and update fixtures. Update tasks 4, 5 and 8 of ingest where they name the cell actor.
   - Requirements: R2.1, R2.4
-- [ ] 2. H3 helpers in `packages/shared`: pure `parentOf`, `isCell`, `childrenOf` (bit operations on the index), and lazy `neighborsOf`, `cellOf`, `boundaryOf` using `h3-js`. Tests against `h3-js` on 10,000 random cells including pentagons. Measure Worker startup cost with and without `h3-js`; record in ADR 0006.
+- [x] 2. H3 helpers in `packages/shared`: pure `parentOf`, `isCell`, `childrenOf` (bit operations on the index), and lazy `neighborsOf`, `cellOf`, `boundaryOf` using `h3-js`. Tests against `h3-js` on 10,000 random cells including pentagons. Measure Worker startup cost with and without `h3-js`; record in ADR 0006.
   - Depends on: `event-ingest` 1
   - Requirements: R1, R13.4
 

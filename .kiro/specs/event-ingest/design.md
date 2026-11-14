@@ -10,12 +10,12 @@ Status: APPROVED by delegation on 2026-11-14. Based on `requirements.md`. Tasks 
 flowchart LR
     S[Sensor Outbox<br/>Kotlin SQLite] --> U[Uploader<br/>Kotlin]
     U -->|POST /v1/events| W[Worker<br/>validate, auth, route]
-    W -->|one RPC per cell| C[Cell actor<br/>Durable Object]
+    W -->|one RPC per parent| C[Area actor<br/>Durable Object]
     C -->|DetectionPort| D[detection engine<br/>packages/detection]
 ```
 
-- The **Worker** is stateless. It authenticates, validates each event, computes event time, groups events by cell, and calls each cell actor once.
-- The **cell actor** owns idempotency, rate limiting, armed state and stored detection events for one cell. It calls the engine through `DetectionPort`.
+- The **Worker** is stateless. It authenticates, validates each event, computes event time, groups events by res-7 parent, and calls each area actor once.
+- The **area actor** owns idempotency, rate limiting, armed state and stored detection events for one res-7 parent. It calls the engine through `DetectionPort`.
 - The **Uploader** lives in `apps/android` (Kotlin, injectable transport and clock) so JUnit can drive it with a fake transport. The event schema and API shapes are covered by contract fixtures in `packages/shared/fixtures/`, read by the Worker tests (Vitest) and the app tests (JUnit). The H3 cell on the phone comes from `com.uber:h3` (needs human approval, ADR 0012).
 
 ## 2. Verified platform facts
@@ -108,7 +108,7 @@ sequenceDiagram
     participant Sensor
     participant U as Uploader
     participant W as Worker
-    participant C as Cell actor (DO)
+    participant C as Area actor (DO)
     participant D as DetectionPort
 
     Sensor-->>U: onEvent(UNPLUG)
@@ -117,7 +117,7 @@ sequenceDiagram
     U->>W: POST /v1/events (token, batch)
     W->>W: verify token, receiveTime = now
     W->>W: validate each event, eventTime = receiveTime - elapsedMs
-    W->>C: ingest(cell, validEvents, receiveTime)
+    W->>C: ingest(parent, validEvents, receiveTime)
     C->>C: idempotency + rate limit
     C->>C: write detection rows, update armed state in memory
     C->>D: handle(detectionEvents, eventTimes, receiveTime)
@@ -147,7 +147,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant W as Worker
-    participant C as Cell actor
+    participant C as Area actor
     participant SQL as DO SQLite
     W->>C: ARMED (install A)
     C->>C: memory: A armed since eventTime
@@ -157,7 +157,7 @@ sequenceDiagram
     C->>SQL: no write (unchanged)
 ```
 
-## 7. Data model (per cell actor, SQLite)
+## 7. Data model (per area actor, SQLite)
 
 ```mermaid
 erDiagram
@@ -194,7 +194,7 @@ erDiagram
 | Bad JSON, oversize body | HTTP 400 / 413, no results. |
 | Missing or wrong token | HTTP 401 for the whole request. Nothing processed. |
 | One event invalid | That event `rejected` with permanent code. Others processed. |
-| Cell actor unavailable (exception) | Those events `rejected` with `UNAVAILABLE` (transient). The Uploader keeps and retries them. |
+| Area actor unavailable (exception) | Those events `rejected` with `UNAVAILABLE` (transient). The Uploader keeps and retries them. |
 | Rate limit | Excess events `RATE_LIMITED` (transient), with `retryAfterMs`. State events are dropped before detection events. |
 | Daily write budget near cap | State events dropped as `RATE_LIMITED`. Detection events kept. |
 | Free daily limit hit anyway | Cloudflare returns errors. The Uploader treats non-2xx as transient and backs off. The app still works locally (Light Alarm needs no network). |

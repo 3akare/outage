@@ -1,0 +1,13 @@
+{
+  "areas": [
+    { "slug": "yaba", "name": "Yaba", "lat": 6.5068212, "lng": 3.3754881, "rings": 2, "tzOffsetMin": 60, "country": "NG", "source": "https://nominatim.openstreetmap.org/search?q=Yaba,+Lagos,+Nigeria&format=json&limit=3", "checkedBy": "" },
+    { "slug": "surulere", "name": "Surulere", "lat": 6.5008027, "lng": 3.3571159, "rings": 2, "tzOffsetMin": 60, "country": "NG", "source": "https://nominatim.openstreetmap.org/search?q=Surulere,+Lagos,+Nigeria&format=json&limit=2", "checkedBy": "" },
+    { "slug": "ikeja", "name": "Ikeja", "lat": 6.601627, "lng": 3.3515981, "rings": 2, "tzOffsetMin": 60, "country": "NG", "source": "https://nominatim.openstreetmap.org/search?q=Ikeja,+Lagos,+Nigeria&format=json&limit=2", "checkedBy": "" },
+    { "slug": "maryland", "name": "Maryland", "lat": 6.5771463, "lng": 3.3661931, "rings": 2, "tzOffsetMin": 60, "country": "NG", "source": "https://nominatim.openstreetmap.org/search?q=Maryland,+Lagos,+Nigeria&format=json&limit=3", "checkedBy": "" },
+    { "slug": "victoria-island", "name": "Victoria Island", "lat": 6.4300279, "lng": 3.4259904, "rings": 2, "tzOffsetMin": 60, "country": "NG", "source": "https://nominatim.openstreetmap.org/search?q=Victoria+Island,+Lagos,+Nigeria&format=json&limit=3", "checkedBy": "" },
+    { "slug": "ikoyi", "name": "Ikoyi", "lat": 6.4523431, "lng": 3.4280523, "rings": 2, "tzOffsetMin": 60, "country": "NG", "source": "https://nominatim.openstreetmap.org/search?q=Ikoyi,+Lagos,+Nigeria&format=json&limit=2", "checkedBy": "" },
+    { "slug": "ajah", "name": "Ajah", "lat": 6.4694716, "lng": 3.5623861, "rings": 2, "tzOffsetMin": 60, "country": "NG", "source": "https://nominatim.openstreetmap.org/search?q=Ajah,+Lagos,+Nigeria&format=json&limit=2", "checkedBy": "" },
+    { "slug": "ikorodu", "name": "Ikorodu", "lat": 6.6191233, "lng": 3.5041271, "rings": 2, "tzOffsetMin": 60, "country": "NG", "source": "https://nominatim.openstreetmap.org/search?q=Ikorodu,+Lagos,+Nigeria&format=json&limit=2", "checkedBy": "" },
+    { "slug": "festac", "name": "Festac", "lat": 6.4682727, "lng": 3.2839374, "rings": 2, "tzOffsetMin": 60, "country": "NG", "source": "https://nominatim.openstreetmap.org/search?q=Festac+Town,+Lagos,+Nigeria&format=json&limit=2", "checkedBy": "" }
+  ]
+}

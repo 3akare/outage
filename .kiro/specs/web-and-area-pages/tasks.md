@@ -11,22 +11,23 @@ Depends on `area-cells` (tasks 8, 10), `detection-engine` (tasks 13, 16), `event
 - [ ] 1. Amend `area-cells`: R2.2 publish to the public index, and add a publisher in the reducer outputs. Record the singleton in ADR 0010 (public index).
   - Depends on: `area-cells` 8
   - Requirements: R8.1, R8.2
-- [ ] 2. Page kit: `escapeHtml`, nonce and header helpers, layout, the five-state string pack with optional Pidgin. Tests W8.
+- [x] 2. Page kit: `escapeHtml`, nonce and header helpers, layout, the five-state string pack with optional Pidgin. Tests W8.
   - Depends on: `event-ingest` 1
   - Requirements: R1, R2, R11
-- [ ] 3. Catalog file and generator: schema, validator, `catalog.generated.json` with cells, and the starting Lagos list with sources. Centre coordinates verified by the human before an area is listed. Test W7 (catalog part).
+- [x] 3. Catalog file and generator: schema, validator, `catalog.generated.json` with cells, and the starting Lagos list with sources. Centre coordinates verified by the human before an area is listed. Test W7 (catalog part).
   - Depends on: `area-cells` 2
   - Requirements: R10
 
 ## Wave 2
 
-- [ ] 4. Status derivation and page renderers: area, cell, home, install, privacy, 404, and the legend. Tests W1, W2, W3, W9.
+- [x] 4. Status derivation and page renderers: area, cell, home, install, privacy, 404, and the legend. Tests W1, W2, W3, W9.
   - Depends on: 2, 3
   - Requirements: R2, R3, R4, R7
 - [ ] 5. Cache layer (Cache API plus isolate fallback), test on the deployed domain, and the nonce or hash decision. Tests W4.
+  - Status: Cache API wrapper, isolate fallback, nonce decision and W4 tests done; the "test on the deployed domain" step is open (needs a deploy).
   - Depends on: 2
   - Requirements: R9
-- [ ] 6. SVG map renderer from catalog cells and states. Unit and snapshot tests.
+- [x] 6. SVG map renderer from catalog cells and states. Unit and snapshot tests.
   - Depends on: 3
   - Requirements: R5
 

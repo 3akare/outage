@@ -22,10 +22,10 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 
 ## Wave 3 (needs 2, 3)
 
-- [x] 4. Worker handlers: `POST /v1/register` (per-source limit, no storage, no IP logging), request parsing, size limits, event-time computation, per-cell grouping, response assembly. Tests I1, I5.
+- [x] 4. Worker handlers: `POST /v1/register` (per-source limit, no storage, no IP logging), request parsing, size limits, event-time computation, per-parent grouping, response assembly. Tests I1, I5.
   - Depends on: 2, 3
   - Requirements: R2, R3, R7.1, R7.2, R8, R2.4
-- [x] 5. Cell actor core: SQLite schema, idempotency by primary key, token bucket with detection-first policy, `DetectionPort` (receives detection and state events, per the `detection-engine` amendment) with `NoopDetectionPort`. Tests I2, I4, I6.
+- [x] 5. Area actor core: SQLite schema, idempotency by primary key, token bucket with detection-first policy, `DetectionPort` (receives detection and state events, per the `detection-engine` amendment) with `NoopDetectionPort`. Tests I2, I4, I6.
   - Depends on: 2
   - Requirements: R5, R6, R7.3, R7.4, R10
 - [ ] 6. Uploader in `apps/android` (Kotlin, JUnit; contract fixtures in `packages/shared/fixtures/`): ordering, batching, back-off with jitter, send-time `elapsedMs`, ack policy, exclusion of simulated and LOST events. Tests I7.
@@ -37,7 +37,7 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 - [x] 7. Write-behind armed state: in-memory `INSTALL_STATE`, flush alarm, no write when unchanged, last-writer-by-event-time, budget shedding with the daily counter. Test I9.
   - Depends on: 5
   - Requirements: R11
-- [x] 8. Wire Worker to cell actors: one RPC per cell, `UNAVAILABLE` handling, retention alarm (30 days, daily). Integration test against local Wrangler or Miniflare.
+- [x] 8. Wire Worker to area actors: one RPC per res-7 parent, `UNAVAILABLE` handling, retention alarm (30 days, daily). Integration test against local Wrangler or Miniflare.
   - Depends on: 4, 5
   - Requirements: R7, R8, R12.3
 
@@ -67,7 +67,7 @@ graph LR
     T1 --> T3[3 token]
     T2 --> T4[4 handlers]
     T3 --> T4
-    T2 --> T5[5 cell actor]
+    T2 --> T5[5 area actor]
     T2 --> T6[6 uploader]
     T5 --> T7[7 write-behind]
     T4 --> T8[8 wiring]
