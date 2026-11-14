@@ -98,7 +98,8 @@ if (kind === 'shell') {
 
   const m = cmd.match(/\b(npm|pnpm|yarn|bun)\s+(install|i|add)\b([^;&|]*)/);
   if (m) {
-    const pkgs = m[3].trim().split(/\s+/).filter((a) => a && !a.startsWith('-'));
+    // stop at a shell redirection (`2>`, `>`, `<`): it is not a package name (human-approved fix, 2026-11-14)
+    const pkgs = m[3].split(/\s*\d*[<>]/)[0].trim().split(/\s+/).filter((a) => a && !a.startsWith('-'));
     const unknown = pkgs.map(pkgName).filter((n) => !allowed.has(n));
     if (unknown.length) ask(`Installing packages not on the approved list: ${unknown.join(', ')}. Ask the human; confirm a free tier first.`);
   }

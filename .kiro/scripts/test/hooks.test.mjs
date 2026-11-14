@@ -155,6 +155,10 @@ test('guard-repo tests: blocks skipped tests, asks before deleting tests', () =>
 
 test('guard-repo deps: asks before installing packages that are not approved', () => {
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npm install lodash'))), 'ask');
+  // regression: a redirect after a bare install is not a package
+  assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npm install ' + '2>' + '&1 | tail -3'))), null);
+  assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npm install > log.txt'))), null);
+  assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npm install lodash ' + '2>' + '/dev/null'))), 'ask');
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('pnpm add -D eslint'))), 'ask');
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npm install vitest@2.1.0 fast-check'))), null);
   assert.equal(decision(runScript(path.join(S, 'guard-repo.mjs'), SH('npm install'))), null);

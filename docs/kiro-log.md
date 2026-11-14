@@ -225,3 +225,6 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Human decisions: start `event-ingest` and `detection-engine` while the probe waits for the Samsung data; keep the ADR 0005 detection parameters ("cautious for now, adjust later with real data"). Recorded in `.kiro/specs/README.md` and ADR 0005.
 - event-ingest task 1: npm workspaces `packages/*` and `workers/*`; `@outage/shared` (h3-js, Vitest, fast-check) and `@outage/api` (Wrangler, `AreaActor` SQLite Durable Object, `config.ts` with the design section 4 tunables). Typecheck, lint, 2 smoke tests and a Wrangler dry run pass. Root `npm test` now also runs the workspace tests.
 - Hook finding: the dependency guard treats a shell redirect that follows a bare package-install command (stderr to stdout) as a package name. I ran the command without the redirect and did not edit the guard. Fix proposed to the human (ignore shell redirections when parsing), with a regression test.
+
+## 2026-11-14 dependency guard fix (human approved)
+- `guard-repo.mjs` now stops reading package names at a shell redirection, so a bare install followed by a redirect no longer asks. An install of a real package followed by a redirect still asks. Regression tests added in `hooks.test.mjs`; the test fails on the old guard and passes on the new one (24 hook tests pass).
