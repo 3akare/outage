@@ -4,6 +4,14 @@ For the person holding the phones. Spec: `.kiro/specs/feasibility-probe/` (requi
 
 Status: matches the probe app built in tasks 5 to 7 (buttons: `Start`, `Stop`, `Reference logger` switch, `Mark note`, `Upload now`, `Export file`, `Alarm test`, `Stop alarm`, `Battery settings`, `Clear`). Not yet run on a phone. If something on screen differs from this file, write it in the Problems box and carry on.
 
+## Mode for this run: export only
+
+Decided by the human on 2026-11-14: no Worker for now. Leave the Worker URL and token boxes empty, skip `Upload now` and skip M13. At the end of each run tap `Export file`, save the file, and send it to the developer. Everything else is the same.
+
+## Install
+
+On the phone, open https://github.com/3akare/outage/releases, tap the newest `Outage probe probe-v...` release, then tap `outage-probe-debug.apk`. Allow "install unknown apps" for your browser when the phone asks. Android may warn that the app is from an unknown source; that is expected for this test app.
+
 ## 0. What this test decides
 
 The project works only if a phone can notice "charger lost" while it sits idle with the screen off. The gate:
@@ -45,9 +53,9 @@ Notes on the matrix
 
 ## 3. Setup, same for every phone
 
-1. Install the probe APK. Open the project's GitHub Releases page on the phone and download `outage-probe-debug.apk` from the newest release. Allow "install unknown apps" for the app you use to open the file.
+1. Install the probe APK (see Install above).
 2. Open the app. Allow notifications when asked. Do not grant anything else.
-3. Type the device alias, the Worker URL and the probe token into the three boxes at the top. The developer gives you the URL and the token privately. The app reads the maker and Android version itself.
+3. Type the device alias into the first box at the top. In export-only mode leave the Worker URL and token boxes empty. The app reads the maker and Android version itself.
 4. Charge the phone to between 30% and 60% before the first timed run, unless the step says 100%.
 5. Tap `Mark note` and type exactly: `cond: baseline`. This is the condition label. For every later condition use the same form: `cond: <name>`, for example `cond: after-exemption` or `cond: idle-30min`.
 6. Check the debug screen shows: sensor on, current plug state, job state. If the sensor shows off, tap `Start`.

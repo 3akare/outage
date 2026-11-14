@@ -176,3 +176,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `docs/probe-checklist.md` updated to the real buttons: alias, URL and token boxes; `Stop alarm`.
 - Committed as one commit for tasks 5 to 7, because the three depend on each other and an intermediate commit would not build.
 - Not verified: anything on a phone, including whether the job, receivers, foreground service and alarm behave as intended. That is task 8. `MainActivity` uses the deprecated `startActivityForResult`, because the replacement needs AndroidX.
+
+## 2026-11-14 probe release, export only
+- Human decisions: publish the probe APK as a GitHub pre-release so it installs from a link on the phone; collect results with `Export file` only, with no Worker for now. The checklist now has an "export only" mode and install steps. The Worker code stays tested but is not deployed, so no `PROBE_TOKEN` is needed yet.
+- Release: tag `probe-v0.0.1` (matches `versionName`) triggers `.github/workflows/android.yml`, which builds, tests and lints, then attaches `outage-probe-debug.apk` to a pre-release. Debug-signed: a later probe build with the same debug key installs over it only if built on the same runner key; if Android refuses the update, uninstall first (the log rows on the phone are lost, so export before).
