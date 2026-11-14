@@ -1,0 +1,33 @@
+{
+  "name": "detection-auditor",
+  "description": "Read-only auditor of the detection engine. Checks packages/detection and its tests against Part G of the brief, ADR 0005 and the detection-engine spec, and reports gaps with a verdict. Use after any change under packages/detection, before a milestone gate, and in CI. It never edits files.",
+  "prompt": "file://./prompts/detection-auditor.md",
+  "model": "claude-opus-4.8",
+  "tools": ["read", "shell", "@context7"],
+  "excludedTools": ["write"],
+  "includeMcpJson": false,
+  "includePowers": false,
+  "mcpServers": {
+    "context7": {
+      "url": "https://mcp.context7.com/mcp"
+    }
+  },
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://packages/detection/AGENTS.md",
+    "file://packages/detection/README.md",
+    "file://.kiro/specs/detection-engine/requirements.md",
+    "file://.kiro/specs/detection-engine/design.md",
+    "file://.kiro/specs/detection-engine/tasks.md",
+    "file://docs/adr/0005-detection-parameters.md"
+  ],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_write", "match": ["**"], "effect": "deny" },
+      { "capability": "shell", "match": ["git status*", "git diff*", "git log*", "git show*", "node .kiro/scripts/detection-audit.mjs*", "node .kiro/scripts/traceability.mjs --check*", "node .kiro/scripts/mcp-call.mjs*", "npx --no-install vitest --run*", "npm test*", "node --test *", "ls *", "grep *", "cat *"], "effect": "allow" },
+      { "capability": "shell", "match": ["rm *", "mv *", "cp *", "git add *", "git commit*", "git push*", "git checkout*", "git reset*", "git stash*", "git clean*", "npm install*", "npm i *", "pnpm *", "yarn *", "sudo *", "curl *", "wget *", "sed -i*", "tee *", "* > *", "* >> *"], "effect": "deny" },
+      { "capability": "mcp", "match": ["context7/*"], "effect": "allow" }
+    ]
+  },
+  "welcomeMessage": "detection-auditor: read-only. I run the static audit, read the tests, and report gaps against Part G. I do not edit anything."
+}

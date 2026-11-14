@@ -225,3 +225,26 @@ Property IDs `W1` to `W9`. Vitest and fast-check; page render is pure `(data) ->
 Other tests: HTML size budget; the SVG map for every catalog area; status derivation table tests (precision, restored display window); a Playwright run at 390 x 844 for `/`, `/area/yaba`, `/judge` and `/install`; the `/judge-demo` slash command (steering) runs this check list.
 
 Traceability: `docs/traceability.md`.
+
+## 13. Data model
+
+The web side stores nothing of its own beyond what is listed here. The first two records come from other specs, and the last two are build artifacts.
+
+```mermaid
+erDiagram
+    CATALOG_AREA ||--o{ CELL : "gridDisk(centreCell, rings)"
+    PUBLIC_VIEW  ||--o{ CELL : "boundary"
+    CATALOG_AREA ||--o| AREA_STATUS : "derived per request"
+    PUBLIC_VIEW  }o--o{ AREA_STATUS : "covering views (section 4)"
+    REPLAY ||--o{ FRAME : contains
+    FRAME  ||--o{ CELL : "state per cell"
+```
+
+| Record | Where it lives | Written by | Notes |
+|---|---|---|---|
+| `PublicView` | PublicIndex actor, one row per scope | Area actor, on change only | Type defined in `area-cells` design section 5. Never holds a scope below 3 members. |
+| `CatalogArea` | `catalog.generated.json`, built from the catalog in section 10 | Build step | Listed only when `checkedBy` is non-empty (W7). |
+| `AreaStatus` | Not stored. Computed per request by `areaStatus` (section 4) | Worker | Kinds: `NO_COVERAGE`, `NORMAL`, `RESTORED`, `POSSIBLE`, `CONFIRMED`, plus precision `CELL`, `LINKED`, `COARSE`. |
+| `Replay` | `replay.json` (type in section 7) | `tools/sim` build step | Always `simulated: true`. `source` is `RECORDED` or `SYNTHETIC`. |
+
+No personal data, device identifiers, or raw event streams appear in any of these records.

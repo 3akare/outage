@@ -24,3 +24,5 @@ node --test ".kiro/skills/test/*.test.mjs" ".kiro/skills/*/scripts/test/*.test.m
 - A script is for something deterministic. It has no dependency, has a test, and never prints a secret.
 - Never write a step or a number that was not read in a source or seen on a device. Mark what is unverified.
 - Skills do not change thresholds, stored data or dependencies. They ask the human.
+
+Run every test in the repo (hooks, skills, agents, MCP tools, Power, spec-lint) with `npm test`.

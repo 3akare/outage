@@ -1,7 +1,6 @@
 ---
 name: release-apk
 description: Build, sign, publish and smoke-test an Outage Android APK with EAS cloud builds. Use for /release, when asked to ship or cut a release, build an APK for the field test or the submission, update the direct APK link on the install page, or check that a release is ready. Covers version bump, EAS build, signed APK check, GitHub release upload, Worker install-page values, and the device smoke test.
-license: MIT
 compatibility: Needs Node 20+, the EAS CLI (npx eas-cli) with an Expo login, the gh CLI for the release upload, and a real Android phone for the smoke test. The EAS free plan has a small monthly build allowance.
 metadata:
   project: outage

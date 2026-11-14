@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "cloudflare-docs": {
+      "url": "https://docs.mcp.cloudflare.com/mcp",
+      "autoApprove": ["search_cloudflare_documentation"],
+      "disabledTools": ["migrate_pages_to_workers_guide"],
+      "disabled": false
+    },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "autoApprove": ["resolve-library-id", "query-docs"],
+      "disabled": false
+    },
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_MCP_TOKEN}",
+        "X-MCP-Toolsets": "issues",
+        "X-MCP-Readonly": "true",
+        "X-MCP-Lockdown": "true"
+      },
+      "autoApprove": [],
+      "disabled": true
+    }
+  }
+}

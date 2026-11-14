@@ -1,0 +1,27 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "grid-sensing",
+  "version": "0.1.0",
+  "description": "Detect power cuts from phones' charging state. The Android charging-sensor pattern (JobScheduler stop as the signal), the Poisson detection engine with its tested numbers, and per-maker battery steps (Tecno, Infinix, itel, Samsung, Xiaomi, Pixel) that stop the OS killing a background sensor. Patterns from the Outage project.",
+  "author": {
+    "name": "Outage",
+    "url": "https://github.com/3akare/outage"
+  },
+  "homepage": "https://github.com/3akare/outage",
+  "repository": "https://github.com/3akare/outage",
+  "keywords": [
+    "outage",
+    "charging sensor",
+    "blackout detection",
+    "power cut",
+    "power outage",
+    "grid",
+    "load shedding",
+    "JobScheduler",
+    "poisson",
+    "OEM battery",
+    "tecno",
+    "infinix",
+    "itel"
+  ]
+}

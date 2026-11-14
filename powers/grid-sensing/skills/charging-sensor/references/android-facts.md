@@ -1,0 +1,13 @@
+# Platform facts and where they come from
+
+Read from the official pages on 2026-11-14. Re-check the page before relying on a detail for another Android version.
+
+| Fact | Source |
+|---|---|
+| `JobParameters.getStopReason()` exists from API 31. `STOP_REASON_CONSTRAINT_CHARGING` is 6; `STOP_REASON_CANCELLED_BY_APP` is 1; other reasons include `TIMEOUT`, `DEVICE_STATE`, `QUOTA`, `APP_STANDBY`, `BACKGROUND_RESTRICTION`, `USER`. The documentation says apps should not rely on the stop reason for critical decisions and that it is meant for logging and diagnostics. | https://developer.android.com/reference/android/app/job/JobParameters |
+| Plug constants: AC 1, USB 2, wireless 4, dock 8, read from the sticky `ACTION_BATTERY_CHANGED` intent (`EXTRA_PLUGGED`, `EXTRA_LEVEL`, `EXTRA_SCALE`). | https://developer.android.com/reference/android/os/BatteryManager |
+| Foreground service type `specialUse` has no runtime prerequisite and needs `FOREGROUND_SERVICE_SPECIAL_USE` plus a use-case property in the manifest. `dataSync` services on Android 15 targets get 6 hours per 24 hours. A boot receiver cannot start `dataSync`, `camera`, `mediaPlayback`, `phoneCall`, `mediaProjection` or `microphone` services; `specialUse` is not on that list. | https://developer.android.com/develop/background-work/services/fgs/service-types , https://developer.android.com/about/versions/15/behavior-changes-15 |
+| Full-screen intents are limited to calling and alarm apps for apps targeting Android 14; check with `NotificationManager.canUseFullScreenIntent()`. | https://developer.android.com/about/versions/14/behavior-changes-14 |
+| `SCHEDULE_EXACT_ALARM` is denied by default for new apps targeting Android 13 and higher; `USE_EXACT_ALARM` is for calendar and alarm-clock apps. An alarm driven by an event (a replug) needs neither. Inexact `setAndAllowWhileIdle()` never fires early and fires within an hour on Android 12 and higher unless battery saver or Doze applies. | https://developer.android.com/about/versions/14/changes/schedule-exact-alarms , https://developer.android.com/training/scheduling/alarms |
+| Battery optimization exemption: `PowerManager.isIgnoringBatteryOptimizations()` reports it; the direct request intent is restricted by Google Play policy, and allowed for a sideloaded APK. | https://developer.android.com/training/monitoring-device-state/doze-standby |
+| Job runtime limit: jobs can be stopped after about 10 minutes, and may run longer on Android 12 and higher when the system is not busy. Start and stop delays of 30 to 55 seconds are reported by developers. These are community sources; measure them. | https://stackoverflow.com/questions/77599145/ , https://stackoverflow.com/questions/48110961/ |

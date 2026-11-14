@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-// Validate packages/shared/src/oem-guide.json against the onboarding spec (R7) and property O4/O5.
+// Validate the OEM battery guide (oem-guide.json) against the onboarding spec (R7) and properties O4 and O5.
+// Default file: ../references/oem-guide.json next to this script (the grid-sensing Power), else packages/shared/src/oem-guide.json (the repository).
 // No dependencies. Usage:
 //   node validate-guide.mjs [path] [--require-verified] [--json]
 // Exit 0 when valid, 1 on any error. --require-verified also fails if a maker (except "other") has no device check.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export const REQUIRED = ['tecno', 'infinix', 'itel', 'samsung', 'xiaomi', 'pixel', 'other'];
@@ -98,7 +100,9 @@ export function validateGuide(guide, { requireVerified = false } = {}) {
 
 function main() {
   const args = process.argv.slice(2);
-  const file = args.find((a) => !a.startsWith('--')) || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../packages/shared/src/oem-guide.json');
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const inPower = path.resolve(here, '../references/oem-guide.json');
+  const file = args.find((a) => !a.startsWith('--')) || (existsSync(inPower) ? inPower : path.resolve(here, '../../../../packages/shared/src/oem-guide.json'));
   let guide;
   try { guide = JSON.parse(readFileSync(file, 'utf8')); } catch (e) { console.error(`cannot read ${file}: ${e.message}`); process.exit(1); }
   const { errors, status } = validateGuide(guide, { requireVerified: args.includes('--require-verified') });

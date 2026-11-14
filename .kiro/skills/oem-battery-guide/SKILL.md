@@ -1,7 +1,6 @@
 ---
 name: oem-battery-guide
 description: Exact per-maker steps to stop the phone from killing Outage in the background, for Tecno, Infinix, itel, Samsung, Xiaomi (Redmi, POCO) and Google Pixel. Use when writing or checking the onboarding battery step, adding or verifying a maker's steps in oem-guide.json, answering "why does Outage stop on my Tecno or Infinix", or when a field report shows low armed time on one phone maker.
-license: MIT
 compatibility: Needs web search or fetch to read sources, and Node 20+ to run the validator. A real phone is needed to verify an entry.
 metadata:
   project: outage

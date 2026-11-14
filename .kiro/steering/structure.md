@@ -7,6 +7,7 @@ inclusion: always
 ```
 apps/mobile            Expo app (sensor + viewer)
 modules/outage-sensor  Kotlin Expo Module (JobScheduler sensor)
+powers/grid-sensing    Kiro Power (Agent Plugin): charging-sensor, blackout-detection, oem-battery-guide skills
 workers/api            Cloudflare Worker + Durable Objects + web page
 packages/detection     Pure TypeScript engine, no I/O
 packages/shared        Types, event schema, H3 helpers

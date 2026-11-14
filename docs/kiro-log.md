@@ -90,3 +90,12 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Fix found while testing: the release preflight did not catch background location enabled through a plugin option; the check and its test were corrected.
 - `.kiroignore` is still blocked by a permission rule (deny fs_write matching `.kiroignore`, source `kiro-scope:kiroignore`), even after the human asked for it. The agent did not use a shell write to get around it. The intended contents are in `docs/kiroignore.suggested` for the human to rename.
 - Steering `/release` and `/field-test` now point at the skills.
+
+## 2026-11-14 agents, MCP, Power, spec-lint
+- Custom agents in `.kiro/agents/` (JSON plus `prompts/*.md`): `sensor-engineer` (Kotlin only, writes limited to `modules/outage-sensor/**`), `detection-auditor` (read-only, ends with `VERDICT:`), `pitch-writer` (writes only README, `docs/pitch/**`, `.commit-message.txt`; claims register checked by `claims-check.mjs`). The first two are pinned to `claude-opus-4.8`; reasoning effort is set per model in `.kiro/settings/cli.json` because there is no per-agent effort field. 33 tests.
+- MCP in `.kiro/settings/mcp.json`: `cloudflare-docs` and `context7` (no auth, both answered live through `mcp-check.mjs`), `github` (issues toolset, read-only, disabled until `GITHUB_MCP_TOKEN` exists). Rejected the Cloudflare API server (can change resources) and Neon (no Postgres). `mcp-check.mjs` and `mcp-call.mjs` are the dependency-free clients; 13 tests. Details in `docs/mcp-servers.md`.
+- `powers/grid-sensing/`: Agent Plugin with three skills and a context7 `mcp.json`; 24 tests including a sync check against the repo copy of the OEM guide.
+- `spec-lint.mjs`: cross-document checks for specs, tasks, ADRs, steering and the traceability table. It found a real gap (the web design had no data model; added section 13). Writing its tests found a bug in `parseDeps`: mixed lists such as "1, 2, `spec` 3" were not split. Fixed in the script.
+- Removed `license: MIT` from skill front matter: the human has not chosen a license.
+- `.kiroignore` is still denied for the agent; contents remain in `docs/kiroignore.suggested`.
+- Not verified: that Kiro Web loads repo agents or MCP when the project root is `/projects/sandbox`; that Kiro accepts hyphenated MCP tool names; the github server (a bad token returned HTTP 400, as expected).

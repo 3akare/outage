@@ -1,0 +1,333 @@
+{
+  "version": 1,
+  "updated": "2026-11-14",
+  "note": "Source of truth for the onboarding battery step (onboarding R7) and for the oem-battery-guide skill. Every entry is sourced from public pages and is UNVERIFIED until a person records a device check in `verified`. Setting names change by phone model and software version; the app shows unverified entries as 'General steps'.",
+  "makers": [
+    {
+      "id": "tecno",
+      "name": "Tecno",
+      "family": "Transsion (HiOS)",
+      "match": { "manufacturer": ["tecno"], "brand": ["tecno"] },
+      "steps": [
+        {
+          "title": "Let Outage use the battery",
+          "steps": [
+            "Open Settings, then Battery.",
+            "Open Battery Optimization. Tap Outage and choose Don't optimize.",
+            "Or open Settings, Battery Lab, Battery Saving Settings. Turn off Power Saving Management For Apps."
+          ],
+          "settingsAction": "android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS"
+        },
+        {
+          "title": "Let Outage run in the background",
+          "steps": [
+            "Open the Phone Master app, then Toolbox, then Auto-start management.",
+            "Turn on Outage.",
+            "Open Settings, Apps, Special Access, Background Activity Permissions. Allow Outage."
+          ]
+        },
+        {
+          "title": "Keep Outage in recent apps",
+          "steps": [
+            "Open the recent apps screen.",
+            "On the Outage card, tap the lock icon so it stays open."
+          ]
+        },
+        {
+          "title": "Turn off power savers that stop apps",
+          "steps": [
+            "In Phone Master, open Power Marathon and turn off Power Boost.",
+            "In Settings, Battery, set Power Saving Mode to Standard or Off.",
+            "Search Settings for Sleep mode and turn off Sleep mode optimization. It turns on airplane mode at night."
+          ]
+        }
+      ],
+      "checklist": [
+        { "id": "battery_exemption", "text": "Battery optimization is off for Outage" },
+        { "id": "autostart", "text": "Auto-start is on for Outage in Phone Master" },
+        { "id": "background_activity", "text": "Background activity is allowed for Outage" },
+        { "id": "recents_lock", "text": "Outage is locked in recent apps" },
+        { "id": "power_saving_off", "text": "Power saving mode is Off or Standard" },
+        { "id": "sleep_mode_optimization_off", "text": "Sleep mode optimization is off" }
+      ],
+      "source": "https://dontkillmyapp.com/tecno",
+      "alsoSee": ["https://express.ms/en/faq/background-work-fix/infinix/"],
+      "verified": []
+    },
+    {
+      "id": "infinix",
+      "name": "Infinix",
+      "family": "Transsion (XOS)",
+      "match": { "manufacturer": ["infinix"], "brand": ["infinix"] },
+      "steps": [
+        {
+          "title": "Let Outage use the battery",
+          "steps": [
+            "Open Settings, then Battery, then Battery Optimization.",
+            "Tap Outage and choose Don't optimize.",
+            "Open Settings, Apps, App Management, Outage, Battery. Turn on Allow Background Activity."
+          ],
+          "settingsAction": "android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS"
+        },
+        {
+          "title": "Let Outage run in the background",
+          "steps": [
+            "Open Settings, Apps, Special Access, Background Activity Permissions. Allow Outage.",
+            "If your phone has the Phone Master app, open Toolbox, then Auto-start management, and turn on Outage."
+          ]
+        },
+        {
+          "title": "Keep Outage in recent apps",
+          "steps": [
+            "Open the recent apps screen.",
+            "Pin or lock the Outage card so it stays open."
+          ]
+        },
+        {
+          "title": "Turn off power savers that stop apps",
+          "steps": [
+            "Open Settings, Battery, Power Saving Mode. Choose Standard or Off.",
+            "Open Settings, Special Features, XBoost. Turn off any mode that limits Outage.",
+            "In Game Mode settings, allow background data for Outage."
+          ]
+        },
+        {
+          "title": "If a name is missing",
+          "steps": [
+            "Names change by version. Search Settings for battery, background and autostart."
+          ]
+        }
+      ],
+      "checklist": [
+        { "id": "battery_exemption", "text": "Battery optimization is off for Outage" },
+        { "id": "background_activity", "text": "Background activity is allowed for Outage" },
+        { "id": "autostart", "text": "Auto-start is on for Outage, if your phone has it" },
+        { "id": "recents_lock", "text": "Outage is pinned in recent apps" },
+        { "id": "power_saving_off", "text": "Power saving mode is Off or Standard" }
+      ],
+      "source": "https://express.ms/en/faq/background-work-fix/infinix/",
+      "alsoSee": ["https://dontkillmyapp.com/tecno"],
+      "verified": []
+    },
+    {
+      "id": "itel",
+      "name": "itel",
+      "family": "Transsion (itel OS)",
+      "match": { "manufacturer": ["itel"], "brand": ["itel"] },
+      "steps": [
+        {
+          "title": "Let Outage use the battery",
+          "steps": [
+            "Open Settings, then Apps.",
+            "Tap the three dots at the top right, then Special app access.",
+            "Tap Battery optimization. Change the filter to All apps.",
+            "Tap Outage and choose Don't optimize."
+          ],
+          "settingsAction": "android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS"
+        },
+        {
+          "title": "Let Outage start in the background",
+          "steps": [
+            "Open the Phone Master app, then ToolBox, then Auto-start management.",
+            "Turn on Outage."
+          ]
+        },
+        {
+          "title": "Turn off power savers that stop apps",
+          "steps": [
+            "Open Settings, then Battery.",
+            "Turn off any power saving mode."
+          ]
+        },
+        {
+          "title": "Keep Outage in recent apps",
+          "steps": [
+            "Open the recent apps screen.",
+            "Pin or lock the Outage card so it stays open."
+          ]
+        }
+      ],
+      "checklist": [
+        { "id": "battery_exemption", "text": "Battery optimization is off for Outage" },
+        { "id": "autostart", "text": "Auto-start is on for Outage in Phone Master" },
+        { "id": "power_saving_off", "text": "Power saving modes are off" },
+        { "id": "recents_lock", "text": "Outage is pinned in recent apps" }
+      ],
+      "source": "https://www.salestrail.io/knowledge-base/itel-devices",
+      "alsoSee": ["https://express.ms/en/faq/background-work-fix/infinix/", "https://dontkillmyapp.com/tecno"],
+      "verified": []
+    },
+    {
+      "id": "samsung",
+      "name": "Samsung",
+      "family": "One UI",
+      "match": { "manufacturer": ["samsung"], "brand": ["samsung"] },
+      "steps": [
+        {
+          "title": "Let Outage use the battery",
+          "steps": [
+            "Open Settings, Apps, Outage, Battery.",
+            "Choose Unrestricted.",
+            "If you see Battery optimization instead, choose All apps, tap Outage, and choose Don't optimize."
+          ],
+          "settingsAction": "android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS"
+        },
+        {
+          "title": "Stop Samsung putting Outage to sleep",
+          "steps": [
+            "Open Settings, Battery and device care, Battery, Background usage limits.",
+            "Turn off Put unused apps to sleep.",
+            "Remove Outage from Sleeping apps and Deep sleeping apps.",
+            "Add Outage to Never sleeping apps.",
+            "Search Settings for Adaptive battery and turn it off."
+          ]
+        },
+        {
+          "title": "Keep Outage in recent apps",
+          "steps": [
+            "Open the recent apps screen.",
+            "Tap the Outage icon at the top of its card and choose Keep open."
+          ]
+        },
+        {
+          "title": "Check again after updates",
+          "steps": [
+            "After a software update, open the same lists again. Samsung can put Outage back to sleep."
+          ]
+        }
+      ],
+      "checklist": [
+        { "id": "battery_exemption", "text": "Battery is Unrestricted for Outage" },
+        { "id": "put_unused_apps_to_sleep_off", "text": "Put unused apps to sleep is off" },
+        { "id": "never_sleeping_list", "text": "Outage is in Never sleeping apps" },
+        { "id": "adaptive_battery_off", "text": "Adaptive battery is off" },
+        { "id": "recents_lock", "text": "Outage is kept open in recent apps" }
+      ],
+      "source": "https://dontkillmyapp.com/samsung",
+      "alsoSee": [],
+      "verified": []
+    },
+    {
+      "id": "xiaomi",
+      "name": "Xiaomi, Redmi and POCO",
+      "family": "MIUI and HyperOS",
+      "match": { "manufacturer": ["xiaomi"], "brand": ["xiaomi", "redmi", "poco"] },
+      "steps": [
+        {
+          "title": "Let Outage start by itself",
+          "steps": [
+            "Open the Security app, then Permissions, then Autostart.",
+            "Turn on Outage.",
+            "On newer versions you can also open Settings, Apps, Manage apps, Outage, App permissions, and allow Autostart."
+          ]
+        },
+        {
+          "title": "Remove battery limits",
+          "steps": [
+            "Open Settings, Apps, Manage apps, Outage, Battery saver.",
+            "Choose No restrictions.",
+            "Or open the Security app, Battery, App battery saver, Outage, and choose No restriction."
+          ],
+          "settingsAction": "android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS"
+        },
+        {
+          "title": "Keep Outage in recent apps",
+          "steps": [
+            "Open the recent apps screen.",
+            "Drag the Outage card down, or press and hold it and tap the padlock."
+          ]
+        },
+        {
+          "title": "Turn off power savers",
+          "steps": [
+            "Turn off Battery saver and Ultra battery saver.",
+            "If your phone has a Power plan setting, choose Performance."
+          ]
+        }
+      ],
+      "checklist": [
+        { "id": "battery_exemption", "text": "Battery optimization is off for Outage" },
+        { "id": "autostart", "text": "Autostart is on for Outage" },
+        { "id": "battery_saver_no_restrictions", "text": "Battery saver is set to No restrictions for Outage" },
+        { "id": "recents_lock", "text": "Outage is locked in recent apps" }
+      ],
+      "source": "https://dontkillmyapp.com/xiaomi",
+      "alsoSee": [],
+      "verified": []
+    },
+    {
+      "id": "pixel",
+      "name": "Google Pixel",
+      "family": "Android",
+      "match": { "manufacturer": ["google"], "brand": ["google"] },
+      "steps": [
+        {
+          "title": "Let Outage use the battery",
+          "steps": [
+            "Open Settings, Apps, Outage, Battery. On some versions it is called App battery usage.",
+            "Choose Unrestricted.",
+            "On older versions: open Advanced, Battery, Battery optimization, All apps, tap Outage and choose Not optimized."
+          ],
+          "settingsAction": "android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS"
+        },
+        {
+          "title": "Check background limits",
+          "steps": [
+            "In the same Battery screen, make sure Background restriction or Restricted is off for Outage."
+          ]
+        }
+      ],
+      "checklist": [
+        { "id": "battery_exemption", "text": "Battery is Unrestricted for Outage" },
+        { "id": "background_restriction_off", "text": "Background restriction is off for Outage" }
+      ],
+      "source": "https://dontkillmyapp.com/google",
+      "alsoSee": ["https://developer.android.com/training/monitoring-device-state/doze-standby"],
+      "verified": []
+    },
+    {
+      "id": "other",
+      "name": "Other phones",
+      "family": "Unknown",
+      "match": { "manufacturer": [], "brand": [] },
+      "steps": [
+        {
+          "title": "Let Outage use the battery",
+          "steps": [
+            "Open Settings and search for Battery optimization.",
+            "Find Outage and choose Don't optimize, Not optimized or Unrestricted."
+          ],
+          "settingsAction": "android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS"
+        },
+        {
+          "title": "Let Outage run in the background",
+          "steps": [
+            "Search Settings for Autostart, Auto-start or Background activity.",
+            "Allow Outage."
+          ]
+        },
+        {
+          "title": "Keep Outage in recent apps",
+          "steps": [
+            "Open the recent apps screen.",
+            "Lock or pin the Outage card, if your phone offers it."
+          ]
+        },
+        {
+          "title": "Turn off power savers",
+          "steps": [
+            "Turn off Battery saver and any power saving mode while Outage should watch."
+          ]
+        }
+      ],
+      "checklist": [
+        { "id": "battery_exemption", "text": "Battery optimization is off for Outage" },
+        { "id": "autostart", "text": "Autostart or background activity is allowed for Outage, if your phone has it" },
+        { "id": "recents_lock", "text": "Outage is locked in recent apps, if your phone offers it" }
+      ],
+      "source": "https://dontkillmyapp.com/",
+      "alsoSee": ["https://developer.android.com/training/monitoring-device-state/doze-standby"],
+      "verified": []
+    }
+  ]
+}

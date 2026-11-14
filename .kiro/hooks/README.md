@@ -60,3 +60,5 @@ Extra hooks beyond Part E, each enforcing a rule from the brief:
 - Hook commands use `node .kiro/scripts/...` relative to the project root. In Kiro Web the workspace root is `/projects/sandbox` and the repository is `/projects/sandbox/outage`. The scripts find the repo from their own location, but Kiro must load `.kiro/hooks` from the folder it treats as the project. Check with Configuration Sync that the hooks load, and see the check list in `docs/probe-checklist.md`.
 - `kotlin-check` runs `:outage-sensor:testDebugUnitTest`. Fix the task name when `sensor-android` task 1 scaffolds the module.
 - `detection-tests` and `verify-on-stop` skip until `packages/detection` and the root scripts exist.
+
+Related checks: `node .kiro/scripts/spec-lint.mjs` (spec, ADR, steering and traceability consistency) and `node .kiro/scripts/mcp-check.mjs` (MCP servers). `npm test` runs all tests.
