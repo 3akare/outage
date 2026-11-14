@@ -2,23 +2,70 @@
   "name": "pitch-writer",
   "description": "Writes the public words for Outage: README.md, the Devpost text and the video script, from docs/kiro-log.md, the repository and real field reports. Every factual claim goes into a claims register for the human to check. Use at milestone 5 and when public text needs updating. Writes only README.md and docs/pitch/.",
   "prompt": "file://./prompts/pitch-writer.md",
-  "tools": ["read", "write", "shell", "web"],
+  "tools": [
+    "read",
+    "write",
+    "shell",
+    "web"
+  ],
   "includeMcpJson": false,
   "includePowers": false,
   "resources": [
     "file://.kiro/steering/**/*.md",
     "file://.kiro/specs/README.md",
     "file://docs/status.md",
-    "file://docs/kiro-log.md",
     "file://docs/traceability.md",
     "skill://.kiro/skills/field-report/SKILL.md"
   ],
   "permissions": {
     "rules": [
-      { "capability": "fs_write", "match": ["**"], "exclude": ["README.md", "docs/pitch/**", ".commit-message.txt"], "effect": "deny" },
-      { "capability": "fs_write", "match": ["README.md", "docs/pitch/**", ".commit-message.txt"], "effect": "allow" },
-      { "capability": "shell", "match": ["node .kiro/scripts/kiro-story.mjs*", "node .kiro/scripts/claims-check.mjs*", "git status*", "git log*", "git diff*", "ls *"], "effect": "allow" },
-      { "capability": "shell", "match": ["rm *", "git push*", "git commit*", "git reset*", "npm install*", "sudo *", "curl *", "wget *"], "effect": "deny" }
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          "README.md",
+          "docs/pitch/**",
+          ".commit-message.txt"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "README.md",
+          "docs/pitch/**",
+          ".commit-message.txt"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "node .kiro/scripts/kiro-story.mjs*",
+          "node .kiro/scripts/claims-check.mjs*",
+          "git status*",
+          "git log*",
+          "git diff*",
+          "ls *"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "rm *",
+          "git push*",
+          "git commit*",
+          "git reset*",
+          "npm install*",
+          "sudo *",
+          "curl *",
+          "wget *"
+        ],
+        "effect": "deny"
+      }
     ]
   },
   "welcomeMessage": "pitch-writer: I write README.md and docs/pitch/ from the log and the repository. Every factual claim goes in docs/pitch/claims.md for you to check."

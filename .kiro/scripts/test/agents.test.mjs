@@ -119,9 +119,11 @@ test('pitch-writer: may write only README.md and docs/pitch, and its prompt carr
   const deny = w.find((r) => r.effect === 'deny'), allow = w.find((r) => r.effect === 'allow');
   assert.deepEqual(deny.match, ['**']); assert.deepEqual(deny.exclude.sort(), allow.match.slice().sort());
   assert.ok(allow.match.every((m) => ['README.md', 'docs/pitch/**', '.commit-message.txt'].includes(m)));
-  assert.ok(a.resources.includes('file://docs/kiro-log.md'));
+  // the log grows with every task, so it is read on demand (the prompt says so) instead of preloaded past the resource budget
+  assert.ok(!a.resources.includes('file://docs/kiro-log.md'), 'kiro-log.md is too large to preload');
   assert.equal(a.model, undefined, 'default model and effort outside the three max-effort areas');
   const p = readFileSync(path.join(agentsDir, 'prompts', 'pitch-writer.md'), 'utf8');
+  assert.ok(/Read[^\n]*docs\/kiro-log\.md/.test(p), 'prompt tells the agent to read the log');
   for (const must of ['not from phones', '19 of 20', '989 to 310', 'nLine', 'claims.md', 'UNCHECKED', 'kiro-story.mjs', 'Never promise compensation', 'under 3 minutes']) assert.ok(p.includes(must), `prompt must contain: ${must}`);
 });
 

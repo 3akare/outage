@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nigerian Pidgin. Optional: any key missing here falls back to English (app-shell R7.2). -->
+<resources>
+    <string name="status_restored">Light don come!</string>
+    <string name="offline">No network</string>
+    <string name="sensor_armed">We dey watch</string>
+    <string name="coming_soon">E dey come soon</string>
+    <string name="delete_confirm">Delete am</string>
+</resources>

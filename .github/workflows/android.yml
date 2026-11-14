@@ -47,3 +47,26 @@ jobs:
     # The release step needs contents: write
     permissions:
       contents: write
+
+  # The real app (app-shell spec). Same steps as the probe, no release step yet.
+  app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Compile, unit test, lint
+        run: ./gradlew --no-daemon :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+      - name: Name the APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/outage-app-debug.apk"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: outage-app-debug
+          path: ${{ runner.temp }}/outage-app-debug.apk
+          if-no-files-found: error

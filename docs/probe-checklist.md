@@ -228,3 +228,14 @@ This list is for task 7 and the Kotlin tasks, so the checklist and the app agree
 | Plug type, battery status, standby bucket and exemption state in every job row | M3, M11, ADR 0001 | 5 |
 | Reference-logger switch | M2, M6, M7 | 6, 7 |
 | `Export file` and `Clear` | section 7 | 7 |
+
+## App shell check (AS8, app-shell R6.3)
+
+Not part of the probe. Do this once on a real phone with the debug build of `apps/android` (artifact `outage-app-debug`), after the field test or on any spare phone.
+
+1. Settings > Display > Font size: set the largest size (200% if the phone allows it, otherwise the largest). Set the display size to the smallest width you can (360 dp wide or less).
+2. Open Outage. On a debug build the "Set up" placeholder shows first. Tap `Done`.
+3. Home: read the status card ("No area data yet") and the sensor card ("Not watching", reason). All text must be fully visible, wrapped on more lines, with no cut-off words. Scroll to the end.
+4. Open Settings. Every row must be readable and tappable. Tap `Delete my data`, read the question, tap `Cancel`.
+5. Turn on dark mode. Repeat step 3. Each status must still show an icon and a text label.
+6. Record the phone, font size and result on the log sheet (section 6). Any clipped text is a bug: note which screen.

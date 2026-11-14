@@ -198,14 +198,14 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R1 | AS1 | `AS1_start_routing` | 2 | planned |
-| R3.3 | AS2 | `AS2_router_back` | 2 | planned |
-| R1.3 | AS3 | `AS3_unknown_routes` | 2 | planned |
-| R6.2 | AS4 | `AS4_status_style_complete` | 3 | planned |
-| R2 | AS5 | `AS5_home_state` | 5 | planned |
-| R5 | AS6 | `AS6_delete_all` | 7 | planned |
-| R7 | AS7 | `AS7_strings` | 4 | planned |
-| R6.3 | AS8 | device or UI check | 8 | planned |
+| R1 | AS1 | `AS1_start_routing` | 2 | test written (`apps/android/app/src/test/kotlin/app/outage/shell/RoutingTest.kt`) |
+| R3.3 | AS2 | `AS2_router_back` | 2 | test written (`apps/android/app/src/test/kotlin/app/outage/shell/RoutingTest.kt`) |
+| R1.3 | AS3 | `AS3_unknown_routes` | 2 | test written (`apps/android/app/src/test/kotlin/app/outage/shell/RoutingTest.kt`) |
+| R6.2 | AS4 | `AS4_status_style_complete` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/shell/StatusStyleTest.kt`) |
+| R2 | AS5 | `AS5_home_state` | 5 | test written (`apps/android/app/src/test/kotlin/app/outage/shell/HomeReducerTest.kt`) |
+| R5 | AS6 | `AS6_delete_all` | 7 | test written (`apps/android/app/src/test/kotlin/app/outage/shell/DeleteRegistryTest.kt`) |
+| R7 | AS7 | `AS7_strings` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/shell/StringPackTest.kt`) |
+| R6.3 | AS8 | device check | 8 | checklist written (`docs/probe-checklist.md`, "App shell check") |
 
 <!-- BEGIN GENERATED: detection properties (.kiro/scripts/traceability.mjs) -->
 ## Detection properties P1 to P12 (generated)

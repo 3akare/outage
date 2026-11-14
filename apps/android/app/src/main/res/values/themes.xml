@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window theme only; Compose draws the screens. Platform theme, so no extra library. -->
+    <style name="Theme.Outage" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

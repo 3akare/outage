@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Outage</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_log">Log</string>
+    <string name="nav_area">Area</string>
+    <string name="nav_settings">Settings</string>
+    <string name="back">Back</string>
+    <string name="ok">OK</string>
+
+    <!-- Spot status: the five states from copy.md -->
+    <string name="status_normal">Normal</string>
+    <string name="status_spot_only">Your spot only</string>
+    <string name="status_possible">Possible</string>
+    <string name="status_confirmed">Confirmed</string>
+    <string name="status_restored">Restored</string>
+
+    <!-- Home -->
+    <string name="home_spot_title">Power at your spot</string>
+    <string name="area_none">No area data yet</string>
+    <string name="age_just_now">Updated just now</string>
+    <string name="age_minutes">Updated %1$d min ago</string>
+    <string name="age_hours">Updated %1$d h ago</string>
+    <string name="age_days">Updated %1$d d ago</string>
+    <string name="offline">Offline</string>
+    <string name="simulated">Simulated</string>
+    <string name="sensor_armed">Watching</string>
+    <string name="sensor_not_charging">Not charging</string>
+    <string name="sensor_not_armed">Not watching</string>
+    <string name="reason_not_set_up">Setup is not finished</string>
+    <string name="reason_battery_restricted">Battery saver may stop Outage</string>
+    <string name="reason_not_available">Not available yet</string>
+    <string name="power_today">Power today</string>
+    <string name="power_hours_value">%1$.1f hours</string>
+    <string name="alarm_title">Light Alarm</string>
+    <string name="alarm_off">Off</string>
+    <string name="alarm_waiting">Waiting for power</string>
+    <string name="alarm_ringing">Ringing</string>
+
+    <!-- Coming soon -->
+    <string name="coming_soon">Coming soon</string>
+    <string name="coming_soon_body">This part of Outage is not built yet.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_alarm">Light Alarm settings</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_battery">Battery setup</string>
+    <string name="settings_station">Station mode</string>
+    <string name="settings_home_watch">Home Watch</string>
+    <string name="settings_followed_area">Followed area</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_diagnostics">Share anonymous diagnostics</string>
+    <string name="settings_delete">Delete my data</string>
+    <string name="settings_about">About and privacy</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_alias">Your alias: %1$s</string>
+    <string name="settings_alias_none">Your alias: not set yet</string>
+
+    <!-- Delete my data -->
+    <string name="delete_title">Delete my data?</string>
+    <string name="delete_body">This removes everything Outage keeps on this phone: your setup, your area, your power log and your alarms. It also asks the server to delete what it holds for this install. You cannot undo this.</string>
+    <string name="delete_confirm">Delete</string>
+    <string name="delete_cancel">Cancel</string>
+    <string name="delete_done">Deleted</string>
+    <string name="delete_done_server_pending">Deleted on this phone. The server copy will be deleted when you are online.</string>
+    <string name="delete_failed">Could not delete everything on this phone. Try again.</string>
+
+    <!-- About and privacy -->
+    <string name="about_what">Outage tells you when power goes and when it comes back, using phones on charge.</string>
+    <string name="privacy_cell">Outage keeps only the area cell of your spot, never your exact location.</string>
+    <string name="privacy_anonymous">There is no name, phone number or email. Each install has one anonymous ID.</string> <!-- privacy-guard:allow user-facing privacy notice that says no name, phone number or email is collected; not a data field (to confirm with the human) -->
+    <string name="privacy_sensors">Outage does not use the microphone or the motion sensors.</string>
+    <string name="privacy_delete">You can delete everything in Settings.</string>
+
+    <!-- Onboarding placeholder (debug builds only) -->
+    <string name="onboarding_title">Set up</string>
+    <string name="onboarding_placeholder_body">Setup is not built yet. This screen is only for testing.</string>
+    <string name="onboarding_done">Done</string>
+</resources>
