@@ -207,13 +207,13 @@ interface DetectionPort {
 }
 type IngestedEvent = {
   installId: string; seq: number;
-  type: 'UNPLUG'|'BATTERY_FULL'|'REPLUG';
+  type: 'ARMED'|'DISARMED'|'UNPLUG'|'BATTERY_FULL'|'REPLUG';
   eventTimeMs: number; confidence: 'HIGH'|'LOW';
   schedulingDelayMs: number | null;
 };
 ```
 
-The detection spec decides what happens next. Until it exists, a `NoopDetectionPort` records events only, so ingest can be built and tested alone.
+AMENDED 2026-11-14 by the `detection-engine` spec: `DetectionPort.handle` also receives `ARMED` and `DISARMED` state events, because the engine rebuilds armed intervals from them. The type below gains `ARMED | DISARMED` and an optional `simulated` marker is never passed (ingest rejects it). The detection spec decides what happens next. Until it exists, a `NoopDetectionPort` records events only, so ingest can be built and tested alone.
 
 ```ts
 // packages/shared/src/uploader.ts

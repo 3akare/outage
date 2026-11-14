@@ -40,3 +40,26 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R1.2, R4.5 | T5 (supports S7) | `T5_mode_changes_are_silent` | 2 | planned |
 | R5 | T6 | `T6_heartbeat_cadence` | 2 | planned |
 | R5.2 | T7 | `T7_heartbeat_vs_silence_limit` | 2 | planned |
+
+## detection-engine
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R6.3 | P1 | `P1_single_unplug_never_alerts` | 9 | planned |
+| R6.1 | P2 | `P2_confirmed_when_k3_p_small` | 9 | planned |
+| R2.3, R12.1 | P3 | `P3_order_and_delay_independence` | 15 | planned |
+| R2.2 | P4 | `P4_duplicates_change_nothing` | 6 | planned |
+| R10.4 | P5 | `P5_spread_replugs_never_restore` | 12 | planned |
+| R10.5 | P6 | `P6_restore_needs_outage` | 12 | planned |
+| R6.4 | P7 | `P7_more_drops_never_lower` | 9 | planned |
+| R15 | P8 | `P8_time_shift_invariance` | 15 | planned |
+| R14 | P9 | `P9_simulated_never_counts` | 6 | planned |
+| R3.6 | P10 | `P10_noisy_never_confirms` | 7 | planned |
+| R5.6 | P11 | `P11_sparse_never_confirms` | 9 | planned |
+| R12.2 | P12 | `P12_no_stale_push` | 13 | planned |
+| R1.3 | D1 | `D1_incremental_equals_sweep` | follow-up if needed | planned |
+| R5.4 | D2 | `D2_poisson_tail_accuracy` | 4 | planned |
+| R13 | D3 | `D3_explanations_complete` | 13 | planned |
+| R3.5, R4.3, R8 | D4 | `D4_labels` | 7 | planned |
+| R16 | D5 | `D5_settle_equivalence` | 14 | planned |
+| R12.3 | D6 | `D6_push_once` | 13 | planned |

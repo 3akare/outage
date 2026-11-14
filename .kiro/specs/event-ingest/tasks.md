@@ -25,7 +25,7 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 - [ ] 4. Worker handlers: `POST /v1/register` (per-source limit, no storage, no IP logging), request parsing, size limits, event-time computation, per-cell grouping, response assembly. Tests I1, I5.
   - Depends on: 2, 3
   - Requirements: R2, R3, R7.1, R7.2, R8, R2.4
-- [ ] 5. Cell actor core: SQLite schema, idempotency by primary key, token bucket with detection-first policy, `DetectionPort` with `NoopDetectionPort`. Tests I2, I4, I6.
+- [ ] 5. Cell actor core: SQLite schema, idempotency by primary key, token bucket with detection-first policy, `DetectionPort` (receives detection and state events, per the `detection-engine` amendment) with `NoopDetectionPort`. Tests I2, I4, I6.
   - Depends on: 2
   - Requirements: R5, R6, R7.3, R7.4, R10
 - [ ] 6. Uploader in `packages/shared`: ordering, batching, back-off with jitter, send-time `elapsedMs`, ack policy, exclusion of simulated and LOST events. Tests I7.
