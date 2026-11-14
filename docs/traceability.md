@@ -181,11 +181,11 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 
 | Requirement | Test | Task | Status |
 |---|---|---|---|
-| R5, R6 (M1) | `PR1 analyze_armed_ratio` | 3 | planned |
-| R5, R6 (M2) | `PR2 analyze_nearest_rank` | 3 | planned |
-| R5 | `PR3 analyze_segments` | 3 | planned |
-| R6 | `PR4 analyze_pairing` | 3 | planned |
-| R8 | `PR5 analyze_gate` | 3 | planned |
+| R5, R6 (M1) | `PR1 analyze_armed_ratio` | 3 | test written (`tools/probe/analyze/test/analyze.test.ts`) |
+| R5, R6 (M2) | `PR2 analyze_nearest_rank` | 3 | test written (`tools/probe/analyze/test/analyze.test.ts`) |
+| R5 | `PR3 analyze_segments` | 3 | test written (`tools/probe/analyze/test/analyze.test.ts`) |
+| R6 | `PR4 analyze_pairing` | 3 | test written (`tools/probe/analyze/test/analyze.test.ts`) |
+| R8 | `PR5 analyze_gate` | 3 | test written (`tools/probe/analyze/test/analyze.test.ts`) |
 
 <!-- BEGIN GENERATED: detection properties (.kiro/scripts/traceability.mjs) -->
 ## Detection properties P1 to P12 (generated)

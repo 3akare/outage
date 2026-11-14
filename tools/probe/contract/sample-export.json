@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "devices": [
+    {
+      "device": {
+        "alias": "tecno-a",
+        "maker": "TECNO",
+        "brand": "TECNO",
+        "androidSdk": 33
+      },
+      "rows": [
+        {
+          "id": 1,
+          "kind": "SESSION",
+          "monoMs": 1000,
+          "wallMs": 1763100001000,
+          "bootCount": 41,
+          "fields": {
+            "kind": "start",
+            "maker": "TECNO",
+            "brand": "TECNO",
+            "androidSdk": 33,
+            "fullScreen": null,
+            "exempt": false
+          }
+        },
+        {
+          "id": 2,
+          "kind": "NOTE",
+          "monoMs": 2000,
+          "wallMs": 1763100002000,
+          "bootCount": 41,
+          "fields": {
+            "text": "cond: baseline"
+          }
+        },
+        {
+          "id": 3,
+          "kind": "PLUG",
+          "monoMs": 10000,
+          "wallMs": 1763100010000,
+          "bootCount": 41,
+          "fields": {
+            "source": "RECEIVER",
+            "action": "CONNECTED",
+            "plug": "AC",
+            "plugAfter1s": "AC",
+            "charging": true,
+            "batteryPct": 40
+          }
+        },
+        {
+          "id": 4,
+          "kind": "JOB_START",
+          "monoMs": 25000,
+          "wallMs": 1763100025000,
+          "bootCount": 41,
+          "fields": {
+            "jobId": 1,
+            "charging": true,
+            "plug": "AC",
+            "batteryPct": 40,
+            "batteryStatus": "CHARGING",
+            "bucket": "ACTIVE",
+            "exempt": false,
+            "isInteractive": false,
+            "expedited": false
+          }
+        },
+        {
+          "id": 5,
+          "kind": "JOB_STOP",
+          "monoMs": 625000,
+          "wallMs": 1763100625000,
+          "bootCount": 41,
+          "fields": {
+            "jobId": 1,
+            "charging": true,
+            "plug": "AC",
+            "batteryPct": 45,
+            "stopReason": 3,
+            "stopReasonName": "TIMEOUT",
+            "stickyPlug": "AC",
+            "stickyPct": 45,
+            "bmCharging": true,
+            "bmPct": 45,
+            "mismatch": false
+          }
+        },
+        {
+          "id": 6,
+          "kind": "JOB_START",
+          "monoMs": 655000,
+          "wallMs": 1763100655000,
+          "bootCount": 41,
+          "fields": {
+            "jobId": 1,
+            "charging": true,
+            "plug": "AC",
+            "batteryPct": 45,
+            "exempt": false,
+            "expedited": false
+          }
+        },
+        {
+          "id": 7,
+          "kind": "PLUG",
+          "monoMs": 900000,
+          "wallMs": 1763100900000,
+          "bootCount": 41,
+          "fields": {
+            "source": "RECEIVER",
+            "action": "DISCONNECTED",
+            "plug": "NONE",
+            "plugAfter1s": "NONE",
+            "charging": false,
+            "batteryPct": 47
+          }
+        },
+        {
+          "id": 8,
+          "kind": "JOB_STOP",
+          "monoMs": 902000,
+          "wallMs": 1763100902000,
+          "bootCount": 41,
+          "fields": {
+            "jobId": 1,
+            "charging": false,
+            "plug": "NONE",
+            "batteryPct": 47,
+            "stopReason": 6,
+            "stopReasonName": "CONSTRAINT_CHARGING",
+            "stickyPlug": "NONE",
+            "stickyPct": 47,
+            "bmCharging": false,
+            "bmPct": 47,
+            "mismatch": false
+          }
+        },
+        {
+          "id": 9,
+          "kind": "BATTERY",
+          "monoMs": 903000,
+          "wallMs": 1763100903000,
+          "bootCount": 41,
+          "fields": {
+            "source": "JOB_RECHECK",
+            "plug": "NONE",
+            "charging": false,
+            "batteryPct": 47,
+            "recheckOf": 8
+          }
+        },
+        {
+          "id": 10,
+          "kind": "UPLOAD",
+          "monoMs": 950000,
+          "wallMs": 1763100950000,
+          "bootCount": 41,
+          "fields": {
+            "ok": true,
+            "status": 200,
+            "rows": 9,
+            "durationMs": 420,
+            "network": "WIFI"
+          }
+        }
+      ]
+    }
+  ]
+}

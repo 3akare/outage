@@ -142,3 +142,11 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Found while testing: links changed in the middle of a turn are not picked up until the next message. Removing and re-adding the links mid-turn left the hooks unloaded for the rest of that turn.
 - Correction: I said earlier that the custom agents were not loaded. That was wrong: this session's agent list already included all three.
 - Not covered: MCP from `.kiro/settings/mcp.json`. Kiro denies writes to the root `.kiro/settings`, so `mcp-call.mjs` stays the route here; both servers answered live earlier today. Not yet observed: the Stop hooks (`verify-on-stop`, `kiro-log`) and the PostToolUse checks.
+
+## 2026-11-14 probe analysis library (feasibility-probe task 3)
+- `tools/probe/contract/` holds the one log format (README and `sample-export.json`) that the phone, the Worker and the analysis share. Each side's tests read the sample, so a format change breaks the others.
+- `tools/probe/analyze`: parse and validate exports (duplicates from retried uploads dropped, bad rows reported, never guessed), segments (reboot, app restart), a step walk for armed time while charging per condition and per exemption state, M2 and M6 pairing with a 10-minute limit (misses and extra starts are reported), M5 restart gaps, plug lag, nearest-rank percentiles, the gate and the kill criterion, Markdown reports, and `src/cli.mjs`.
+- Tests: 12 Vitest tests including PR1 to PR5 and the shared sample, whose numbers were worked out by hand first (0.9494 armed ratio, 15 s, 2 s, 30 s). A test-helper bug (the boot number was ignored) was found by the PR3 test and fixed in the helper.
+- Decision made inside the spec's limits, flagged for ADR 0013: the delay gate uses p95 pooled over all phones with at least 20 replugs, and the worst single phone's p95 is printed next to it. Whether the gate should use the worst phone instead is the human's call.
+- `@types/node` is not approved, so the library uses no Node APIs; only the `.mjs` wrapper reads and writes files. Node 22.23 runs the `.ts` imports directly.
+- Not verified: real phone logs. The rule that the time before an app restart counts as not armed depends on the app logging `SESSION restart` when its process comes back (task 5).

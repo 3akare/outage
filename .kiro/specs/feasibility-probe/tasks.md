@@ -15,7 +15,7 @@ Ask the human before adding any dependency beyond the ADR 0012 toolchain (Kotlin
 
 ## Wave 2 (needs 1)
 
-- [ ] 3. Analysis library: log parsing, segments, armed ratio, pairing, nearest-rank percentiles, gate verdict, Markdown writer. Tests PR1 to PR5 on synthetic logs.
+- [x] 3. Analysis library: log parsing, segments, armed ratio, pairing, nearest-rank percentiles, gate verdict, Markdown writer. Tests PR1 to PR5 on synthetic logs.
   - Depends on: 1
   - Requirements: R5, R6
 - [ ] 4. Worker endpoint: `POST /probe/events`, `GET /probe/export`, token check, raw rows. Tests with a local Wrangler run.
