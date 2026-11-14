@@ -4,7 +4,7 @@ inclusion: manual
 
 # /release
 
-Steps (use the `release-apk` skill):
+Run the `release-apk` skill (`.kiro/skills/release-apk/SKILL.md`). Its steps, in short:
 1. Confirm `main` is green: typecheck, lint, all tests including P1 to P12.
 2. Bump the version in `apps/mobile/app.json` and add a changelog line.
 3. Run the EAS cloud build for a signed Android APK. Ask the human before using any new credential.

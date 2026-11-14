@@ -4,7 +4,7 @@ inclusion: manual
 
 # /field-test
 
-Review one day of field telemetry (use the `field-report` skill):
+Run the `field-report` skill (`.kiro/skills/field-report/SKILL.md`) for one day of field telemetry. Its steps, in short:
 1. Per device: armed time / charging time. Flag any device under 90%.
 2. Restore delay: p50 and p95. Flag p95 over 60 s.
 3. False alarms and misses, from "No, I unplugged it" and "Yes" labels.

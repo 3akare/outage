@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.expo/
+.wrangler/
+coverage/
+apps/mobile/android/build/
+apps/mobile/android/app/build/
+modules/outage-sensor/android/build/
+.gradle/
+*.apk
+*.aab
+**/fixtures/large/
+**/*.log

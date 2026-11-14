@@ -1,6 +1,6 @@
 # Hooks
 
-Schema v1, PascalCase triggers, one JSON file per topic in this folder (https://kiro.dev/docs/hooks/). Scripts are dependency-free Node ESM in `.kiro/scripts/`. They have tests: `node --test ".kiro/scripts/test/*.test.mjs"` (23 tests).
+Schema v1, PascalCase triggers, one JSON file per topic in this folder (https://kiro.dev/docs/hooks/). Scripts are dependency-free Node ESM in `.kiro/scripts/`. They have tests (23). Run everything with `npm test` at the repo root (hooks 23, skills 13, skill scripts 30). The root `test` script is what `verify-on-stop` and `push-to-main` run; the scaffolding tasks extend it.
 
 ## Part E map
 

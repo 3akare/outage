@@ -20,7 +20,7 @@ Depends on `sensor-android` (tasks 4, 7, 9), `event-ingest` (tasks 3, 4, 10), `a
 
 ## Wave 2
 
-- [ ] 4. OEM guide file, schema validator and maker matching. Tests O4, O5. Initial entries marked unverified, with source URLs found with the docs search tools.
+- [ ] 4. OEM guide file, schema validator and maker matching. Tests O4, O5. The file `packages/shared/src/oem-guide.json` and its validator (`.kiro/skills/oem-battery-guide/scripts/validate-guide.mjs`) already exist from the `oem-battery-guide` skill: read the JSON from the app, port the matching rules to TypeScript, and keep the skill's validator as the data check. Initial entries are sourced and marked unverified.
   - Depends on: 3
   - Requirements: R7.1 to R7.4, R7.9
 - [ ] 5. Spot module: coarse location, first-result-wins within 8 seconds, cell only, mocked check, map pick with hex grid from the catalog. Tests O2.
