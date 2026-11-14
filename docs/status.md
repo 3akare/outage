@@ -4,7 +4,7 @@ Read by the session-context hook. Keep the four labelled lines below on one line
 
 Current milestone: 1 Feasibility probe (all specs written, hooks written, no application code yet)
 Gate: armed time >= 90% on one phone, restore delay p95 <= 60 s, Tecno or Infinix works after battery exemption
-Next: feasibility-probe task 2 (docs/probe-checklist.md), then tasks 3 and 4
+Next: feasibility-probe tasks 3 (analysis library) and 4 (Worker endpoints), then 5 and 6 (Kotlin)
 Active specs: feasibility-probe
 
 ## Done

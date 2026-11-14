@@ -10,7 +10,7 @@ Ask the human before adding any dependency beyond Expo, TypeScript, Vitest and W
 
 - [x] 1. Scaffold `tools/probe/app` (bare Expo, TypeScript), `tools/probe/worker` (Wrangler, one SQLite-backed Durable Object), and `tools/probe/analyze` (Vitest). Root scripts for typecheck, lint, test. Plan mode first.
   - Requirements: R1 to R5
-- [ ] 2. `docs/probe-checklist.md`: the step-by-step tester script for M1 to M14 with a log sheet for each device, and the phone matrix table.
+- [x] 2. `docs/probe-checklist.md`: the step-by-step tester script for M1 to M14 with a log sheet for each device, and the phone matrix table.
   - Requirements: R6, R8.3
 
 ## Wave 2 (needs 1)
@@ -33,7 +33,7 @@ Ask the human before adding any dependency beyond Expo, TypeScript, Vitest and W
 
 ## Wave 4 (needs 5, 6, 4)
 
-- [ ] 7. Debug screen, uploader, export file, notes, live armed ratio, and the EAS build profile for an APK. Human builds and installs.
+- [ ] 7. Debug screen, uploader, export file, notes, live armed ratio, and the EAS build profile for an APK. Human builds and installs. Must also provide what section 8 of `docs/probe-checklist.md` lists: `UPLOAD` rows with duration and network type, a mismatch counter for M14, the expedited and full-screen lines, and `NOTE` rows stored exactly as typed.
   - Depends on: 4, 5, 6
   - Requirements: R3, R4
 

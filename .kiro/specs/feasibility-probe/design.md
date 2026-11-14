@@ -92,7 +92,7 @@ sequenceDiagram
 | M13 | Time 20 requests to the Worker on each network. |
 | M14 | Log both sources at each stop and compare. |
 
-Each condition gets a label (`cond`) typed by the tester in a NOTE row, so the analysis can group.
+Each condition gets a label (`cond`) typed by the tester in a NOTE row, so the analysis can group. The note forms the analysis must parse (`cond:`, `setting:`, `step:`, `problem:`) are defined in `docs/probe-checklist.md` section 3. `UPLOAD` rows carry `durationMs` and `network` (M13). The app counts, per job stop, whether the sticky battery intent and `BatteryManager` disagree on plug or level (M14).
 
 ## 6. Analysis outputs
 

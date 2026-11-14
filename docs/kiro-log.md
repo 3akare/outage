@@ -114,3 +114,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 
 ## 2026-11-14 license changed to MIT
 - The human replaced the view-only license with MIT "for now". `LICENSE`, root `package.json`, `plugin.json` and the `license: MIT` front matter of all six skills now say MIT again. The view-only text is in git history (`a8a8dd8`). MIT is OSI-approved, so it also removes the Kiroween eligibility doubt noted in the entry above. MIT allows anyone to copy and use the code: making the repo private after judging does not withdraw copies already taken.
+
+## 2026-11-14 probe checklist (feasibility-probe task 2)
+- Wrote `docs/probe-checklist.md`: gate, rules (alias only, own phones), phone matrix, common setup, the exemption procedure (M4), steps for M1 to M14 with pass criteria, a per-phone log sheet, and a list of what the app must offer.
+- Decisions made while writing it, now recorded in the design: tester notes use `cond:`, `setting:`, `step:`, `problem:` prefixes so the analysis can group rows; `UPLOAD` rows carry `durationMs` and `network` for M13; M14 needs a mismatch counter on the debug screen. Task 7 now lists these.
+- The checklist is written before the app exists. Button names follow requirement R4 and may differ slightly. Nothing in it has been run on a phone.
