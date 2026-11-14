@@ -277,3 +277,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
   - spec-lint: 0 errors.
 - Detection engine (separate, not in this commit): 126 of 128 tests pass. `D5_settle_equivalence` fails (seed 1989584878), so it stays uncommitted until fixed.
 - Open for the human: a person must check each catalog centre; whether a scope that stops being public sends a "normal" notice; whether a move keeps the phone armed; the re-onboarding skip rule.
+
+## 2026-11-14 property-suite-full hook crash fixed
+- The `property-suite-full` Stop hook crashed with `ENOENT scandir 'packages/detection'`. Kiro Web runs hooks from the workspace root (`/projects/sandbox`, through the `.kiro` links), one level above the repo, and one path in the script was relative to the current folder instead of the repo root. The script now uses `ROOT`, as every other hook does. A regression test runs the hook from another folder; it fails on the old script and passes on the new one (25 hook tests pass).
+- This is a crash fix, not a change to what the hook checks.
+- When the hook runs again it will report the 2 known `D5_settle_equivalence` failures in the uncommitted detection work. That result is correct, and the work stays uncommitted until it is fixed.

@@ -257,6 +257,15 @@ test('session-context: prints milestone, open tasks of active specs, git mode, a
 });
 
 // ---------- push-to-main (integration, temp repo with a local bare remote) ----------
+test('property-suite-full: works when the hook runs from a folder other than the repo (Kiro Web workspace root)', () => {
+  const sb = sandbox();
+  mkdirSync(path.join(sb.dir, 'packages', 'detection', 'test'), { recursive: true });
+  writeFileSync(path.join(sb.dir, 'packages', 'detection', 'package.json'), '{"name":"d"}');
+  const r = runScript(sb.script('property-suite-full.mjs'), {}, { FC_NUM_RUNS: '1' }, [], tmpdir());
+  assert.equal(r.status, 0, r.stderr);
+  assert.doesNotMatch(r.stderr + r.stdout, /ENOENT/);
+});
+
 test('push-to-main: commits and pushes a docs change to main with the prepared message', () => {
   const sb = sandbox({ withRemote: true });
   writeFileSync(path.join(sb.dir, 'docs', 'a.md'), 'hello\n');
