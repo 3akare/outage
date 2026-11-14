@@ -16,7 +16,8 @@ level() { LEVEL=$1; adb emu power capacity "$LEVEL" >/dev/null; }
 plug() { adb emu power ac on >/dev/null; adb emu power status charging >/dev/null; }
 unplug() { adb emu power ac off >/dev/null; adb emu power status discharging >/dev/null; }
 # A real charger raises the level: +1% every 30 s, never above CAP.
-charge_for() { local end=$(( $(date +%s) + $1 )); while [ "$(date +%s)" -lt "$end" ]; do sleep 30; [ "$LEVEL" -lt "$CAP" ] && level $(( LEVEL + 1 )); done; }
+# (an `if`, not `[ ] && ...`: under `set -e` a false test as the last command ended run 4 after 45 minutes)
+charge_for() { local end=$(( $(date +%s) + $1 )); while [ "$(date +%s)" -lt "$end" ]; do sleep 30; if [ "$LEVEL" -lt "$CAP" ]; then level $(( LEVEL + 1 )); fi; done; return 0; }
 state() { adb shell dumpsys jobscheduler | grep -E 'Power connected|Battery charging|Considered charging|Battery level' | tr -s ' ' | tr '\n' ' '; echo; }
 # After any scripted tap: go home and turn the screen off, so the app is not the visible app during measurement.
 away() { adb shell input keyevent KEYCODE_HOME; adb shell input keyevent KEYCODE_SLEEP; }
@@ -24,16 +25,29 @@ note() { adb shell am start --activity-single-top -n $PKG/.MainActivity --es pro
 replugs() { # <count> <level>: unplug 20 s, plug, charge 40 s; the level is reset before each plug-in
   for i in $(seq 1 "$1"); do unplug; sleep "$(sec 20)"; level "$2"; plug; charge_for "$(sec 40)"; done; }
 
+collect() {
+  say "collect"
+  unplug || true; sleep 3
+  adb shell dumpsys jobscheduler > "$OUT/dumpsys-jobscheduler.txt" || true
+  for f in probe.db probe.db-wal probe.db-shm; do adb exec-out run-as $PKG cat databases/$f > "$OUT/$f" 2>/dev/null || rm -f "$OUT/$f"; done
+  adb shell getprop > "$OUT/getprop.txt" || true
+  adb logcat -d > "$OUT/logcat.txt" || true
+  say "done"
+}
+trap collect EXIT
+
 say "install"
 adb install -r -g "$APK"
 level 40; plug
 adb shell am start -n $PKG/.MainActivity --es probe.alias emu-api35 --ez probe.reference true --ez probe.start true >/dev/null
 sleep 10; away
+# Start from a real transition: at boot JobScheduler reported "Power connected: false" although the emulator had AC.
+unplug; sleep 5; level 40; plug
 
 say "phase 1: one long charge from 40% that never reaches 90% (M1, M5)"
 note "cond: emu-long-below-90"
 sleep 60; say "1 min after plug-in: $(state)" | tee "$OUT/charging-state.txt"
-CAP=89; charge_for "$(sec 2700)"
+CAP=89; charge_for "$(sec 1800)"
 say "end of phase 1: $(state)" | tee -a "$OUT/charging-state.txt"
 
 say "phase 2: 10 plug-ins at 55%, then 10 at 92% (M2, M6; tests the 90% observation)"
@@ -54,16 +68,9 @@ done
 say "phase 4: battery exemption on, long charge from 50% (M4)"
 adb shell dumpsys deviceidle whitelist +$PKG
 note "cond: emu-exempt-below-90"
-level 50; CAP=89; charge_for "$(sec 1800)"
+level 50; CAP=89; charge_for "$(sec 1200)"
 
 say "phase 5: alarm test on a plug-in at 93% (M9)"
 adb shell am start --activity-single-top -n $PKG/.MainActivity --ez probe.alarm true >/dev/null
 sleep 5; away; unplug; sleep 10; level 93; plug; sleep 30
 
-say "collect"
-unplug; sleep 3
-adb shell dumpsys jobscheduler > "$OUT/dumpsys-jobscheduler.txt" || true
-for f in probe.db probe.db-wal probe.db-shm; do adb exec-out run-as $PKG cat databases/$f > "$OUT/$f" 2>/dev/null || rm -f "$OUT/$f"; done
-adb shell getprop > "$OUT/getprop.txt"
-adb logcat -d > "$OUT/logcat.txt" || true
-say "done"
