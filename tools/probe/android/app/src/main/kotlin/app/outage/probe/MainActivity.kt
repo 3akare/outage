@@ -77,6 +77,22 @@ class MainActivity : Activity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
         }
+        automate(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); automate(intent) }
+
+    /**
+     * Emulator run only (.github/workflows/probe-emulator.yml): `am start` extras do what the tester's taps do.
+     * Ignored unless the build is debuggable, so a release build of the real app never has this path.
+     */
+    private fun automate(i: Intent?) {
+        if (i == null || applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE == 0) return
+        i.getStringExtra("probe.alias")?.takeIf(Contract::aliasOk)?.let { prefs.alias = it }
+        i.getStringExtra("probe.note")?.let { t -> io.execute { log.append("NOTE", mapOf("text" to t)) } }
+        if (i.getBooleanExtra("probe.reference", false) && !prefs.referenceOn) ReferenceService.start(this)
+        if (i.getBooleanExtra("probe.alarm", false)) AlarmTest.arm(this)
+        if (i.getBooleanExtra("probe.start", false) && !prefs.sensorOn) startSensor()
     }
 
     override fun onResume() { super.onResume(); main.post(tick) }

@@ -1,0 +1,67 @@
+# Scripted feasibility-probe run on an Android emulator (ADR 0013 decision 3). Started by hand (workflow_dispatch).
+# Free on public repositories. Stock Android only: it cannot show what a phone maker's battery manager does.
+name: probe-emulator
+
+on:
+  workflow_dispatch:
+    inputs:
+      scale:
+        description: 'Time scale: 1 = about 2 hours of phases, 0.1 = quick smoke run'
+        default: '1'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Build the probe APK
+        working-directory: tools/probe/android
+        run: ./gradlew --no-daemon :app:assembleDebug
+      - name: Enable KVM
+        # https://github.blog/changelog/2024-04-02-github-actions-hardware-accelerated-android-virtualization-now-available/
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install the emulator and an Android 15 image
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "emulator" "platform-tools" "system-images;android-35;default;x86_64" > /dev/null
+          echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n probe -k "system-images;android-35;default;x86_64" -d pixel_6
+      - name: Boot
+        run: |
+          export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
+          nohup emulator -avd probe -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect > "$RUNNER_TEMP/emulator.log" 2>&1 &
+          adb wait-for-device
+          for i in $(seq 1 120); do [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && break; sleep 5; done
+          adb shell getprop ro.build.version.release
+      - name: Run the scenario
+        run: |
+          export PATH="$ANDROID_HOME/platform-tools:$PATH"
+          bash tools/probe/emulator/scenario.sh tools/probe/android/app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/probe" "${{ inputs.scale }}"
+      - name: Analyse
+        run: |
+          python3 tools/probe/emulator/db-to-export.py "$RUNNER_TEMP/probe/probe.db" "$RUNNER_TEMP/probe/getprop.txt" emu-api35 "$RUNNER_TEMP/probe/export.json"
+          npm --prefix tools/probe/analyze ci
+          node tools/probe/analyze/src/cli.mjs "$RUNNER_TEMP/probe/export.json" --out "$RUNNER_TEMP/probe/report" --date "$(date -u +%F)"
+          cat "$RUNNER_TEMP/probe/report/summary.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: probe-emulator
+          path: |
+            ${{ runner.temp }}/probe
+            ${{ runner.temp }}/emulator.log

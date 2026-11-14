@@ -191,3 +191,14 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `tools/probe/analyze` gate code changed (maker check renamed to `oem`; the summary prints whether Tecno or Infinix was tested). New test "PR5 amended gate": three 4-hour days in separate boots add up to 12 h and pass. 13 tests pass.
 - ADR 0013 now exists as PROPOSED, with the amendment only. The `sensor-engineer` prompt now waits for `Status: ACCEPTED` with a Result section, so the ADR existing no longer opens the sensor work early.
 - The checklist's Samsung steps are taken from `oem-guide.json` (dontkillmyapp.com/samsung), not written from memory.
+
+## 2026-11-14 emulator run (ADR 0013 decision 3)
+- `.github/workflows/probe-emulator.yml` (started by hand, free on a public repo) builds the probe, enables KVM, boots an Android 15 emulator and runs `tools/probe/emulator/scenario.sh`:
+  - one long charge;
+  - 20 replugs;
+  - 5 plug-ins after a forced Doze;
+  - a long charge with the battery exemption;
+  - one alarm test.
+- The charger and Doze are faked with `dumpsys battery` and `deviceidle`, the commands Android's testing docs describe. After each scripted tap the script goes to the home screen and turns the screen off, so the app is not the visible app while it is measured. The database is pulled with `run-as` (debug build), converted to the contract export by `db-to-export.py`, and analysed. The report goes into the run summary and an artifact.
+- The probe gained an automation path: `am start` extras do what the tester's taps do, and the path is ignored unless the build is debuggable.
+- Limit, stated in ADR 0013: stock Android only. No maker battery manager, and no real Doze timing.
