@@ -56,10 +56,12 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R6.4 | P7 | `P7_more_drops_never_lower` | 9 | planned |
 | R15 | P8 | `P8_time_shift_invariance` | 15 | planned |
 | R14 | P9 | `P9_simulated_never_counts` | 6 | planned |
+| R17.2, R14 | contract | `R17_outage30_confirmed_within_10s`, `R17_outage30_shape` | 16 | passing (`tools/sim/test/outage30.test.ts`) |
 | R3.6 | P10 | `P10_noisy_never_confirms` | 7 | planned |
 | R5.6 | P11 | `P11_sparse_never_confirms` | 9 | planned |
 | R12.2 | P12 | `P12_no_stale_push` | 13 | planned |
 | R1.3 | D1 | `D1_incremental_equals_sweep` | follow-up if needed | planned |
+| R1 (design 11.3) | performance budget | `npm run bench -w packages/detection` (`bench/evaluate-bench.mjs`), report in ADR 0005 addendum | 17 | measured: 500 events fit |
 | R5.4 | D2 | `D2_poisson_tail_accuracy` (incl. large mu) | 4 | planned |
 | R13 | D3 | `D3_explanations_complete` | 13 | planned |
 | R3.5, R4.3, R8 | D4 | `D4_labels` | 7 | planned |

@@ -48,3 +48,9 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Task 3 stored data: the area actor state gains `fieldSent` (per reported outage: opaque key, scope key, cells, start, last counts) and `missPending` (install ID, unplug seq, due time, removed by delete-my-data). Both hold only what the actor's log and engine states already hold, inside the same actor, for at most 30 days (`fieldSent`) or one window (`missPending`). The emitted records themselves are not stored anywhere yet (task 5, ADR 0011). Confirm this is within ADR 0011.
 - Task 3: the miss armed count is the "recently armed" members in the unplug's cell at the time the miss is resolved (one window after the unplug). R5.5 says "in its scope"; the cell is the smallest scope. Confirm.
 - `workers/api` integration test needs `XDG_CONFIG_HOME` writable in this sandbox (wrangler writes `~/.config/.wrangler`); without it the suite fails on main too. CI is unaffected.
+
+## 2026-11-15 detection-engine task 17 (benchmark)
+- Assumption: the free-plan Durable Object budget is 10 ms CPU per call. The DO limits table says 30 s, but its FAQ says Durable Objects follow the Worker plan's per-invocation limit (Free: 10 ms). We use the stricter reading.
+- Assumption: "live events" means events inside the horizon held in one engine state; the timed call is one evaluate() with one new event.
+- Numbers come from the sandbox VM, not CI or workerd. Re-measure on the deployed Worker for ADR 0006 (area-cells task 12).
+- Open for the human: 5,000 live events exceed 10 ms (up to about 179 ms at 500 phones). No D1 follow-up opened, since the task's rule is about 500 events. Decide whether to open it now or wait for field counts.
