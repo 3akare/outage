@@ -2,6 +2,7 @@
 // https://developers.cloudflare.com/workers/testing/test-harness/get-started/
 import { createTestHarness } from 'wrangler';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { cellToParent } from 'h3-js';
 import { CELL, wire } from './helpers.ts';
 
 const server = createTestHarness({
@@ -58,10 +59,24 @@ describe('R7 R8 R12 Worker and area actors in the Workers runtime', () => {
     expect(stats.counters['result.duplicate']).toBeGreaterThanOrEqual(3);
     expect(JSON.stringify(stats)).not.toContain(installId);
 
+    // area-cells task 10: the area model is written behind into SQLite, and holds the install until delete-my-data.
+    const modelRows = async () => {
+      const sql = await server.getWorker('outage-api').getDurableObjectStorage('AREA', { name: cellToParent(CELL, 7) });
+      return (await sql.exec('SELECT tbl, key, part, json FROM area_model')) as { json: string }[];
+    };
+    let rows: { json: string }[] = [];
+    for (let i = 0; i < 40 && rows.length === 0; i++) {
+      await sleep(250);
+      rows = await modelRows();
+    }
+    expect(rows.length).toBeGreaterThan(0);
+    expect(JSON.stringify(rows)).toContain(installId);
+
     // Delete: 3 detection rows (UNPLUG, LABEL, REPLUG) and the flushed armed row, in both parents.
     const del = await call('/v1/delete', { installId, cells: [CELL, OTHER_CELL] }, token);
     expect(del.status).toBe(200);
     expect(await del.json()).toEqual({ deleted: true, areas: 2, rows: 4 });
+    expect(JSON.stringify(await modelRows())).not.toContain(installId);
     expect((await call('/v1/events', { installId, events: [ev({ seq: 9 })] }, token)).status).toBe(401);
     // A retried delete still works and finds nothing left.
     const retry = await call('/v1/delete', { installId, cells: [CELL, OTHER_CELL] }, token);

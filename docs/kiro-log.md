@@ -313,3 +313,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `workers/api/src/area/pushes.ts`: per-cell episodes (union of overlapping outage intervals), at most one CONFIRMED and one RESTORED per episode. `links.ts` gained `coalesceOutages` so one blackout seen by several scopes is one co-outage.
 - Tests A9, A11, A12 in `workers/api/test/area-reducer.test.ts`, plus R11.4 and R11.5 checks. Pass at 2000 runs.
 - A12 found a real gap: hints from the previous evaluation lag behind the batch cuts (seed 1278203691). Fix and its trade-off in ADR 0014 (PROPOSED, needs the human); both shrunk cases are pinned as a regression test.
+
+## 2026-11-14 area-cells task 10: Durable Object shell
+- `workers/api/src/area/model.ts`: `AreaModel` holds the reducer state, is the `DetectionPort` for `AreaCore`, and collects notices, removal requests and pushes. `toRows`/`fromRows` store it as rows; engine states are split into 16 install buckets and only changed rows are written (R13.3).
+- `SqlModelStore` in `area-store.ts` (one `area_model` table, writes in `transactionSync`). `AreaActor` builds the model from `ctx.id.name`, loads ring-1 neighbors with `h3-js` in `blockConcurrencyWhile` (skipped if the library fails), sends notices and removals to other area actors, deletes at once on delete-my-data, and keeps one alarm for the ingest flush, retention, the reducer tick and the model flush. New RPCs: `receiveNotices`, `removeMember`, `publicViews`. Cloudflare APIs checked on developers.cloudflare.com (limits, SQLite storage, state, id).
+- Tests: `workers/api/test/area-model.test.ts` (round-trip, write-behind, alarm, delete) and the runtime integration test now checks that `area_model` rows exist and lose the install on delete.

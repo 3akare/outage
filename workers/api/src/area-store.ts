@@ -2,6 +2,7 @@
 // alerts-and-light-alarm section 4). API: https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/
 import type { InstallState } from './armed.ts';
 import type { AreaStore, DetectionRow } from './area-core.ts';
+import type { ModelRow, ModelStore } from './area/model.ts';
 
 export class SqlAreaStore implements AreaStore {
   constructor(private readonly sql: SqlStorage) {
@@ -67,5 +68,57 @@ export class SqlAreaStore implements AreaStore {
 
   setMeta(key: string, value: string): number {
     return this.run('INSERT OR REPLACE INTO meta VALUES (?, ?)', key, value);
+  }
+}
+
+/**
+ * SQLite rows for the area model (area-cells design section 10): engine states partitioned by install bucket, and one
+ * row per other model field. Writes and deletes of one flush run in one transaction:
+ * https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/#transactionsync
+ * Row and value size limit (8 MB): https://developers.cloudflare.com/durable-objects/platform/limits/
+ */
+export class SqlModelStore implements ModelStore {
+  constructor(
+    private readonly sql: SqlStorage,
+    private readonly transactionSync: <T>(fn: () => T) => T,
+  ) {
+    sql.exec(`CREATE TABLE IF NOT EXISTS area_model (
+      tbl TEXT NOT NULL, key TEXT NOT NULL, part TEXT NOT NULL, json TEXT NOT NULL,
+      PRIMARY KEY (tbl, key, part)) WITHOUT ROWID`);
+  }
+
+  loadRows(): ModelRow[] {
+    return this.sql
+      .exec<{ tbl: string; key: string; part: string; json: string }>('SELECT tbl, key, part, json FROM area_model')
+      .toArray()
+      .map((r) => ({ table: r.tbl as ModelRow['table'], key: r.key, part: r.part, json: r.json }));
+  }
+
+  writeRows(put: readonly ModelRow[], del: readonly Omit<ModelRow, 'json'>[]): number {
+    return this.transactionSync(() => {
+      let n = 0;
+      for (const r of put) {
+        const c = this.sql.exec(
+          'INSERT OR REPLACE INTO area_model VALUES (?, ?, ?, ?)',
+          r.table,
+          r.key,
+          r.part,
+          r.json,
+        );
+        c.toArray();
+        n += c.rowsWritten;
+      }
+      for (const r of del) {
+        const c = this.sql.exec(
+          'DELETE FROM area_model WHERE tbl = ? AND key = ? AND part = ?',
+          r.table,
+          r.key,
+          r.part,
+        );
+        c.toArray();
+        n += c.rowsWritten;
+      }
+      return n;
+    });
   }
 }
