@@ -162,8 +162,9 @@ describe('F7_gate_statuses', () => {
     expect(slow.milestone).toBe('not met');
   });
 
-  it('F7 maker gate needs Tecno or Infinix with the exemption on; Samsung or no exemption does not count', () => {
-    expect(evaluateGates([good(0, { maker: 'samsung' })]).oem.status).toBe('not enough data');
+  it('F7 maker gate needs Tecno, Infinix or Samsung with the exemption on; other makers or no exemption do not count', () => {
+    expect(evaluateGates([good(0, { maker: 'samsung' })]).oem.status).toBe('pass');
+    expect(evaluateGates([good(0, { maker: 'pixel' })]).oem.status).toBe('not enough data');
     expect(evaluateGates([good(0, { exemption: false })]).oem.status).toBe('not enough data');
     expect(evaluateGates([good(0, { maker: 'infinix' })]).oem.status).toBe('pass');
     expect(evaluateGates([good(0, { armedMs: 5 * H })]).oem.status).toBe('fail');

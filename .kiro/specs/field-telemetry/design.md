@@ -77,6 +77,7 @@ erDiagram
         int received_ms
     }
     OUTAGE_RECORD {
+        text key "opaque 16-hex hash; a later update replaces the earlier record"
         text scope_class "CELL|GROUP|PARENT"
         int start_ms
         int end_ms "nullable"
@@ -87,11 +88,12 @@ erDiagram
         int labels_no
         int labels_none
         int confirmed_ms "nullable"
+        bool withdrawn "true when the engine dropped the outage, e.g. all labels No"
     }
 ```
 
 - `DEVICE_DAY` primary key (`install_id`, `day`). A second upload overwrites the first (idempotent).
-- `OUTAGE_RECORD` is written by the area actor when an outage closes or its labels change. It holds counts only and no install IDs, no cell. Retention 90 days.
+- `OUTAGE_RECORD` is written by the area actor when an outage closes or its labels change. It holds counts only and no install IDs, no cell. `key` lets a later update replace the earlier record. `withdrawn` reports a false alarm the engine no longer holds (an all-"No" outage). Retention 90 days.
 - The admin endpoint `GET /v1/admin/field/:day` requires `Authorization: Bearer <FIELD_READ_TOKEN>`; it returns the device-days for that UTC day range and the outage records, with install IDs replaced by per-request aliases (`D1`, `D2`, in a stable order for that day). The alias map is not stored.
 - Delete-my-data removes the install's `DEVICE_DAY` rows.
 

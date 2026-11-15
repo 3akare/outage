@@ -8,8 +8,8 @@ export const MIN_ARMED_CHARGING_MS = 3_600_000; // design section 5: ratio is nu
 export const GATE_ARMED_RATIO = 0.9;
 export const GATE_DELAY_P95_MS = 60_000;
 export const KILL_ARMED_RATIO = 0.5;
-/** R10.1 names Tecno or Infinix. The probe gate (ADR 0013) also accepts Samsung; the field gate does not until the human says so. */
-export const GATE_OEM_MAKERS: readonly Maker[] = ['tecno', 'infinix'];
+/** R10.1: Tecno, Infinix or Samsung, as the probe gate (ADR 0013). Human confirmed 2026-11-15. */
+export const GATE_OEM_MAKERS: readonly Maker[] = ['tecno', 'infinix', 'samsung'];
 
 /** Nearest-rank percentile. Empty input gives null; p outside (0, 100] throws. */
 export function nearestRank(values: readonly number[], p: number): number | null {
@@ -132,7 +132,7 @@ const pct = (x: number | null): string => (x === null ? 'n/a' : `${(x * 100).toF
  * Milestone-1 gate over the given device-days (R4.3, R10).
  * - armed: at least one phone with 1 h or more of charging and armed ratio >= 90%. Normal-mode devices only (R4.5).
  * - delay: scheduling delay (job and receiver samples pooled) p95 <= 60 s, hidden below 20 samples.
- * - oem: a Tecno or Infinix phone with the battery exemption on and armed ratio >= 90%.
+ * - oem: a Tecno, Infinix or Samsung phone with the battery exemption on and armed ratio >= 90%.
  * - kill: every measurable phone with the exemption on is under 50%.
  */
 export function evaluateGates(days: readonly DeviceDay[]): FieldGates {
@@ -186,13 +186,13 @@ export function evaluateGates(days: readonly DeviceDay[]): FieldGates {
           status: 'not enough data',
           value: null,
           threshold: GATE_ARMED_RATIO,
-          detail: 'no Tecno or Infinix phone with the exemption on and 1 h of charging',
+          detail: 'no Tecno, Infinix or Samsung phone with the exemption on and 1 h of charging',
         }
       : {
           status: oemBest >= GATE_ARMED_RATIO ? 'pass' : 'fail',
           value: oemBest,
           threshold: GATE_ARMED_RATIO,
-          detail: `best Tecno or Infinix ${pct(oemBest)}`,
+          detail: `best Tecno, Infinix or Samsung ${pct(oemBest)}`,
         };
 
   const all = [armed, delay, oem];

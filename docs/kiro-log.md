@@ -405,3 +405,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `tools/sim/src/fixture.ts`: `outage30Fixture(jitterMs)` builds a 30-phone outage in the existing fixture format (ADR 0015) with `syntheticFixture`. Every event and label carries `simulated: true`.
 - Contract test `tools/sim/test/outage30.test.ts`: over random jitter (0 to 2 s), the replay shows CONFIRMED no later than 10 s after the last UNPLUG. The engine is called through `buildReplay`; no detection logic in `tools/sim`, no params change.
 - The `demo-label-check` hook script and its two hooks in `file-checks.json` already existed (with tests in `hooks.test.mjs`). Nothing was added or loosened; `node .kiro/scripts/demo-label-check.mjs --all` passes.
+
+## 2026-11-15 field-telemetry tasks 1 to 3: human answers applied, main merged in
+- Merged origin/main (PRs #4, #6, #7) into `work/field-telemetry-1-3`; conflicts only in `docs/status.md`, `docs/kiro-log.md` and `docs/session-notes.md`, both sides kept.
+- The human answered "yes to all": `GATE_OEM_MAKERS` in `packages/shared/src/field-metrics.ts` now accepts Tecno, Infinix or Samsung (as ADR 0013), the F7 test checks Samsung passes and Pixel does not, and field-telemetry R10.1 says so. Design section 4 now lists `key` and `withdrawn` on `OUTAGE_RECORD`. Gap edges, `fieldSent` and `missPending` are approved; no code change.
+- Still open: the miss armed count is per cell, R5.5 says per scope.
