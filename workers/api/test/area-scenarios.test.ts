@@ -3,7 +3,7 @@ import { DEFAULT_PARAMS } from '@outage/detection';
 import { describe, expect, it } from 'vitest';
 import { type AreaConfig, type AreaState, emptyAreaState, openOutages, reduce } from '../src/area/reducer.ts';
 import { cellStatus } from '../src/area/scope.ts';
-import type { IngestedItem } from '../src/ports.ts';
+import type { IngestedItem } from '../src/ingest/ports.ts';
 
 const P1_CELLS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'];
 const P2_CELLS = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7'];

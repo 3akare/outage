@@ -153,7 +153,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R2 | W3 | `W3_five_states` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
 | R9 | W4 | `W4_cache_ttl` | 5 | unit tests (`workers/api/test/web-cache.test.ts`); deployed-domain check done 2026-11-21 (curl) and in `.github/workflows/deploy-worker.yml` "Post-deploy header check" |
 | R6.4, R6.6 | W5 | `W5_replay_matches_engine` | 9 | test written (`tools/sim/test/replay.test.ts`) |
-| R6.1 to R6.3, R6.5, R6.7 to R6.9, R1.3 | W6 | `W6_simulated_separation` | 10 | test written (`workers/api/test/web-judge.test.ts`) |
+| R6.1 to R6.3, R6.5, R6.7 to R6.9, R1.3 | W6 | `W6_simulated_separation` | 10 | test written (`workers/api/test/web-replay.test.ts`) |
 | R10.3, R11.5 | W7 | `W7_sitemap_robots` | 3, 8 | test written (`workers/api/test/web-catalog.test.ts`, `workers/api/test/web-routes.test.ts`) |
 | R1.6, R11.2, R11.3 | W8 | `W8_headers_and_escaping` | 2 | test written (`workers/api/test/web-kit.test.ts`) |
 | R4.4 | W9 | `W9_cell_page_indistinguishable` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
@@ -263,10 +263,10 @@ Scanned 0 test file(s) under packages/detection. A property counts when a test t
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
 | R3.1, R3.2 | UX1 | dock list (web and Kotlin) | 4, 6 | web done (web-app.test.ts); Kotlin dock is three items in `ui/Shell.kt`, old `log` and `area` links map to Insights and Home (RoutingTest); no JVM test for the dock list itself |
-| R7.3, R8.5 | UX2 | replica and simulation data separation | 4, 5 | done: web-app.test.ts, web-judge.test.ts (W6) |
+| R7.3, R8.5 | UX2 | replica and simulation data separation | 4, 5 | done: web-app.test.ts, web-replay.test.ts (W6) |
 | R9.2 | UX3 | token compare test | 2 | not started (Kotlin `ui/Tokens.kt` is hand written until the generator exists) |
 | R10.1 | UX4 | no other origin on any route | 3 | done: workers/api/test/web-app.test.ts |
-| R8.1 | UX5 | simulation banner in every state | 5 | done: web-judge.test.ts, visual check plays every state |
+| R8.1 | UX5 | simulation banner in every state | 5 | done: web-replay.test.ts, visual check plays every state |
 | R2.7 | UX6 | empty map renders honest empty state | 4 | done: web-app.test.ts |
 | R2.4 | UX7 | floor looks like no data | 4 | done: web-app.test.ts (fast-check) |
 | R1.1, R1.2 | UX8 | first-run model | 7 | done on the phone: OnboardingFlowTest UX8_first_run_*, RoutingTest; on-device check and screenshots wait for the Kiro IDE pass (task 9) |

@@ -1,7 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { handleRequest } from '../src/handlers.ts';
-import { mergeCounters, RevocationCache } from '../src/registry.ts';
+import { handleRequest } from '../src/ingest/handlers.ts';
+import { mergeCounters, RevocationCache } from '../src/registry/revocation.ts';
 import { CELL, ID, makeWorld, NOW, post, ROOMY, tokenFor, wire } from './helpers.ts';
 import { NUM_RUNS } from './runs.ts';
 

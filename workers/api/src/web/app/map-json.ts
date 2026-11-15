@@ -4,9 +4,9 @@
 // NO_DATA with no times and no history, and the output never carries a count.
 import type { MapCellJson, MapJson } from '@outage/shared';
 import { cellToBoundary } from 'h3-js';
-import type { CatalogArea } from './catalog/schema.ts';
-import type { PublicScopeView } from './public-view.ts';
-import { historyForCells, statusForCells } from './status.ts';
+import type { CatalogArea } from '../catalog/schema.ts';
+import type { PublicScopeView } from '../../public-index/public-view.ts';
+import { historyForCells, statusForCells } from '../site/status.ts';
 
 export const DEFAULT_CITY = 'lagos';
 const CITY = /^[a-z0-9-]{1,32}$/;

@@ -205,7 +205,7 @@ erDiagram
 ## 9. Interfaces
 
 ```ts
-// workers/api/src/ports.ts
+// workers/api/src/ingest/ports.ts
 interface DetectionPort {
   handle(cell: string, events: IngestedEvent[], receiveTimeMs: number): void | Promise<void>;
 }

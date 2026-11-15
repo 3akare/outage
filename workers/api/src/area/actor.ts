@@ -5,16 +5,16 @@
 // blockConcurrencyWhile in the constructor: https://developers.cloudflare.com/durable-objects/api/state/#blockconcurrencywhile
 import { DurableObject } from 'cloudflare:workers';
 import { childrenOf, isParent, neighborsOf, parentOf } from '@outage/shared';
-import type { RemovalRequest } from './area/members.ts';
-import { AreaModel, areaConfig } from './area/model.ts';
-import type { Notice } from './area/neighbors.ts';
-import type { ScopeView } from './area/reducer.ts';
-import { AreaCore, type AreaIngestInput, type AreaResponse } from './area-core.ts';
-import { SqlAreaStore, SqlModelStore } from './area-store.ts';
-import { CONFIG, type Tunables } from './config.ts';
-import { type Env, REGISTRY_NAME, TELEMETRY_NAME } from './env.ts';
-import { NoopDetectionPort } from './ports.ts';
-import { INDEX_NAME } from './web/index-core.ts';
+import type { RemovalRequest } from './members.ts';
+import { AreaModel, areaConfig } from './model.ts';
+import type { Notice } from './neighbors.ts';
+import type { ScopeView } from './reducer.ts';
+import { AreaCore, type AreaIngestInput, type AreaResponse } from './core.ts';
+import { SqlAreaStore, SqlModelStore } from './store.ts';
+import { CONFIG, type Tunables } from '../config.ts';
+import { type Env, REGISTRY_NAME, TELEMETRY_NAME } from '../env.ts';
+import { NoopDetectionPort } from '../ingest/ports.ts';
+import { INDEX_NAME } from '../public-index/core.ts';
 
 export class AreaActor extends DurableObject<Env> {
   private core: AreaCore;

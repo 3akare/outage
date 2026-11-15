@@ -1,12 +1,12 @@
 // SVG map of catalog cells coloured by state (R5, ADR 0010). No tiles, no outside request.
 // Boundaries come from h3-js cellToBoundary (returns [lat, lng] pairs): https://uber.github.io/h3-js/#celltoboundary
 import { cellToBoundary, cellToLatLng } from 'h3-js';
-import type { CatalogArea } from './catalog/schema.ts';
-import { escapeHtml } from './escape.ts';
-import type { PublicScopeView } from './public-view.ts';
-import { statusForCells } from './status.ts';
-import type { PublicStateKey } from './strings.ts';
-import { stateText } from './strings.ts';
+import type { CatalogArea } from '../catalog/schema.ts';
+import { escapeHtml } from '../site/escape.ts';
+import type { PublicScopeView } from '../../public-index/public-view.ts';
+import { statusForCells } from '../site/status.ts';
+import type { PublicStateKey } from '../site/strings.ts';
+import { stateText } from '../site/strings.ts';
 
 const WIDTH = 1000;
 const PAD = 40;

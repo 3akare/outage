@@ -3,7 +3,7 @@
 // SQLite storage API: https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/
 import { DurableObject } from 'cloudflare:workers';
 import type { Env } from '../env.ts';
-import { applyBatch, type IndexBatch, type IndexSnapshot, type IndexStore, snapshot } from './index-core.ts';
+import { applyBatch, type IndexBatch, type IndexSnapshot, type IndexStore, snapshot } from './core.ts';
 
 class SqlIndexStore implements IndexStore {
   constructor(private readonly sql: SqlStorage) {

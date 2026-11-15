@@ -17,7 +17,7 @@ data class WorldBounds(val minX: Double, val minY: Double, val maxX: Double, val
 }
 
 /**
- * Equirectangular projection around a city centre, as in workers/api/src/web/map.ts:
+ * Equirectangular projection around a city centre, as in workers/api/src/web/area-pages/map-svg.ts:
  * x = (lng - lng0) * cos(lat0), y = lat0 - lat. The error over one city is negligible (design section 4).
  */
 class MapProjection(val lat0: Double, val lng0: Double) {

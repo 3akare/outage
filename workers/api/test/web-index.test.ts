@@ -3,9 +3,9 @@ import { childrenOf, parentOf } from '@outage/shared';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { type AreaConfig, type AreaState, emptyAreaState, reduce } from '../src/area/reducer.ts';
-import type { IngestedItem } from '../src/ports.ts';
-import { applyBatch, type IndexStore, sanitizeView, snapshot } from '../src/web/index-core.ts';
-import { indexReader } from '../src/web/index-reader.ts';
+import type { IngestedItem } from '../src/ingest/ports.ts';
+import { applyBatch, type IndexStore, sanitizeView, snapshot } from '../src/public-index/core.ts';
+import { indexReader } from '../src/public-index/reader.ts';
 import { NUM_RUNS } from './runs.ts';
 import { cellView, YABA } from './web-helpers.ts';
 

@@ -1,10 +1,10 @@
 // Landing page and web app replica (ux-redesign task 2, ADR 0027). UX1, UX4, UX6, UX7, UX9 and the web part of UX2.
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { PageCache } from '../src/web/cache.ts';
-import { APP_TABS, EMPTY_TEXT, hexLayout, LOAD_ERROR_TEXT } from '../src/web/app.ts';
-import type { IndexReader } from '../src/web/index-reader.ts';
-import type { PublicScopeView } from '../src/web/public-view.ts';
+import { PageCache } from '../src/web/site/cache.ts';
+import { APP_TABS, EMPTY_TEXT, hexLayout, LOAD_ERROR_TEXT } from '../src/web/app/app.ts';
+import type { IndexReader } from '../src/public-index/reader.ts';
+import type { PublicScopeView } from '../src/public-index/public-view.ts';
 import { handleWeb, type WebDeps } from '../src/web/routes.ts';
 import { NUM_RUNS } from './runs.ts';
 import { AREAS, cellView, confirmedNow, NOW, SITE, YABA } from './web-helpers.ts';

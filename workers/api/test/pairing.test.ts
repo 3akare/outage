@@ -13,10 +13,10 @@ import {
   shardOfPairId,
 } from '@outage/shared';
 import { describe, expect, it } from 'vitest';
-import { handleRequest } from '../src/handlers.ts';
-import { constantTimeEqual } from '../src/pairing-core.ts';
-import { hashPairingCode } from '../src/pairing-hash.ts';
-import { hashInstallId } from '../src/token.ts';
+import { handleRequest } from '../src/ingest/handlers.ts';
+import { constantTimeEqual } from '../src/pairing/core.ts';
+import { hashPairingCode } from '../src/pairing/hash.ts';
+import { hashInstallId } from '../src/ingest/token.ts';
 import { ID, makeWorld, NOW, post, ROOMY, SECRET, tokenFor } from './helpers.ts';
 import { NUM_RUNS } from './runs.ts';
 

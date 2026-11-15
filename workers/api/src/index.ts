@@ -1,23 +1,23 @@
 // Outage ingest Worker (event-ingest). Stateless: routes to area actors (res-7 parents) and the registry.
 // Platform notes: https://developers.cloudflare.com/durable-objects/best-practices/create-durable-object-stubs-and-send-requests/
-import { AreaActor } from './area-actor.ts';
+import { AreaActor } from './area/actor.ts';
 import { CONFIG } from './config.ts';
 import type { Env } from './env.ts';
 import { REGISTRY_NAME, TELEMETRY_NAME } from './env.ts';
-import { type Deps, handleRequest } from './handlers.ts';
-import { RegisterLimiter } from './limiter.ts';
-import { PairingActor } from './pairing-actor.ts';
-import { RevocationCache } from './registry.ts';
-import { RegistryActor } from './registry-actor.ts';
+import { type Deps, handleRequest } from './ingest/handlers.ts';
+import { RegisterLimiter } from './ingest/limiter.ts';
+import { PairingActor } from './pairing/actor.ts';
+import { RevocationCache } from './registry/revocation.ts';
+import { RegistryActor } from './registry/actor.ts';
 import { TelemetryActor } from './telemetry/actor.ts';
-import { hashInstallId } from './token.ts';
+import { hashInstallId } from './ingest/token.ts';
 import replayFile from '@outage/shared/fixtures/replay.json' with { type: 'json' };
-import { PageCache } from './web/cache.ts';
+import { PageCache } from './web/site/cache.ts';
 import { CATALOG, LISTED_AREAS } from './web/catalog/index.ts';
-import { PublicIndex } from './web/index-actor.ts';
-import { INDEX_NAME } from './web/index-core.ts';
-import { indexReader } from './web/index-reader.ts';
-import type { ReplayData } from './web/judge.ts';
+import { PublicIndex } from './public-index/actor.ts';
+import { INDEX_NAME } from './public-index/core.ts';
+import { indexReader } from './public-index/reader.ts';
+import type { ReplayData } from './web/simulate/replay.ts';
 import { handleWeb, isWebPath, type WebDeps } from './web/routes.ts';
 
 export type { Env };

@@ -1,8 +1,8 @@
 // Landing page at / (ux-redesign task 2, ADR 0027). Static: no data, no script. Three actions: open the web app,
 // watch a simulated blackout, install on Android. Styled by /app.css. Does not repeat any hardware-sensor claim (UX9).
-import { escapeHtml as e, safeHref } from './escape.ts';
-import { html, type Rendered } from './headers.ts';
-import type { Site } from './layout.ts';
+import { escapeHtml as e, safeHref } from '../site/escape.ts';
+import { html, type Rendered } from '../site/headers.ts';
+import type { Site } from '../site/layout.ts';
 
 export const SIMULATE_HREF = '/app/simulate';
 

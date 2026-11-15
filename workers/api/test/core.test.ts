@@ -1,11 +1,11 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { admit, type Kind, newBucket } from '../src/bucket.ts';
-import { dayOf } from '../src/budget.ts';
+import { admit, type Kind, newBucket } from '../src/ingest/bucket.ts';
+import { dayOf } from '../src/ingest/budget.ts';
 import { CONFIG } from '../src/config.ts';
-import { handleRequest } from '../src/handlers.ts';
-import { SeqWindow } from '../src/seqwindow.ts';
-import type { AreaEvent } from '../src/area-core.ts';
+import { handleRequest } from '../src/ingest/handlers.ts';
+import { SeqWindow } from '../src/ingest/seqwindow.ts';
+import type { AreaEvent } from '../src/area/core.ts';
 import { ID, makeCore, makeWorld, NOW, PARENT, post, ROOMY, SIBLINGS, tokenFor, wire, CELL } from './helpers.ts';
 import { NUM_RUNS } from './runs.ts';
 

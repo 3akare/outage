@@ -3,7 +3,7 @@ import { DEFAULT_PARAMS } from '@outage/detection';
 import { type FieldRecord, classifyOutage } from '@outage/shared';
 import { describe, expect, it } from 'vitest';
 import { type AreaConfig, type AreaState, emptyAreaState, nextAlarm, reduce } from '../src/area/reducer.ts';
-import type { IngestedItem } from '../src/ports.ts';
+import type { IngestedItem } from '../src/ingest/ports.ts';
 
 const CELLS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'];
 const cfg: AreaConfig = {

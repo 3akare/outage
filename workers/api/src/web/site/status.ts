@@ -1,6 +1,6 @@
 // Status derivation (design section 4, R2.5). Pure: the clock is an input.
 import { cellToChildren, getResolution } from 'h3-js';
-import type { Precision, PublicOutage, PublicScopeView } from './public-view.ts';
+import type { Precision, PublicOutage, PublicScopeView } from '../../public-index/public-view.ts';
 import type { PublicStateKey } from './strings.ts';
 
 /** "Restored" shows for 24 hours after an outage ends, then the area is Normal. Starting value, tunable (design section 4). */

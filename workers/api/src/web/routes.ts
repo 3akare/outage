@@ -2,13 +2,13 @@
 // Each uncached page reads the public index at most once (R9.3). Responses go through PageCache (R9.1, R9.2).
 // Pure routing with injected dependencies, so Vitest runs it without the Workers runtime.
 import { isValidRes8Cell } from '@outage/shared';
-import type { PageCache } from './cache.ts';
-import { PAGE_TTL_SECONDS, STATIC_TTL_SECONDS } from './cache.ts';
+import type { PageCache } from './site/cache.ts';
+import { PAGE_TTL_SECONDS, STATIC_TTL_SECONDS } from './site/cache.ts';
 import type { CatalogArea } from './catalog/schema.ts';
-import { escapeXml } from './escape.ts';
-import { json, methodNotAllowed, type Rendered } from './headers.ts';
-import type { IndexReader } from './index-reader.ts';
-import type { Site } from './layout.ts';
+import { escapeXml } from './site/escape.ts';
+import { json, methodNotAllowed, type Rendered } from './site/headers.ts';
+import type { IndexReader } from '../public-index/reader.ts';
+import type { Site } from './site/layout.ts';
 import {
   type InstallInfo,
   renderAreaPage,
@@ -17,17 +17,17 @@ import {
   renderInstallPage,
   renderNotFound,
   renderPrivacyPage,
-} from './pages.ts';
+} from './area-pages/pages.ts';
 import {
   type ReplayData,
   renderJudgeReplayJson,
   renderJudgeServiceWorker,
-} from './judge.ts';
-import { APP_TABS, renderAppCss, renderAppJs, renderAppPage } from './app.ts';
-import { renderSimulateJs, renderSimulatePage, SIMULATE_PATH } from './simulate.ts';
-import { renderLanding } from './landing.ts';
-import { buildMapJson, cityFrom, DEFAULT_CITY } from './map-json.ts';
-import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './status.ts';
+} from './simulate/replay.ts';
+import { APP_TABS, renderAppCss, renderAppJs, renderAppPage } from './app/app.ts';
+import { renderSimulateJs, renderSimulatePage, SIMULATE_PATH } from './simulate/simulate.ts';
+import { renderLanding } from './landing/landing.ts';
+import { buildMapJson, cityFrom, DEFAULT_CITY } from './app/map-json.ts';
+import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './site/status.ts';
 
 export interface WebDeps {
   site: Site;

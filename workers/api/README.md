@@ -4,6 +4,26 @@ Cloudflare Worker with Durable Objects. One Worker serves the `/v1/*` ingest API
 
 Deploy: see `docs/deploy.md` (token, account ID, GitHub secrets, the `deploy-worker` workflow). The workflow creates `INSTALL_TOKEN_SECRET` once and pushes `FIELD_READ_TOKEN` from a GitHub secret (ADR 0021).
 
+## Source layout
+
+One folder per job. `src/index.ts` is the entry: it routes `/v1/*` to `ingest/`, everything else to `web/`, and exports the five Durable Object classes. Tests stay flat in `test/`, named after the folder they cover (`area-*.test.ts`, `web-*.test.ts`).
+
+| Folder | What it holds |
+|---|---|
+| `src/ingest/` | Phone-to-server API: request handlers, install token, event time, rate limits, write budget, armed state, the detection port |
+| `src/area/` | `AreaActor` Durable Object (`actor.ts`, `core.ts`, `store.ts`) and the pure area logic (reducer, scope, members, neighbors, links, hints, pushes, view, field) |
+| `src/pairing/` | Home Watch pairing: `PairingActor`, its core, SQLite store and the code hash |
+| `src/registry/` | `RegistryActor`: revoked installs and daily usage counters; `revocation.ts` is the isolate cache |
+| `src/telemetry/` | `TelemetryActor`: field-test device-days, outage and miss records |
+| `src/public-index/` | `PublicIndex` Durable Object: the public scope views that the website reads (`public-view.ts` is the shape) |
+| `src/web/` | Everything a browser gets. `routes.ts` maps each URL to a renderer |
+| `src/web/landing/` | `/` landing page |
+| `src/web/app/` | `/app`, `/app/insights`, `/app/settings` web app, `/app.js`, `/app.css` (`design.ts`) and `/api/map.json` (`map-json.ts`) |
+| `src/web/simulate/` | `/app/simulate` player (`simulate.ts`); `replay.ts` serves `/api/v1/public/judge/replay`, `/judge-sw.js` and the `/judge` redirect |
+| `src/web/area-pages/` | `/areas`, `/area/<slug>`, `/c/<cell>`, `/install`, `/privacy`, the 404 page and their SVG map (`map-svg.ts`) |
+| `src/web/site/` | Shared page parts: headers and CSP nonce, cache, HTML escaping, layout, state strings, status derivation |
+| `src/web/catalog/` | The list of named Lagos areas and its generator |
+
 ## Area actors (spec: area-cells)
 
 - One `AREA` Durable Object per res-7 parent cell. `AreaActor` is a thin shell over `AreaModel` (`src/area/model.ts`), a pure reducer (`src/area/reducer.ts`) with a SQLite write-behind store (table `area_model`).

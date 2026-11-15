@@ -13,7 +13,7 @@ import {
   removeInstall,
 } from '@outage/detection';
 import type { FieldRecord } from '@outage/shared';
-import type { IngestedItem } from '../ports.ts';
+import type { IngestedItem } from '../ingest/ports.ts';
 import { type Coverage, type FieldObservation, type FieldSent, fieldStep, type MissPending, resolveMisses } from './field.ts';
 import { buildContext } from './hints.ts';
 import {

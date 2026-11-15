@@ -1,7 +1,7 @@
 import fc from 'fast-check';
 import { INSTALL_ID_PATTERN } from '@outage/shared';
 import { describe, expect, it } from 'vitest';
-import { hashInstallId, mintInstallId, mintToken, verifyToken } from '../src/token.ts';
+import { hashInstallId, mintInstallId, mintToken, verifyToken } from '../src/ingest/token.ts';
 import { NUM_RUNS } from './runs.ts';
 
 const ID = 'kg4yq7mxwb2ndpr3tfhj5vcsaz';

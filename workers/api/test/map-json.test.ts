@@ -4,11 +4,11 @@
 import fixture from '@outage/shared/fixtures/map/map.json' with { type: 'json' };
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { PageCache } from '../src/web/cache.ts';
+import { PageCache } from '../src/web/site/cache.ts';
 import { buildCatalog } from '../src/web/catalog/build.ts';
-import type { IndexReader } from '../src/web/index-reader.ts';
-import { buildMapJson, cityFrom } from '../src/web/map-json.ts';
-import type { PublicScopeView } from '../src/web/public-view.ts';
+import type { IndexReader } from '../src/public-index/reader.ts';
+import { buildMapJson, cityFrom } from '../src/web/app/map-json.ts';
+import type { PublicScopeView } from '../src/public-index/public-view.ts';
 import { handleWeb, type WebDeps } from '../src/web/routes.ts';
 import { NUM_RUNS } from './runs.ts';
 import { cellView, confirmedNow, HOUR, NOW, SITE } from './web-helpers.ts';

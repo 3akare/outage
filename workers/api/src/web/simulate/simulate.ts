@@ -1,10 +1,10 @@
 // Simulation player at /app/simulate (ux-redesign task 3, ADR 0027 and 0029). One sentence, one button.
 // It plays the real engine output from /api/v1/public/judge/replay (ADR 0015): phones drop, then Possible, Confirmed, Restored.
 // This page never reads the public index and the real pages never read the replay (W6). The banner is in the HTML, not added by script.
-import { escapeHtml as e, safeHref } from './escape.ts';
-import { html, type Rendered } from './headers.ts';
-import type { Site } from './layout.ts';
-import { dockHtml, LOGO, SIMULATE_PATH } from './app.ts';
+import { escapeHtml as e, safeHref } from '../site/escape.ts';
+import { html, type Rendered } from '../site/headers.ts';
+import type { Site } from '../site/layout.ts';
+import { dockHtml, LOGO, SIMULATE_PATH } from '../app/app.ts';
 
 export { SIMULATE_PATH };
 export const SIMULATE_JS_PATH = '/simulate.js';

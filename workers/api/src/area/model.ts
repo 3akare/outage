@@ -4,7 +4,7 @@
 // No Cloudflare imports: the SQL store is in area-store.ts, a memory store in the tests.
 import { DEFAULT_PARAMS, type EngineState } from '@outage/detection';
 import type { FieldRecord } from '@outage/shared';
-import type { DetectionPort, IngestedItem } from '../ports.ts';
+import type { DetectionPort, IngestedItem } from '../ingest/ports.ts';
 import type { RemovalRequest } from './members.ts';
 import type { Notice, NoticeBatch } from './neighbors.ts';
 import type { PassedPush } from './pushes.ts';
