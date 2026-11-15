@@ -86,6 +86,16 @@ describe('task 8 routes and JSON APIs', () => {
     expect(await head.text()).toBe('');
   });
 
+  it('R4 size budget: every public HTML page is under 30 KB', async () => {
+    const { d } = deps([cellView(YABA.cells[0] as string, confirmedNow())]);
+    const paths = ['/', '/install', '/privacy', '/area/yaba', `/c/${YABA.cells[0]}`, '/judge'];
+    for (const path of paths) {
+      const res = await handleWeb(get(path), d);
+      const bytes = new TextEncoder().encode(await res.text()).length;
+      expect(bytes, path).toBeLessThan(30 * 1024);
+    }
+  });
+
   it('R1.1 R3 routes render, unknown slugs and invalid cells get the 404 page without reading the index', async () => {
     const { d, reads } = deps([cellView(YABA.cells[0] as string, confirmedNow())]);
     const area = await handleWeb(get('/area/yaba'), d);
