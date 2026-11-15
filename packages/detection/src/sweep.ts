@@ -328,11 +328,30 @@ export function sweep(state: EngineState, installs: EngineState['installs'], par
     }
   };
 
+  // A day finalized while an outage was still open subtracted exposure up to infinity. Once the outage closes, recompute
+  // the days it touched so they match what settle() folds later from the closed outage (D5).
+  const refinalize = (o: OutageRec) => {
+    if (nextDay === null) return;
+    const lo = cut ?? Number.NEGATIVE_INFINITY;
+    const end = o.closedBy === 'RESTORED' ? (o.restoredAtMs as number) : o.startMs + params.unknownEndMs;
+    const last = Math.min(nextDay - 1, localDay(end, off));
+    let changed = false;
+    for (let d = localDay(o.startMs, off); d <= last; d++) {
+      const b = computeBucket(d, lo, Number.POSITIVE_INFINITY);
+      if (b.c.some((x) => x > 0) || b.e.some((x) => x > 0)) finalized.set(d, b);
+      else finalized.delete(d);
+      changed = true;
+    }
+    if (changed) lambdaCache.clear();
+  };
+
   // ---- outages --------------------------------------------------------------------------------------------------
   const closeExpired = (t: number) => {
     if (openOutage && t > openOutage.startMs + params.unknownEndMs) {
-      openOutage.closedBy = 'EXPIRED';
+      const o = openOutage;
+      o.closedBy = 'EXPIRED';
       openOutage = null;
+      refinalize(o);
     }
   };
   const attach = (d: Drop, o: OutageRec, rec: Unplug | undefined) => {
@@ -409,6 +428,7 @@ export function sweep(state: EngineState, installs: EngineState['installs'], par
       low: span.filter((x) => !x.high).length,
     };
     openOutage = null;
+    refinalize(o);
   }
 
   function processDrop(r: Rt, ev: Ev, rec: Unplug): void {
