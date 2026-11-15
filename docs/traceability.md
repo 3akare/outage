@@ -56,6 +56,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R6.4 | P7 | `P7_more_drops_never_lower` | 9 | planned |
 | R15 | P8 | `P8_time_shift_invariance` | 15 | planned |
 | R14 | P9 | `P9_simulated_never_counts` | 6 | planned |
+| R17.2, R14 | contract | `R17_outage30_confirmed_within_10s`, `R17_outage30_shape` | 16 | passing (`tools/sim/test/outage30.test.ts`) |
 | R3.6 | P10 | `P10_noisy_never_confirms` | 7 | planned |
 | R5.6 | P11 | `P11_sparse_never_confirms` | 9 | planned |
 | R12.2 | P12 | `P12_no_stale_push` | 13 | planned |

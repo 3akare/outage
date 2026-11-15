@@ -78,3 +78,18 @@ export function syntheticFixture(o: SyntheticOptions = DEFAULT_SYNTHETIC): Fixtu
   events.sort((a, b) => a.tMs - b.tMs || (a.alias < b.alias ? -1 : 1));
   return { source: 'SYNTHETIC', cell: LAGOS_PARENT, phones, events, labels };
 }
+
+/**
+ * 30-phone outage (detection-engine task 16, R17.2). All 30 phones arm, then every one drops within 2 s of the cut
+ * and comes back over `replugSpreadMs`. Same fixture format as the Judge mode replay; every event is `simulated: true`.
+ */
+export const OUTAGE_30_PHONES = 30;
+export function outage30Fixture(jitterMs: readonly number[] = DEFAULT_SYNTHETIC.jitterMs): Fixture {
+  return syntheticFixture({
+    phones: OUTAGE_30_PHONES,
+    drops: OUTAGE_30_PHONES,
+    jitterMs,
+    replugSpreadMs: DEFAULT_SYNTHETIC.replugSpreadMs,
+    spotPhone: false,
+  });
+}
