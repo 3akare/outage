@@ -16,19 +16,19 @@ This spec depends on `detection-engine` (tasks 1, 3, 13) and `event-ingest` (tas
 
 ## Wave 2 (needs 1, 2)
 
-- [ ] 3. Membership and moves: members table logic, one cell per install, synthetic `MOVED` disarm, expiry, weight exclusion. Tests A10.
+- [x] 3. Membership and moves: members table logic, one cell per install, synthetic `MOVED` disarm, expiry, weight exclusion. Tests A10.
   - Depends on: 1, 2
   - Requirements: R3, R5
-- [ ] 7. Neighbor table and notices: latest-as-of rule, 12-hour expiry, idempotent merge, notice creation rules. Tests A6.
+- [x] 7. Neighbor table and notices: latest-as-of rule, 12-hour expiry, idempotent merge, notice creation rules. Tests A6.
   - Depends on: 2
   - Requirements: R7
-- [ ] 8. Public view builder: boundary union, 3-member floor, "3+" phones, history list. Tests A8.
+- [x] 8. Public view builder: boundary union, 3-member floor, "3+" phones, history list. Tests A8.
   - Depends on: 2
   - Requirements: R9
 
 ## Wave 3 (needs 3)
 
-- [ ] 4. Router and scope selector: feed events to cell, group and parent engines, recently-armed rule, open-outage pinning, precision labels. Tests A1, A2, A3.
+- [x] 4. Router and scope selector: feed events to cell, group and parent engines, recently-armed rule, open-outage pinning, precision labels. Tests A1, A2, A3.
   - Depends on: 3, `detection-engine` 3, `detection-engine` 13
   - Requirements: R4, R2.2
 

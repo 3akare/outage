@@ -293,3 +293,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-14 D5 merge gates run
 - Ran the four gates on work/detection-d5: D5_settle_equivalence passes, detection-audit has 0 errors (2 warnings), traceability --check is clean, `npm test` passes (150), typecheck and lint are clean.
 - Detection engine tasks 3 to 14 are merge-ready. Not pushed; the human decides the merge.
+
+## 2026-11-14 area-cells task 4: router and scope selector
+- `workers/api/src/area/scope.ts`: `selectScope` (CELL if 3 or more recently armed members, else the linked group if it has 3, else the parent), `routeScopes` (cell, group, parent), `pinnedScopes` and `cellStatus`. An open outage touching the cell wins and shows from its own scope; a CONFIRMED at CELL precision for a cell under 3 recently armed members is shown as POSSIBLE.
+- Tests A1, A2, A3 in `workers/api/test/area-scope.test.ts` (property tests). Ticked tasks 3, 7 and 8 as well: their code and tests (A10, A6, A8) already existed and pass. Group key is the smallest cell, so it does not depend on insertion order.
