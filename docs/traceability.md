@@ -112,6 +112,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R3 | PL4 | `PL4_daily_stats` | 6 | planned |
 | R4 | PL5 | `PL5_light_score` | 6 | planned |
 | R5 | PL6 | `PL6_promise_copy` | 6 | planned |
+| R5.5 | - (band config + copy) | `BandConfigTest` (`apps/android/app/src/test/kotlin/app/outage/log/BandConfigTest.kt`) | 3 | test written |
 | R6 | PL7 | `PL7_freezer_guard_lifecycle` | 7 | planned |
 | R1.3, R8.2 | PL8 | `PL8_no_wall_clock_upload` | 8 | planned |
 | R8 | PL9 | `PL9_share_card_privacy` | 8 | planned |
