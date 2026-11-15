@@ -60,7 +60,7 @@ sealed interface MapResult { Fresh(map), Cached(map, fetchedMs), Empty }
 ```
 
 - `NetAreaMapSource` fetches the JSON, writes the cache file, falls back to the cache (R4). Uses the app's existing HTTP client in `net`.
-- `DemoAreaMapSource` returns a labelled replay map built from `packages/shared/fixtures/replay.json` (`simulated = true`). It never touches the cache (R5.2).
+- `DemoAreaMapSource` returns a labelled sample map (`simulated = true`), hard-coded in `DemoAreaMap` with hex ids starting `sim-` (it does not read `replay.json`). It never touches the cache (R5.2).
 - `MiniJson` (existing, `onboarding`) reads the JSON, so no JSON library is needed.
 
 ### Insights model (pure)

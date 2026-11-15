@@ -224,6 +224,8 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R1.7, R6.2 | AM5 | `am5_every_state_has_its_own_pattern_and_existing_strings` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/map/MapSourceTest.kt`) |
 | R1.8 | - | `labels_that_overlap_or_leave_the_view_are_dropped_in_priority_order` | 3 | test written (`MapSourceTest.kt`) |
 | R4, R5.2, R11.4 | AM6 | `am6_a_simulated_map_never_writes_the_cache`, `real_map_is_cached_and_used_when_the_network_fails` | 5 | test written (`MapSourceTest.kt`) |
+| R2, R11.2 | AM7 | `M1_floor` (Vitest `workers/api/test/map-json.test.ts`), `the_shared_fixture_parses_with_every_state_the_worker_emits` (`MapContractTest.kt`) | 1 | tests pass |
+| R5, R10 | - | `a_set_api_base_gives_the_real_source_with_an_empty_state`, `a_blank_api_base_keeps_the_labelled_demo` (`InsightsTest.kt`) | 6 | tests pass; task 6 open until the Power Log timeline exists |
 | R7 to R10 | IN1 to IN6 | `in1_*` and others | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt`) |
 | R12.1, R12.2 | AS1 | `AS1_start_routing_parses_known_routes` (insights) | 10 | test written (`RoutingTest.kt`) |
 | R12.3 | AS7 | `AS7_strings_*` | 10 | test written (`StringPackTest.kt`) |

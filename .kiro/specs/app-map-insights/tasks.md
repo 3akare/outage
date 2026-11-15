@@ -6,7 +6,7 @@ Depends on `app-shell` (Shell, FeatureRegistry), `web-and-area-pages` (public JS
 
 ## Wave 1: data and pure logic
 
-- [ ] 1. Worker route `GET /api/map.json` and shared types plus fixture in `packages/shared/fixtures/`. Vitest checks the floor (no cell under 3 phones shows a state, no counts in the output).
+- [x] 1. Worker route `GET /api/map.json` and shared types plus fixture in `packages/shared/fixtures/`. Vitest checks the floor (no cell under 3 phones shows a state, no counts in the output).
   - Requirements: R2, R11.2
 - [x] 2. `AreaMap` model, `AreaMapParser` (MiniJson), `MapProjection`, `MapTransform`, hit test. JUnit 4 tests AM1 to AM4. Confirm gesture and Canvas APIs with Context7 first.
   - Depends on: 1
@@ -21,7 +21,7 @@ Depends on `app-shell` (Shell, FeatureRegistry), `web-and-area-pages` (public JS
 - [x] 5. `AreaMapSource` with `NetAreaMapSource`, cache file, `DemoAreaMapSource`. Test AM6. Delete-my-data clears the cache.
   - Depends on: 2
   - Requirements: R4, R5, R11.4
-- [x] 6. `InsightsSource` with `PowerLogInsightsSource` and `DemoInsightsSource` (12 weeks, simulated true).
+- [ ] 6. `InsightsSource` with `PowerLogInsightsSource` and `DemoInsightsSource` (12 weeks, simulated true). `PowerLogInsightsSource` exists but reads `PowerLogTimeline.None` (empty state) until the Power Log timeline is built; untick when that wires in.
   - Depends on: 4
   - Requirements: R5, R10
 
@@ -47,4 +47,4 @@ Depends on `app-shell` (Shell, FeatureRegistry), `web-and-area-pages` (public JS
 - [ ] 12. Visual and TalkBack pass on an emulator or phone (Kiro IDE pass). Record screenshots in `docs/`.
   - Depends on: 11
 
-Notes (2026-11-15): task 1 (Worker `/api/map.json` and shared fixture) is still open, so `NetAreaMapSource` is built and tested with an injected fetch but the app defaults to the labelled demo map until `-PoutageApiBase` is set and the route exists. Insights uses the demo source because the Power Log timeline does not exist yet. Task 12 (emulator screenshots, TalkBack) is open: no emulator in the sandbox.
+Notes (2026-11-15): task 1 is done (ADR 0025): the Worker serves `GET /api/map.json`, the shared fixture is read by Vitest and `MapContractTest`, and the app has the `INTERNET` permission. The app still defaults to the labelled demo map until `-PoutageApiBase` is set. With the base set, Insights uses `PowerLogInsightsSource` and shows the empty state because the Power Log timeline does not exist yet, so task 6 stays open. Task 12 (emulator screenshots, TalkBack) is open: no emulator in the sandbox.

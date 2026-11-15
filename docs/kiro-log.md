@@ -553,3 +553,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Checks: `assembleDebug`, `testDebugUnitTest` (all pass) and `lintDebug` exit 0. No new Gradle dependency.
 - New stored data: the followed area slug (ADR 0024). Delete-my-data clears it and the map cache.
 - Open: Worker route `/api/map.json` (task 1) does not exist yet. No emulator here, so there are no screenshots and the TalkBack pass (task 12) is still to do. Compose and Material APIs were checked by compiling, not by a docs server, which was not reachable in this run. Insights has no Power Log timeline to read yet.
+
+## 2026-11-15 fix(map): review fixes, Worker map route, INTERNET permission, real Insights source [spec:app-map-insights task:1,5,6]
+- Review issues 1 to 3: added `GET /api/map.json` (`workers/api/src/web/map-json.ts`, route in `web/routes.ts`), shared type `packages/shared/src/map.ts` and fixture `packages/shared/fixtures/map/map.json`, the `INTERNET` permission, and `PowerLogInsightsSource` plus `InsightsSources.choose`. With the Worker address set Insights shows an empty state, never simulated data. Task 6 is unticked (no Power Log timeline yet), task 1 is ticked. ADR 0025.
+- Issue 4: Vitest `M1_floor` (example and fast-check property) fails if an uncovered cell carries a state, a time or history, or if the JSON has any count key. Issue 5 not changed: no count field exists and the cache is app-private (ADR 0025 alternative 1). Issue 6: design now says the demo map is hard-coded; task 12 stays open.
+- Checks: workers/api vitest 253 pass, tsc exit 0, biome clean on the new files (the rest of `workers/api` already had biome findings before this change, left alone). Gradle `assembleDebug testDebugUnitTest lintDebug` exit 0, 4 new JUnit tests pass.
+- Open: set `-PoutageApiBase` in the release build once the Worker is deployed; the Power Log timeline replaces `PowerLogTimeline.None`.
