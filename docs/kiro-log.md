@@ -498,3 +498,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-15 chore(merge): merge origin/main into work/web-11-area-12 [spec:web-and-area-pages task:11]
 - Merged origin/main; kept both sides of the log and notes conflicts. Playwright ADR 0017 renumbered to 0019 (docs/adr/0019-playwright-visual-check.md) because main already has 0017-field-report-rules; the spec-lint test requires contiguous ADR numbers, so 0020 failed.
 - Open for the human: both branches now use ADR 0019 for different ADRs; the second to merge must renumber to 0020.
+
+## 2026-11-15 chore(merge): merge origin/main into work/home-watch-2-4, record review findings [spec:home-watch task:4]
+- Merged origin/main. Code conflicts resolved by keeping both sides (handlers, index, helpers, shared index, wrangler). Telemetry took migration `v4` on main, so `PairingActor` moved to `v5` (workers/api/README.md updated).
+- ADR 0009 now lists the PR 13 security review findings: per-offer cap is the real control, the limiter is per shard actor and in memory, viewer cleanup depends on the phone's pair list (station remove is the fallback), dead viewers keep a seat, failed-claim timing, offer-retry token spend (not a one-line fix, left). Home-watch task 8 notes the UI must list pairs with remove.
+- `docs/status.md` updated. `npm test`, lint, typecheck and traceability check pass.
+- Open for the human: `docs/status.md` cites ADR 0020 (tariff bands), which exists only once PR 15 merges.
