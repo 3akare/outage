@@ -556,5 +556,385 @@
         }
       ]
     }
-  ]
+  ],
+  "unplugTrack": {
+    "simulated": true,
+    "label": "Simulated neighbors",
+    "seed": 20261114,
+    "engineParams": {
+      "windowMs": 90000,
+      "possible": {
+        "minK": 2,
+        "maxP": 0.05
+      },
+      "confirmed": {
+        "minK": 3,
+        "maxP": 0.001
+      },
+      "minArmedForConfirm": 3,
+      "weight": {
+        "cut": 0.5,
+        "u0": 8,
+        "lookbackMs": 86400000
+      },
+      "baseline": {
+        "priorLambdaPerSec": 0.0005555555555555556,
+        "priorExposureSec": 36000,
+        "dailyDecay": 0.9
+      },
+      "restore": {
+        "baseMs": 90000,
+        "priorP95Ms": 60000,
+        "minSamples": 20,
+        "minQuorum": 2
+      },
+      "unknownEndMs": 43200000,
+      "pushMaxAgeMs": 600000,
+      "staleArmedMs": 604800000,
+      "horizonMs": 648000000,
+      "localOffsetMs": 3600000
+    },
+    "armed": 10,
+    "drops": 7,
+    "neighbors": [
+      {
+        "alias": "N1",
+        "label": "Simulated neighbor 1",
+        "role": "SIMULATED_NEIGHBOR",
+        "simulated": true,
+        "drops": true
+      },
+      {
+        "alias": "N2",
+        "label": "Simulated neighbor 2",
+        "role": "SIMULATED_NEIGHBOR",
+        "simulated": true,
+        "drops": true
+      },
+      {
+        "alias": "N3",
+        "label": "Simulated neighbor 3",
+        "role": "SIMULATED_NEIGHBOR",
+        "simulated": true,
+        "drops": true
+      },
+      {
+        "alias": "N4",
+        "label": "Simulated neighbor 4",
+        "role": "SIMULATED_NEIGHBOR",
+        "simulated": true,
+        "drops": true
+      },
+      {
+        "alias": "N5",
+        "label": "Simulated neighbor 5",
+        "role": "SIMULATED_NEIGHBOR",
+        "simulated": true,
+        "drops": true
+      },
+      {
+        "alias": "N6",
+        "label": "Simulated neighbor 6",
+        "role": "SIMULATED_NEIGHBOR",
+        "simulated": true,
+        "drops": true
+      },
+      {
+        "alias": "N7",
+        "label": "Simulated neighbor 7",
+        "role": "SIMULATED_NEIGHBOR",
+        "simulated": true,
+        "drops": false
+      },
+      {
+        "alias": "N8",
+        "label": "Simulated neighbor 8",
+        "role": "SIMULATED_NEIGHBOR",
+        "simulated": true,
+        "drops": false
+      },
+      {
+        "alias": "N9",
+        "label": "Simulated neighbor 9",
+        "role": "SIMULATED_NEIGHBOR",
+        "simulated": true,
+        "drops": false
+      }
+    ],
+    "jitterMs": [
+      259,
+      393,
+      423,
+      478,
+      764,
+      1515
+    ],
+    "replugSpreadMs": [
+      319,
+      1842,
+      3065,
+      8263,
+      14746,
+      15000
+    ],
+    "confirmedAtMs": 478,
+    "restoredAtMs": 3065,
+    "frames": [
+      {
+        "offsetMs": 0,
+        "phase": "UNPLUG",
+        "simulated": true,
+        "state": "NORMAL",
+        "events": [],
+        "judgeEvent": "UNPLUG"
+      },
+      {
+        "offsetMs": 259,
+        "phase": "UNPLUG",
+        "simulated": true,
+        "state": "NORMAL",
+        "events": [
+          {
+            "alias": "N1",
+            "type": "UNPLUG",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "offsetMs": 393,
+        "phase": "UNPLUG",
+        "simulated": true,
+        "state": "POSSIBLE",
+        "events": [
+          {
+            "alias": "N2",
+            "type": "UNPLUG",
+            "simulated": true
+          }
+        ],
+        "explanation": {
+          "k": 3,
+          "n": 10,
+          "excludedNoisy": 0,
+          "lambdaPerSec": 0.0005555555555555556,
+          "muValue": 0.5,
+          "p": 0.014387677966970686,
+          "windowMs": 90000,
+          "thresholds": {
+            "possible": {
+              "minK": 2,
+              "maxP": 0.05
+            },
+            "confirmed": {
+              "minK": 3,
+              "maxP": 0.001
+            },
+            "minArmedForConfirm": 3,
+            "weightCut": 0.5
+          },
+          "confidence": {
+            "high": 3,
+            "low": 0
+          }
+        }
+      },
+      {
+        "offsetMs": 423,
+        "phase": "UNPLUG",
+        "simulated": true,
+        "state": "POSSIBLE",
+        "events": [
+          {
+            "alias": "N3",
+            "type": "UNPLUG",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "offsetMs": 478,
+        "phase": "UNPLUG",
+        "simulated": true,
+        "state": "CONFIRMED",
+        "events": [
+          {
+            "alias": "N4",
+            "type": "UNPLUG",
+            "simulated": true
+          }
+        ],
+        "explanation": {
+          "k": 5,
+          "n": 10,
+          "excludedNoisy": 0,
+          "lambdaPerSec": 0.0005555555555555556,
+          "muValue": 0.5,
+          "p": 0.00017211562995584083,
+          "windowMs": 90000,
+          "thresholds": {
+            "possible": {
+              "minK": 2,
+              "maxP": 0.05
+            },
+            "confirmed": {
+              "minK": 3,
+              "maxP": 0.001
+            },
+            "minArmedForConfirm": 3,
+            "weightCut": 0.5
+          },
+          "confidence": {
+            "high": 5,
+            "low": 0
+          }
+        }
+      },
+      {
+        "offsetMs": 764,
+        "phase": "UNPLUG",
+        "simulated": true,
+        "state": "CONFIRMED",
+        "events": [
+          {
+            "alias": "N5",
+            "type": "UNPLUG",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "offsetMs": 1515,
+        "phase": "UNPLUG",
+        "simulated": true,
+        "state": "CONFIRMED",
+        "events": [
+          {
+            "alias": "N6",
+            "type": "UNPLUG",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "offsetMs": 0,
+        "phase": "REPLUG",
+        "simulated": true,
+        "state": "CONFIRMED",
+        "events": [],
+        "judgeEvent": "REPLUG"
+      },
+      {
+        "offsetMs": 319,
+        "phase": "REPLUG",
+        "simulated": true,
+        "state": "CONFIRMED",
+        "events": [
+          {
+            "alias": "N1",
+            "type": "REPLUG",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "offsetMs": 1842,
+        "phase": "REPLUG",
+        "simulated": true,
+        "state": "CONFIRMED",
+        "events": [
+          {
+            "alias": "N2",
+            "type": "REPLUG",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "offsetMs": 3065,
+        "phase": "REPLUG",
+        "simulated": true,
+        "state": "RESTORED",
+        "events": [
+          {
+            "alias": "N3",
+            "type": "REPLUG",
+            "simulated": true
+          }
+        ],
+        "explanation": {
+          "k": 5,
+          "n": 10,
+          "excludedNoisy": 0,
+          "lambdaPerSec": 0.0005555555555555556,
+          "muValue": 0.5,
+          "p": 0.00017211562995584083,
+          "windowMs": 90000,
+          "thresholds": {
+            "possible": {
+              "minK": 2,
+              "maxP": 0.05
+            },
+            "confirmed": {
+              "minK": 3,
+              "maxP": 0.001
+            },
+            "minArmedForConfirm": 3,
+            "weightCut": 0.5
+          },
+          "confidence": {
+            "high": 9,
+            "low": 0
+          },
+          "restore": {
+            "d": 7,
+            "quorum": 4,
+            "replugs": 4,
+            "wrMs": 150000,
+            "p95SampleCount": 0,
+            "p95Ms": 60000
+          }
+        }
+      },
+      {
+        "offsetMs": 8263,
+        "phase": "REPLUG",
+        "simulated": true,
+        "state": "RESTORED",
+        "events": [
+          {
+            "alias": "N4",
+            "type": "REPLUG",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "offsetMs": 14746,
+        "phase": "REPLUG",
+        "simulated": true,
+        "state": "RESTORED",
+        "events": [
+          {
+            "alias": "N5",
+            "type": "REPLUG",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "offsetMs": 15000,
+        "phase": "REPLUG",
+        "simulated": true,
+        "state": "RESTORED",
+        "events": [
+          {
+            "alias": "N6",
+            "type": "REPLUG",
+            "simulated": true
+          }
+        ]
+      }
+    ]
+  }
 }
