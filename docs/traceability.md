@@ -151,7 +151,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R1.4, R3 | W1 | `W1_page_without_script` | 4, 11 | test written (`workers/api/test/web-pages.test.ts`; size budget for every page in `workers/api/test/web-routes.test.ts`; 390 px visual check `workers/api/visual/check.mjs`, ADR 0019) |
 | R4.3, R11.1 | W2 | `W2_public_privacy` | 4, 7 | test written (`workers/api/test/web-pages.test.ts`, `workers/api/test/web-index.test.ts`) |
 | R2 | W3 | `W3_five_states` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
-| R9 | W4 | `W4_cache_ttl` | 5 | unit tests (`workers/api/test/web-cache.test.ts`); deployed-domain check open |
+| R9 | W4 | `W4_cache_ttl` | 5 | unit tests (`workers/api/test/web-cache.test.ts`); deployed-domain check done 2026-11-21 (curl) and in `.github/workflows/deploy-worker.yml` "Post-deploy header check" |
 | R6.4, R6.6 | W5 | `W5_replay_matches_engine` | 9 | test written (`tools/sim/test/replay.test.ts`) |
 | R6.1 to R6.3, R6.5, R6.7 to R6.9, R1.3 | W6 | `W6_simulated_separation` | 10 | test written (`workers/api/test/web-judge.test.ts`) |
 | R10.3, R11.5 | W7 | `W7_sitemap_robots` | 3, 8 | test written (`workers/api/test/web-catalog.test.ts`, `workers/api/test/web-routes.test.ts`) |
@@ -256,3 +256,4 @@ Scanned 0 test file(s) under packages/detection. A property counts when a test t
 | P11 | - | - | no tests yet |
 | P12 | - | - | no tests yet |
 <!-- END GENERATED -->
+| R4, R2 (app-map-insights), W7 | M1 | `map.json with an unlisted catalog` (`workers/api/test/map-json.test.ts`) | 1 | test written: unlisted catalog cells are NO_DATA on the map, `/area/<slug>` stays 404 |
