@@ -4,19 +4,22 @@ inclusion: always
 
 # Repository structure
 
+Every file is listed in `ARCHITECTURE.md` (ADR 0031). List new files there.
+
 ```
 apps/android           Kotlin app (sensor, alarm, log, UI)
 powers/grid-sensing    Kiro Power (Agent Plugin): charging-sensor, blackout-detection, oem-battery-guide skills
-workers/api            Cloudflare Worker + Durable Objects + web page
+workers/api            Cloudflare Worker, Durable Objects, website (src/web)
 packages/detection     Pure TypeScript engine, no I/O (Worker and simulator only)
 packages/shared        Types, event schema, H3 helpers, oem-guide.json, contract fixtures
 tools/sim              Simulator and replay generator
+tools/field            Daily field-test report generator
 tools/probe/android    Throwaway Kotlin probe app (Milestone 1)
 tools/probe/worker     Throwaway probe Worker
 tools/probe/analyze    Probe analysis library
 docs/                  kiro-log.md, adr/, field/, traceability.md
 .kiro/                 steering, specs, hooks, skills, agents, settings
-.github/workflows/     Android build and release
+.github/               CI workflows and their scripts
 ```
 
 ## Rules
