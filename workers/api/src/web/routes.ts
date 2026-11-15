@@ -32,6 +32,8 @@ export interface WebDeps {
   site: Site;
   install: InstallInfo | null;
   areas: readonly CatalogArea[];
+  /** Every catalog area, checked or not, for the phone's map. Cells with no view are NO_DATA, so nothing unverified is claimed. Defaults to `areas`. */
+  mapAreas?: readonly CatalogArea[];
   index: IndexReader;
   cache: PageCache;
   /** The static simulated replay, or null if not built. Read only by the Judge routes (R6.8, W6). */
@@ -113,7 +115,7 @@ const ROUTES: Route[] = [
     render: async (_m, url, d) => {
       const views = await d.index.views();
       if (views === null) return apiUnavailable();
-      return json(buildMapJson(cityFrom(url.searchParams.get('city')), d.areas, views, d.now()), PAGE_TTL_SECONDS);
+      return json(buildMapJson(cityFrom(url.searchParams.get('city')), d.mapAreas ?? d.areas, views, d.now()), PAGE_TTL_SECONDS);
     },
   },
   {

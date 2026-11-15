@@ -107,3 +107,21 @@ describe('map.json', () => {
     expect(post.status).toBe(405);
   });
 });
+
+describe('map.json with an unlisted catalog (live fix: empty map)', () => {
+  it('serves catalog cells as NO_DATA when no area is listed yet', async () => {
+    const d = { ...deps([]), areas: [], mapAreas: AREAS };
+    const res = await handleWeb(new Request('https://outage.test/api/map.json?city=lagos'), d);
+    const body = (await res.json()) as { city: string; areas: unknown[]; cells: { state: string }[] };
+    expect(body.city).toBe('lagos');
+    expect(body.areas).toHaveLength(1);
+    expect(body.cells.length).toBe(CELLS.length);
+    expect(body.cells.every((c) => c.state === 'NO_DATA')).toBe(true);
+  });
+
+  it('keeps unlisted areas out of /area/<slug> (W7)', async () => {
+    const d = { ...deps([]), areas: [], mapAreas: AREAS };
+    const res = await handleWeb(new Request('https://outage.test/area/yaba'), d);
+    expect(res.status).toBe(404);
+  });
+});

@@ -23,8 +23,8 @@ Depends on `area-cells` (tasks 8, 10), `detection-engine` (tasks 13, 16), `event
 - [x] 4. Status derivation and page renderers: area, cell, home, install, privacy, 404, and the legend. Tests W1, W2, W3, W9.
   - Depends on: 2, 3
   - Requirements: R2, R3, R4, R7
-- [ ] 5. Cache layer (Cache API plus isolate fallback), test on the deployed domain, and the nonce or hash decision. Tests W4.
-  - Status: Cache API wrapper, isolate fallback, nonce decision and W4 tests done; the "test on the deployed domain" step is open (needs a deploy).
+- [x] 5. Cache layer (Cache API plus isolate fallback), test on the deployed domain, and the nonce or hash decision. Tests W4.
+  - Status: Cache API wrapper, isolate fallback, nonce decision and W4 tests done; deployed-domain check done against https://outage-api.bakaredavid007.workers.dev (public cache-control, per-response CSP nonce equal to the body nonce, nosniff); it now runs in deploy-worker.yml.
   - Depends on: 2
   - Requirements: R9
 - [x] 6. SVG map renderer from catalog cells and states. Unit and snapshot tests.

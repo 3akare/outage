@@ -131,3 +131,26 @@ jobs:
             fi
           done
           echo "Smoke check passed: $URL"
+
+      # web-and-area-pages task 5: cache headers and the CSP nonce, on the deployed domain (R9, W4).
+      - name: Post-deploy header check
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          set -euo pipefail
+          UA='outage-deploy-check/1.0 (github actions)'
+          for path in / /judge /install; do
+            h=$(curl -sS -D - -o "$RUNNER_TEMP/body" -A "$UA" "$URL$path" | tr -d '\r')
+            echo "$h" | grep -qi '^cache-control: public, max-age=[0-9]*, s-maxage=[0-9]*' || { echo "::error title=Post-deploy check failed::$path has no public cache-control"; exit 1; }
+            csp_nonce=$(echo "$h" | grep -i '^content-security-policy:' | grep -o "script-src 'nonce-[^']*'" | sed "s/script-src 'nonce-//;s/'$//")
+            [ -n "$csp_nonce" ] || { echo "::error title=Post-deploy check failed::$path CSP has no script nonce"; exit 1; }
+            grep -qF "nonce=\"$csp_nonce\"" "$RUNNER_TEMP/body" || { echo "::error title=Post-deploy check failed::$path body nonce differs from CSP nonce"; exit 1; }
+            if grep -q '__OUTAGE_NONCE__' "$RUNNER_TEMP/body"; then echo "::error title=Post-deploy check failed::nonce placeholder leaked on $path"; exit 1; fi
+            echo "$h" | grep -qi '^x-content-type-options: nosniff' || { echo "::error title=Post-deploy check failed::$path lacks nosniff"; exit 1; }
+            echo "Post-deploy check ok: $path"
+          done
+          a=$(curl -sS -A "$UA" -D - -o /dev/null "$URL/judge" | grep -i '^content-security' | grep -o "nonce-[^']*" | head -1)
+          b=$(curl -sS -A "$UA" -D - -o /dev/null "$URL/judge" | grep -i '^content-security' | grep -o "nonce-[^']*" | head -1)
+          [ "$a" != "$b" ] || { echo "::error title=Post-deploy check failed::nonce repeated across requests"; exit 1; }
+          echo "Nonce changes per response."

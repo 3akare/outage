@@ -4,6 +4,12 @@
   "name": "outage-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
+  // Public, non-secret values (ADR 0024). APK_URL is the releases page until the release workflow fills in a direct APK link
+  // with APK_VERSION, APK_SIZE_BYTES and APK_SHA256 (release-apk skill).
+  "vars": {
+    "SITE_ORIGIN": "https://outage-api.bakaredavid007.workers.dev",
+    "APK_URL": "https://github.com/3akare/outage/releases/latest"
+  },
   "durable_objects": {
     "bindings": [
       { "name": "AREA", "class_name": "AreaActor" },

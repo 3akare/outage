@@ -13,7 +13,7 @@ import { TelemetryActor } from './telemetry/actor.ts';
 import { hashInstallId } from './token.ts';
 import replayFile from '@outage/shared/fixtures/replay.json' with { type: 'json' };
 import { PageCache } from './web/cache.ts';
-import { LISTED_AREAS } from './web/catalog/index.ts';
+import { CATALOG, LISTED_AREAS } from './web/catalog/index.ts';
 import { PublicIndex } from './web/index-actor.ts';
 import { INDEX_NAME } from './web/index-core.ts';
 import { indexReader } from './web/index-reader.ts';
@@ -91,6 +91,7 @@ function webDeps(req: Request, env: Env): WebDeps {
         }
       : null,
     areas: LISTED_AREAS,
+    mapAreas: CATALOG.areas,
     index: indexReader(() => env.PUBLIC_INDEX.get(env.PUBLIC_INDEX.idFromName(INDEX_NAME)).getAll()),
     cache: pageCache,
     replay: () => replayFile as unknown as ReplayData,
