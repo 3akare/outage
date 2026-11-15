@@ -28,7 +28,7 @@ class RoutingTest {
     // AS1 (R1.3): a link opens its destination with Home underneath.
     @Test
     fun AS1_start_routing_deep_link_keeps_home_in_back_stack() {
-        for (dest in listOf(Route.Log, Route.Area, Route.Settings, Route.Feature("alarm"))) {
+        for (dest in listOf(Route.Log, Route.Area, Route.Insights, Route.Settings, Route.Feature("alarm"))) {
             val router = Routes.start(false, dest)
             assertEquals(listOf(Route.Home, dest), router.stack)
             assertEquals(dest, router.current)
@@ -42,6 +42,7 @@ class RoutingTest {
         assertEquals(Route.Home, Routes.fromIntent("home"))
         assertEquals(Route.Log, Routes.fromIntent("log"))
         assertEquals(Route.Area, Routes.fromIntent("area"))
+        assertEquals(Route.Insights, Routes.fromIntent("insights"))
         assertEquals(Route.Settings, Routes.fromIntent("settings"))
         assertEquals(Route.Feature("alarm"), Routes.fromIntent("feature:alarm"))
         assertEquals(Route.Settings, Routes.fromIntent("  Settings "))
@@ -50,7 +51,7 @@ class RoutingTest {
     // AS2 (R3.3)
     @Test
     fun AS2_router_back_from_any_tab_returns_home() {
-        for (tab in listOf(Route.Log, Route.Area, Route.Settings)) {
+        for (tab in listOf(Route.Log, Route.Area, Route.Insights, Route.Settings)) {
             val router = Router(Route.Home)
             router.tab(tab)
             assertEquals(listOf(Route.Home, tab), router.stack)
@@ -94,7 +95,7 @@ class RoutingTest {
     @Test
     fun AS2_router_back_random_operations_keep_home_at_the_bottom() {
         val rnd = Random(20261114L)
-        val tabs = listOf(Route.Home, Route.Log, Route.Area, Route.Settings)
+        val tabs = listOf(Route.Home, Route.Log, Route.Area, Route.Insights, Route.Settings)
         repeat(500) {
             val router = Router(Route.Home)
             repeat(40) {

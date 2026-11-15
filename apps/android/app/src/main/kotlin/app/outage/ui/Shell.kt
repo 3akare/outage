@@ -28,8 +28,9 @@ private class Tab(val route: Route, val labelRes: Int, val iconRes: Int)
 
 private val tabs = listOf(
     Tab(Route.Home, R.string.nav_home, R.drawable.ic_nav_home),
-    Tab(Route.Log, R.string.nav_log, R.drawable.ic_nav_log),
     Tab(Route.Area, R.string.nav_area, R.drawable.ic_nav_area),
+    Tab(Route.Insights, R.string.nav_insights, R.drawable.ic_nav_insights),
+    Tab(Route.Log, R.string.nav_log, R.drawable.ic_nav_log),
     Tab(Route.Settings, R.string.nav_settings, R.drawable.ic_nav_settings),
 )
 
@@ -82,6 +83,7 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel, debugPlaceholderAllowed: Boo
                 Route.Home -> HomeScreen(home, homeScroll) { shell.go(Route.Feature(FeatureRegistry.ALARM)) }
                 Route.Log -> graph.features.get(FeatureRegistry.LOG)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_log, null)
                 Route.Area -> graph.features.get(FeatureRegistry.AREA)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_area, null)
+                Route.Insights -> graph.features.get(FeatureRegistry.INSIGHTS)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_insights, null)
                 Route.Settings -> SettingsScreen(
                     versionName = BuildConfig.VERSION_NAME,
                     alias = graph.store.alias,

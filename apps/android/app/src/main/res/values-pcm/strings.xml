@@ -6,4 +6,8 @@
     <string name="sensor_armed">We dey watch</string>
     <string name="coming_soon">E dey come soon</string>
     <string name="delete_confirm">Delete am</string>
+    <string name="map_desc_normal">Light dey</string>
+    <string name="map_desc_confirmed">Light don go</string>
+    <string name="map_desc_restored">Light don come</string>
+    <string name="map_desc_possible">Light fit don go</string>
 </resources>

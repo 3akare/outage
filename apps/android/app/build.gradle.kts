@@ -34,6 +34,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
+        // Worker address for the live map. Empty means the labelled demo map (ADR 0022). Set with -PoutageApiBase=https://...
+        buildConfigField("String", "API_BASE", "\"" + (providers.gradleProperty("outageApiBase").orNull ?: "") + "\"")
     }
 
     buildTypes {
