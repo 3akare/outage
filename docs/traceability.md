@@ -213,6 +213,22 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R7 | AS7 | `AS7_strings` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/shell/StringPackTest.kt`) |
 | R6.3 | AS8 | device check | 8 | checklist written (`docs/probe-checklist.md`, "App shell check") |
 
+## app-map-insights
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R2.1, R2.2 | AM1 | `am1_floor_*` | 2 | test written (`apps/android/app/src/test/kotlin/app/outage/map/MapTest.kt`) |
+| R1.4, R1.5 | AM2 | `am2_*` | 2 | test written (`MapTest.kt`) |
+| R1.6 | AM3 | `am3_*` | 2 | test written (`MapTest.kt`) |
+| R1.9, R3.1 | AM4 | `am4_*` | 2 | test written (`MapTest.kt`) |
+| R1.7, R6.2 | AM5 | `am5_every_state_has_its_own_pattern_and_existing_strings` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/map/MapSourceTest.kt`) |
+| R1.8 | - | `labels_that_overlap_or_leave_the_view_are_dropped_in_priority_order` | 3 | test written (`MapSourceTest.kt`) |
+| R4, R5.2, R11.4 | AM6 | `am6_a_simulated_map_never_writes_the_cache`, `real_map_is_cached_and_used_when_the_network_fails` | 5 | test written (`MapSourceTest.kt`) |
+| R7 to R10 | IN1 to IN6 | `in1_*` and others | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt`) |
+| R12.1, R12.2 | AS1 | `AS1_start_routing_parses_known_routes` (insights) | 10 | test written (`RoutingTest.kt`) |
+| R12.3 | AS7 | `AS7_strings_*` | 10 | test written (`StringPackTest.kt`) |
+| R1, R3, R6.1, R6.3, R7, R8 | - | drawing, gestures, TalkBack | 7 to 10, 12 | screens built (`ui/MapScreen.kt`, `ui/InsightsScreen.kt`, `ui/charts/`); emulator check is task 12 |
+
 <!-- BEGIN GENERATED: detection properties (.kiro/scripts/traceability.mjs) -->
 ## Detection properties P1 to P12 (generated)
 
