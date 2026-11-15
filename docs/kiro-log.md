@@ -345,3 +345,6 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Test: `area-model.test.ts` "delete queues the public-index change" (R12.1, A8).
 - `workers/api/README.md` written with the area section (area-cells task 12, partial; ADR 0006 numbers still open).
 - ADRs 0014 and 0015 stay PROPOSED; listed in `docs/session-notes.md`.
+
+## 2026-11-14 session handoff
+- The unfinished detection engine is pushed to branch `wip/detection-engine`, not `main`, because 2 tests fail. `main` stays green. The handoff, how to start a new session, and every open question for the human are in `docs/session-notes.md`. `docs/status.md` is current.

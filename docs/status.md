@@ -2,7 +2,7 @@
 
 Read by the session-context hook. Keep the four labelled lines below on one line each.
 
-Current milestone: 1 Feasibility probe (tasks 1 to 7 done: probe app, Worker and analysis built and tested; nothing run on a phone yet)
+Current milestone: 1 Feasibility probe (waiting on the Samsung data) and 2 Detection, started in parallel
 Gate: armed time >= 90% on one phone, restore delay p95 <= 60 s, Tecno or Infinix works after battery exemption
 Next: task 8, the human runs docs/probe-checklist.md on real phones (needs the probe APK and, for uploads, the deployed Worker with PROBE_TOKEN); then task 9 (summary and ADR 0013). Detection engine tasks 3 to 14 done and merge-ready on work/detection-d5 (all four gates pass, 150 tests); next there: task 15 (Kiro IDE correctness pass). area-cells tasks 3 to 11 done (task 12 docs open); web-and-area-pages tasks 1, 7, 8, 9 done (next: task 10 Judge page). Open for the human: ADR 0014 (re-hint pass vs R11.4), ADR 0015 (replay builder), see docs/session-notes.md
 Active specs: feasibility-probe, area-cells, web-and-area-pages
