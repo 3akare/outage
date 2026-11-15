@@ -282,3 +282,6 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - The `property-suite-full` Stop hook crashed with `ENOENT scandir 'packages/detection'`. Kiro Web runs hooks from the workspace root (`/projects/sandbox`, through the `.kiro` links), one level above the repo, and one path in the script was relative to the current folder instead of the repo root. The script now uses `ROOT`, as every other hook does. A regression test runs the hook from another folder; it fails on the old script and passes on the new one (25 hook tests pass).
 - This is a crash fix, not a change to what the hook checks.
 - When the hook runs again it will report the 2 known `D5_settle_equivalence` failures in the uncommitted detection work. That result is correct, and the work stays uncommitted until it is fixed.
+
+## 2026-11-14 session handoff
+- The unfinished detection engine is pushed to branch `wip/detection-engine`, not `main`, because 2 tests fail. `main` stays green. The handoff, how to start a new session, and every open question for the human are in `docs/session-notes.md`. `docs/status.md` is current.
