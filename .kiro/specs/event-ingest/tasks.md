@@ -28,7 +28,7 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 - [x] 5. Area actor core: SQLite schema, idempotency by primary key, token bucket with detection-first policy, `DetectionPort` (receives detection and state events, per the `detection-engine` amendment) with `NoopDetectionPort`. Tests I2, I4, I6.
   - Depends on: 2
   - Requirements: R5, R6, R7.3, R7.4, R10
-- [ ] 6. Uploader in `apps/android` (Kotlin, JUnit; contract fixtures in `packages/shared/fixtures/`): ordering, batching, back-off with jitter, send-time `elapsedMs`, ack policy, exclusion of simulated and LOST events. Tests I7.
+- [x] 6. Uploader in `apps/android` (Kotlin, JUnit; contract fixtures in `packages/shared/fixtures/`): ordering, batching, back-off with jitter, send-time `elapsedMs`, ack policy, exclusion of simulated and LOST events. Tests I7.
   - Depends on: 2
   - Requirements: R9
 
