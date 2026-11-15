@@ -289,3 +289,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Also kept two earlier uncommitted edits: `outputs.decisions` lists live decisions only, and `closeExpired` runs before `finalizeDays` in the sweep.
 - Added the regression test `test/d5-regress.test.ts` (D5_settle_equivalence). Removed the scratch files `dbg.test.ts` and `dbg2.test.ts`, which had no assertions. Fixed a Biome error in `levels.test.ts`. Ticked tasks 3 to 14 of detection-engine.
 - Verified: 127 detection tests pass three runs in a row, detection-audit 0 errors, traceability check clean, typecheck and lint clean.
+
+## 2026-11-14 D5 merge gates run
+- Ran the four gates on work/detection-d5: D5_settle_equivalence passes, detection-audit has 0 errors (2 warnings), traceability --check is clean, `npm test` passes (150), typecheck and lint are clean.
+- Detection engine tasks 3 to 14 are merge-ready. Not pushed; the human decides the merge.
