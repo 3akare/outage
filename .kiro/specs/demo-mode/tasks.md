@@ -11,7 +11,7 @@ Depends on `detection-engine` (tasks 13, 16), `web-and-area-pages` (task 9), `on
 - [ ] 1. Amend `sensor-android` with `PlugObserver` (foreground receiver) and the `DemoFlag`, plus the Kotlin interface.
   - Depends on: `sensor-android` 9
   - Requirements: R4.2, R5.5
-- [ ] 2. Fixture schema and sanitizer in `tools/sim`, with a forbidden-shape scanner. Test DM6.
+- [x] 2. Fixture schema and sanitizer in `tools/sim`, with a forbidden-shape scanner. Test DM6.
   - Depends on: `detection-engine` 16
   - Requirements: R6
 

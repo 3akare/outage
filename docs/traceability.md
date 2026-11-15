@@ -165,7 +165,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R5 | DM3 | `DM3_no_real_writes` | 4 | planned |
 | R4 | DM4 | `DM4_plan_confirms_and_restores` | 3 | planned |
 | R5.6 | DM5 | `DM5_one_real_drop` | 3 | planned |
-| R6 | DM6 | `DM6_sanitizer` | 2 | planned |
+| R6 | DM6 | `DM6_sanitizer` | 2 | test written (`tools/sim/test/sanitize.test.ts`) |
 | R7 | DM7 | `DM7_replay_in_sync` | 5 | planned |
 
 ## field-telemetry
