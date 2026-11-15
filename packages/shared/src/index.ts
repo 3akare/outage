@@ -6,3 +6,4 @@ export * from './ingest.ts';
 export * from './device-day.ts';
 export * from './field-metrics.ts';
 export * from './field-outage.ts';
+export * from './pairing.ts';

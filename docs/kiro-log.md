@@ -447,3 +447,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - ADRs 0005, 0007, 0008, 0009, 0011, 0014, 0015, 0016 marked ACCEPTED (2026-11-15). ADR 0009 routing: option 1 as its Decision recommends. ADR 0013 stays PROPOSED until the probe Result exists.
 - Spec amendments that follow from the decisions: area-cells R11.4 (one re-hint pass, ADR 0014) and the public-rule note; field-telemetry R5.5 (miss armed count per cell).
 - All open questions in `docs/session-notes.md` resolved and moved to Decisions. `docs/status.md` now lists only human-only items.
+
+## 2026-11-15 feat(shared): pairing code, shard routing and attempts rule [spec:home-watch task:2]
+- Branch `work/home-watch-2-4`. New `packages/shared/src/pairing.ts`: 30-symbol alphabet (no 0, 1, I, L, O, U), 10-symbol code, rejection-sampled generator, `shardFromHash`, pair ids that carry their shard, pure `decideClaim` (one successful claim, 10-minute life, burn after 5 failures, every failure the same), and strict request parsers. `parseDeleteRequest` now accepts an optional `pairIds` list (viewer side of delete-my-data).
+- Decision (ADR 0009 refinement): option 1 stays, but the shard comes from the station's install id, not its parent cell, because a parent hash cannot be turned back into an actor name and moves would orphan rows. Offers and pairs live in a `PairingActor` per shard (task 4). Known gap recorded: five stations per viewer is app-side only.
+- Tests: `H5_pairing_rules` in `packages/shared/test/pairing.test.ts` (properties: alphabet and shard of any generated code, at most one match, none after expiry, burn after five failures). The Worker part of H5 follows in task 4.

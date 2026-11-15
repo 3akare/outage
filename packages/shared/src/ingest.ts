@@ -1,6 +1,7 @@
 // Ingest wire schema and hand-written strict validator (event-ingest R1, R4, R8, R10; design section 5).
 // No schema library (R11.6). Pure functions, no I/O, no clock.
 import { isValidRes8Cell } from './h3.ts';
+import { isPairId, MAX_PAIR_IDS_PER_DELETE } from './pairing.ts';
 
 export const MAX_ELAPSED_MS = 604_800_000; // 7 days (brief, event-time.md)
 
@@ -89,6 +90,8 @@ export interface RegisterResponse {
 export interface DeleteRequest {
   installId: string;
   cells: string[];
+  /** Home Watch pairs this install holds as a viewer (optional, home-watch R7.4). */
+  pairIds?: string[];
 }
 
 const BASE_REQUIRED = ['installId', 'seq', 'type', 'elapsedMs', 'cell', 'confidence', 'timeQuality'] as const;
@@ -202,12 +205,19 @@ export function parseEventsRequest(raw: unknown, maxBatch: number): ParsedReques
   return { ok: true, installId: raw.installId, events: raw.events };
 }
 
-export type ParsedDelete = { ok: true; installId: string; cells: string[] } | { ok: false };
+export type ParsedDelete = { ok: true; installId: string; cells: string[]; pairIds: string[] } | { ok: false };
 
+/** `pairIds` is optional (home-watch R7.4): a viewer lists its pairs so their shards can be cleaned. */
 export function parseDeleteRequest(raw: unknown, maxCells: number): ParsedDelete {
   if (!isRecord(raw)) return { ok: false };
   const keys = Object.keys(raw);
-  if (keys.length !== 2 || !isInstallId(raw.installId) || !Array.isArray(raw.cells)) return { ok: false };
+  const withPairs = Object.hasOwn(raw, 'pairIds');
+  if (keys.length !== (withPairs ? 3 : 2) || !isInstallId(raw.installId) || !Array.isArray(raw.cells)) return { ok: false };
   if (raw.cells.length > maxCells || !raw.cells.every(isValidRes8Cell)) return { ok: false };
-  return { ok: true, installId: raw.installId, cells: raw.cells as string[] };
+  let pairIds: string[] = [];
+  if (withPairs) {
+    if (!Array.isArray(raw.pairIds) || raw.pairIds.length > MAX_PAIR_IDS_PER_DELETE || !raw.pairIds.every(isPairId)) return { ok: false };
+    pairIds = raw.pairIds as string[];
+  }
+  return { ok: true, installId: raw.installId, cells: raw.cells as string[], pairIds };
 }
