@@ -522,3 +522,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Open for the human: `docs/status.md` cites ADR 0020 (tariff bands), which exists only once PR 15 merges.
 
 - Tariff band ADR renumbered again to 0020 after merging main (main has 0019-playwright-visual-check).
+
+## 2026-11-15 chore(merge): merge origin/main (PR 15) into work/home-watch-2-4 [spec:none task:merge]
+- Merged origin/main after PR 15 landed. Only `docs/kiro-log.md` conflicted (two places); kept both sides. `docs/status.md` already lists event-ingest 6 and power-log 3 (ADR 0020). ADRs 0017 to 0020 are contiguous.
+- Checks: `npm test` (150 hook and skill tests plus all workspace suites), lint (4 warnings, not checked against the base), typecheck and `traceability.mjs --check` all exit 0. Not pushed.
