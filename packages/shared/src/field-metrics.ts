@@ -97,10 +97,10 @@ export type FieldGates = {
 };
 
 /** A device-day with more charging than 26 hours is suspect (clock change, design section 8) and is left out of the ratios. */
-export const isSuspectDay = (d: DeviceDay): boolean => d.chargingMs > 26 * 3_600_000;
+export const isSuspectDay = (d: Pick<DeviceDay, 'chargingMs'>): boolean => d.chargingMs > 26 * 3_600_000;
 
 /** Station mode when the station share is larger; normal otherwise (R4.5 reports the two apart). */
-export const dayMode = (d: DeviceDay): 'normal' | 'station' =>
+export const dayMode = (d: Pick<DeviceDay, 'mode'>): 'normal' | 'station' =>
   d.mode.stationMs > d.mode.normalMs ? 'station' : 'normal';
 
 type PerDevice = { installId: string; maker: Maker; exemption: boolean; chargingMs: number; armedMs: number };

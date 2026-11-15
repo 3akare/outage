@@ -15,7 +15,7 @@ Run Judge mode end to end and check every screen:
 
 ## Visual check (web-and-area-pages task 11)
 
-Repeat with `bash workers/api/visual/run.sh` (ADR 0017).
+Repeat with `bash workers/api/visual/run.sh` (ADR 0020).
 
 Serve: `cd workers/api && npx wrangler dev` (http://localhost:8787). With the Playwright power, resize to 390 x 844 (`browser_resize`), then for each URL take a screenshot and a snapshot:
 

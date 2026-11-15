@@ -16,6 +16,9 @@ export const CONFIG = {
   LAST_SEEN_REFRESH_MS: 900_000, // rewrite an unchanged armed row only when its last_seen is this stale (area-cells expiry)
   MAX_DELETE_CELLS: 100, // cells a delete request may list
   REVOCATION_TTL_MS: 30 * 86_400_000, // ADR 0003 addendum: revoked ids are forgotten after 30 days
+  TELEMETRY_PER_INSTALL_PER_HOUR: 6, // field-telemetry R3.3: a phone uploads about once a day, plus retries
+  TELEMETRY_RETENTION_MS: 90 * 86_400_000, // field-telemetry R1.5
+  TELEMETRY_SILENT_LOOKBACK_DAYS: 7,
   REVOCATION_CACHE_MS: 15_000, // Worker isolate caches the revoked set this long (one registry call per refresh)
 } as const;
 

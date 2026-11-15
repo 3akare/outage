@@ -5,8 +5,11 @@ import {
   type DeleteRequest,
   type EventResult,
   type EventsResponse,
+  type DeviceDay,
+  type FieldDump,
   isPermanent,
   parseDeleteRequest,
+  parseDeviceDay,
   parseEventsRequest,
   type RegisterResponse,
   type RejectCode,
@@ -18,6 +21,7 @@ import type { AreaEvent, AreaIngestInput, AreaResponse } from './area-core.ts';
 import type { Tunables } from './config.ts';
 import { eventTimeMs } from './eventtime.ts';
 import type { RegisterLimiter } from './limiter.ts';
+import { dayAcceptable, DAY_PATTERN } from './telemetry/core.ts';
 import { mintInstallId, mintToken, verifyToken } from './token.ts';
 
 export interface AreaGateway {
@@ -29,8 +33,19 @@ export interface RegistryGateway {
   revoke(installId: string): Promise<void>;
   stats(): Promise<unknown>;
 }
+/** Field telemetry (field-telemetry task 5): device-day uploads, delete-my-data, and the admin read. */
+export interface TelemetryGateway {
+  putDay(day: DeviceDay): Promise<void>;
+  deleteInstall(installId: string): Promise<number>;
+  field(day: string): Promise<FieldDump | null>;
+}
 export interface Deps {
   secret: string | undefined;
+  /** FIELD_READ_TOKEN: protects GET /v1/admin/field/:day. Unset means the endpoint is off. */
+  fieldToken?: string | undefined;
+  telemetry: TelemetryGateway;
+  /** Per-install upload budget for POST /v1/telemetry (R3.3); keyed by install ID, memory only. */
+  telemetryLimiter: RegisterLimiter;
   now(): number;
   randomBytes(n: number): Uint8Array;
   /** An opaque, already-hashed key for the register limit. Must not be logged or stored. */
@@ -51,6 +66,7 @@ const retryHeader = (ms: number) => ({ 'retry-after': String(Math.max(1, Math.ce
 
 export async function handleRequest(req: Request, deps: Deps): Promise<Response> {
   const { pathname } = new URL(req.url);
+  if (pathname.startsWith(ADMIN_FIELD_PREFIX)) return adminRoute(req, deps, pathname.slice(ADMIN_FIELD_PREFIX.length));
   const route = ROUTES[pathname];
   if (!route) return fail(404, 'not_found');
   if (req.method !== route.method) return fail(405, 'method_not_allowed', { allow: route.method });
@@ -217,12 +233,63 @@ async function deleteData(req: Request, deps: Deps): Promise<Response> {
   const parents = [...new Set(cells.map(res7Parent))];
   let rows = 0;
   try {
-    const counts = await Promise.all(parents.map((p) => deps.area.deleteInstall(p, installId)));
-    rows = counts.reduce((a, b) => a + b, 0);
+    const [counts, telemetryRows] = await Promise.all([
+      Promise.all(parents.map((p) => deps.area.deleteInstall(p, installId))),
+      deps.telemetry.deleteInstall(installId), // device-day rows keyed by the install ID (field-telemetry R1.4)
+    ]);
+    rows = counts.reduce((a, b) => a + b, 0) + telemetryRows;
   } catch {
     return fail(502, 'delete_incomplete'); // the phone retries; the token is revoked but still accepted here
   }
   return json(200, { deleted: true, areas: parents.length, rows });
+}
+
+// ---- POST /v1/telemetry ----------------------------------------------------------------------------------------
+
+async function telemetry(req: Request, deps: Deps): Promise<Response> {
+  const body = await readJson(req, deps);
+  if (!body.ok) return body.res;
+  const parsed = parseDeviceDay(body.value); // R3.4: any field outside the schema is rejected; R2.3: at most 8 KiB
+  if (!parsed.ok) {
+    if (parsed.code === 'TOO_LARGE') return fail(413, 'body_too_large');
+    return json(400, { error: 'malformed', code: parsed.code, ...(parsed.path ? { path: parsed.path } : {}) });
+  }
+  const d = parsed.value;
+  if (!(await authorized(req, d.installId, deps, true))) return fail(401, 'unauthorized'); // revoked installs upload nothing
+  const now = deps.now();
+  if (!dayAcceptable(d.day, now, deps.cfg.TELEMETRY_RETENTION_MS)) return fail(400, 'bad_day');
+  // A repeated upload is answered as accepted (R3.1). Only a flood from one install is limited (R3.3).
+  const verdict = deps.telemetryLimiter.allow(d.installId, now);
+  if (!verdict.ok) return fail(429, 'rate_limited', retryHeader(verdict.retryAfterMs));
+  await deps.telemetry.putDay(d);
+  return json(200, { status: 'accepted' });
+}
+
+// ---- GET /v1/admin/field/:day ----------------------------------------------------------------------------------
+
+const ADMIN_FIELD_PREFIX = '/v1/admin/field/';
+const sha256 = async (s: string) => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
+
+/** Compares digests of both values, so the comparison time does not depend on where they differ or on the length. */
+async function sameSecret(given: string, expected: string): Promise<boolean> {
+  const [a, b] = await Promise.all([sha256(given), sha256(expected)]);
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
+async function adminRoute(req: Request, deps: Deps, day: string): Promise<Response> {
+  if (req.method !== 'GET') return fail(405, 'method_not_allowed', { allow: 'GET' });
+  if (!deps.fieldToken) return fail(500, 'server_not_configured'); // no value is ever printed
+  const given = bearer(req);
+  if (given === '' || !(await sameSecret(given, deps.fieldToken))) return fail(401, 'unauthorized');
+  if (!DAY_PATTERN.test(day)) return fail(400, 'bad_day');
+  try {
+    const dump = await deps.telemetry.field(day);
+    return dump ? json(200, dump) : fail(400, 'bad_day');
+  } catch {
+    return fail(503, 'unavailable');
+  }
 }
 
 // ---- GET /v1/stats ---------------------------------------------------------------------------------------------
@@ -235,5 +302,6 @@ const ROUTES: Record<string, { method: string; needsSecret: boolean; handler: (r
   '/v1/register': { method: 'POST', needsSecret: true, handler: register },
   '/v1/events': { method: 'POST', needsSecret: true, handler: events },
   '/v1/delete': { method: 'POST', needsSecret: true, handler: deleteData },
+  '/v1/telemetry': { method: 'POST', needsSecret: true, handler: telemetry },
   '/v1/stats': { method: 'GET', needsSecret: false, handler: stats },
 };

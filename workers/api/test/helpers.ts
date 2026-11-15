@@ -6,9 +6,12 @@ import { CONFIG, type Tunables } from '../src/config.ts';
 import type { Deps } from '../src/handlers.ts';
 import { RegisterLimiter } from '../src/limiter.ts';
 import { NoopDetectionPort } from '../src/ports.ts';
+import { fieldDump, uploadDay } from '../src/telemetry/core.ts';
 import { mintToken } from '../src/token.ts';
+import { MemoryTelemetryStore } from './telemetry-store.ts';
 
 export const SECRET = 'test-secret';
+export const FIELD_BEARER = 'field-test-bearer';
 export const ID = 'kg4yq7mxwb2ndpr3tfhj5vcsaz';
 export const CELL = latLngToCell(6.5244, 3.3792, 8);
 export const PARENT = res7Parent(CELL);
@@ -17,7 +20,7 @@ export const SIBLINGS = cellToChildren(PARENT, 8);
 export const NOW = 1_800_000_000_000;
 
 /** Roomy limits so properties about idempotency and write-behind are not confused with rate limiting. */
-export const ROOMY: Tunables = { ...CONFIG, BUCKET_CAPACITY: 1_000_000, MAX_BATCH_EVENTS: 1000, MAX_BODY_BYTES: 4_000_000 };
+export const ROOMY: Tunables = { ...CONFIG, BUCKET_CAPACITY: 1_000_000, MAX_BATCH_EVENTS: 1000, MAX_BODY_BYTES: 4_000_000, TELEMETRY_PER_INSTALL_PER_HOUR: 1_000_000 };
 
 export class MemoryStore implements AreaStore {
   detection = new Map<string, DetectionRow>();
@@ -84,7 +87,9 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
   const areas = new Map<string, ReturnType<typeof makeCore>>();
   const areaCalls: { parent: string; input: AreaIngestInput }[] = [];
   const revoked = new Set<string>();
+  const telemetryStore = new MemoryTelemetryStore();
   const world = {
+    telemetryStore,
     now: NOW,
     failParents: new Set<string>(),
     areaCalls,
@@ -102,6 +107,19 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
   };
   world.deps = {
     secret: secret ?? undefined,
+    fieldToken: FIELD_BEARER as string | undefined,
+    telemetryLimiter: new RegisterLimiter(cfg.TELEMETRY_PER_INSTALL_PER_HOUR),
+    telemetry: {
+      async putDay(d) {
+        uploadDay(telemetryStore, d, world.now);
+      },
+      async deleteInstall(id) {
+        return telemetryStore.deleteInstall(id);
+      },
+      async field(day) {
+        return fieldDump(telemetryStore, day, cfg.TELEMETRY_SILENT_LOOKBACK_DAYS);
+      },
+    },
     now: () => world.now,
     randomBytes: (n) => new Uint8Array(n).map((_, i) => (i * 37 + world.now) & 255),
     sourceKey: (req) => req.headers.get('x-source') ?? 'src',

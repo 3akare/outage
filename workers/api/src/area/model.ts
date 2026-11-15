@@ -40,7 +40,7 @@ export interface Outbox {
   removals: RemovalRequest[];
   pushes: PassedPush[];
   publish: PublishBatch;
-  /** Field-telemetry records. Nothing consumes them until the telemetry actor exists (field-telemetry task 5). */
+  /** Field-telemetry records, sent to the telemetry actor (field-telemetry task 5). */
   fieldRecords: FieldRecord[];
 }
 const emptyOutbox = (): Outbox => ({
@@ -164,6 +164,11 @@ export class AreaModel implements DetectionPort {
   /** A publish that failed goes back to the outbox; the newest put or remove per scope wins (R8.2). */
   requeuePublish(batch: PublishBatch): void {
     this.outbox.publish = mergePublish(batch, this.outbox.publish);
+  }
+
+  /** Records that could not be delivered go back in front, so the newest still comes last and wins. */
+  requeueFieldRecords(records: FieldRecord[]): void {
+    this.outbox.fieldRecords = [...records, ...this.outbox.fieldRecords];
   }
 
   drainOutbox(): Outbox {
