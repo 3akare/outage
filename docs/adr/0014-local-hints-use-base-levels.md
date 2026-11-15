@@ -1,6 +1,6 @@
 # ADR 0014: Same-parent hints use base levels, with one re-hint pass
 
-Status: PROPOSED (2026-11-14). Needs the human: it bends R11.4 ("each scope at most once per request").
+Status: ACCEPTED 2026-11-15, under the human's blanket approval. R11.4 is amended to allow the one re-hint pass (area-cells requirements).
 
 ## Context
 area-cells R7.5 passes neighbor and linked levels to the engine as hints. For cells in the same parent the area actor reads them from its own scopes. The first reducer read the levels of the previous evaluation. Property A12 (deferred state-only batches give the same decisions as evaluating every batch) then failed: fast-check seed 1278203691, counterexample `n 4, dropping 3, cells c1 and c2, cut at 6`. Eager evaluation runs more rounds, so a neighbor's level reaches a cell one round earlier, and the cell gets a RAISED decision that the deferred run does not have. The design's claim in section 9 ("every scope is pure") ignored the hint context.

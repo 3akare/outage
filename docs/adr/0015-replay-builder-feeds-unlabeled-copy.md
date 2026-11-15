@@ -1,6 +1,6 @@
 # ADR 0015: The replay builder feeds the engine an unlabeled copy of simulated events
 
-Status: PROPOSED (2026-11-14). Needs the human's confirmation.
+Status: ACCEPTED 2026-11-15, under the human's blanket approval. The `simulated` flag stays on every stored and served item; only the throwaway in-memory copy drops it.
 
 ## Context
 Judge mode needs frames produced by the real detection engine (web-and-area-pages R6.6, W5). The replay fixture is simulated data, and every simulated event carries `simulated: true` (testing.md, demo-mode steering). The engine ignores every event marked `simulated` (detection-engine R14, property P9), so feeding the fixture as it is gives a replay where nothing ever happens.

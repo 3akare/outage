@@ -53,7 +53,7 @@ Telemetry is opt-in and holds no location.
 2. THE report SHALL classify an outage as a false alarm when it was Confirmed, it has at least one label, and all labels are "No".
 3. THE report SHALL classify an outage as confirmed-true when it has at least one "Yes".
 4. THE report SHALL classify the rest as inconclusive.
-5. THE report SHALL list each miss with the number of armed phones in its scope at the time, without any identifier.
+5. THE report SHALL list each miss with the number of armed phones in its cell at the time (per cell, decided 2026-11-15), without any identifier.
 
 ### R6 Daily report file
 1. THE system SHALL produce `docs/field/YYYY-MM-DD.md` for each day with data.

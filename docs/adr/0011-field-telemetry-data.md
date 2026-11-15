@@ -1,6 +1,6 @@
 # ADR 0011: Field telemetry data and the scheduled run
 
-Status: ACCEPTED (2026-11-14) by delegation. The stored data is new; the human should confirm.
+Status: ACCEPTED 2026-11-15, under the human's blanket approval. The stored data is as listed below; delete-my-data covers it.
 
 ## Context
 The field test needs armed time, delays, alarm outcomes and label-based false alarms and misses. The scheduled job must read them from the server. The privacy rules say to ask before changing what is stored.

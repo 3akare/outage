@@ -1,6 +1,6 @@
 # ADR 0007: What the public map may show
 
-Status: ACCEPTED (2026-11-14) by delegation. This is a privacy rule; the human should confirm the number 3.
+Status: ACCEPTED 2026-11-15, under the human's blanket approval. The floor of 3 members stays; it is a privacy rule and does not change.
 
 ## Context
 `privacy.md` and the brief: never show a boundary that reveals one sensor's location. A res-8 cell is about 0.74 km². Publishing its outline and a status when exactly one phone lives there tells a viewer where that phone is, to within that area, and the status change timing identifies its owner's power events.

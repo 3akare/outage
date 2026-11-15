@@ -1,6 +1,6 @@
 # ADR 0005: Detection parameters the brief left open
 
-Status: ACCEPTED as starting values (2026-11-14) by delegation, confirmed by the human the same day ("cautious for now, adjust later with real data"). Any change later needs the human.
+Status: ACCEPTED 2026-11-15. Starting values accepted 2026-11-14 by delegation and confirmed by the human the same day ("cautious for now, adjust later with real data"); accepted again under the blanket approval of 2026-11-15. Later changes are decided by agents from field data and recorded here.
 
 ## Context
 Part G of the brief fixes W = 90 s, the Possible and Confirmed rules, the weight cut of 0.5, the 12 h unknown end and the 10 min push age. It leaves undefined: the weight formula, the prior baseline, how the EMA works, the restore-delay prior, the stale-armed period, and how P8 meets an hour-of-day baseline. The engine cannot be written or tested until they have values.

@@ -4,16 +4,17 @@ Read by the session-context hook. Keep the four labelled lines below on one line
 
 Current milestone: 1 Feasibility probe (waiting on the Samsung data) and 2 Detection, started in parallel
 Gate: armed time >= 90% on one phone, restore delay p95 <= 60 s, Tecno or Infinix works after battery exemption
-Next: web-and-area-pages task 11 visual check at 390 x 844 (code parts done; checklist in .kiro/steering/judge-demo.md needs a browser against a running `wrangler dev`). area-cells task 12 still needs the ADR 0006 startup and CPU numbers. Detection engine tasks 3 to 14 and area-cells 4 to 12 are merged into main (PR #2, c026f46, checks green); the detection Kiro IDE correctness pass (task 15) is open. detection-engine task 17 (benchmark) done on work/detection-benchmark: 500 live events p95 about 3.7 ms, 5,000 events 14 to 179 ms (ADR 0005 addendum). web-and-area-pages tasks 1, 7 to 10 done. feasibility-probe task 8 still needs the human to run docs/probe-checklist.md on real phones (needs the probe APK and the deployed Worker with PROBE_TOKEN), then task 9 (summary and ADR 0013). Open for the human: ADR 0014 (re-hint pass vs R11.4), ADR 0015 (replay builder), ADR 0016 (Judge page service worker, PROPOSED), see docs/session-notes.md. field-telemetry tasks 1 to 3 done on branch work/field-telemetry-1-3 (DeviceDay schema, metrics and gates, OUTAGE_RECORD and MISS); next the alerts server tasks.
+Next: the human reruns the probe with probe-v0.0.2 on the Samsung (and a Tecno or Infinix phone), and agents continue with unblocked tasks (web-and-area-pages task 11 visual check, area-cells task 12 ADR 0006 numbers, field-telemetry tasks 4 to 6, detection-engine task 15 waits for the Kiro IDE pass). All ADRs 0005 to 0016 except 0013 are ACCEPTED under the human's blanket approval of 2026-11-15; ADR 0013 waits for the probe Result.
 Active specs: feasibility-probe, area-cells, web-and-area-pages, field-telemetry
 
 ## Done
 - Steering (15 files), 13 specs with requirements, design and tasks, ADRs 0001 to 0012 (0012 = native Kotlin stack), hooks and tests for the hook scripts, three skills (oem-battery-guide, field-report, release-apk) with scripts and tests, three custom agents (sensor-engineer, detection-auditor, pitch-writer), MCP config (cloudflare-docs, context7 live; github disabled until a token exists), the grid-sensing Power, spec-lint. 148 tests pass with `npm test`.
 
 ## Waiting for the human
-- Trust the workspace and open the repo as the project root, or agents, steering, skills and MCP will not load. Optional: set `GITHUB_MCP_TOKEN` and enable the github server. Confirm `claude-opus-4.8` is available. License: MIT (temporary, chosen by the human; revisit before submission).
-- Analyze Requirements on each spec (IDE or CLI), Correctness pass on detection-engine (IDE).
-- Create `.kiroignore` (the write is denied for the agent by a permission rule, source kiro-scope:kiroignore; contents in `docs/kiroignore.suggested`).
+Blanket approval given 2026-11-15: agents decide and record in ADRs. Only things an agent physically cannot do remain.
+- Run the probe on real phones: Samsung rerun with probe-v0.0.2, and a Tecno or Infinix phone (`docs/probe-checklist.md`).
 - Verify the OEM battery steps on real phones (oem-battery-guide `verified[]` is empty for every maker).
-- Review ADR 0005 (parameters), 0007 (public floor), 0008 (Firebase, push data), 0009 (pairing data), 0011 (telemetry data).
-- Approve dependencies when a task asks; set secrets when a task asks.
+- Create the Cloudflare and Firebase accounts and set their secrets (Wrangler secrets, GitHub Actions secrets, `GITHUB_MCP_TOKEN` if the github MCP server is wanted).
+- Run the Kiro IDE correctness pass for detection-engine task 15.
+- Trust the workspace in Kiro and open the repo as the project root, or agents, steering, skills and MCP will not load.
+- Create `.kiroignore` (the agent write is denied by a permission rule; contents in `docs/kiroignore.suggested`).
