@@ -354,3 +354,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Merged `origin/main` into `work/detection-d5`. Two doc conflicts (`docs/kiro-log.md`, `docs/status.md`) were resolved by keeping both log entries and the branch status. No code changed and no threshold, dependency or stored data changed.
 - Gates were rerun on the merged tree and all pass. Output is in `/tmp/gates.log`.
 - Open for the human: push the branch and merge PR #1 into `main` (a sub-agent cannot push). ADRs 0014 and 0015 are still open.
+
+## 2026-11-15 audit blockers fixed on work/detection-d5
+- `tail(k, mu)` returned 0 instead of about 1 when `k < mu` and the first term underflowed (`tail(1,800)`, `tail(3,5000)`). It now returns 1 when `k <= mu` and the first term is below 1e-300, and still returns 0 for `k > mu`. This also fixed `P1_single_unplug_never_alerts` at 2000 runs. No threshold changed. Tests: `D2_poisson_tail_accuracy large mu` in `tail.test.ts`.
+- `D5_settle_equivalence` got a 120 s test timeout (2000 runs take about 16 s). Run count and assertions are unchanged.
+- `design.md` section 8 now says a settled outage closes at `start + 12 h`, matching `closeAt` in `settle.ts`.
+- CI `checks.yml` runs the detection suite with `FC_NUM_RUNS=2000`, as `testing.md` states.

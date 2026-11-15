@@ -249,7 +249,7 @@ Summing upward avoids subtracting numbers close to 1, so values like 1e-12 keep 
 ## 8. Settling and bounds
 
 - **Horizon** `H = 7 days + 12 h`. The ingest Worker rejects events older than 7 days, and an outage stays open at most 12 h, so nothing older than `H` can change a decision.
-- **Settle step** (end of each `evaluate`): for each outage whose end (restore time, or start + 12 h) is older than `nowMs - H`, move it to `ARCHIVE_OUTAGE` with its explanation, and drop events older than `nowMs - H` after folding their day's counts and exposure into `BASELINE_STATS` and their REPLUG delays into `DELAY_SAMPLE` (cap 500, newest first).
+- **Settle step** (end of each `evaluate`): for each outage whose close time (`start + 12 h` for both restored and unknown-end outages, so the restore time never shortens how long it stays live) is older than `nowMs - H`, move it to `ARCHIVE_OUTAGE` with its explanation, and drop events older than `nowMs - H` after folding their day's counts and exposure into `BASELINE_STATS` and their REPLUG delays into `DELAY_SAMPLE` (cap 500, newest first).
 - Settle uses `nowMs`, so it is a function of the clock input only.
 - Size: 100 installs, 7.5 days, ~10 events a day each is 7,500 events at ~60 bytes serialized, about 0.5 MB; armed intervals add to that. The test (R16.6) checks 1 MB. The cell actor splits storage by install and by part (baseline, archive, live events).
 - Equivalence (D5): evaluating with settling equals evaluating the same inputs without ever settling, for every decision whose time is inside the horizon.

@@ -85,3 +85,24 @@ describe('D2_poisson_tail_accuracy', () => {
     expect(() => lnGamma(0)).toThrow(RangeError);
   });
 });
+
+describe('D2_poisson_tail_accuracy large mu', () => {
+  it('D2_poisson_tail_accuracy returns 1 when k is far below mu and the first term underflows', () => {
+    for (const [k, mu] of [[1, 800], [3, 1000], [3, 5000], [5, 450000]] as const) {
+      expect(Math.abs(tail(k, mu) - 1)).toBeLessThan(1e-9);
+    }
+  });
+
+  it('D2_poisson_tail_accuracy is monotone in k for large mu', () => {
+    fc.assert(
+      fc.property(fc.integer({ min: 1, max: 450000 }), fc.integer({ min: 1, max: 30 }), (mu, k) => {
+        const a = tail(k, mu);
+        const b = tail(k + 1, mu);
+        expect(a).toBeGreaterThanOrEqual(b - 1e-12);
+        expect(a).toBeLessThanOrEqual(1);
+        return true;
+      }),
+      { numRuns: NUM_RUNS },
+    );
+  });
+});

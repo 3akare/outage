@@ -81,7 +81,7 @@ describe('D5_settle_equivalence', () => {
       }),
       { numRuns: NUM_RUNS },
     );
-  });
+  }, 120_000); // 2000 runs of a 12-day replay take about 16 s; the 5 s default only fits the CI run count
 
   it('D5_settle_equivalence: a second outage three weeks later sees the same baseline as the unsettled run', () => {
     const phones = ids(10);

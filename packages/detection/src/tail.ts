@@ -33,7 +33,9 @@ export function tail(k: number, mu: number): number {
   if (k === 0) return 1;
   if (mu === 0) return 0;
   const first = Math.exp(-mu + k * Math.log(mu) - lnFactorial(k));
-  if (first === 0 && k > mu) return 0; // underflow far in the tail: below any threshold (design section 10)
+  // Underflow of the first term. Far in the upper tail (k > mu) the answer is below any threshold (design section 10).
+  // Below the mean (k <= mu) every lower term is smaller still, so P(X < k) is negligible and the tail is 1.
+  if (first < 1e-300) return k > mu ? 0 : 1;
   let term = first;
   let sum = 0;
   let i = k;

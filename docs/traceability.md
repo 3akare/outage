@@ -60,7 +60,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R5.6 | P11 | `P11_sparse_never_confirms` | 9 | planned |
 | R12.2 | P12 | `P12_no_stale_push` | 13 | planned |
 | R1.3 | D1 | `D1_incremental_equals_sweep` | follow-up if needed | planned |
-| R5.4 | D2 | `D2_poisson_tail_accuracy` | 4 | planned |
+| R5.4 | D2 | `D2_poisson_tail_accuracy` (incl. large mu) | 4 | planned |
 | R13 | D3 | `D3_explanations_complete` | 13 | planned |
 | R3.5, R4.3, R8 | D4 | `D4_labels` | 7 | planned |
 | R16 | D5 | `D5_settle_equivalence` | 14 | planned |
