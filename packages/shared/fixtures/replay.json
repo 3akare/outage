@@ -1,0 +1,560 @@
+{
+  "simulated": true,
+  "label": "Simulated replay",
+  "recordedDevices": 0,
+  "source": "SYNTHETIC",
+  "durationMs": 4518000,
+  "phones": [
+    {
+      "alias": "P1",
+      "role": "SIMULATED_NEIGHBOR",
+      "simulated": true
+    },
+    {
+      "alias": "P2",
+      "role": "SIMULATED_NEIGHBOR",
+      "simulated": true
+    },
+    {
+      "alias": "P3",
+      "role": "SIMULATED_NEIGHBOR",
+      "simulated": true
+    },
+    {
+      "alias": "P4",
+      "role": "SIMULATED_NEIGHBOR",
+      "simulated": true
+    },
+    {
+      "alias": "P5",
+      "role": "SIMULATED_NEIGHBOR",
+      "simulated": true
+    },
+    {
+      "alias": "P6",
+      "role": "SIMULATED_NEIGHBOR",
+      "simulated": true
+    },
+    {
+      "alias": "P7",
+      "role": "SIMULATED_NEIGHBOR",
+      "simulated": true
+    },
+    {
+      "alias": "P8",
+      "role": "SIMULATED_NEIGHBOR",
+      "simulated": true
+    },
+    {
+      "alias": "P9",
+      "role": "SIMULATED_NEIGHBOR",
+      "simulated": true
+    },
+    {
+      "alias": "P10",
+      "role": "SIMULATED_NEIGHBOR",
+      "simulated": true
+    }
+  ],
+  "frames": [
+    {
+      "tMs": 0,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P1",
+          "type": "ARMED"
+        }
+      ]
+    },
+    {
+      "tMs": 1000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P2",
+          "type": "ARMED"
+        }
+      ]
+    },
+    {
+      "tMs": 2000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P3",
+          "type": "ARMED"
+        }
+      ]
+    },
+    {
+      "tMs": 3000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P4",
+          "type": "ARMED"
+        }
+      ]
+    },
+    {
+      "tMs": 4000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P5",
+          "type": "ARMED"
+        }
+      ]
+    },
+    {
+      "tMs": 5000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P6",
+          "type": "ARMED"
+        }
+      ]
+    },
+    {
+      "tMs": 6000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P7",
+          "type": "ARMED"
+        }
+      ]
+    },
+    {
+      "tMs": 7000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P8",
+          "type": "ARMED"
+        }
+      ]
+    },
+    {
+      "tMs": 8000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P9",
+          "type": "ARMED"
+        }
+      ]
+    },
+    {
+      "tMs": 9000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P10",
+          "type": "ARMED"
+        }
+      ]
+    },
+    {
+      "tMs": 600000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "SPOT_ONLY"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P10",
+          "type": "UNPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 840000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P10",
+          "type": "REPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 1800000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P1",
+          "type": "UNPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 1800180,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "NORMAL"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P2",
+          "type": "UNPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 1800420,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "POSSIBLE"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P3",
+          "type": "UNPLUG"
+        }
+      ],
+      "explanation": {
+        "k": 3,
+        "n": 10,
+        "excludedNoisy": 0,
+        "lambdaPerSec": 0.0005555555555555556,
+        "muValue": 0.5,
+        "p": 0.014387677966970686,
+        "windowMs": 90000,
+        "thresholds": {
+          "possible": {
+            "minK": 2,
+            "maxP": 0.05
+          },
+          "confirmed": {
+            "minK": 3,
+            "maxP": 0.001
+          },
+          "minArmedForConfirm": 3,
+          "weightCut": 0.5
+        },
+        "confidence": {
+          "high": 3,
+          "low": 0
+        }
+      }
+    },
+    {
+      "tMs": 1800650,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "POSSIBLE"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P4",
+          "type": "UNPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 1800900,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "CONFIRMED"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P5",
+          "type": "UNPLUG"
+        }
+      ],
+      "explanation": {
+        "k": 5,
+        "n": 10,
+        "excludedNoisy": 0,
+        "lambdaPerSec": 0.0005555555555555556,
+        "muValue": 0.5,
+        "p": 0.00017211562995584083,
+        "windowMs": 90000,
+        "thresholds": {
+          "possible": {
+            "minK": 2,
+            "maxP": 0.05
+          },
+          "confirmed": {
+            "minK": 3,
+            "maxP": 0.001
+          },
+          "minArmedForConfirm": 3,
+          "weightCut": 0.5
+        },
+        "confidence": {
+          "high": 5,
+          "low": 0
+        }
+      }
+    },
+    {
+      "tMs": 1801300,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "CONFIRMED"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P6",
+          "type": "UNPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 1801700,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "CONFIRMED"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P7",
+          "type": "UNPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 4500000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "CONFIRMED"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P1",
+          "type": "REPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 4503000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "CONFIRMED"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P2",
+          "type": "REPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 4506000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "CONFIRMED"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P3",
+          "type": "REPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 4509000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "RESTORED"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P4",
+          "type": "REPLUG"
+        }
+      ],
+      "explanation": {
+        "k": 5,
+        "n": 10,
+        "excludedNoisy": 0,
+        "lambdaPerSec": 0.0005555555555555556,
+        "muValue": 0.5,
+        "p": 0.00017211562995584083,
+        "windowMs": 90000,
+        "thresholds": {
+          "possible": {
+            "minK": 2,
+            "maxP": 0.05
+          },
+          "confirmed": {
+            "minK": 3,
+            "maxP": 0.001
+          },
+          "minArmedForConfirm": 3,
+          "weightCut": 0.5
+        },
+        "confidence": {
+          "high": 9,
+          "low": 0
+        },
+        "restore": {
+          "d": 7,
+          "quorum": 4,
+          "replugs": 4,
+          "wrMs": 150000,
+          "p95SampleCount": 1,
+          "p95Ms": 60000
+        }
+      }
+    },
+    {
+      "tMs": 4512000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "RESTORED"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P5",
+          "type": "REPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 4515000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "RESTORED"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P6",
+          "type": "REPLUG"
+        }
+      ]
+    },
+    {
+      "tMs": 4518000,
+      "simulated": true,
+      "cells": [
+        {
+          "cell": "87589c986ffffff",
+          "state": "RESTORED"
+        }
+      ],
+      "events": [
+        {
+          "alias": "P7",
+          "type": "REPLUG"
+        }
+      ]
+    }
+  ]
+}

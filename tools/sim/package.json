@@ -1,0 +1,20 @@
+{
+  "name": "@outage/sim",
+  "private": true,
+  "type": "module",
+  "description": "Simulator and replay builder. Build time only; calls packages/detection as a library.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest --run",
+    "build:replay": "node --experimental-strip-types scripts/build-replay.mjs"
+  },
+  "dependencies": {
+    "@outage/detection": "*",
+    "@outage/shared": "*"
+  },
+  "devDependencies": {
+    "fast-check": "^4.10.2",
+    "typescript": "~6.0.3",
+    "vitest": "^5.1.0"
+  }
+}

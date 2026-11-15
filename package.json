@@ -1,7 +1,7 @@
 {
   "name": "outage",
   "private": true,
-  "description": "Your phone charger is a power-grid sensor. Workspaces: packages/* and workers/*. tools/probe has its own installs.",
+  "description": "Your phone charger is a power-grid sensor. Workspaces: packages/*, workers/* and tools/sim. tools/probe has its own installs.",
   "scripts": {
     "test": "node --test \".kiro/scripts/test/*.test.mjs\" \".kiro/skills/test/*.test.mjs\" \".kiro/skills/*/scripts/test/*.test.mjs\" \"powers/*/skills/*/scripts/test/*.test.mjs\" && npm run test:ts",
     "test:guide": "node .kiro/skills/oem-battery-guide/scripts/validate-guide.mjs",
@@ -20,6 +20,7 @@
   },
   "workspaces": [
     "packages/*",
-    "workers/*"
+    "workers/*",
+    "tools/sim"
   ]
 }

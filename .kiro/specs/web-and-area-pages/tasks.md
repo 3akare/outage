@@ -39,7 +39,7 @@ Depends on `area-cells` (tasks 8, 10), `detection-engine` (tasks 13, 16), `event
 - [x] 8. Routes and JSON APIs, 405 handling, sitemap and robots. Tests W7.
   - Depends on: 4, 5, 6, 7
   - Requirements: R1, R9, R11
-- [ ] 9. Replay builder in `tools/sim`: fixture to `replay.json` through the engine, honest device count, source flag. Test W5.
+- [x] 9. Replay builder in `tools/sim`: fixture to `replay.json` through the engine, honest device count, source flag. Test W5.
   - Depends on: `detection-engine` 16
   - Requirements: R6.4, R6.6
 
