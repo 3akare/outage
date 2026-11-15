@@ -45,7 +45,7 @@ export function evaluate(
   const live = decisions.filter((d) => !settled.archivedIds.has(d.outageId));
   const next: EngineState = { ...settled.state, decisions: live };
   const outputs: EngineOutputs = {
-    decisions,
+    decisions: live,
     changes,
     pushes,
     areaStatus: areaStatus(decisions, sw, input.nowMs, params),

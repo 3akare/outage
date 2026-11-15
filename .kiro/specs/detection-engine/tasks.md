@@ -19,52 +19,52 @@ Kiro IDE is needed for task 15 (Correctness pass). Everything else can run in Ki
 
 ## Wave 2 (needs 2)
 
-- [ ] 3. `params.ts` with every default from ADR 0005 and a validator that rejects impossible values (for example W <= 0, p outside 0..1).
+- [x] 3. `params.ts` with every default from ADR 0005 and a validator that rejects impossible values (for example W <= 0, p outside 0..1).
   - Depends on: 2
   - Requirements: R1.4
-- [ ] 4. `tail(k, mu)` in log space with upward summation, plus the `lnGamma` helper. Tests D2 with a high-precision reference.
+- [x] 4. `tail(k, mu)` in log space with upward summation, plus the `lnGamma` helper. Tests D2 with a high-precision reference.
   - Depends on: 2
   - Requirements: R5.4
-- [ ] 5. Time helpers: local hour and day with a fixed offset, no environment time zone. Unit tests across day boundaries and negative offsets.
+- [x] 5. Time helpers: local hour and day with a fixed offset, no environment time zone. Unit tests across day boundaries and negative offsets.
   - Depends on: 2
   - Requirements: R4.6, R15
 
 ## Wave 3 (needs 1, 3)
 
-- [ ] 6. Merge and normalize: identity de-duplication, total order, simulated filtering, malformed rejection, label attachment. Tests P4, P9 (input side).
+- [x] 6. Merge and normalize: identity de-duplication, total order, simulated filtering, malformed rejection, label attachment. Tests P4, P9 (input side).
   - Depends on: 1, 3
   - Requirements: R2, R14
-- [ ] 7. Armed intervals from events, stale expiry, and weights. Tests P10 (weight part), D4 (weight side).
+- [x] 7. Armed intervals from events, stale expiry, and weights. Tests P10 (weight part), D4 (weight side).
   - Depends on: 6, 5
   - Requirements: R3
-- [ ] 8. Baseline: decayed counts and exposure per hour, `lambdaFor(hour, day)` using only earlier days, and p95 of delays with the prior.
+- [x] 8. Baseline: decayed counts and exposure per hour, `lambdaFor(hour, day)` using only earlier days, and p95 of delays with the prior.
   - Depends on: 6, 5
   - Requirements: R4, R10.1
 
 ## Wave 4 (needs 4, 7, 8)
 
-- [ ] 9. Windows and levels: k, n, mu, p, Possible and Confirmed, sparse cap. Tests P1, P2, P7, P11.
+- [x] 9. Windows and levels: k, n, mu, p, Possible and Confirmed, sparse cap. Tests P1, P2, P7, P11.
   - Depends on: 4, 7, 8
   - Requirements: R5, R6
-- [ ] 10. Hints: raise one level, never to Confirmed without k >= 3 anywhere, recorded in the explanation. Unit tests.
+- [x] 10. Hints: raise one level, never to Confirmed without k >= 3 anywhere, recorded in the explanation. Unit tests.
   - Depends on: 9
   - Requirements: R7
 
 ## Wave 5 (needs 9)
 
-- [ ] 11. Outage lifecycle: open, attach, stable identity, level history, `d`. Tests for identity stability under reordering.
+- [x] 11. Outage lifecycle: open, attach, stable identity, level history, `d`. Tests for identity stability under reordering.
   - Depends on: 9
   - Requirements: R9
-- [ ] 12. Restore and unknown end: `W_r`, quorum, span search, evidence and restored times, 12 h rule, late evidence. Tests P5, P6.
+- [x] 12. Restore and unknown end: `W_r`, quorum, span search, evidence and restored times, 12 h rule, late evidence. Tests P5, P6.
   - Depends on: 11, 8
   - Requirements: R10, R11
 
 ## Wave 6 (needs 10, 12)
 
-- [ ] 13. Decisions, explanations, change diff, push filter and memory. Tests P12, D3, D6.
+- [x] 13. Decisions, explanations, change diff, push filter and memory. Tests P12, D3, D6.
   - Depends on: 10, 12
   - Requirements: R12, R13
-- [ ] 14. Settle and archive, state migration function, and the state-size test. Tests D5.
+- [x] 14. Settle and archive, state migration function, and the state-size test. Tests D5.
   - Depends on: 13, 8
   - Requirements: R16
 

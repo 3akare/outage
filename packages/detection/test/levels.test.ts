@@ -198,7 +198,7 @@ describe('R5 R6 level table (ADR 0005)', () => {
   it('R5_drops_more_than_one_window_apart_never_add_up', () => {
     const phones = ids(10);
     const events = [...armAll(phones, T0, 5 * MIN)];
-    phones.forEach((id, i) => events.push(ev(id, 2, 'UNPLUG', T0 + i * 100 * SEC)));
+    for (const [i, id] of phones.entries()) events.push(ev(id, 2, 'UNPLUG', T0 + i * 100 * SEC));
     expect(evaluate(initialState(), input(events, T0 + 13 * HOUR), P).outputs.decisions).toEqual([]);
   });
 });

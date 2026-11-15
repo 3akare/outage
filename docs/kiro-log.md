@@ -282,3 +282,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - The `property-suite-full` Stop hook crashed with `ENOENT scandir 'packages/detection'`. Kiro Web runs hooks from the workspace root (`/projects/sandbox`, through the `.kiro` links), one level above the repo, and one path in the script was relative to the current folder instead of the repo root. The script now uses `ROOT`, as every other hook does. A regression test runs the hook from another folder; it fails on the old script and passes on the new one (25 hook tests pass).
 - This is a crash fix, not a change to what the hook checks.
 - When the hook runs again it will report the 2 known `D5_settle_equivalence` failures in the uncommitted detection work. That result is correct, and the work stays uncommitted until it is fixed.
+
+## 2026-11-14 detection engine: D5_settle_equivalence fixed
+- Root cause: settle archived a restored outage as soon as its restore time was older than the cut, but the property (and the design's horizon rule) keeps every outage whose start + 12 h is still inside the horizon. The settled run therefore lost an outage that the unsettled run still reported. Shrunk counterexample: 3 installs, one 2-minute outage, 13 h after the last event, 2 chunks.
+- Fix: `closeAt` in `settle.ts` now returns start + 12 h for every closed outage. This keeps the cut away from such outages and archives them only once they are fully past. No threshold changed.
+- Also kept two earlier uncommitted edits: `outputs.decisions` lists live decisions only, and `closeExpired` runs before `finalizeDays` in the sweep.
+- Added the regression test `test/d5-regress.test.ts` (D5_settle_equivalence). Removed the scratch files `dbg.test.ts` and `dbg2.test.ts`, which had no assertions. Fixed a Biome error in `levels.test.ts`. Ticked tasks 3 to 14 of detection-engine.
+- Verified: 127 detection tests pass three runs in a row, detection-audit 0 errors, traceability check clean, typecheck and lint clean.

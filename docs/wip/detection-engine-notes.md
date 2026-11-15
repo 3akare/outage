@@ -11,3 +11,4 @@
 - Baseline human count and exposure both use eligible installs only (spec R4.3 is silent on numerator) - OPEN QUESTION.
 - P8: spec says offset shifted by the same constant; mathematically the offset must move by -s (local time unchanged). Tested with offset - s. OPEN QUESTION.
 - Settle cuts at a quiet time T <= nowMs - H (no outage open, no event in [T-W,T)), carrying armed state and isolated-unplug times per install.
+- Settle keeps a closed outage live until start + unknownEndMs, then archives it (fixes D5).

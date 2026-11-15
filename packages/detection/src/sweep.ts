@@ -349,9 +349,9 @@ export function sweep(state: EngineState, installs: EngineState['installs'], par
 
   for (const ev of events) {
     const t = ev.t;
+    closeExpired(t);
     finalizeDays(t);
     lastActiveMs = Math.max(lastActiveMs, t);
-    closeExpired(t);
     const r = rtFor(ev.installId);
     r.hadEvents = true;
     expireStale(r, t);

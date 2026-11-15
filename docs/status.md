@@ -4,7 +4,7 @@ Read by the session-context hook. Keep the four labelled lines below on one line
 
 Current milestone: 1 Feasibility probe (tasks 1 to 7 done: probe app, Worker and analysis built and tested; nothing run on a phone yet)
 Gate: armed time >= 90% on one phone, restore delay p95 <= 60 s, Tecno or Infinix works after battery exemption
-Next: task 8, the human runs docs/probe-checklist.md on real phones (needs the probe APK and, for uploads, the deployed Worker with PROBE_TOKEN); then task 9 (summary and ADR 0013)
+Next: task 8, the human runs docs/probe-checklist.md on real phones (needs the probe APK and, for uploads, the deployed Worker with PROBE_TOKEN); then task 9 (summary and ADR 0013). Detection engine tasks 3 to 14 done on work/detection-d5 (127 tests pass); next there: task 15 (Kiro IDE correctness pass)
 Active specs: feasibility-probe
 
 ## Done

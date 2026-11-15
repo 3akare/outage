@@ -77,12 +77,12 @@ function armedStateAt(part: InstallPart, t: number, params: Params): { startMs: 
   return open ? { startMs: open.start, lastSeenMs: open.lastSeen } : null;
 }
 
+/**
+ * Instant after which an outage can no longer change. A restored outage is kept until start + unknownEndMs, not only
+ * until its restore time, so every outage that could still be inside the horizon stays live (D5).
+ */
 const closeAt = (o: OutageRec, nowMs: number, params: Params): number =>
-  o.closedBy === 'RESTORED' || o.closedBy === 'EXPIRED' || nowMs > o.startMs + params.unknownEndMs
-    ? o.closedBy === 'RESTORED'
-      ? outageEndMs(o, params)
-      : o.startMs + params.unknownEndMs
-    : Number.POSITIVE_INFINITY;
+  o.closedBy !== null || nowMs > o.startMs + params.unknownEndMs ? o.startMs + params.unknownEndMs : Number.POSITIVE_INFINITY;
 
 function findCut(state: EngineState, sw: SweepResult, nowMs: number, params: Params): number | null {
   const cutoff = nowMs - params.horizonMs;
