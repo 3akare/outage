@@ -536,3 +536,29 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Added `docs/deploy.md` (click path in plain English), a pointer in `workers/api/README.md`, and ADR 0021.
 - Found: workers.dev applies Browser Integrity Check, so the smoke check sends a descriptive User-Agent. The Worker reads `APK_SHA256`, not `APK_SHA`.
 - Open for the human: add the secrets listed in `docs/deploy.md`. Firebase is not used by this workflow. CI files go through a PR, not straight to main.
+
+## 2026-11-15 docs(map): spec and ADRs for the in-app outage map and Insights [spec:app-map-insights task:none]
+- The app must be the full experience, so Area becomes a real map and a new Insights screen carries the charts. Wrote `.kiro/specs/app-map-insights/` (requirements, design, tasks), ADR 0022 (custom Canvas hex map, no basemap, no tile server) and ADR 0023 (custom Canvas charts, Vico compared and rejected). No new Gradle dependency, so `approved-dependencies.json` is unchanged.
+- Amended `app-shell` requirements: Area is a map, bottom bar gains Insights.
+- Open: the Worker route `/api/map.json` and its fixture are task 1 of the new spec. API facts for gestures, Canvas and bottom sheets are marked unverified until task 2 checks them with Context7.
+
+## 2026-11-15 feat(map): pure map geometry, parser, insights calc and demo data [spec:app-map-insights task:2,4]
+- Added `app.outage.map` (model with the 3-phone floor, `AreaMapParser`, projection, hex grid hit test, pan and zoom transform with clamps, `DemoAreaMap`) and `app.outage.insights` (`InsightsCalc`, `PromiseText`, `DemoOutages`). No Android imports, no new dependency (ADR 0022, ADR 0023). 124 JVM tests pass, covering AM1 to AM4 and IN1 to IN6.
+- Parser tests use an inline JSON string because no shared map fixture exists yet. Demo hexes are generated without H3; ids start with `sim-`.
+- Open for the human: task 1 (Worker `/api/map.json` and shared fixture) must land so Kotlin tests can read the shared file. Lint was not run. Compose screens, gesture API checks with Context7 and the tap sheet are tasks 3 and 5 to 11.
+
+## 2026-11-15 feat(app): Area map, Insights screen and 5-tab bar [spec:app-map-insights task:3,5,6,7,8,9,10,11]
+- Area is now a hex map drawn on a Compose Canvas: dark theme, a pattern per state (solid, hatch, dots, outline) next to the colour, pulsing rings on confirmed hexes, pan, pinch, double tap, zoom buttons, animated recentre, collapsible legend, area name labels that drop when they overlap, a list view, an offline banner, and a bottom sheet per hex (state, since, restored, 3+ phones wording, 30 day history, Follow this area). Insights has a Light Score ring, outage tiles, bars with the band promise line, a weekday by hour heatmap, the worst-slot sentence, longest outages, a 12-week line and the promise card. Charts are custom Canvas in `ui/charts/` and draw in with animation. Early state (under 7 days) and empty state follow R10.
+- Bottom bar: Home, Area, Insights, Log, Settings. `Route.Insights`, deep link `insights`, strings in English and Pidgin. Added `AreaMapSource` (demo, Worker JSON, file cache), `InsightsSource`, `CellStyle`, `LabelPlacer`. Both screens default to demo sources and show the Simulated chip. The Worker source switches on with `-PoutageApiBase=https://...` at build time.
+- Checks: `assembleDebug`, `testDebugUnitTest` (all pass) and `lintDebug` exit 0. No new Gradle dependency.
+- New stored data: the followed area slug (ADR 0024). Delete-my-data clears it and the map cache.
+- Open: Worker route `/api/map.json` (task 1) does not exist yet. No emulator here, so there are no screenshots and the TalkBack pass (task 12) is still to do. Compose and Material APIs were checked by compiling, not by a docs server, which was not reachable in this run. Insights has no Power Log timeline to read yet.
+
+## 2026-11-15 fix(map): review fixes, Worker map route, INTERNET permission, real Insights source [spec:app-map-insights task:1,5,6]
+- Review issues 1 to 3: added `GET /api/map.json` (`workers/api/src/web/map-json.ts`, route in `web/routes.ts`), shared type `packages/shared/src/map.ts` and fixture `packages/shared/fixtures/map/map.json`, the `INTERNET` permission, and `PowerLogInsightsSource` plus `InsightsSources.choose`. With the Worker address set Insights shows an empty state, never simulated data. Task 6 is unticked (no Power Log timeline yet), task 1 is ticked. ADR 0025.
+- Issue 4: Vitest `M1_floor` (example and fast-check property) fails if an uncovered cell carries a state, a time or history, or if the JSON has any count key. Issue 5 not changed: no count field exists and the cache is app-private (ADR 0025 alternative 1). Issue 6: design now says the demo map is hard-coded; task 12 stays open.
+- Checks: workers/api vitest 253 pass, tsc exit 0, biome clean on the new files (the rest of `workers/api` already had biome findings before this change, left alone). Gradle `assembleDebug testDebugUnitTest lintDebug` exit 0, 4 new JUnit tests pass.
+- Open: set `-PoutageApiBase` in the release build once the Worker is deployed; the Power Log timeline replaces `PowerLogTimeline.None`.
+
+## 2026-11-15 docs(map): spec-lint sections and IN2 to IN5 traceability [spec:app-map-insights task:none]
+- Added the gap analysis (requirements), sequence diagram, data model note and testing strategy (design), dependency graph (tasks), a README index row, and separate traceability rows IN1 to IN6 naming the real JUnit tests. All six have tests. Docs only.

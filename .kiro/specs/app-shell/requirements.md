@@ -12,7 +12,7 @@ Single-player value comes first (`product.md`): the home screen must be useful w
 
 - **Home**: the first screen after onboarding. Answers "Is my power on?" for this phone's spot.
 - **Spot status**: one of the five states from `copy.md`: Normal, Your spot only, Possible, Confirmed, Restored, plus the sensor states (Armed, Not charging, Not armed).
-- **Destination**: a top-level screen reached from the navigation bar: Home, Log, Area, Settings.
+- **Destination**: a top-level screen reached from the navigation bar: Home, Log, Area, Insights, Settings.
 - **Feature slot**: a place in the shell where a feature spec plugs in its screen (for example Power Log fills the Log destination).
 - **String pack**: `res/values/strings.xml` and optional `res/values-pcm/strings.xml` (Nigerian Pidgin).
 
@@ -35,7 +35,7 @@ Single-player value comes first (`product.md`): the home screen must be useful w
 6. THE Home screen SHALL label any simulated data "Simulated" (`demo-mode.md`).
 
 ### R3 Navigation
-1. THE shell SHALL provide a bottom navigation bar with four destinations: Home, Log, Area, Settings.
+1. THE shell SHALL provide a bottom navigation bar with five destinations: Home, Log, Area, Insights, Settings (Insights added by `app-map-insights`).
 2. WHEN a feature for a destination is not built yet, THE destination SHALL show a short "Coming soon" screen and SHALL NOT crash.
 3. THE back button SHALL return to Home from any other destination, and leave the app from Home.
 4. THE shell SHALL keep each destination's scroll position when switching between them in one session.
@@ -89,5 +89,5 @@ Done by Kiro Web while writing this spec. Run Kiro's Analyze Requirements in the
 ## Decisions (2026-11-14)
 
 - Jetpack Compose with Material 3, approved by the human. No navigation library: the shell routes with a small state holder (design section 3).
-- The Area destination shows the followed area's status from the Worker's public JSON (`web-and-area-pages` routes), not a map, until the map exists.
+- The Area destination is a real map of H3 hexagons coloured by outage state, drawn in the app with no basemap (ADR 0022, spec `app-map-insights`). The app also has an Insights destination for charts of the user's power (ADR 0023). Until those screens exist, Area shows the followed area's status from the Worker's public JSON as text, and Insights shows "Coming soon".
 - Pidgin is optional and falls back to English per key.

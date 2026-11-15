@@ -4,6 +4,8 @@
     <!-- Normal permission, granted at install with no prompt. Home reads it to say "Offline" (app-shell R2.3).
          The shell requests no runtime permission (R9.2); features ask for theirs. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Normal permission, no prompt. One GET to the project's own Worker for the Area map (ADR 0025). -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".OutageApp"

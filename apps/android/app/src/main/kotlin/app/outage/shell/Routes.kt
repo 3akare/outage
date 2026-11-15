@@ -18,6 +18,7 @@ object Routes {
             "home" -> Route.Home
             "log" -> Route.Log
             "area" -> Route.Area
+            "insights" -> Route.Insights
             "settings" -> Route.Settings
             else -> {
                 if (!value.startsWith("feature:")) return null

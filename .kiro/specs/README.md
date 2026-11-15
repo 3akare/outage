@@ -20,6 +20,7 @@ Build order follows the master brief, Part I. The probe comes first and gates th
 | 11 | `demo-mode` | 4 | DM1 to DM7 | engine, web |
 | 12 | `field-telemetry` | 4 | F1 to F8 | sensor, area-cells, onboarding |
 | 13 | `app-shell` | 3 | AS1 to AS8 | none (feature specs plug into it) |
+| 14 | `app-map-insights` | 3 | AM1 to AM6, IN1 to IN6 | app-shell, web-and-area-pages, power-log |
 
 Bugfix Specs (`bugfix-YYYYMMDD-<slug>`) are added by the daily field run and by hand.
 

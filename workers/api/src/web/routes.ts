@@ -25,6 +25,7 @@ import {
   renderJudgeReplayJson,
   renderJudgeServiceWorker,
 } from './judge.ts';
+import { buildMapJson, cityFrom } from './map-json.ts';
 import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './status.ts';
 
 export interface WebDeps {
@@ -105,6 +106,15 @@ const ROUTES: Route[] = [
   {
     pattern: /^\/sitemap\.xml$/,
     render: (_m, _u, d) => text(sitemapXml(d.site, d.areas), 'application/xml; charset=utf-8', STATIC_TTL_SECONDS),
+  },
+  {
+    // The phone's map (app-map-insights R2, R4). Same data as the SVG map, as JSON with hex rings.
+    pattern: /^\/api\/map\.json$/,
+    render: async (_m, url, d) => {
+      const views = await d.index.views();
+      if (views === null) return apiUnavailable();
+      return json(buildMapJson(cityFrom(url.searchParams.get('city')), d.areas, views, d.now()), PAGE_TTL_SECONDS);
+    },
   },
   {
     pattern: /^\/api\/v1\/public\/map$/,
