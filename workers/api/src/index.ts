@@ -9,7 +9,12 @@ import { RegisterLimiter } from './limiter.ts';
 import { RevocationCache } from './registry.ts';
 import { RegistryActor } from './registry-actor.ts';
 import { hashInstallId } from './token.ts';
+import { PageCache } from './web/cache.ts';
+import { LISTED_AREAS } from './web/catalog/index.ts';
 import { PublicIndex } from './web/index-actor.ts';
+import { INDEX_NAME } from './web/index-core.ts';
+import { indexReader } from './web/index-reader.ts';
+import { handleWeb, isWebPath, type WebDeps } from './web/routes.ts';
 
 export type { Env };
 export { AreaActor, PublicIndex, RegistryActor };
@@ -48,8 +53,34 @@ function makeDeps(env: Env): Deps {
   };
 }
 
+// Cache API (`caches.default`): https://developers.cloudflare.com/workers/runtime-apis/cache/ . The isolate fallback in
+// PageCache covers runtimes and domains where it does not store (R9.2).
+let pageCache: PageCache | undefined;
+
+function webDeps(req: Request, env: Env): WebDeps {
+  pageCache ??= new PageCache({ cache: typeof caches === 'undefined' ? null : caches.default });
+  const origin = (env.SITE_ORIGIN ?? new URL(req.url).origin).replace(/\/$/, '');
+  const apkUrl = env.APK_URL ? env.APK_URL : null;
+  return {
+    site: { origin, apkUrl },
+    install: apkUrl
+      ? {
+          apkUrl,
+          version: env.APK_VERSION ?? '',
+          sizeBytes: Number(env.APK_SIZE_BYTES ?? 0),
+          sha256: env.APK_SHA256 ?? '',
+        }
+      : null,
+    areas: LISTED_AREAS,
+    index: indexReader(() => env.PUBLIC_INDEX.get(env.PUBLIC_INDEX.idFromName(INDEX_NAME)).getAll()),
+    cache: pageCache,
+    now: () => Date.now(),
+  };
+}
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
+    if (isWebPath(new URL(req.url).pathname)) return handleWeb(req, webDeps(req, env));
     return handleRequest(req, makeDeps(env));
   },
 } satisfies ExportedHandler<Env>;

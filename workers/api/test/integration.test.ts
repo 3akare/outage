@@ -87,5 +87,12 @@ describe('R7 R8 R12 Worker and area actors in the Workers runtime', () => {
     expect((await server.fetch('/v1/events', { method: 'POST', body: '{nope' })).status).toBe(400);
     expect((await call('/v1/events', { installId: 'aaaaaaaaaaaaaaaaaaaaaaaaaa', events: [] })).status).toBe(401);
     expect((await server.fetch('/v1/nothing')).status).toBe(404);
+    // web-and-area-pages task 8: public site routes in the runtime, reading the PublicIndex actor.
+    expect((await server.fetch('/robots.txt')).status).toBe(200);
+    expect((await server.fetch('/', { method: 'POST' })).status).toBe(405);
+    const map = await server.fetch('/api/v1/public/map');
+    expect(map.status).toBe(200);
+    expect(await map.json()).toEqual({ areas: [] });
+    expect((await server.fetch('/area/nowhere')).status).toBe(404);
   });
 });

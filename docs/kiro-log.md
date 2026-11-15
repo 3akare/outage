@@ -328,3 +328,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Task 1: area-cells R2.6 added (publish to the public index). The reducer now outputs `publish` (changed views and tombstones) and remembers the last published JSON per scope; ADR 0010 has an implementation note.
 - Task 7: `web/index-core.ts` (whitelist sanitizer, `applyBatch` writing only changed rows, `snapshot`), `web/index-actor.ts` (`PublicIndex` SQLite Durable Object, binding `PUBLIC_INDEX`, migration v3), `web/index-reader.ts` (null when the index fails). The area actor sends the batch and requeues it on failure.
 - Tests W2 (index part) in `workers/api/test/web-index.test.ts`: no install ID or extra field survives, no view without "3+", and a scope whose members fall below 3 is removed (tombstone), driven through the real reducer.
+
+## 2026-11-14 web-and-area-pages task 8: routes, JSON APIs, 405, sitemap, robots
+- `workers/api/src/web/routes.ts`: `/`, `/area/:slug`, `/c/:cell`, `/install`, `/privacy`, `/robots.txt`, `/sitemap.xml`, `/api/v1/public/map`, `/api/v1/public/area/:slug`, `/api/v1/public/cell/:cell/outages?days=` (clamped 1 to 30). GET and HEAD only, 405 with `Allow: GET, HEAD` otherwise. Every route goes through `PageCache`; an uncached page reads the index once; an unavailable index gives pages without status (5 s cache) and APIs a 503.
+- `index.ts` sends `/v1/*` to the ingest handlers and everything else to the site. Site origin and install values come from Worker vars.
+- Tests W7 and route tests in `workers/api/test/web-routes.test.ts`; the runtime integration test now fetches `/robots.txt`, `/api/v1/public/map` (through the real `PublicIndex`), a 405 and a 404.
