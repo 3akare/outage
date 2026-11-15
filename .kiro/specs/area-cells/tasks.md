@@ -58,7 +58,7 @@ This spec depends on `detection-engine` (tasks 1, 3, 13) and `event-ingest` (tas
 
 ## Wave 7
 
-- [ ] 12. Update `docs/traceability.md` (A1 to A12), `docs/kiro-log.md`, `workers/api/README.md` area section, and ADR 0006 with measured startup and CPU numbers.
+- [x] 12. Update `docs/traceability.md` (A1 to A12), `docs/kiro-log.md`, `workers/api/README.md` area section, and ADR 0006 with measured startup and CPU numbers.
   - Depends on: 10, 11
   - Requirements: all
 

@@ -10,7 +10,8 @@
     "@biomejs/biome",
     "@outage/shared",
     "@outage/detection",
-    "@outage/api"
+    "@outage/api",
+    "playwright"
   ],
   "allowedTools": [
     "vitest",

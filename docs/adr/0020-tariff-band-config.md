@@ -1,4 +1,4 @@
-# ADR 0019: Tariff band config and its verification status
+# ADR 0020: Tariff band config and its verification status
 
 Status: ACCEPTED (2026-11-15, under the blanket approval).
 

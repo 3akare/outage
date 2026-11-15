@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-/tmp/xdg-outage} WRANGLER_SEND_METRICS=false vitest --run"
+    "test": "XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-/tmp/xdg-outage} WRANGLER_SEND_METRICS=false vitest --run",
+    "bench": "node --no-warnings --experimental-transform-types bench/area-bench.mjs"
   },
   "dependencies": {
     "@outage/detection": "*",
