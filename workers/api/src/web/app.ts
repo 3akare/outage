@@ -30,7 +30,8 @@ const RANK: Record<MapCellState, number> = { CONFIRMED: 4, POSSIBLE: 3, RESTORED
 const STATES: readonly MapCellState[] = ['NORMAL', 'POSSIBLE', 'CONFIRMED', 'RESTORED', 'NO_DATA'];
 
 const W = 1000;
-const PAD = 24;
+const PAD = 56;
+const LBL_GAP = 36;
 const r1 = (n: number): number => Math.round(n * 10) / 10;
 
 export type HexLayout = {
@@ -74,6 +75,12 @@ export function hexLayout(map: MapJson): HexLayout {
     const lng = c.ring.reduce((s, p) => s + p[1], 0) / c.ring.length;
     return [{ name: a.name, x: r1(px(lng)), y: r1(py(lat)) }];
   });
+  // Push a label down when it would sit on top of another one (same rule as the client script).
+  const placed: { x: number; y: number }[] = [];
+  for (const t of [...labels].sort((a, b) => a.y - b.y)) {
+    for (const o of placed) if (Math.abs(o.x - t.x) < 200 && t.y - o.y < LBL_GAP) t.y = r1(o.y + LBL_GAP);
+    placed.push(t);
+  }
   return { height, cells, labels };
 }
 
@@ -117,8 +124,8 @@ function installHref(site: Site): string {
 function emptyCard(site: Site): string {
   return (
     `<div class="card empty" id="empty"><h2>${EMPTY_TEXT}</h2>` +
-    '<p>A colour shows up when 3 or more phones in an area agree. Until then every area stays grey. Nothing here is made up.</p>' +
-    `<div class="cta"><a class="btn" href="${SIMULATE_PATH}">Watch a blackout</a><a class="btn alt" href="${e(installHref(site))}">Install Outage</a></div></div>`
+    '<p>Colours appear when 3 or more phones in an area agree. Nothing here is made up.</p>' +
+    `<div class="cta"><a class="btn" href="${SIMULATE_PATH}">Watch a blackout</a><a class="btn alt" href="${e(installHref(site))}">Install</a></div></div>`
   );
 }
 
@@ -187,10 +194,10 @@ const ICONS: Record<AppTab, string> = {
   settings: '<path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2"/><path d="M4 17h2"/><path d="M10 17h10"/><circle cx="8" cy="17" r="2"/>',
 };
 
-const LOGO =
+export const LOGO =
   '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2l11 6.4v12.8L16 27.6 5 21.2V8.4z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M17 8l-5 9h4l-1 7 5-9h-4z" fill="#3ddc97"/></svg>';
 
-export function dockHtml(active: AppTab): string {
+export function dockHtml(active: AppTab | null): string {
   return (
     '<nav class="dock" aria-label="Main">' +
     APP_TABS.map(
@@ -256,8 +263,10 @@ m.cells.forEach(function(c){var d=c.ring.map(function(q,i){return(i?'L':'M')+r1(
 var h=sv('path',{'class':'hx',tabindex:'0',role:'button','data-id':c.id,'data-area':c.area,'data-state':c.state,d:d});
 h.appendChild(sv('title',{},(names[c.area]||c.area)+': '+LABEL[c.state]));svg.appendChild(h);});
 var byId={};m.cells.forEach(function(c){byId[c.id]=c;});
-m.areas.forEach(function(a){var c=byId[a.centreCell];if(!c)return;var la=0,ln=0;c.ring.forEach(function(q){la+=q[0];ln+=q[1];});
-svg.appendChild(sv('text',{'class':'lbl',x:r1(p.x(ln/c.ring.length)),y:r1(p.y(la/c.ring.length))},a.name));});
+var ls=[];m.areas.forEach(function(a){var c=byId[a.centreCell];if(!c)return;var la=0,ln=0;c.ring.forEach(function(q){la+=q[0];ln+=q[1];});
+ls.push({n:a.name,x:r1(p.x(ln/c.ring.length)),y:r1(p.y(la/c.ring.length))});});
+ls.sort(function(a,b){return a.y-b.y;});var pl=[];ls.forEach(function(t){pl.forEach(function(o){if(Math.abs(o.x-t.x)<200&&t.y-o.y<${LBL_GAP})t.y=r1(o.y+${LBL_GAP});});pl.push(t);});
+ls.forEach(function(t){svg.appendChild(sv('text',{'class':'lbl',x:t.x,y:t.y},t.n));});
 old.parentNode.replaceChild(svg,old);}
 function home(m){
 var names={};m.areas.forEach(function(a){names[a.slug]=a.name;});

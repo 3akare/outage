@@ -16,7 +16,7 @@ const pages = [
   { path: '/app/insights', name: 'app-insights', expect: ['Insights', 'No outages recorded yet'], app: true },
   { path: '/app/settings', name: 'app-settings', expect: ['Settings', 'Privacy'], app: true },
   { path: '/areas', name: 'areas', expect: ['Install Outage'] },
-  { path: '/judge', name: 'judge', expect: ['Simulated replay', 'Your spot only', 'Possible power cut', 'Power cut', 'Power is back', 'not live'] },
+  { path: '/app/simulate', name: 'simulate', expect: ['Simulated, not live data', 'Simulate a blackout', 'Power on'], app: true },
   // No area is listed until a person fills in `checkedBy` in the catalog (R10.3), so /area/yaba is the 404 page for now.
   { path: '/area/yaba', name: 'area-yaba', expect: ['Install Outage'], status: [200, 404] },
   { path: '/c/88589c9861fffff', name: 'cell', expect: ['Install Outage'] },
@@ -111,6 +111,7 @@ try {
     await dp.screenshot({ path: `${SHOTS}/${p.name}-desktop.png`, fullPage: false });
   }
   await desk.close();
+  const desk2 = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
 
   // App: the map is drawn, a tap on a hex opens the sheet, the dock moves between the three tabs.
   await page.goto(`${BASE}/app`, { waitUntil: 'networkidle' });
@@ -135,22 +136,38 @@ try {
   await page.waitForURL('**/app/insights');
   ok('/app', 'dock opens Insights');
 
-  // Judge controls: play, pause, restart, 1x 2x 4x exist, fit the width and respond.
-  await page.goto(`${BASE}/judge`, { waitUntil: 'networkidle' });
-  for (const sel of ['#play', '#restart', '[data-speed="1"]', '[data-speed="2"]', '[data-speed="4"]']) {
-    const box = await page.locator(sel).boundingBox();
-    if (!box) fail('/judge', `control ${sel} not visible`);
-    else if (box.x < 0 || box.x + box.width > W) fail('/judge', `control ${sel} overflows the width`);
+  // Simulation: one button plays Possible, Confirmed, Restored with counts. Screenshots of each state.
+  async function playSim(pg, tag) {
+    await pg.goto(`${BASE}/app/simulate`, { waitUntil: 'networkidle' });
+    await pg.waitForFunction(() => !document.getElementById('go').disabled);
+    const dots = await pg.locator('#dots circle').count();
+    if (dots < 3) fail(`/app/simulate${tag}`, `only ${dots} phones drawn`);
+    await pg.screenshot({ path: `${SHOTS}/simulate-ready${tag}.png` });
+    await pg.click('#go');
+    for (const [state, name] of [['POSSIBLE', 'possible'], ['CONFIRMED', 'confirmed'], ['RESTORED', 'restored']]) {
+      try {
+        await pg.waitForSelector(`#simstate[data-state=${state}]`, { timeout: 15000 });
+        await pg.waitForTimeout(100);
+        await pg.evaluate(() => window.scrollTo(0, 0));
+        const c = await pg.innerText('#simcount');
+        if (!/\d+ of \d+ phones/.test(c)) fail(`/app/simulate${tag}`, `no count in ${state}: ${c}`);
+        await pg.screenshot({ path: `${SHOTS}/simulate-${name}${tag}.png` });
+        ok(`/app/simulate${tag}`, `${state}: ${c}`);
+      } catch {
+        fail(`/app/simulate${tag}`, `never reached ${state}`);
+      }
+    }
+    await pg.waitForFunction(() => document.getElementById('go').textContent === 'Simulate again', null, { timeout: 15000 });
+    const banner = await pg.locator('.sim-banner').boundingBox();
+    if (!banner || banner.y > 1) fail(`/app/simulate${tag}`, 'banner is not pinned at the top');
   }
-  await page.click('#play');
-  await page.waitForTimeout(1500);
-  if (await page.locator('#pause').isHidden()) fail('/judge', 'Pause did not appear after Play');
-  else ok('/judge', 'Play shows Pause');
-  await page.click('[data-speed="4"]');
-  if ((await page.getAttribute('[data-speed="4"]', 'aria-pressed')) !== 'true') fail('/judge', '4x did not become pressed');
-  await page.click('#pause');
-  await page.click('#restart');
-  await page.screenshot({ path: `${SHOTS}/judge-controls.png` });
+  await playSim(page, '');
+  const sp = await desk2.newPage();
+  await playSim(sp, '-desktop');
+  await desk2.close();
+  const jr = await page.request.get(`${BASE}/judge`, { maxRedirects: 0 });
+  if (jr.status() !== 301) fail('/judge', `status ${jr.status()}, want 301`);
+  else ok('/judge', '301 to the simulation');
 
   if (consoleErrors.length) fail('all', `console errors: ${consoleErrors.join(' | ')}`);
   else ok('all', 'no console errors');
@@ -158,47 +175,44 @@ try {
   if (foreign.length) fail('all', `requests to other origins: ${foreign.join(', ')}`);
   else ok('all', `only same-origin requests (${[...origins].join(', ')})`);
 
-  // Offline refresh through the service worker (ADR 0016).
-  await page.goto(`${BASE}/judge`, { waitUntil: 'networkidle' });
+  // Offline refresh through the service worker (ADR 0016, ADR 0029).
+  await page.goto(`${BASE}/app/simulate`, { waitUntil: 'networkidle' });
   const ready = await page.evaluate(async () => {
     const r = await Promise.race([navigator.serviceWorker.ready, new Promise((res) => setTimeout(() => res(null), 5000))]);
     return Boolean(r);
   });
-  if (!ready) fail('/judge offline', 'service worker never became ready');
+  if (!ready) fail('/app/simulate offline', 'service worker never became ready');
   else {
-    await page.reload({ waitUntil: 'networkidle' }); // let the worker control the page and fill the cache
+    await page.reload({ waitUntil: 'networkidle' });
     await context.setOffline(true);
     try {
       await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => !document.getElementById('go').disabled, null, { timeout: 8000 });
       const t = await page.innerText('body');
-      if (t.includes('Simulated replay')) ok('/judge offline', 'reload offline still shows the banner');
-      else fail('/judge offline', 'banner missing after offline reload');
-      await page.screenshot({ path: `${SHOTS}/judge-offline.png` });
+      if (t.includes('Simulated, not live data')) ok('/app/simulate offline', 'reload offline still plays, banner shown');
+      else fail('/app/simulate offline', 'banner missing after offline reload');
     } catch (e) {
-      fail('/judge offline', `reload failed: ${e.message}`);
+      fail('/app/simulate offline', `reload failed: ${e.message}`);
     }
-    // Only /judge is cached (checked in the Cache Storage, since the HTTP cache may also hold visited pages).
     await context.setOffline(false);
     const cached = await page.evaluate(async () => {
       const out = [];
       for (const k of await caches.keys()) for (const r of await (await caches.open(k)).keys()) out.push(new URL(r.url).pathname);
-      return out;
+      return out.sort();
     });
-    if (cached.length === 1 && cached[0] === '/judge') ok('cache', 'only /judge is cached');
-    else fail('cache', `expected only /judge, found ${cached.join(', ')}`);
+    if (cached.every((p) => ['/app/simulate', '/simulate.js', '/app.css', '/api/v1/public/judge/replay'].includes(p))) ok('cache', `only simulation files cached (${cached.join(', ')})`);
+    else fail('cache', `unexpected cache entries: ${cached.join(', ')}`);
   }
   await context.close();
 
-  // Scripts off: everything is server-rendered.
+  // Scripts off: the banner and the sentence are server-rendered.
   const noJs = await browser.newContext({ viewport: { width: W, height: H }, javaScriptEnabled: false });
   const p2 = await noJs.newPage();
-  await p2.goto(`${BASE}/judge`, { waitUntil: 'load' });
+  await p2.goto(`${BASE}/app/simulate`, { waitUntil: 'load' });
   const t2 = await p2.innerText('body');
-  const need = pages.find((x) => x.path === '/judge').expect;
-  const missing = need.filter((s) => !t2.includes(s));
-  if (missing.length) fail('/judge scripts off', `missing ${missing.join(', ')}`);
-  else ok('/judge scripts off', 'all five states and the banner are readable');
-  await p2.screenshot({ path: `${SHOTS}/judge-no-js.png` });
+  const missing = ['Simulated, not live data', 'Watch ten simulated phones'].filter((x) => !t2.includes(x));
+  if (missing.length) fail('/app/simulate scripts off', `missing ${missing.join(', ')}`);
+  else ok('/app/simulate scripts off', 'banner and sentence are readable');
   await noJs.close();
 } finally {
   await browser.close();

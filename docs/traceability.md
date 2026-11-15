@@ -263,10 +263,10 @@ Scanned 0 test file(s) under packages/detection. A property counts when a test t
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
 | R3.1, R3.2 | UX1 | dock list (web and Kotlin) | 4, 6 | not started |
-| R7.3, R8.5 | UX2 | replica and simulation data separation | 4, 5 | not started |
+| R7.3, R8.5 | UX2 | replica and simulation data separation | 4, 5 | done: web-app.test.ts, web-judge.test.ts (W6) |
 | R9.2 | UX3 | token compare test | 2 | not started |
 | R10.1 | UX4 | no other origin on any route | 3 | done: workers/api/test/web-app.test.ts |
-| R8.1 | UX5 | simulation banner in every state | 5 | not started |
+| R8.1 | UX5 | simulation banner in every state | 5 | done: web-judge.test.ts, visual check plays every state |
 | R2.7 | UX6 | empty map renders honest empty state | 4 | done: web-app.test.ts |
 | R2.4 | UX7 | floor looks like no data | 4 | done: web-app.test.ts (fast-check) |
 | R1.1, R1.2 | UX8 | first-run model | 7 | not started |
