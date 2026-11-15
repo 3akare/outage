@@ -30,7 +30,7 @@ Depends on `sensor-android` (tasks 6, 10), `event-ingest` (tasks 2, 4), `area-ce
 
 ## Wave 3
 
-- [ ] 6. Report generator in `tools/field`: JSON to Markdown, signatures, fixture candidates, `failures.json` updates. Import the Bugfix Spec skeleton writer (`planBugfix`) from `.kiro/skills/field-report/scripts/new-bugfix.mjs` and run `.kiro/skills/field-report/scripts/check-report.mjs` on every generated file, instead of writing them again. Tests F5, F6 (the skill's own tests already cover the skeleton and the report check). Golden Markdown files.
+- [x] 6. Report generator in `tools/field`: JSON to Markdown, signatures, fixture candidates, `failures.json` updates. Import the Bugfix Spec skeleton writer (`planBugfix`) from `.kiro/skills/field-report/scripts/new-bugfix.mjs` and run `.kiro/skills/field-report/scripts/check-report.mjs` on every generated file, instead of writing them again. Tests F5, F6 (the skill's own tests already cover the skeleton and the report check). Golden Markdown files.
   - Depends on: 2, 3
   - Requirements: R6, R8, R9
 

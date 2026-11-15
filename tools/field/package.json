@@ -1,0 +1,21 @@
+{
+  "name": "@outage/field",
+  "private": true,
+  "type": "module",
+  "description": "Field report generator (field-telemetry task 6). Pure JSON to Markdown, plus a CLI that fetches, writes and files Bugfix Specs.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest --run",
+    "report": "node --experimental-strip-types bin/field-report.mjs",
+    "golden": "node --experimental-strip-types scripts/update-golden.mjs"
+  },
+  "dependencies": {
+    "@outage/detection": "*",
+    "@outage/shared": "*"
+  },
+  "devDependencies": {
+    "fast-check": "^4.10.2",
+    "typescript": "~6.0.3",
+    "vitest": "^5.1.0"
+  }
+}
