@@ -26,3 +26,22 @@ jobs:
       - run: npm run probe:install
       - run: npm run probe:typecheck
       - run: npm run probe:test
+
+  visual:
+    # 390 x 844 visual check of the public pages (ADR 0017). Screenshots are uploaded as an artifact.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: bash workers/api/visual/run.sh
+        env:
+          SHOTS: ${{ runner.temp }}/visual
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual
+          path: ${{ runner.temp }}/visual

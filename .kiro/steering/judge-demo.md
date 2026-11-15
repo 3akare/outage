@@ -15,16 +15,18 @@ Run Judge mode end to end and check every screen:
 
 ## Visual check (web-and-area-pages task 11)
 
-Serve: `cd workers/api && npx wrangler dev` (local, http://localhost:8787, no secrets needed). With the Playwright power, resize to 390 x 844 (`browser_resize`), then for each URL take a screenshot and a snapshot:
+Repeat with `bash workers/api/visual/run.sh` (ADR 0017).
+
+Serve: `cd workers/api && npx wrangler dev` (http://localhost:8787). With the Playwright power, resize to 390 x 844 (`browser_resize`), then for each URL take a screenshot and a snapshot:
 
 | URL | Check |
 |---|---|
-| `/` | Home loads, install button visible without scrolling sideways. |
+| `/` | Install button visible. |
 | `/judge` | Banner "Simulated replay" at the top; all five states in the steps; controls (play, pause, restart, 1x 2x 4x) work and fit the width; explanation panel shows the numbers; "Your spot only" step labeled simulated; "not live" line present. |
 | `/judge` with scripts off | Same content readable (everything is server-rendered). |
 | `/judge` offline refresh (ADR 0016) | Load once, confirm `navigator.serviceWorker.ready` resolves, go offline (`context.setOffline(true)` in `browser_run_code_unsafe`), reload: the last page still shows with the banner. Only `/judge` is cached. |
 | `/area/yaba` | Status line, 30-day history, install link; no horizontal scroll (`document.documentElement.scrollWidth <= 390`). |
-| `/c/8f2830828052d25` | Same shape as an area page with no data (W9: no-phones and fewer-than-3 look the same). |
-| `/install`, `/privacy` | Render; install shows link, version, size, checksum when a release is configured. |
+| `/c/88589c9861fffff` | Same shape as an area page with no data (W9: no-phones and fewer-than-3 look the same). |
+| `/install`, `/privacy` | Render; install shows link, version, size, checksum if a release is set. |
 
 Pass: no horizontal scroll at 390 px, text at least 16 px, tap targets at least 44 px, no console errors (`browser_console_messages`), no request to another origin (`browser_network_requests`). Size budget: every HTML page under 30 KB (test `R4 size budget` in `workers/api/test/web-routes.test.ts`).

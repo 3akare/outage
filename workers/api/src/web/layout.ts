@@ -20,12 +20,12 @@ const CSS =
   'body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1a1a1a;background:#fff}' +
   'main,header,footer{max-width:42rem;margin:0 auto;padding:1rem}' +
   'h1{font-size:1.5rem;line-height:1.25;margin:.5rem 0}h2{font-size:1.15rem;margin:1.5rem 0 .5rem}' +
-  'a{color:#0b4f9c}.btn{display:inline-block;min-height:44px;box-sizing:border-box;padding:.65rem 1rem;margin:.25rem .5rem .25rem 0;border-radius:8px;background:#0b4f9c;color:#fff;text-decoration:none;font-weight:600}' +
+  'a{color:#0b4f9c}header a,footer a{display:inline-block;min-width:44px;min-height:44px;line-height:44px;padding:0 .25rem;box-sizing:border-box}.btn{display:inline-block;min-height:44px;box-sizing:border-box;padding:.65rem 1rem;margin:.25rem .5rem .25rem 0;border-radius:8px;background:#0b4f9c;color:#fff;text-decoration:none;font-weight:600}' +
   '.btn.alt{background:#fff;color:#0b4f9c;border:2px solid #0b4f9c}' +
   '.state{border:3px solid;border-radius:12px;padding:1rem;margin:1rem 0}.state .label{font-size:1.4rem;font-weight:700;margin:0}.state p{margin:.25rem 0}' +
-  '.note{color:#444;font-size:.95rem}.banner{background:#1a1a1a;color:#fff;padding:.5rem 1rem;text-align:center;font-weight:700}' +
+  '.note{color:#444;font-size:1rem}.banner{background:#1a1a1a;color:#fff;padding:.5rem 1rem;text-align:center;font-weight:700}' +
   'ul.list{padding-left:1.1rem}ul.plain{list-style:none;padding:0}ul.plain li{margin:.5rem 0}' +
-  '.chip{display:inline-block;border:2px solid;border-radius:6px;padding:0 .4rem;font-weight:600;font-size:.9rem}' +
+  '.chip{display:inline-block;border:2px solid;border-radius:6px;padding:0 .4rem;font-weight:600;font-size:1rem}' +
   'svg.map{width:100%;height:auto;max-height:70vh;background:#f4f6f8;border-radius:8px}svg.map a{cursor:pointer}svg.map text{font:600 14px system-ui,sans-serif;fill:#111;paint-order:stroke;stroke:#fff;stroke-width:3px}' +
   'svg.map path{stroke:#fff;stroke-width:1}' +
   '.state.none{background:#f1f3f5;color:#222;border-color:#777}' +
