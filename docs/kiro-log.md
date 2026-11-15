@@ -526,3 +526,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-15 chore(merge): merge origin/main (PR 15) into work/home-watch-2-4 [spec:none task:merge]
 - Merged origin/main after PR 15 landed. Only `docs/kiro-log.md` conflicted (two places); kept both sides. `docs/status.md` already lists event-ingest 6 and power-log 3 (ADR 0020). ADRs 0017 to 0020 are contiguous.
 - Checks: `npm test` (150 hook and skill tests plus all workspace suites), lint (4 warnings, not checked against the base), typecheck and `traceability.mjs --check` all exit 0. Not pushed.
+
+## 2026-11-15 ci(deploy): Cloudflare Worker deploy workflow and guide [spec:event-ingest task:11]
+- Added `.github/workflows/deploy-worker.yml`: skips with a notice when the Cloudflare secrets are missing, runs lint, typecheck, tests and spec-lint, deploys with the pinned wrangler, creates `INSTALL_TOKEN_SECRET` only when missing (never printed), pushes `FIELD_READ_TOKEN` when its GitHub secret exists, then smoke checks `/` and `/api/v1/public/judge/replay`. Permissions are `contents: read`. Doc URLs are in the workflow comments.
+- `workers/api/wrangler.jsonc` already has migrations v1 to v5 (all SQLite classes), so it is unchanged.
+- Added `docs/deploy.md` (click path in plain English), a pointer in `workers/api/README.md`, and ADR 0021.
+- Found: workers.dev applies Browser Integrity Check, so the smoke check sends a descriptive User-Agent. The Worker reads `APK_SHA256`, not `APK_SHA`.
+- Open for the human: add the secrets listed in `docs/deploy.md`. Firebase is not used by this workflow. CI files go through a PR, not straight to main.
