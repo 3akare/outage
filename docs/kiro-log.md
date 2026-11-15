@@ -562,3 +562,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 
 ## 2026-11-15 docs(map): spec-lint sections and IN2 to IN5 traceability [spec:app-map-insights task:none]
 - Added the gap analysis (requirements), sequence diagram, data model note and testing strategy (design), dependency graph (tasks), a README index row, and separate traceability rows IN1 to IN6 naming the real JUnit tests. All six have tests. Docs only.
+
+## 2026-11-21 fix(live): map from the full catalog, live API default, post-deploy check [spec:web-and-area-pages task:5]
+- `/area/yaba` 404 cause: every entry in `catalog.source.json` has an empty `checkedBy`, so `LISTED_AREAS` is empty by design (W7, R10.3). `/api/map.json` was empty for the same reason: it used the listed areas. The city key `lagos` was right. Fix: `WebDeps.mapAreas` (all catalog areas) feeds only `/api/map.json`, so cells show as NO_DATA (ADR 0025). Area pages and the sitemap stay gated. I did not fill `checkedBy`: it is a person's check of each centre.
+- `gradle.properties` defaults `outageApiBase` to the live Worker (ADR 0024 updated); `-PoutageApiBase=` gives demo. `wrangler.jsonc` vars SITE_ORIGIN and APK_URL (releases page).
+- Task 5: curl against the live URL passed (cache-control, nonce equals body nonce and changes per response, nosniff); the same check is a deploy-worker.yml step.
