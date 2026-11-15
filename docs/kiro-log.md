@@ -383,3 +383,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Fixtures in `packages/shared/fixtures/telemetry/`: `device-day.json`, `device-day-station.json`, `device-day-invalid.json` (14 named rejects with codes). Tests: `packages/shared/test/device-day.test.ts` (F1 schema part, property tests with fast-check).
 - The largest aggregate the caps allow is under 8 KiB, so `TOO_LARGE` is a safety net, not a reachable branch; the test pins that.
 - Not done here: the Kotlin test that reads these fixtures (task 4 needs the Android aggregator first).
+
+## 2026-11-15 field-telemetry task 2: metric functions and gate evaluation
+- `packages/shared/src/field-metrics.ts`: `nearestRank` (same definition as `tools/probe/analyze/src/stats.ts`), `percentileOrHidden` (hidden below 20 samples), `armedRatio` (null below 1 h), `alarmRate`, gap histogram helpers (`gapBucket`, `addGapToHist`, `mergeHists`, `histPercentileBucket`, `bucketUpperMs`) and `evaluateGates` (armed, delay, maker, milestone, kill criterion).
+- Tests F3 and F7 in `packages/shared/test/field-metrics.test.ts` (property tests plus boundary cases at exactly 90% and 60 s).
+- Reading of the spec, to confirm: the delay gate pools `delayJobMs` and `delayReceiverMs` (time until the Sensor noticed the plug-in); replug-to-ring is reported but is not gated. The maker gate accepts Tecno or Infinix only (R10.1), unlike the probe gate, which the human widened to Samsung. Armed gates use normal-mode days only (R4.5); a day with more than 26 h of charging is ignored as suspect. No threshold changed.

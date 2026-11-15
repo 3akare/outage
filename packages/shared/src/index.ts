@@ -4,3 +4,4 @@ export const SCHEMA_VERSION = 1;
 export * from './h3.ts';
 export * from './ingest.ts';
 export * from './device-day.ts';
+export * from './field-metrics.ts';

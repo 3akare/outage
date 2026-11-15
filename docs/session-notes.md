@@ -40,3 +40,7 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Open for the human: ADR 0014 (re-hint pass vs R11.4), ADR 0015 (replay builder strips `simulated` on the engine copy). Both stay PROPOSED.
 - Open for the orchestrator: merge `work/detection-d5` into `main` and push (definition of done item 7).
 - area-cells task 12 is partly done: README and traceability (A1 to A12) exist. Still open: ADR 0006 addendum with measured startup and CPU numbers (needs the detection-engine task 17 benchmark and a deployed measurement).
+
+## field-telemetry tasks 1 to 3 (2026-11-15)
+- Task 2 assumption: the field delay gate pools job and receiver scheduling delays; the field maker gate is Tecno or Infinix only (R10.1) while the probe gate also accepts Samsung (ADR 0013). Confirm whether the field gate should accept Samsung too (`GATE_OEM_MAKERS` in `packages/shared/src/field-metrics.ts`).
+- Task 1 assumption: gap histogram edges are 1, 5, 15, 60 and 240 minutes plus an open-ended bucket (`GAP_EDGES_MS`). Design says only "fixed edges". The Kotlin aggregator (task 4) must use the same edges.
