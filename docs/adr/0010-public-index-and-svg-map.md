@@ -21,3 +21,6 @@ Public pages need each area's status. If every page view asked the area actors, 
 - The index must drop a scope when it falls below 3 members; a test covers it (W2).
 - Without streets, the map looks plain. Area names and the list carry the meaning.
 - Judge mode cannot show new situations. It is honest about being a replay.
+
+## Implementation note (2026-11-14)
+- The singleton is the `PublicIndex` Durable Object (binding `PUBLIC_INDEX`, name `public-index`, migration `v3`). The area reducer outputs a `publish` batch (puts of changed views, removals when a scope falls below 3 members or disappears); the area actor sends it and requeues it if the call fails. The index copies each view from a whitelist and rejects any view without `phones: "3+"`.

@@ -283,5 +283,80 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - This is a crash fix, not a change to what the hook checks.
 - When the hook runs again it will report the 2 known `D5_settle_equivalence` failures in the uncommitted detection work. That result is correct, and the work stays uncommitted until it is fixed.
 
+## 2026-11-14 detection engine: D5_settle_equivalence fixed
+- Root cause: settle archived a restored outage as soon as its restore time was older than the cut, but the property (and the design's horizon rule) keeps every outage whose start + 12 h is still inside the horizon. The settled run therefore lost an outage that the unsettled run still reported. Shrunk counterexample: 3 installs, one 2-minute outage, 13 h after the last event, 2 chunks.
+- Fix: `closeAt` in `settle.ts` now returns start + 12 h for every closed outage. This keeps the cut away from such outages and archives them only once they are fully past. No threshold changed.
+- Also kept two earlier uncommitted edits: `outputs.decisions` lists live decisions only, and `closeExpired` runs before `finalizeDays` in the sweep.
+- Added the regression test `test/d5-regress.test.ts` (D5_settle_equivalence). Removed the scratch files `dbg.test.ts` and `dbg2.test.ts`, which had no assertions. Fixed a Biome error in `levels.test.ts`. Ticked tasks 3 to 14 of detection-engine.
+- Verified: 127 detection tests pass three runs in a row, detection-audit 0 errors, traceability check clean, typecheck and lint clean.
+
+## 2026-11-14 D5 merge gates run
+- Ran the four gates on work/detection-d5: D5_settle_equivalence passes, detection-audit has 0 errors (2 warnings), traceability --check is clean, `npm test` passes (150), typecheck and lint are clean.
+- Detection engine tasks 3 to 14 are merge-ready. Not pushed; the human decides the merge.
+
+## 2026-11-14 area-cells task 4: router and scope selector
+- `workers/api/src/area/scope.ts`: `selectScope` (CELL if 3 or more recently armed members, else the linked group if it has 3, else the parent), `routeScopes` (cell, group, parent), `pinnedScopes` and `cellStatus`. An open outage touching the cell wins and shows from its own scope; a CONFIRMED at CELL precision for a cell under 3 recently armed members is shown as POSSIBLE.
+- Tests A1, A2, A3 in `workers/api/test/area-scope.test.ts` (property tests). Ticked tasks 3, 7 and 8 as well: their code and tests (A10, A6, A8) already existed and pass. Group key is the smallest cell, so it does not depend on insertion order.
+
+## 2026-11-14 area-cells task 5: linking
+- `workers/api/src/area/links.ts`: co-outage counts from private per-cell drop records (one count per outage per pair, same parent only, trailing 7 days), `linkedPairs`, `groupsFromLinks` (connected components, sorted), `diffLinks`, `planGroups` (create or retire GROUP engines), `pruneRecords`.
+- The link table is a pure function of the outage records, so no stored link state is needed to stay correct; storage in task 10 is a cache. Records with one key merge by earliest start and largest per-cell drop count, so replays do not double count.
+- Tests A4, A5 in `workers/api/test/area-links.test.ts`. Window edge: an outage exactly 7 days old still counts.
+
+## 2026-11-14 area-cells task 6: hints wiring
+- `workers/api/src/area/hints.ts`: `buildContext` turns the neighbor table, local cell levels and linked cells into the engine `Context`; `manualHint` passes a manual-report count only for 2 or more distinct installs (R8.2), zero until the later spec (R8.3). Notices older than 12 hours give no hint.
+- Test A7 in `workers/api/test/area-hints.test.ts` runs the real engine: with k below 3 here and in every hinting scope, no decision or push is CONFIRMED. A positive case shows a neighbor with k = 6 raises k = 3 to CONFIRMED, named NEIGHBOR.
+- `workers/api/package.json` now lists `@outage/detection` (this repository's own workspace package, already in `.kiro/approved-dependencies.json`); lockfile updated offline. No external dependency added.
+
+## 2026-11-14 area-cells task 9: reducer, scheduling, push de-dup, delete
+- `workers/api/src/area/reducer.ts`: pure `reduce(state, input, cfg)` for EVENTS, TICK, NOTICES, REMOVE and DELETE. It updates members (synthetic MOVED disarm), routes to cell, group and parent engines, defers state-only batches until a detection event or the flush interval, sets the alarm for the flush or for an open outage reaching 12 hours, builds co-outage records, links and groups, plans notices, builds public views, and de-duplicates pushes.
+- `workers/api/src/area/pushes.ts`: per-cell episodes (union of overlapping outage intervals), at most one CONFIRMED and one RESTORED per episode. `links.ts` gained `coalesceOutages` so one blackout seen by several scopes is one co-outage.
+- Tests A9, A11, A12 in `workers/api/test/area-reducer.test.ts`, plus R11.4 and R11.5 checks. Pass at 2000 runs.
+- A12 found a real gap: hints from the previous evaluation lag behind the batch cuts (seed 1278203691). Fix and its trade-off in ADR 0014 (PROPOSED, needs the human); both shrunk cases are pinned as a regression test.
+
+## 2026-11-14 area-cells task 10: Durable Object shell
+- `workers/api/src/area/model.ts`: `AreaModel` holds the reducer state, is the `DetectionPort` for `AreaCore`, and collects notices, removal requests and pushes. `toRows`/`fromRows` store it as rows; engine states are split into 16 install buckets and only changed rows are written (R13.3).
+- `SqlModelStore` in `area-store.ts` (one `area_model` table, writes in `transactionSync`). `AreaActor` builds the model from `ctx.id.name`, loads ring-1 neighbors with `h3-js` in `blockConcurrencyWhile` (skipped if the library fails), sends notices and removals to other area actors, deletes at once on delete-my-data, and keeps one alarm for the ingest flush, retention, the reducer tick and the model flush. New RPCs: `receiveNotices`, `removeMember`, `publicViews`. Cloudflare APIs checked on developers.cloudflare.com (limits, SQLite storage, state, id).
+- Tests: `workers/api/test/area-model.test.ts` (round-trip, write-behind, alarm, delete) and the runtime integration test now checks that `area_model` rows exist and lose the install on delete.
+
+## 2026-11-14 area-cells task 11: scenario tests
+- `workers/api/test/area-scenarios.test.ts`, against the pure reducer: 8, 2 and 1 phones (CELL for the dense cell, COARSE and unpublished for the sparse ones); a 30-phone outage confirming at CELL precision with one CONFIRMED and one RESTORED push; three sparse cells that link after 3 co-outages and then confirm in the group at LINKED precision; a border cell whose CONFIRMED notice raises a POSSIBLE in the neighbor parent (NEIGHBOR), re-evaluating only the scopes touching the notice cell.
+- The first scenario found a gap: a sparse cell's own CELL engine opened a POSSIBLE outage and `cellStatus` showed it at CELL precision. Open outages now record `shownFor`, the cells whose selected scope was that scope when the outage opened (design section 4), and only those cells show it.
+- Miniflare is not used for these: the runtime integration test already covers the shell. `detection-engine` task 16 (simulator generators) is not done; the scenarios build their events by hand.
+
+## 2026-11-14 web-and-area-pages tasks 1 and 7: publisher and public index
+- Task 1: area-cells R2.6 added (publish to the public index). The reducer now outputs `publish` (changed views and tombstones) and remembers the last published JSON per scope; ADR 0010 has an implementation note.
+- Task 7: `web/index-core.ts` (whitelist sanitizer, `applyBatch` writing only changed rows, `snapshot`), `web/index-actor.ts` (`PublicIndex` SQLite Durable Object, binding `PUBLIC_INDEX`, migration v3), `web/index-reader.ts` (null when the index fails). The area actor sends the batch and requeues it on failure.
+- Tests W2 (index part) in `workers/api/test/web-index.test.ts`: no install ID or extra field survives, no view without "3+", and a scope whose members fall below 3 is removed (tombstone), driven through the real reducer.
+
+## 2026-11-14 web-and-area-pages task 8: routes, JSON APIs, 405, sitemap, robots
+- `workers/api/src/web/routes.ts`: `/`, `/area/:slug`, `/c/:cell`, `/install`, `/privacy`, `/robots.txt`, `/sitemap.xml`, `/api/v1/public/map`, `/api/v1/public/area/:slug`, `/api/v1/public/cell/:cell/outages?days=` (clamped 1 to 30). GET and HEAD only, 405 with `Allow: GET, HEAD` otherwise. Every route goes through `PageCache`; an uncached page reads the index once; an unavailable index gives pages without status (5 s cache) and APIs a 503.
+- `index.ts` sends `/v1/*` to the ingest handlers and everything else to the site. Site origin and install values come from Worker vars.
+- Tests W7 and route tests in `workers/api/test/web-routes.test.ts`; the runtime integration test now fetches `/robots.txt`, `/api/v1/public/map` (through the real `PublicIndex`), a 405 and a 404.
+
+## 2026-11-14 web-and-area-pages task 9: replay builder in tools/sim
+- New workspace `tools/sim` (no new external dependency: vitest, fast-check, typescript). `src/replay.ts` runs the real engine with the default parameters once per distinct event time of a fixture and writes frames (area state, events, the explanation of the newest decision). `src/fixture.ts` builds the synthetic Lagos fixture: 10 phones, one "Your spot only" drop with a YES label, 7 drops within 1.7 s, replugs over 18 s. `scripts/build-replay.mjs` writes `packages/shared/fixtures/replay.json` (26 frames: Normal, Your spot only, Possible, Confirmed, Restored).
+- Honest device count: `recordedDevices` is 0 for a synthetic fixture and counts only REAL phones in a recording; `source` is SYNTHETIC.
+- Tests in `tools/sim/test/replay.test.ts`: W5 (every frame equals an independent engine run on the same prefix, any phone count, jitter up to 2 s and replug spread), the committed file equals a fresh build, labels on every object, refusal of unlabeled input, DM2 default parameters. `demo-label-check --all` is clean.
+- The engine ignores simulated events, so the builder strips the flag on its private copy only: ADR 0015 (PROPOSED).
+
+## 2026-11-15 review follow-up: delete drains the outbox
+- `AreaActor.deleteInstall` now calls `afterChange`, so a delete that drops a scope below 3 phones sends the public-index removal and neighbor notices at once instead of waiting for the next ingest or alarm.
+- Test: `area-model.test.ts` "delete queues the public-index change" (R12.1, A8).
+- `workers/api/README.md` written with the area section (area-cells task 12, partial; ADR 0006 numbers still open).
+- ADRs 0014 and 0015 stay PROPOSED; listed in `docs/session-notes.md`.
+
 ## 2026-11-14 session handoff
 - The unfinished detection engine is pushed to branch `wip/detection-engine`, not `main`, because 2 tests fail. `main` stays green. The handoff, how to start a new session, and every open question for the human are in `docs/session-notes.md`. `docs/status.md` is current.
+
+## 2026-11-15 merge gates and origin/main merge on work/detection-d5
+- Ran the four merge gates from `docs/session-notes.md` on the branch: `D5_settle_equivalence` passes, `detection-audit.mjs` is clean, `traceability.mjs --check` passes, and `npm test`, typecheck and Biome lint are green.
+- Merged `origin/main` into `work/detection-d5`. Two doc conflicts (`docs/kiro-log.md`, `docs/status.md`) were resolved by keeping both log entries and the branch status. No code changed and no threshold, dependency or stored data changed.
+- Gates were rerun on the merged tree and all pass. Output is in `/tmp/gates.log`.
+- Open for the human: push the branch and merge PR #1 into `main` (a sub-agent cannot push). ADRs 0014 and 0015 are still open.
+
+## 2026-11-15 audit blockers fixed on work/detection-d5
+- `tail(k, mu)` returned 0 instead of about 1 when `k < mu` and the first term underflowed (`tail(1,800)`, `tail(3,5000)`). It now returns 1 when `k <= mu` and the first term is below 1e-300, and still returns 0 for `k > mu`. This also fixed `P1_single_unplug_never_alerts` at 2000 runs. No threshold changed. Tests: `D2_poisson_tail_accuracy large mu` in `tail.test.ts`.
+- `D5_settle_equivalence` got a 120 s test timeout (2000 runs take about 16 s). Run count and assertions are unchanged.
+- `design.md` section 8 now says a settled outage closes at `start + 12 h`, matching `closeAt` in `settle.ts`.
+- CI `checks.yml` runs the detection suite with `FC_NUM_RUNS=2000`, as `testing.md` states.

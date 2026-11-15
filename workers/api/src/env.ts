@@ -1,10 +1,18 @@
 import type { AreaActor } from './area-actor.ts';
 import type { RegistryActor } from './registry-actor.ts';
+import type { PublicIndex } from './web/index-actor.ts';
 
 export interface Env {
   AREA: DurableObjectNamespace<AreaActor>;
   REGISTRY: DurableObjectNamespace<RegistryActor>;
+  PUBLIC_INDEX: DurableObjectNamespace<PublicIndex>;
   INSTALL_TOKEN_SECRET?: string; // wrangler secret put INSTALL_TOKEN_SECRET (never in the repo)
+  // Public site configuration (web-and-area-pages R7.4): plain vars, set by the release-apk skill. Unset = left out.
+  SITE_ORIGIN?: string; // e.g. https://outage.example; defaults to the request's origin
+  APK_URL?: string;
+  APK_VERSION?: string;
+  APK_SIZE_BYTES?: string;
+  APK_SHA256?: string;
   STATE_FLUSH_MS?: string; // optional override of the flush interval, used by the integration test; unset in production
 }
 

@@ -8,7 +8,7 @@ Depends on `area-cells` (tasks 8, 10), `detection-engine` (tasks 13, 16), `event
 
 ## Wave 1
 
-- [ ] 1. Amend `area-cells`: R2.2 publish to the public index, and add a publisher in the reducer outputs. Record the singleton in ADR 0010 (public index).
+- [x] 1. Amend `area-cells`: R2.2 publish to the public index, and add a publisher in the reducer outputs. Record the singleton in ADR 0010 (public index).
   - Depends on: `area-cells` 8
   - Requirements: R8.1, R8.2
 - [x] 2. Page kit: `escapeHtml`, nonce and header helpers, layout, the five-state string pack with optional Pidgin. Tests W8.
@@ -33,13 +33,13 @@ Depends on `area-cells` (tasks 8, 10), `detection-engine` (tasks 13, 16), `event
 
 ## Wave 3
 
-- [ ] 7. Public index actor, reader and the publisher hook, with a unit test of tombstones when members fall below 3. Test W2 (index part).
+- [x] 7. Public index actor, reader and the publisher hook, with a unit test of tombstones when members fall below 3. Test W2 (index part).
   - Depends on: 1, 4
   - Requirements: R8
-- [ ] 8. Routes and JSON APIs, 405 handling, sitemap and robots. Tests W7.
+- [x] 8. Routes and JSON APIs, 405 handling, sitemap and robots. Tests W7.
   - Depends on: 4, 5, 6, 7
   - Requirements: R1, R9, R11
-- [ ] 9. Replay builder in `tools/sim`: fixture to `replay.json` through the engine, honest device count, source flag. Test W5.
+- [x] 9. Replay builder in `tools/sim`: fixture to `replay.json` through the engine, honest device count, source flag. Test W5.
   - Depends on: `detection-engine` 16
   - Requirements: R6.4, R6.6
 

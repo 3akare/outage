@@ -60,7 +60,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R5.6 | P11 | `P11_sparse_never_confirms` | 9 | planned |
 | R12.2 | P12 | `P12_no_stale_push` | 13 | planned |
 | R1.3 | D1 | `D1_incremental_equals_sweep` | follow-up if needed | planned |
-| R5.4 | D2 | `D2_poisson_tail_accuracy` | 4 | planned |
+| R5.4 | D2 | `D2_poisson_tail_accuracy` (incl. large mu) | 4 | planned |
 | R13 | D3 | `D3_explanations_complete` | 13 | planned |
 | R3.5, R4.3, R8 | D4 | `D4_labels` | 7 | planned |
 | R16 | D5 | `D5_settle_equivalence` | 14 | planned |
@@ -70,18 +70,18 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R4.1 to R4.4 | A1 | `A1_scope_selection` | 4 | planned |
-| R4.6 | A2 | `A2_no_confirmed_for_sparse_cell` | 4 | planned |
-| R4.5 | A3 | `A3_open_outage_keeps_scope` | 4 | planned |
-| R6.1 to R6.3 | A4 | `A4_link_rule` | 5 | planned |
-| R6.4, R6.6 | A5 | `A5_groups_deterministic` | 5 | planned |
+| R4.1 to R4.4 | A1 | `A1_scope_selection` | 4 | test written (`workers/api/test/area-scope.test.ts`) |
+| R4.6 | A2 | `A2_no_confirmed_for_sparse_cell` | 4 | test written (`workers/api/test/area-scope.test.ts`) |
+| R4.5 | A3 | `A3_open_outage_keeps_scope` | 4 | test written (`workers/api/test/area-scope.test.ts`) |
+| R6.1 to R6.3 | A4 | `A4_link_rule` | 5 | test written (`workers/api/test/area-links.test.ts`) |
+| R6.4, R6.6 | A5 | `A5_groups_deterministic` | 5 | test written (`workers/api/test/area-links.test.ts`) |
 | R7.3, R7.4 | A6 | `A6_notice_convergence` | 7 | test written (`workers/api/test/area-neighbors.test.ts`) |
-| R7.5, R8 | A7 | `A7_hints_never_confirm_alone` | 6 | planned |
+| R7.5, R8 | A7 | `A7_hints_never_confirm_alone` | 6 | test written (`workers/api/test/area-hints.test.ts`) |
 | R9 | A8 | `A8_public_view_privacy` | 8 | test written (`workers/api/test/area-view.test.ts`) |
-| R10 | A9 | `A9_push_dedup` | 9 | planned |
+| R10 | A9 | `A9_push_dedup` | 9 | test written (`workers/api/test/area-reducer.test.ts`) |
 | R3.2, R5 | A10 | `A10_move_closes_old_cell` | 3 | test written (`workers/api/test/area-members.test.ts`) |
-| R12 | A11 | `A11_delete_removes_install` | 9 | planned |
-| R11 | A12 | `A12_deferred_evaluation_equivalence` | 9 | planned |
+| R12 | A11 | `A11_delete_removes_install` | 9 | test written (`workers/api/test/area-reducer.test.ts`) |
+| R11 | A12 | `A12_deferred_evaluation_equivalence` | 9 | test written (`workers/api/test/area-reducer.test.ts`) |
 
 ## alerts-and-light-alarm
 
@@ -145,12 +145,12 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
 | R1.4, R3 | W1 | `W1_page_without_script` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
-| R4.3, R11.1 | W2 | `W2_public_privacy` | 4, 7 | partly: pages tested (`workers/api/test/web-pages.test.ts`); index part is task 7 |
+| R4.3, R11.1 | W2 | `W2_public_privacy` | 4, 7 | test written (`workers/api/test/web-pages.test.ts`, `workers/api/test/web-index.test.ts`) |
 | R2 | W3 | `W3_five_states` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
 | R9 | W4 | `W4_cache_ttl` | 5 | unit tests (`workers/api/test/web-cache.test.ts`); deployed-domain check open |
-| R6.4, R6.6 | W5 | `W5_replay_matches_engine` | 9 | planned |
+| R6.4, R6.6 | W5 | `W5_replay_matches_engine` | 9 | test written (`tools/sim/test/replay.test.ts`) |
 | R6.2, R6.8 | W6 | `W6_simulated_separation` | 10 | planned |
-| R10.3, R11.5 | W7 | `W7_sitemap_robots` | 3, 8 | partly: catalog tested (`workers/api/test/web-catalog.test.ts`); routes are task 8 |
+| R10.3, R11.5 | W7 | `W7_sitemap_robots` | 3, 8 | test written (`workers/api/test/web-catalog.test.ts`, `workers/api/test/web-routes.test.ts`) |
 | R1.6, R11.2, R11.3 | W8 | `W8_headers_and_escaping` | 2 | test written (`workers/api/test/web-kit.test.ts`) |
 | R4.4 | W9 | `W9_cell_page_indistinguishable` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
 

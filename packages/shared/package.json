@@ -2,7 +2,11 @@
   "name": "@outage/shared",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts", "./fixtures/*": "./fixtures/*" },
+  "exports": {
+    ".": "./src/index.ts",
+    "./engine": "./src/engine.ts",
+    "./fixtures/*": "./fixtures/*"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest --run"

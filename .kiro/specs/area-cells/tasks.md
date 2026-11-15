@@ -16,43 +16,43 @@ This spec depends on `detection-engine` (tasks 1, 3, 13) and `event-ingest` (tas
 
 ## Wave 2 (needs 1, 2)
 
-- [ ] 3. Membership and moves: members table logic, one cell per install, synthetic `MOVED` disarm, expiry, weight exclusion. Tests A10.
+- [x] 3. Membership and moves: members table logic, one cell per install, synthetic `MOVED` disarm, expiry, weight exclusion. Tests A10.
   - Depends on: 1, 2
   - Requirements: R3, R5
-- [ ] 7. Neighbor table and notices: latest-as-of rule, 12-hour expiry, idempotent merge, notice creation rules. Tests A6.
+- [x] 7. Neighbor table and notices: latest-as-of rule, 12-hour expiry, idempotent merge, notice creation rules. Tests A6.
   - Depends on: 2
   - Requirements: R7
-- [ ] 8. Public view builder: boundary union, 3-member floor, "3+" phones, history list. Tests A8.
+- [x] 8. Public view builder: boundary union, 3-member floor, "3+" phones, history list. Tests A8.
   - Depends on: 2
   - Requirements: R9
 
 ## Wave 3 (needs 3)
 
-- [ ] 4. Router and scope selector: feed events to cell, group and parent engines, recently-armed rule, open-outage pinning, precision labels. Tests A1, A2, A3.
+- [x] 4. Router and scope selector: feed events to cell, group and parent engines, recently-armed rule, open-outage pinning, precision labels. Tests A1, A2, A3.
   - Depends on: 3, `detection-engine` 3, `detection-engine` 13
   - Requirements: R4, R2.2
 
 ## Wave 4 (needs 4)
 
-- [ ] 5. Linking: co-outage records from per-cell drops, 7-day rule, connected components, group engine create and retire. Tests A4, A5.
+- [x] 5. Linking: co-outage records from per-cell drops, 7-day rule, connected components, group engine create and retire. Tests A4, A5.
   - Depends on: 4
   - Requirements: R6
-- [ ] 6. Hints wiring: neighbor and linked levels and the manual-report count into the engine's context. Tests A7.
+- [x] 6. Hints wiring: neighbor and linked levels and the manual-report count into the engine's context. Tests A7.
   - Depends on: 4, 7
   - Requirements: R7.5, R8
 
 ## Wave 5 (needs 5, 6, 8)
 
-- [ ] 9. Evaluation scheduling and the reducer: deferred state-only batches, one evaluation per scope per request, unknown-end alarm, push de-dup by episode, delete-my-data. Tests A9, A11, A12.
+- [x] 9. Evaluation scheduling and the reducer: deferred state-only batches, one evaluation per scope per request, unknown-end alarm, push de-dup by episode, delete-my-data. Tests A9, A11, A12.
   - Depends on: 5, 6, 8
   - Requirements: R10, R11, R12
 
 ## Wave 6 (needs 9)
 
-- [ ] 10. Durable Object shell: SQLite persistence for the model in design 10, write-behind flush, partitioned engine states, counters, notice sending (DO to DO) and the flush alarm.
+- [x] 10. Durable Object shell: SQLite persistence for the model in design 10, write-behind flush, partitioned engine states, counters, notice sending (DO to DO) and the flush alarm.
   - Depends on: 9, `event-ingest` 5
   - Requirements: R2, R13, R14
-- [ ] 11. Scenario tests: 8 and 2 phones, link then confirm, 30-phone outage with `CELL` precision, cross-parent notice. Runs against the reducer and, if available, Miniflare.
+- [x] 11. Scenario tests: 8 and 2 phones, link then confirm, 30-phone outage with `CELL` precision, cross-parent notice. Runs against the reducer and, if available, Miniflare.
   - Depends on: 9, `detection-engine` 16
   - Requirements: R4, R6, R7
 

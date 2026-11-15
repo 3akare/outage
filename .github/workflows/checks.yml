@@ -20,6 +20,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - name: Detection property suite (2000 runs)
+        run: FC_NUM_RUNS=2000 npx vitest --run --dir packages/detection
       - run: node .kiro/scripts/spec-lint.mjs
       - run: npm run probe:install
       - run: npm run probe:typecheck
