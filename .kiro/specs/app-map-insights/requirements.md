@@ -100,6 +100,20 @@ Both work from one phone. The map adds neighbours when the server has 3 or more 
 2. Deep link `insights` SHALL open the Insights screen. Unknown values stay ignored (app-shell R1.3).
 3. Strings SHALL be in `res/values` and in the Pidgin pack with fallback per key (`StringPackTest`).
 
+## Analysis of requirements (gaps found and how they were fixed)
+
+| # | Gap | Fix |
+|---|---|---|
+| G1 | A map of every cell could reveal where one phone is. | R2.1 and R2.2: under 3 phones a cell is `NO_DATA`, and no count is shown or sent (R11.2, ADR 0007). |
+| G2 | The Android app had no source of map data. The web page draws an SVG on the server. | A new `GET /api/map.json` route (task 1, ADR 0025) with a shared fixture read by Vitest and JUnit. |
+| G3 | The app had no internet permission and no API address in the build. | `INTERNET` permission added. The base address is the Gradle property `outageApiBase`. Until it is set the app shows the labelled demo (R5). |
+| G4 | Simulated data could be mistaken for real data or pollute the cache and the Power Log. | R5: a visible "Simulated" label, `simulated: true`, and no cache write (AM6). |
+| G5 | Insights could show 0 hours for days the phone never observed. | R7 and R10: days under the coverage rule are `null`, not 0 (IN4). |
+| G6 | The Power Log timeline does not exist yet, so real Insights have no input. | `PowerLogInsightsSource` reads `PowerLogTimeline.None` and shows the empty state. Task 6 stays open until the timeline is built. |
+| G7 | Day and weekday edges depend on the phone's time zone and daylight saving. | The zone is an input to `InsightsCalc.compute` (IN5). |
+| G8 | The promise check could read as a compensation claim. | R9 wording rules, tested by IN6. |
+| G9 | A canvas has no accessible children. | R6 adds a list view and semantic descriptions per state. |
+
 ## Gaps and risks
 
 | # | Gap or risk | Handling |

@@ -559,3 +559,6 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Issue 4: Vitest `M1_floor` (example and fast-check property) fails if an uncovered cell carries a state, a time or history, or if the JSON has any count key. Issue 5 not changed: no count field exists and the cache is app-private (ADR 0025 alternative 1). Issue 6: design now says the demo map is hard-coded; task 12 stays open.
 - Checks: workers/api vitest 253 pass, tsc exit 0, biome clean on the new files (the rest of `workers/api` already had biome findings before this change, left alone). Gradle `assembleDebug testDebugUnitTest lintDebug` exit 0, 4 new JUnit tests pass.
 - Open: set `-PoutageApiBase` in the release build once the Worker is deployed; the Power Log timeline replaces `PowerLogTimeline.None`.
+
+## 2026-11-15 docs(map): spec-lint sections and IN2 to IN5 traceability [spec:app-map-insights task:none]
+- Added the gap analysis (requirements), sequence diagram, data model note and testing strategy (design), dependency graph (tasks), a README index row, and separate traceability rows IN1 to IN6 naming the real JUnit tests. All six have tests. Docs only.

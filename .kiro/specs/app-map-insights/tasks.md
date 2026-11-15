@@ -4,6 +4,20 @@ Rules: only real dependencies are listed. A task is done only per `definition-of
 
 Depends on `app-shell` (Shell, FeatureRegistry), `web-and-area-pages` (public JSON, catalog), `power-log` (timeline, `bands.json`, Light Score). Where a power-log task is not done, use the demo source and keep the screen behind the interface.
 
+## Dependency graph
+
+```mermaid
+graph LR
+    T1[1 map.json route] --> T2[2 map model]
+    T2 --> T5[5 map source]
+    T4[4 InsightsStats] --> T6[6 insights source]
+    T5 --> T7[7 Area screen]
+    T6 --> T10[10 Insights screen]
+    T7 --> T11[11 wire and check]
+    T10 --> T11
+    T11 --> T12[12 visual pass]
+```
+
 ## Wave 1: data and pure logic
 
 - [x] 1. Worker route `GET /api/map.json` and shared types plus fixture in `packages/shared/fixtures/`. Vitest checks the floor (no cell under 3 phones shows a state, no counts in the output).

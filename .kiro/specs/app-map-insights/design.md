@@ -32,7 +32,7 @@ flowchart LR
 
 Anything marked "Confirm" is unverified until the named task checks it with Context7 (`docs-servers.md`).
 
-## 3. Data
+## 3. Data model
 
 ### Map JSON (new Worker route, same data as the SVG map)
 `GET /api/map.json?city=<slug>` returns:
@@ -70,6 +70,41 @@ data class InsightsState(range, counts, hoursPerDay, heatmap, longest, weeklyTre
 ```
 - `PowerLogInsightsSource` reads the Power Log timeline. `DemoInsightsSource` returns 12 weeks of labelled sample intervals.
 - `InsightsStats.compute(intervals, band, nowMs, zone)` returns `InsightsState`. Uses the user's time zone for day and weekday edges, passed in as an input (no hidden clock).
+
+## 3a. Data model and flow
+
+The data model is the map JSON and the Kotlin types in section 3. The shared TypeScript type is `packages/shared/src/map.ts` and the fixture is `packages/shared/fixtures/map/map.json`.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant S as Area screen
+    participant MS as AreaMapSource
+    participant W as Worker GET /api/map.json
+    participant C as Cache file
+    participant M as MapModel and AreaMapCanvas
+    U->>S: opens Area
+    S->>MS: load(city)
+    alt outageApiBase not set
+        MS-->>S: Fresh(demo map, simulated true)
+        Note over MS,C: the demo never writes the cache
+    else base set
+        MS->>W: GET /api/map.json?city=lagos
+        alt network and valid JSON
+            W-->>MS: map JSON
+            MS->>C: write JSON and fetched time
+            MS-->>S: Fresh(map)
+        else offline or bad shape
+            MS->>C: read
+            C-->>MS: cached JSON or nothing
+            MS-->>S: Cached(map, fetchedMs) or Empty
+        end
+    end
+    S->>M: render(map, transform)
+    M-->>U: hexagons, legend, spot outline
+    U->>M: tap hex
+    M-->>U: cell sheet
+```
 
 ## 4. Map geometry and gestures
 
@@ -121,6 +156,13 @@ Early state (R10) replaces 3 to 8 with the progress card until each minimum is m
 | IN6 | The promise text never contains refund, compensation or claim, and says "unconfirmed" for an unverified band. | JUnit on strings |
 
 Instrumented drawing is checked by a screenshot pass on an emulator or the field phone (the Kiro IDE pass); JVM tests cover all logic.
+
+## 7a. Testing strategy
+
+- Pure Kotlin logic is tested on the JVM with JUnit 4: `MapTest.kt` (AM1 to AM4), `MapSourceTest.kt` (AM5, AM6, label placement, cache), `MapContractTest.kt` (the shared fixture parses), `InsightsTest.kt` (IN1 to IN6, source choice), `RoutingTest.kt` and `StringPackTest.kt` (navigation and strings). Random inputs use a fixed seed.
+- The Worker route is tested with Vitest and fast-check in `workers/api/test/map-json.test.ts` (`M1_floor`: no state, time, history or count key for a cell under the floor).
+- Drawing, gestures and TalkBack are not covered by JVM tests. Task 12 checks them on an emulator or phone.
+- The repository gate is `node .kiro/scripts/spec-lint.mjs`, `npm test`, and `./gradlew assembleDebug testDebugUnitTest lintDebug`.
 
 ## 8. Error handling
 

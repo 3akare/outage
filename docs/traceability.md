@@ -226,7 +226,12 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R4, R5.2, R11.4 | AM6 | `am6_a_simulated_map_never_writes_the_cache`, `real_map_is_cached_and_used_when_the_network_fails` | 5 | test written (`MapSourceTest.kt`) |
 | R2, R11.2 | AM7 | `M1_floor` (Vitest `workers/api/test/map-json.test.ts`), `the_shared_fixture_parses_with_every_state_the_worker_emits` (`MapContractTest.kt`) | 1 | tests pass |
 | R5, R10 | - | `a_set_api_base_gives_the_real_source_with_an_empty_state`, `a_blank_api_base_keeps_the_labelled_demo` (`InsightsTest.kt`) | 6 | tests pass; task 6 open until the Power Log timeline exists |
-| R7 to R10 | IN1 to IN6 | `in1_*` and others | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt`) |
+| R7 | IN1 | `in1_power_plus_outage_equals_observed_for_any_order_of_intervals` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt`) |
+| R8 | IN2 | `in2_heatmap_shares_are_in_range_and_rare_slots_are_null` | 4 | test written (`InsightsTest.kt`) |
+| R8 | IN3 | `in3_weekly_trend_has_twelve_entries_in_order_with_null_for_no_data` | 4 | test written (`InsightsTest.kt`) |
+| R7, R10 | IN4 | `in4_days_without_enough_coverage_are_null_not_zero` | 4 | test written (`InsightsTest.kt`) |
+| R7, R8 | IN5 | `in5_day_edges_follow_the_time_zone_across_a_dst_change` | 4 | test written (`InsightsTest.kt`) |
+| R9 | IN6 | `in6_promise_text_never_uses_forbidden_words_and_says_estimate` | 4 | test written (`InsightsTest.kt`) |
 | R12.1, R12.2 | AS1 | `AS1_start_routing_parses_known_routes` (insights) | 10 | test written (`RoutingTest.kt`) |
 | R12.3 | AS7 | `AS7_strings_*` | 10 | test written (`StringPackTest.kt`) |
 | R1, R3, R6.1, R6.3, R7, R8 | - | drawing, gestures, TalkBack | 7 to 10, 12 | screens built (`ui/MapScreen.kt`, `ui/InsightsScreen.kt`, `ui/charts/`); emulator check is task 12 |
