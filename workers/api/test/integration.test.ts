@@ -48,9 +48,12 @@ describe('R7 R8 R12 Worker and area actors in the Workers runtime', () => {
     expect((await call('/v1/events', { installId, events }, 'wrong')).status).toBe(401);
     expect(CELL).not.toBe(OTHER_CELL);
 
-    // The 300 ms flush alarm writes the armed row and reports usage to the registry.
+    // The 300 ms flush alarm writes the armed row and reports usage to the registry. Each area actor reports on its
+    // own alarm, and an alarm can fire between the first and second POST above, so usage arrives in several reports.
+    // Wait until every counter this test asserts on has landed, not just until the first report.
     let stats: { rowsWritten: number; counters: Record<string, number> } = { rowsWritten: 0, counters: {} };
-    for (let i = 0; i < 40 && stats.rowsWritten === 0; i++) {
+    const reported = () => stats.rowsWritten > 0 && stats.counters['type.UNPLUG'] === 1 && (stats.counters['result.duplicate'] ?? 0) >= 3;
+    for (let i = 0; i < 40 && !reported(); i++) {
       await sleep(250);
       stats = (await (await server.fetch('/v1/stats')).json()) as typeof stats;
     }
