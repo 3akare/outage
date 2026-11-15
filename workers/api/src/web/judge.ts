@@ -141,12 +141,12 @@ function installLine(site: Site): string {
 
 /** `/judge` (R6.1 to R6.5, R6.9). The banner is in the HTML and the title, not added by script (R6.2). */
 export function renderJudgePage(site: Site, replay: ReplayData | null): Rendered {
-  const title = `${BANNER_TEXT}: Outage Judge mode`;
+  const title = `${BANNER_TEXT}: Outage simulation`;
   const banner = `<div class="banner" role="note">${BANNER_TEXT}</div>`;
   const description = 'A labeled replay that shows how Outage confirms a power cut.';
   if (replay === null || replay.frames.length === 0) {
     const body = `${banner}<main><h1>${BANNER_TEXT}</h1><p>Replay not built.</p>${HOW}${installLine(site)}</main>`;
-    return html(layout({ site, title, description, path: JUDGE_PATH, body }), 5);
+    return html(layout({ site, title, description, path: '/app/simulate', body }), 5);
   }
   const body =
     `${banner}<main><h1>${BANNER_TEXT}: how Outage confirms a power cut</h1>` +
@@ -155,7 +155,7 @@ export function renderJudgePage(site: Site, replay: ReplayData | null): Rendered
     `<h2>Now playing</h2><div id="current" aria-live="polite"></div>${CONTROLS}` +
     `<h2>All steps</h2><ol id="steps" class="plain">${replay.frames.map(stepHtml).join('')}</ol>` +
     `${installLine(site)}</main>`;
-  return html(layout({ site, title, description, path: JUDGE_PATH, body, script: SCRIPT }), TTL_SECONDS);
+  return html(layout({ site, title, description, path: '/app/simulate', body, script: SCRIPT }), TTL_SECONDS);
 }
 
 /** `/api/v1/public/judge/replay`: the replay object, always `simulated: true` (R6.2, R6.6). */

@@ -46,7 +46,7 @@ describe('W1 page without script', () => {
         expect(out).toContain('<title>Is there power in Yaba right now?</title>');
         expect(out).toContain('<h1>Is there power in Yaba right now?</h1>');
         expect(out).toContain(SITE.apkUrl);
-        expect(out).toContain('href="/judge"');
+        expect(out).toContain('href="/app/simulate"');
         expect(out).toContain('rel="canonical"');
         expect(out).toContain('name="description"');
         if (status.kind === 'NO_COVERAGE') expect(out).toContain('No phones here yet. Install Outage to be the first.');
@@ -86,7 +86,7 @@ describe('W1 page without script', () => {
     const r = renderAreaPage({ site: SITE, area: YABA, views: null, nowMs: NOW });
     expect(r.body).toContain('Status is not available right now.');
     expect(r.ttlSeconds).toBeLessThanOrEqual(5);
-    expect(r.body).toContain('href="/judge"');
+    expect(r.body).toContain('href="/app/simulate"');
   });
 
   it('W1_page_without_script: wider scope shows the precision label', () => {
@@ -115,7 +115,7 @@ describe('W1 page without script', () => {
   it('W1_page_without_script: home page has hero, Judge button, install button, map and list', () => {
     const out = renderHomePage({ site: SITE, areas: AREAS, views: [cellView(cell0, confirmedNow())], nowMs: NOW }).body;
     expect(out).toContain('Your phone charger is a power-grid sensor.');
-    expect(out).toContain('href="/judge"');
+    expect(out).toContain('href="/app/simulate"');
     expect(out).toContain('<svg class="map"');
     expect(out).toContain('<a href="/area/yaba">Yaba</a>: Power cut');
     expect(out).toContain('<a href="/area/ikeja">Ikeja</a>: No phones here yet');
@@ -123,7 +123,7 @@ describe('W1 page without script', () => {
 
   it('W1_page_without_script: home with no listed areas still offers Judge mode and install', () => {
     const out = renderHomePage({ site: SITE, areas: [], views: [], nowMs: NOW }).body;
-    expect(out).toContain('href="/judge"');
+    expect(out).toContain('href="/app/simulate"');
     expect(out).toContain('Install Outage');
     expect(out).not.toContain('<svg');
   });
@@ -143,7 +143,7 @@ describe('W1 page without script', () => {
     expect(r.body).toContain('Size: 5.0 MB');
     expect(r.body).toContain(sha);
     expect(r.body).toContain('Android only for now');
-    expect(r.body).toContain('href="/judge"');
+    expect(r.body).toContain('href="/app/simulate"');
     expect(r.body).toContain('Allow from this source');
     const none = renderInstallPage({ site: SITE, install: null });
     expect(none.body).toContain('not published yet');

@@ -51,7 +51,7 @@ describe('W6 simulated separation', () => {
   it('W6_simulated_separation: /judge and its API carry the label, and /judge never reads the index', async () => {
     const page = await text('/judge');
     expect(page.res.status).toBe(200);
-    expect(page.body).toContain('<title>Simulated replay: Outage Judge mode</title>');
+    expect(page.body).toContain('<title>Simulated replay: Outage simulation</title>');
     expect(page.body).toContain('<div class="banner" role="note">Simulated replay</div>');
     expect(page.counts.index).toBe(0);
     const api = await text('/api/v1/public/judge/replay');
@@ -147,7 +147,7 @@ describe('Judge page content', () => {
   });
 
   it('R1.3: the real home and area pages show "Your spot only" only in the legend', async () => {
-    const { body } = await text('/');
+    const { body } = await text('/areas');
     expect(body.split('Your spot only').length - 1).toBe(1);
   });
 

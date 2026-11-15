@@ -59,7 +59,7 @@ export function layout(input: LayoutInput): string {
     (input.noindex ? '<meta name="robots" content="noindex">' : '') +
     `<style nonce="${NONCE_PLACEHOLDER}">${CSS}</style></head><body>` +
     `<header><a href="/">Outage</a></header>${input.body}` +
-    '<footer class="note"><a href="/judge">Judge mode</a> · <a href="/install">Install</a> · <a href="/privacy">Privacy</a></footer>' +
+    '<footer class="note"><a href="/app">Web app</a> · <a href="/app/simulate">Simulation</a> · <a href="/install">Install</a> · <a href="/privacy">Privacy</a></footer>' +
     (input.script ? `<script nonce="${NONCE_PLACEHOLDER}">${input.script}</script>` : '') +
     '</body></html>'
   );

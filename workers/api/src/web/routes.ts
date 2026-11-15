@@ -19,13 +19,14 @@ import {
   renderPrivacyPage,
 } from './pages.ts';
 import {
-  JUDGE_PATH,
   type ReplayData,
   renderJudgePage,
   renderJudgeReplayJson,
   renderJudgeServiceWorker,
 } from './judge.ts';
-import { buildMapJson, cityFrom } from './map-json.ts';
+import { APP_TABS, renderAppCss, renderAppJs, renderAppPage, SIMULATE_PATH } from './app.ts';
+import { renderLanding } from './landing.ts';
+import { buildMapJson, cityFrom, DEFAULT_CITY } from './map-json.ts';
 import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './status.ts';
 
 export interface WebDeps {
@@ -63,7 +64,9 @@ export function robotsTxt(site: Site): string {
 export function sitemapXml(site: Site, areas: readonly CatalogArea[]): string {
   const paths = [
     '/',
-    JUDGE_PATH,
+    ...APP_TABS.map((t) => t.path),
+    SIMULATE_PATH,
+    '/areas',
     '/install',
     '/privacy',
     ...areas.filter((a) => a.checkedBy.trim() !== '').map((a) => `/area/${a.slug}`),
@@ -75,8 +78,23 @@ export function sitemapXml(site: Site, areas: readonly CatalogArea[]): string {
 type Route = { pattern: RegExp; render: (m: RegExpExecArray, url: URL, deps: WebDeps) => Promise<Rendered> | Rendered };
 
 const ROUTES: Route[] = [
+  { pattern: /^\/$/, render: (_m, _u, d) => renderLanding(d.site) },
+  { pattern: /^\/app\.css$/, render: () => renderAppCss() },
+  { pattern: /^\/app\.js$/, render: () => renderAppJs() },
   {
-    pattern: /^\/$/,
+    // The web replica of the phone app. Real data only (never the replay). A failed index read shows the error card.
+    pattern: /^\/app(?:\/(insights|settings))?$/,
+    render: async (m, _u, d) => {
+      const tab = m[1] === 'insights' || m[1] === 'settings' ? m[1] : 'home';
+      if (tab !== 'home') return renderAppPage(tab, d.site, null);
+      const views = await d.index.views();
+      const map = views === null ? null : buildMapJson(DEFAULT_CITY, d.mapAreas ?? d.areas, views, d.now());
+      return renderAppPage('home', d.site, map);
+    },
+  },
+  { pattern: /^\/app\/simulate$/, render: (_m, _u, d) => renderJudgePage(d.site, d.replay()) },
+  {
+    pattern: /^\/areas$/,
     render: async (_m, _u, d) =>
       renderHomePage({ site: d.site, areas: d.areas, views: await d.index.views(), nowMs: d.now() }),
   },
