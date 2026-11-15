@@ -78,10 +78,10 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R7.3, R7.4 | A6 | `A6_notice_convergence` | 7 | test written (`workers/api/test/area-neighbors.test.ts`) |
 | R7.5, R8 | A7 | `A7_hints_never_confirm_alone` | 6 | test written (`workers/api/test/area-hints.test.ts`) |
 | R9 | A8 | `A8_public_view_privacy` | 8 | test written (`workers/api/test/area-view.test.ts`) |
-| R10 | A9 | `A9_push_dedup` | 9 | planned |
+| R10 | A9 | `A9_push_dedup` | 9 | test written (`workers/api/test/area-reducer.test.ts`) |
 | R3.2, R5 | A10 | `A10_move_closes_old_cell` | 3 | test written (`workers/api/test/area-members.test.ts`) |
-| R12 | A11 | `A11_delete_removes_install` | 9 | planned |
-| R11 | A12 | `A12_deferred_evaluation_equivalence` | 9 | planned |
+| R12 | A11 | `A11_delete_removes_install` | 9 | test written (`workers/api/test/area-reducer.test.ts`) |
+| R11 | A12 | `A12_deferred_evaluation_equivalence` | 9 | test written (`workers/api/test/area-reducer.test.ts`) |
 
 ## alerts-and-light-alarm
 

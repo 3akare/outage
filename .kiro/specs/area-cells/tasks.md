@@ -43,7 +43,7 @@ This spec depends on `detection-engine` (tasks 1, 3, 13) and `event-ingest` (tas
 
 ## Wave 5 (needs 5, 6, 8)
 
-- [ ] 9. Evaluation scheduling and the reducer: deferred state-only batches, one evaluation per scope per request, unknown-end alarm, push de-dup by episode, delete-my-data. Tests A9, A11, A12.
+- [x] 9. Evaluation scheduling and the reducer: deferred state-only batches, one evaluation per scope per request, unknown-end alarm, push de-dup by episode, delete-my-data. Tests A9, A11, A12.
   - Depends on: 5, 6, 8
   - Requirements: R10, R11, R12
 

@@ -307,3 +307,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `workers/api/src/area/hints.ts`: `buildContext` turns the neighbor table, local cell levels and linked cells into the engine `Context`; `manualHint` passes a manual-report count only for 2 or more distinct installs (R8.2), zero until the later spec (R8.3). Notices older than 12 hours give no hint.
 - Test A7 in `workers/api/test/area-hints.test.ts` runs the real engine: with k below 3 here and in every hinting scope, no decision or push is CONFIRMED. A positive case shows a neighbor with k = 6 raises k = 3 to CONFIRMED, named NEIGHBOR.
 - `workers/api/package.json` now lists `@outage/detection` (this repository's own workspace package, already in `.kiro/approved-dependencies.json`); lockfile updated offline. No external dependency added.
+
+## 2026-11-14 area-cells task 9: reducer, scheduling, push de-dup, delete
+- `workers/api/src/area/reducer.ts`: pure `reduce(state, input, cfg)` for EVENTS, TICK, NOTICES, REMOVE and DELETE. It updates members (synthetic MOVED disarm), routes to cell, group and parent engines, defers state-only batches until a detection event or the flush interval, sets the alarm for the flush or for an open outage reaching 12 hours, builds co-outage records, links and groups, plans notices, builds public views, and de-duplicates pushes.
+- `workers/api/src/area/pushes.ts`: per-cell episodes (union of overlapping outage intervals), at most one CONFIRMED and one RESTORED per episode. `links.ts` gained `coalesceOutages` so one blackout seen by several scopes is one co-outage.
+- Tests A9, A11, A12 in `workers/api/test/area-reducer.test.ts`, plus R11.4 and R11.5 checks. Pass at 2000 runs.
+- A12 found a real gap: hints from the previous evaluation lag behind the batch cuts (seed 1278203691). Fix and its trade-off in ADR 0014 (PROPOSED, needs the human); both shrunk cases are pinned as a regression test.

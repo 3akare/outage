@@ -131,3 +131,30 @@ export function planGroups(prev: readonly Group[], next: readonly Group[]): Grou
 export function pruneRecords(records: readonly OutageRecord[], nowMs: number): OutageRecord[] {
   return records.filter((r) => nowMs - r.startMs <= LINK_WINDOW_MS);
 }
+
+/**
+ * One real blackout seen by several scopes (its cell, its group, the parent) is one outage for linking (R6.2: "one outage,
+ * in any scope"). Records whose starts are within `gapMs` of each other chain into one cluster; the cluster takes the
+ * smallest key, the earliest start and the largest drop count per cell. The result depends only on the set of records.
+ */
+export function coalesceOutages(records: readonly OutageRecord[], gapMs: number): OutageRecord[] {
+  const sorted = [...dedupe(records)].sort((a, b) => a.startMs - b.startMs || (a.outageKey < b.outageKey ? -1 : 1));
+  const out: OutageRecord[] = [];
+  let lastStart = 0;
+  for (const r of sorted) {
+    const cur = out[out.length - 1];
+    if (cur && r.startMs - lastStart <= gapMs) {
+      const drops: Record<string, number> = { ...cur.dropsByCell };
+      for (const [c, n] of Object.entries(r.dropsByCell)) drops[c] = Math.max(drops[c] ?? 0, n);
+      out[out.length - 1] = {
+        outageKey: [cur.outageKey, r.outageKey].sort()[0],
+        startMs: cur.startMs,
+        dropsByCell: drops,
+      };
+    } else {
+      out.push({ ...r, dropsByCell: { ...r.dropsByCell } });
+    }
+    lastStart = r.startMs;
+  }
+  return out;
+}
