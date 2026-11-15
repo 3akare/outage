@@ -11,7 +11,7 @@ Depends on `station-mode` (tasks 2, 5), `event-ingest` (tasks 4, 5), `area-cells
 - [ ] 1. Amend `station-mode` and `sensor-android` for the battery heartbeat: `DISARMED` with reason `HEARTBEAT_ON_BATTERY`, state-machine rule that it changes no armed interval, shared fixtures. Update `station-mode` R5.5 text and tests T6, T7 for the new case.
   - Depends on: `station-mode` 2
   - Requirements: R3
-- [ ] 2. Pairing routing scheme and ADR 0009 (options: parent code prefix, global `PairingDirectory` actor). Code alphabet and attempts rule in `packages/shared` with tests H5 (pure part).
+- [x] 2. Pairing routing scheme and ADR 0009 (options: parent code prefix, global `PairingDirectory` actor). Code alphabet and attempts rule in `packages/shared` with tests H5 (pure part).
   - Depends on: `area-cells` 1
   - Requirements: R1
 
@@ -20,7 +20,7 @@ Depends on `station-mode` (tasks 2, 5), `event-ingest` (tasks 4, 5), `area-cells
 - [ ] 3. `HomeState` pure function and the station event window. Tests H1, H2, H3, H4.
   - Depends on: 1, `detection-engine` 1
   - Requirements: R2
-- [ ] 4. Offer and claim endpoints, hash storage, attempts, one generic error, limits, remove pair. Test H5, H8 (pair part).
+- [x] 4. Offer and claim endpoints, hash storage, attempts, one generic error, limits, remove pair. Test H5, H8 (pair part).
   - Depends on: 2, `event-ingest` 4
   - Requirements: R1, R7
 
@@ -39,6 +39,7 @@ Depends on `station-mode` (tasks 2, 5), `event-ingest` (tasks 4, 5), `area-cells
   - Depends on: 5, 6
   - Requirements: R4, R7
 - [ ] 8. App Compose screens and `ViewModel`s (Jetpack Compose, approved 2026-11-14): pair from station, enter code on viewer, home card, station name, state wording, offline age, remove pair, SIM-data hint. Optional QR if approved.
+  - Note (ADR 0009 review): the station UI must list every pair with a remove action. A dead viewer keeps its seat in the 5-viewer cap until the station removes it, and station-side remove is the fallback when a viewer loses its pair list.
   - Depends on: 7, `station-mode` 6
   - Requirements: R1, R4, R9
 

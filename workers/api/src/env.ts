@@ -1,4 +1,5 @@
 import type { AreaActor } from './area-actor.ts';
+import type { PairingActor } from './pairing-actor.ts';
 import type { RegistryActor } from './registry-actor.ts';
 import type { TelemetryActor } from './telemetry/actor.ts';
 import type { PublicIndex } from './web/index-actor.ts';
@@ -6,6 +7,7 @@ import type { PublicIndex } from './web/index-actor.ts';
 export interface Env {
   AREA: DurableObjectNamespace<AreaActor>;
   REGISTRY: DurableObjectNamespace<RegistryActor>;
+  PAIRING: DurableObjectNamespace<PairingActor>;
   PUBLIC_INDEX: DurableObjectNamespace<PublicIndex>;
   TELEMETRY: DurableObjectNamespace<TelemetryActor>;
   FIELD_READ_TOKEN?: string; // wrangler secret put FIELD_READ_TOKEN (never in the repo); protects GET /v1/admin/field/:day

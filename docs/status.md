@@ -4,8 +4,8 @@ Read by the session-context hook. Keep the four labelled lines below on one line
 
 Current milestone: 1 Feasibility probe (waiting on the Samsung data) and 2 Detection, started in parallel
 Gate: armed time >= 90% on one phone, restore delay p95 <= 60 s, Tecno or Infinix works after battery exemption
-Next: the human reruns the probe with probe-v0.0.2 on the Samsung (and a Tecno or Infinix phone), and agents continue with unblocked tasks (web-and-area-pages task 11 visual check, area-cells task 12 ADR 0006 numbers, field-telemetry tasks 4 to 6, detection-engine task 15 waits for the Kiro IDE pass). All ADRs 0005 to 0016 except 0013 are ACCEPTED under the human's blanket approval of 2026-11-15; ADR 0013 waits for the probe Result.
-Active specs: feasibility-probe, area-cells, web-and-area-pages, field-telemetry
+Next: the human reruns the probe with probe-v0.0.2 on the Samsung (and a Tecno or Infinix phone). Done by agents: field-telemetry 5 to 7, web-and-area-pages task 11, area-cells task 12, event-ingest 6, power-log 3 (tariff bands A, B, D and E unverified, see ADR 0020) and home-watch 2 and 4. Everything else waits on the probe rerun (sensor-android, station-mode, and the phone parts that depend on them), the human's Cloudflare and Firebase accounts, or the Kiro IDE pass (detection-engine task 15). ADR 0013 waits for the probe Result.
+Active specs: feasibility-probe, sensor-android (blocked on probe)
 
 ## Done
 - Steering (15 files), 13 specs with requirements, design and tasks, ADRs 0001 to 0012 (0012 = native Kotlin stack), hooks and tests for the hook scripts, three skills (oem-battery-guide, field-report, release-apk) with scripts and tests, three custom agents (sensor-engineer, detection-auditor, pitch-writer), MCP config (cloudflare-docs, context7 live; github disabled until a token exists), the grid-sensing Power, spec-lint. 148 tests pass with `npm test`.

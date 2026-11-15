@@ -9,14 +9,16 @@
       { "name": "AREA", "class_name": "AreaActor" },
       { "name": "REGISTRY", "class_name": "RegistryActor" },
       { "name": "PUBLIC_INDEX", "class_name": "PublicIndex" },
-      { "name": "TELEMETRY", "class_name": "TelemetryActor" }
+      { "name": "TELEMETRY", "class_name": "TelemetryActor" },
+      { "name": "PAIRING", "class_name": "PairingActor" }
     ]
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["AreaActor"] },
     { "tag": "v2", "new_sqlite_classes": ["RegistryActor"] },
     { "tag": "v3", "new_sqlite_classes": ["PublicIndex"] },
-    { "tag": "v4", "new_sqlite_classes": ["TelemetryActor"] }
+    { "tag": "v4", "new_sqlite_classes": ["TelemetryActor"] },
+    { "tag": "v5", "new_sqlite_classes": ["PairingActor"] }
   ]
   // Secret set by the human, never in this file: wrangler secret put INSTALL_TOKEN_SECRET
   // and for the field report: wrangler secret put FIELD_READ_TOKEN

@@ -448,6 +448,18 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Spec amendments that follow from the decisions: area-cells R11.4 (one re-hint pass, ADR 0014) and the public-rule note; field-telemetry R5.5 (miss armed count per cell).
 - All open questions in `docs/session-notes.md` resolved and moved to Decisions. `docs/status.md` now lists only human-only items.
 
+## 2026-11-15 feat(shared): pairing code, shard routing and attempts rule [spec:home-watch task:2]
+- Branch `work/home-watch-2-4`. New `packages/shared/src/pairing.ts`: 30-symbol alphabet (no 0, 1, I, L, O, U), 10-symbol code, rejection-sampled generator, `shardFromHash`, pair ids that carry their shard, pure `decideClaim` (one successful claim, 10-minute life, burn after 5 failures, every failure the same), and strict request parsers. `parseDeleteRequest` now accepts an optional `pairIds` list (viewer side of delete-my-data).
+- Decision (ADR 0009 refinement): option 1 stays, but the shard comes from the station's install id, not its parent cell, because a parent hash cannot be turned back into an actor name and moves would orphan rows. Offers and pairs live in a `PairingActor` per shard (task 4). Known gap recorded: five stations per viewer is app-side only.
+- Tests: `H5_pairing_rules` in `packages/shared/test/pairing.test.ts` (properties: alphabet and shard of any generated code, at most one match, none after expiry, burn after five failures). The Worker part of H5 follows in task 4.
+
+## 2026-11-15 feat(api): pairing offer, claim and remove endpoints [spec:home-watch task:4]
+- Branch `work/home-watch-2-4`. New `PairingActor` per shard (binding `PAIRING`, migration `v4`), `PairingCore` (sync, store port, in-memory in tests), `SqlPairStore`, `hashPairingCode`. Routes `POST /v1/pair/offer`, `/v1/pair/claim`, `/v1/pair/remove`; `POST /v1/delete` now also clears pairs and offers (station by its own shard, viewer by the listed `pairIds`).
+- Security: the stored value is an HMAC-SHA-256 of the code under `INSTALL_TOKEN_SECRET`, compared in constant time; every failed claim returns the same 404 body and headers (unknown key, wrong secret, bad shape, used, burned, expired); 5 failures burn the offer; offers and claims use the ingest token bucket per install (429 with `retry-after`); one live offer per station; 5 viewers per station checked at offer and claim. The claim returns only `pairId`, no cell.
+- Stored-data change is the one ADR 0009 accepted; column list and the two accepted gaps (5 stations per viewer is app-side; the station cell for tasks 5 to 7 is added later) are in the ADR refinement.
+- Tests: `H5_pairing_rules`, `R1.10 remove a pair` and `H8_delete_removes_pairs` in `workers/api/test/pairing.test.ts` (including a property over random link sets that nothing is left for a deleted install). Platform APIs used are already used elsewhere in the Worker (Durable Object SQLite, alarms, Web Crypto HMAC); their doc URLs are in the code comments. No new Cloudflare API, so no new docs lookup was needed.
+- Runtime check: `integration.test.ts` now runs the pairing actor and `SqlPairStore` in the local Workers runtime (offer, wrong claim, claim, remove, station delete), so the SQLite store is exercised, not just typechecked.
+
 ## 2026-11-15 feat(app): ingest Uploader with a fake transport [spec:event-ingest task:6]
 - Branch `work/ingest-6-powerlog-3` (worktree). Built the Kotlin Uploader in `apps/android/app/src/main/kotlin/app/outage/net/`: `Wire.kt` (strict wire model mirroring `packages/shared/src/ingest.ts`), `WireJson.kt` (encode/decode reusing the hand-written `MiniJson`, no new dependency), `Outbox.kt` (`OutboxPort`, `Transport` fun-interface with `TransportResult`, `CredentialsProvider`, `ElapsedClock`, `PendingEvent`), and `Uploader.kt` (policy, batching, back-off, ack).
 - The transport is behind `Transport` with a fake in tests (design section 9). The sensor is NOT built here (task 10 adapts the real `SensorEvent` to `PendingEvent` and supplies the real transport, after `sensor-android` task 9). `PendingEvent` is the Outbox-to-Uploader contract type so the uploader does not depend on the unbuilt sensor.
@@ -501,4 +513,16 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Merged origin/main; kept both sides of the log and notes conflicts. Tariff band ADR 0017 renumbered to 0019; event-ingest task 6 and power-log task 3 ticked. Bands A, B, D and E stay unverified.
 ## 2026-11-15 chore(merge): merge origin/main into work/web-11-area-12 [spec:web-and-area-pages task:11]
 - Merged origin/main; kept both sides of the log and notes conflicts. Playwright ADR 0017 renumbered to 0019 (docs/adr/0019-playwright-visual-check.md) because main already has 0017-field-report-rules; the spec-lint test requires contiguous ADR numbers, so 0020 failed.
+- Open for the human: both branches now use ADR 0019 for different ADRs; the second to merge must renumber to 0020.
+
+## 2026-11-15 chore(merge): merge origin/main into work/home-watch-2-4, record review findings [spec:home-watch task:4]
+- Merged origin/main. Code conflicts resolved by keeping both sides (handlers, index, helpers, shared index, wrangler). Telemetry took migration `v4` on main, so `PairingActor` moved to `v5` (workers/api/README.md updated).
+- ADR 0009 now lists the PR 13 security review findings: per-offer cap is the real control, the limiter is per shard actor and in memory, viewer cleanup depends on the phone's pair list (station remove is the fallback), dead viewers keep a seat, failed-claim timing, offer-retry token spend (not a one-line fix, left). Home-watch task 8 notes the UI must list pairs with remove.
+- `docs/status.md` updated. `npm test`, lint, typecheck and traceability check pass.
+- Open for the human: `docs/status.md` cites ADR 0020 (tariff bands), which exists only once PR 15 merges.
+
 - Tariff band ADR renumbered again to 0020 after merging main (main has 0019-playwright-visual-check).
+
+## 2026-11-15 chore(merge): merge origin/main (PR 15) into work/home-watch-2-4 [spec:none task:merge]
+- Merged origin/main after PR 15 landed. Only `docs/kiro-log.md` conflicted (two places); kept both sides. `docs/status.md` already lists event-ingest 6 and power-log 3 (ADR 0020). ADRs 0017 to 0020 are contiguous.
+- Checks: `npm test` (150 hook and skill tests plus all workspace suites), lint (4 warnings, not checked against the base), typecheck and `traceability.mjs --check` all exit 0. Not pushed.
