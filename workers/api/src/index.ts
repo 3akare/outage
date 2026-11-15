@@ -6,6 +6,7 @@ import type { Env } from './env.ts';
 import { REGISTRY_NAME } from './env.ts';
 import { type Deps, handleRequest } from './handlers.ts';
 import { RegisterLimiter } from './limiter.ts';
+import { PairingActor } from './pairing-actor.ts';
 import { RevocationCache } from './registry.ts';
 import { RegistryActor } from './registry-actor.ts';
 import { hashInstallId } from './token.ts';
@@ -19,7 +20,7 @@ import type { ReplayData } from './web/judge.ts';
 import { handleWeb, isWebPath, type WebDeps } from './web/routes.ts';
 
 export type { Env };
-export { AreaActor, PublicIndex, RegistryActor };
+export { AreaActor, PairingActor, PublicIndex, RegistryActor };
 
 // Isolate-level state: lenient after an isolate restart, never stricter (same direction as the actors' memory state).
 const limiter = new RegisterLimiter(CONFIG.REGISTER_PER_SOURCE_PER_HOUR);
@@ -42,6 +43,12 @@ function makeDeps(env: Env): Deps {
     area: {
       ingest: (parent, input) => env.AREA.get(env.AREA.idFromName(parent)).ingest(input),
       deleteInstall: (parent, installId) => env.AREA.get(env.AREA.idFromName(parent)).deleteInstall(installId),
+    },
+    pairing: {
+      createOffer: (shard, input) => env.PAIRING.get(env.PAIRING.idFromName(shard)).createOffer(input),
+      claim: (shard, input) => env.PAIRING.get(env.PAIRING.idFromName(shard)).claim(input),
+      removePair: (shard, pairId, installId) => env.PAIRING.get(env.PAIRING.idFromName(shard)).removePair(pairId, installId),
+      deleteInstall: (shard, installId) => env.PAIRING.get(env.PAIRING.idFromName(shard)).deleteInstall(installId),
     },
     registry: {
       isRevoked: async (installId) => revocations.has(await hashInstallId(installId), Date.now()),

@@ -125,9 +125,10 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R2.2, R2.3, R3 | H3 | `H3_non_power_events_ignored` | 3 | planned |
 | R2.8 | H4 | `H4_state_independent_of_area` | 3 | planned |
 | R1.2, R1.3, R1.5 | H5 (pure part) | `H5_pairing_rules` | 2 | passing (`packages/shared/test/pairing.test.ts`) |
+| R1.1 to R1.6, R1.9, R7.2 | H5 (Worker part) | `H5_pairing_rules` | 4 | passing (`workers/api/test/pairing.test.ts`) |
 | R5, R8.3 | H6 | `H6_push_once_per_change` | 6 | planned |
 | R6 | H7 | `H7_alarm_multiplexer` | 5 | planned |
-| R1.10, R7.4 | H8 | `H8_delete_removes_pairs` | 4 | planned |
+| R1.10, R7.4 | H8 (pair part) | `H8_delete_removes_pairs`, `R1.10 remove a pair` | 4 | passing (`workers/api/test/pairing.test.ts`; offer and state parts follow in tasks 5 to 7) |
 
 ## onboarding
 

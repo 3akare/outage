@@ -20,7 +20,7 @@ Depends on `station-mode` (tasks 2, 5), `event-ingest` (tasks 4, 5), `area-cells
 - [ ] 3. `HomeState` pure function and the station event window. Tests H1, H2, H3, H4.
   - Depends on: 1, `detection-engine` 1
   - Requirements: R2
-- [ ] 4. Offer and claim endpoints, hash storage, attempts, one generic error, limits, remove pair. Test H5, H8 (pair part).
+- [x] 4. Offer and claim endpoints, hash storage, attempts, one generic error, limits, remove pair. Test H5, H8 (pair part).
   - Depends on: 2, `event-ingest` 4
   - Requirements: R1, R7
 

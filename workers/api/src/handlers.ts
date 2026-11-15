@@ -2,15 +2,26 @@
 // res-7 parent, make one area call per parent, assemble results. No detection logic (R7.4), no IP or user agent kept (R2.4).
 // Dependencies are injected so Vitest runs this without the Workers runtime.
 import {
+  type ClaimResponse,
   type DeleteRequest,
   type EventResult,
   type EventsResponse,
+  generateCode,
+  generatePairId,
   isPermanent,
+  keyOfCode,
+  type OfferResponse,
+  parseClaimRequest,
   parseDeleteRequest,
   parseEventsRequest,
+  parseOfferRequest,
+  parseRemovePairRequest,
   type RegisterResponse,
   type RejectCode,
   res7Parent,
+  shardFromHash,
+  shardOfCode,
+  shardOfPairId,
   validateEvent,
   type WireEvent,
 } from '@outage/shared';
@@ -18,11 +29,20 @@ import type { AreaEvent, AreaIngestInput, AreaResponse } from './area-core.ts';
 import type { Tunables } from './config.ts';
 import { eventTimeMs } from './eventtime.ts';
 import type { RegisterLimiter } from './limiter.ts';
-import { mintInstallId, mintToken, verifyToken } from './token.ts';
+import type { ClaimInput, ClaimResult, OfferInput, OfferResult } from './pairing-core.ts';
+import { hashPairingCode } from './pairing-hash.ts';
+import { hashInstallId, mintInstallId, mintToken, verifyToken } from './token.ts';
 
 export interface AreaGateway {
   ingest(parent: string, input: AreaIngestInput): Promise<AreaResponse>;
   deleteInstall(parent: string, installId: string): Promise<number>;
+}
+/** One call per pairing shard (home-watch, ADR 0009). The shard is chosen by the caller from the code, pair id or station install. */
+export interface PairingGateway {
+  createOffer(shard: string, input: OfferInput): Promise<OfferResult>;
+  claim(shard: string, input: ClaimInput): Promise<ClaimResult>;
+  removePair(shard: string, pairId: string, installId: string): Promise<boolean>;
+  deleteInstall(shard: string, installId: string): Promise<number>;
 }
 export interface RegistryGateway {
   isRevoked(installId: string): Promise<boolean>;
@@ -37,6 +57,7 @@ export interface Deps {
   sourceKey(req: Request): Promise<string> | string;
   limiter: RegisterLimiter;
   area: AreaGateway;
+  pairing: PairingGateway;
   registry: RegistryGateway;
   cfg: Tunables;
 }
@@ -210,19 +231,92 @@ async function deleteData(req: Request, deps: Deps): Promise<Response> {
   if (!body.ok) return body.res;
   const parsed = parseDeleteRequest(body.value, deps.cfg.MAX_DELETE_CELLS);
   if (!parsed.ok) return fail(400, 'malformed');
-  const { installId, cells }: DeleteRequest = parsed;
+  const { installId, cells, pairIds }: DeleteRequest & { pairIds: string[] } = parsed;
   // A revoked token may still delete: if a previous attempt failed half-way, the retry must be able to finish (ADR 0003 addendum).
   if (!(await authorized(req, installId, deps, false))) return fail(401, 'unauthorized');
   await deps.registry.revoke(installId); // first, so late uploads stop before the rows go
   const parents = [...new Set(cells.map(res7Parent))];
+  // Home Watch (R7.4): the install's own shard (as a station) and the shard of every pair it lists (as a viewer).
+  const shards = new Set([shardFromHash(await hashInstallId(installId)), ...pairIds.map(shardOfPairId)]);
   let rows = 0;
   try {
-    const counts = await Promise.all(parents.map((p) => deps.area.deleteInstall(p, installId)));
+    const counts = await Promise.all([
+      ...parents.map((p) => deps.area.deleteInstall(p, installId)),
+      ...[...shards].map((sh) => deps.pairing.deleteInstall(sh, installId)),
+    ]);
     rows = counts.reduce((a, b) => a + b, 0);
   } catch {
     return fail(502, 'delete_incomplete'); // the phone retries; the token is revoked but still accepted here
   }
   return json(200, { deleted: true, areas: parents.length, rows });
+}
+
+// ---- POST /v1/pair/offer, /v1/pair/claim, /v1/pair/remove (home-watch R1) --------------------------------------------
+
+const NOT_FOUND = () => fail(404, 'not_found'); // the one answer for every failed claim (R1.5, design section 3)
+const OFFER_TRIES = 3;
+
+async function pairOffer(req: Request, deps: Deps): Promise<Response> {
+  const nowMs = deps.now();
+  const body = await readJson(req, deps);
+  if (!body.ok) return body.res;
+  const parsed = parseOfferRequest(body.value);
+  if (!parsed.ok) return fail(400, 'malformed');
+  const stationInstall = parsed.value.installId;
+  if (!(await authorized(req, stationInstall, deps, true))) return fail(401, 'unauthorized');
+  const shard = shardFromHash(await hashInstallId(stationInstall));
+  for (let i = 0; i < OFFER_TRIES; i++) {
+    const code = generateCode(shard, deps.randomBytes);
+    const codeHash = await hashPairingCode(deps.secret as string, code);
+    const res = await deps.pairing.createOffer(shard, { key: keyOfCode(code), codeHash, stationInstall, nowMs });
+    if (res.status === 'limited') return fail(429, 'rate_limited', retryHeader(res.retryAfterMs));
+    if (res.status === 'full') return fail(409, 'station_full');
+    if (res.status === 'ok') {
+      const out: OfferResponse = { code, expiresAtMs: res.expiresAtMs };
+      return json(200, out);
+    }
+  }
+  return fail(503, 'unavailable'); // four-symbol key taken three times: retry later
+}
+
+async function pairClaim(req: Request, deps: Deps): Promise<Response> {
+  const nowMs = deps.now();
+  const body = await readJson(req, deps);
+  if (!body.ok) return body.res;
+  const parsed = parseClaimRequest(body.value);
+  if (!parsed.ok) return NOT_FOUND(); // a bad code shape is a failed claim like any other
+  const c = parsed.value;
+  if (!(await authorized(req, c.installId, deps, true))) return fail(401, 'unauthorized');
+  const shard = shardOfCode(c.code);
+  const input: ClaimInput = {
+    key: keyOfCode(c.code),
+    codeHash: await hashPairingCode(deps.secret as string, c.code),
+    viewerInstall: c.installId,
+    pairId: generatePairId(shard, deps.randomBytes),
+    fcmToken: c.fcmToken,
+    quietStartMin: c.quietStartMin,
+    quietEndMin: c.quietEndMin,
+    tzOffsetMin: c.tzOffsetMin,
+    stationName: c.stationName ?? null,
+    nowMs,
+  };
+  const res = await deps.pairing.claim(shard, input);
+  if (res.status === 'limited') return fail(429, 'rate_limited', retryHeader(res.retryAfterMs));
+  if (res.status === 'full') return fail(409, 'station_full');
+  if (res.status === 'fail') return NOT_FOUND();
+  const out: ClaimResponse = { pairId: res.pairId };
+  return json(200, out);
+}
+
+async function pairRemove(req: Request, deps: Deps): Promise<Response> {
+  const body = await readJson(req, deps);
+  if (!body.ok) return body.res;
+  const parsed = parseRemovePairRequest(body.value);
+  if (!parsed.ok) return fail(400, 'malformed');
+  const { installId, pairId } = parsed.value;
+  if (!(await authorized(req, installId, deps, true))) return fail(401, 'unauthorized');
+  const removed = await deps.pairing.removePair(shardOfPairId(pairId), pairId, installId);
+  return removed ? json(200, { removed: true }) : NOT_FOUND(); // someone else's pair looks the same as no pair
 }
 
 // ---- GET /v1/stats ---------------------------------------------------------------------------------------------
@@ -235,5 +329,8 @@ const ROUTES: Record<string, { method: string; needsSecret: boolean; handler: (r
   '/v1/register': { method: 'POST', needsSecret: true, handler: register },
   '/v1/events': { method: 'POST', needsSecret: true, handler: events },
   '/v1/delete': { method: 'POST', needsSecret: true, handler: deleteData },
+  '/v1/pair/offer': { method: 'POST', needsSecret: true, handler: pairOffer },
+  '/v1/pair/claim': { method: 'POST', needsSecret: true, handler: pairClaim },
+  '/v1/pair/remove': { method: 'POST', needsSecret: true, handler: pairRemove },
   '/v1/stats': { method: 'GET', needsSecret: false, handler: stats },
 };

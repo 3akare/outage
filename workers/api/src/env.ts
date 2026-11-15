@@ -1,10 +1,12 @@
 import type { AreaActor } from './area-actor.ts';
+import type { PairingActor } from './pairing-actor.ts';
 import type { RegistryActor } from './registry-actor.ts';
 import type { PublicIndex } from './web/index-actor.ts';
 
 export interface Env {
   AREA: DurableObjectNamespace<AreaActor>;
   REGISTRY: DurableObjectNamespace<RegistryActor>;
+  PAIRING: DurableObjectNamespace<PairingActor>;
   PUBLIC_INDEX: DurableObjectNamespace<PublicIndex>;
   INSTALL_TOKEN_SECRET?: string; // wrangler secret put INSTALL_TOKEN_SECRET (never in the repo)
   // Public site configuration (web-and-area-pages R7.4): plain vars, set by the release-apk skill. Unset = left out.

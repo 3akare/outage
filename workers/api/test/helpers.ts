@@ -5,6 +5,7 @@ import { AreaCore, type AreaIngestInput, type AreaResponse, type AreaStore, type
 import { CONFIG, type Tunables } from '../src/config.ts';
 import type { Deps } from '../src/handlers.ts';
 import { RegisterLimiter } from '../src/limiter.ts';
+import { type OfferRow, type PairRow, PairingCore, type PairStore } from '../src/pairing-core.ts';
 import { NoopDetectionPort } from '../src/ports.ts';
 import { mintToken } from '../src/token.ts';
 
@@ -73,6 +74,58 @@ export class MemoryStore implements AreaStore {
   }
 }
 
+export class MemoryPairStore implements PairStore {
+  offers = new Map<string, OfferRow>();
+  pairs = new Map<string, PairRow>();
+  getOffer(key: string) {
+    return this.offers.get(key);
+  }
+  putOffer(row: OfferRow) {
+    this.offers.set(row.key, row);
+  }
+  deleteOffer(key: string) {
+    return this.offers.delete(key) ? 1 : 0;
+  }
+  deleteOffersOfStation(id: string) {
+    return this.dropOffers((o) => o.stationInstall === id);
+  }
+  deleteExpiredOffers(now: number) {
+    return this.dropOffers((o) => o.expiresMs <= now);
+  }
+  nextOfferExpiry() {
+    const all = [...this.offers.values()].map((o) => o.expiresMs);
+    return all.length ? Math.min(...all) : null;
+  }
+  countViewers(station: string, except: string) {
+    return [...this.pairs.values()].filter((p) => p.stationInstall === station && p.viewerInstall !== except).length;
+  }
+  getPair(id: string) {
+    return this.pairs.get(id);
+  }
+  putPair(row: PairRow) {
+    this.pairs.set(row.pairId, row);
+  }
+  deletePair(id: string) {
+    return this.pairs.delete(id) ? 1 : 0;
+  }
+  deletePairsBetween(station: string, viewer: string) {
+    return this.dropPairs((p) => p.stationInstall === station && p.viewerInstall === viewer);
+  }
+  deleteInstall(id: string) {
+    return this.dropOffers((o) => o.stationInstall === id) + this.dropPairs((p) => p.stationInstall === id || p.viewerInstall === id);
+  }
+  private dropOffers(f: (o: OfferRow) => boolean) {
+    let n = 0;
+    for (const [k, o] of this.offers) if (f(o)) n += this.offers.delete(k) ? 1 : 0;
+    return n;
+  }
+  private dropPairs(f: (p: PairRow) => boolean) {
+    let n = 0;
+    for (const [k, p] of this.pairs) if (f(p)) n += this.pairs.delete(k) ? 1 : 0;
+    return n;
+  }
+}
+
 export function makeCore(cfg: Tunables = CONFIG) {
   const store = new MemoryStore();
   const port = new NoopDetectionPort();
@@ -84,9 +137,21 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
   const areas = new Map<string, ReturnType<typeof makeCore>>();
   const areaCalls: { parent: string; input: AreaIngestInput }[] = [];
   const revoked = new Set<string>();
+  const shards = new Map<string, { store: MemoryPairStore; core: PairingCore }>();
   const world = {
     now: NOW,
+    shards,
+    shard(name: string) {
+      let s = shards.get(name);
+      if (!s) {
+        const store = new MemoryPairStore();
+        s = { store, core: new PairingCore(store, cfg) };
+        shards.set(name, s);
+      }
+      return s;
+    },
     failParents: new Set<string>(),
+    failShards: new Set<string>(),
     areaCalls,
     areas,
     revoked,
@@ -116,6 +181,21 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
       async deleteInstall(parent, installId) {
         if (world.failParents.has(parent)) throw new Error('actor down');
         return world.area(parent).core.deleteInstall(installId);
+      },
+    },
+    pairing: {
+      async createOffer(shard, input) {
+        return world.shard(shard).core.createOffer(input);
+      },
+      async claim(shard, input) {
+        return world.shard(shard).core.claim(input);
+      },
+      async removePair(shard, pairId, installId) {
+        return world.shard(shard).core.removePair(pairId, installId);
+      },
+      async deleteInstall(shard, installId) {
+        if (world.failShards.has(shard)) throw new Error('shard down');
+        return world.shard(shard).core.deleteInstall(installId);
       },
     },
     registry: {
