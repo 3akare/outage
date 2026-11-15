@@ -1,0 +1,1007 @@
+[
+  {
+    "name": "extra field model",
+    "code": "UNKNOWN_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      },
+      "model": "Spark 10"
+    }
+  },
+  {
+    "name": "extra field cell",
+    "code": "UNKNOWN_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      },
+      "cell": "88a5b4d8ebfffff"
+    }
+  },
+  {
+    "name": "nested extra field",
+    "code": "UNKNOWN_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1,
+        "at": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "missing field",
+    "code": "BAD_FIELD",
+    "doc": {
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "bad install id",
+    "code": "BAD_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "not-an-id",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "bad day",
+    "code": "BAD_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-13-01",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "unknown maker",
+    "code": "BAD_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "Tecno Spark 10",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "armed above charging",
+    "code": "BAD_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 36000001,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "wrong histogram length",
+    "code": "BAD_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 1,
+          "lenHistMs": [
+            1
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "histogram does not add to count",
+    "code": "BAD_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 2,
+          "lenHistMs": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "too many delay samples",
+    "code": "BAD_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "negative sample",
+    "code": "BAD_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        -1
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": true,
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "exemption not boolean",
+    "code": "BAD_FIELD",
+    "doc": {
+      "v": 1,
+      "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+      "day": "2026-11-14",
+      "maker": "tecno",
+      "androidMajor": 13,
+      "mode": {
+        "normalMs": 28800000,
+        "stationMs": 0
+      },
+      "chargingMs": 36000000,
+      "armedMs": 34200000,
+      "gaps": [
+        {
+          "reason": "DOZE",
+          "count": 3,
+          "lenHistMs": [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "reason": "APP_KILLED",
+          "count": 1,
+          "lenHistMs": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "delayJobMs": [
+        900,
+        2100,
+        45000
+      ],
+      "delayReceiverMs": [
+        300,
+        450
+      ],
+      "replugToRingMs": [
+        12000
+      ],
+      "prompts": {
+        "shown": 4,
+        "yes": 2,
+        "no": 1,
+        "timeout": 1
+      },
+      "alarms": {
+        "expected": 1,
+        "rung": 1
+      },
+      "writeFailures": 0,
+      "standby": {
+        "ACTIVE": 2,
+        "WORKING_SET": 1
+      },
+      "exemption": "yes",
+      "stopReasons": {
+        "USER_DISARM": 1
+      }
+    }
+  },
+  {
+    "name": "not an object",
+    "code": "MALFORMED",
+    "doc": [
+      1,
+      2
+    ]
+  }
+]

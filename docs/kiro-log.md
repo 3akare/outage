@@ -377,3 +377,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - CI run 43698156024 (seed -677795666) failed `D5_settle_equivalence` at 2000 runs. Cause: the sweep finalizes a day's baseline bucket at day end + W. If an outage that started that day was still open, its exposure was subtracted up to infinity. `settle()` later folds the same day from the closed outage (subtracting only to the restore time), so the settled run had about 100 s more exposure in that hour and a slightly different `lambdaPerSec`, `muValue` and `p` for later windows.
 - Fix in `packages/detection/src/sweep.ts`: when an outage closes (RESTORED or EXPIRED), `refinalize` recomputes the finalized buckets of the days from its start to its end and clears the lambda cache. The property is unchanged. No threshold, param, dependency or stored data changed.
 - Test: the shrunk counterexample is a fixed case in `packages/detection/test/d5-regress.test.ts`. The CI seed fails on the old code and passes now.
+
+## 2026-11-15 field-telemetry task 1: DeviceDay schema and strict validator
+- `packages/shared/src/device-day.ts`: `DeviceDay` type and `parseDeviceDay` (hand-written, no schema library). Exact keys at every level (R3.4), size cap 8 KiB (R2.3), at most 64 job and 64 receiver delay samples and 16 replug-to-ring samples, gap histogram with fixed edges `GAP_EDGES_MS` (1, 5, 15, 60, 240 min, then open-ended), `armedMs <= chargingMs`, histogram buckets sum to the gap count.
+- Fixtures in `packages/shared/fixtures/telemetry/`: `device-day.json`, `device-day-station.json`, `device-day-invalid.json` (14 named rejects with codes). Tests: `packages/shared/test/device-day.test.ts` (F1 schema part, property tests with fast-check).
+- The largest aggregate the caps allow is under 8 KiB, so `TOO_LARGE` is a safety net, not a reachable branch; the test pins that.
+- Not done here: the Kotlin test that reads these fixtures (task 4 needs the Android aggregator first).

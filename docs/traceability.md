@@ -170,7 +170,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R1, R2 | F1 | `F1_aggregate_privacy_and_size` | 1, 4 | planned |
+| R1, R2, R3.4 | F1 | `F1_aggregate_privacy_and_size` | 1, 4 | schema part passing (`packages/shared/test/device-day.test.ts`); Kotlin part planned (task 4) |
 | R2.5, R3 | F2 | `F2_upload_idempotent` | 4, 5 | planned |
 | R4 | F3 | `F3_percentiles_and_ratio` | 2 | planned |
 | R5 | F4 | `F4_outage_classes` | 3 | planned |

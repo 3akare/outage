@@ -8,9 +8,10 @@ Depends on `sensor-android` (tasks 6, 10), `event-ingest` (tasks 2, 4), `area-ce
 
 ## Wave 1
 
-- [ ] 1. Shared schema `DeviceDay` and the strict validator in `packages/shared`; contract fixtures in `packages/shared/fixtures/` read by both TypeScript and Kotlin tests. Test F1 (schema part).
+- [x] 1. Shared schema `DeviceDay` and the strict validator in `packages/shared`; contract fixtures in `packages/shared/fixtures/` read by both TypeScript and Kotlin tests. Test F1 (schema part).
   - Depends on: `event-ingest` 2
   - Requirements: R1, R2, R3.4
+  - Done: schema, validator and fixtures in `packages/shared`. The Kotlin test that reads `fixtures/telemetry/` is part of task 4.
 - [ ] 2. Metric functions: `nearestRank`, armed ratio, gap histogram helpers, gate evaluation. Tests F3, F7.
   - Depends on: `event-ingest` 1
   - Requirements: R4, R10
