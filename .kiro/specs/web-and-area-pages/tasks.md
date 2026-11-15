@@ -51,7 +51,7 @@ Depends on `area-cells` (tasks 8, 10), `detection-engine` (tasks 13, 16), `event
 
 ## Wave 5
 
-- [ ] 11. Visual check at 390 x 844 with the Playwright power; `/judge-demo` steering updated with the check list; HTML size test; traceability (W1 to W9); `docs/kiro-log.md`.
+- [x] 11. Visual check at 390 x 844 with the Playwright power; `/judge-demo` steering updated with the check list; HTML size test; traceability (W1 to W9); `docs/kiro-log.md`.
   - Depends on: 10
   - Requirements: all
 
