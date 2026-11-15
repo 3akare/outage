@@ -529,3 +529,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 
 ## 2026-11-15 fix(power-log): verify tariff band hours from NERC orders [spec:power-log task:3]
 - Read the three NERC PDFs in bands.json with pypdf: the 2021 notice (1 page) and 2020 press release only confirm the 12-hour boundary; the 2024 Band A addendum lists feeders and has no hours. Found the minimums on NERC's HTML FAQ (https://nerc.gov.ng/faq/electricity-tariffs/): A 20, B 16, C 12, D 8, E 4. Marked all five verified in bands.json, updated BandConfigTest and ADR 0020.
+
+## 2026-11-15 ci(deploy): Cloudflare Worker deploy workflow and guide [spec:event-ingest task:11]
+- Added `.github/workflows/deploy-worker.yml`: skips with a notice when the Cloudflare secrets are missing, runs lint, typecheck, tests and spec-lint, deploys with the pinned wrangler, creates `INSTALL_TOKEN_SECRET` only when missing (never printed), pushes `FIELD_READ_TOKEN` when its GitHub secret exists, then smoke checks `/` and `/api/v1/public/judge/replay`. Permissions are `contents: read`. Doc URLs are in the workflow comments.
+- `workers/api/wrangler.jsonc` already has migrations v1 to v5 (all SQLite classes), so it is unchanged.
+- Added `docs/deploy.md` (click path in plain English), a pointer in `workers/api/README.md`, and ADR 0021.
+- Found: workers.dev applies Browser Integrity Check, so the smoke check sends a descriptive User-Agent. The Worker reads `APK_SHA256`, not `APK_SHA`.
+- Open for the human: add the secrets listed in `docs/deploy.md`. Firebase is not used by this workflow. CI files go through a PR, not straight to main.
