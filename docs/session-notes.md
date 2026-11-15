@@ -73,7 +73,7 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Not verified on a device or a real network: only JVM unit tests with a fake transport. The real HTTP transport, 401/registration handling and wiring to the sensor are event-ingest task 10.
 
 ## 2026-11-15 power-log task 3 (work/ingest-6-powerlog-3): band config
-- Decision (ADR 0017): `bands.json` ships A 20, B 16, C 12, D 8, E 4 hours/day. Only Band C is marked verified (NERC 2021 notice fixes the 12 h floor via the D/E < 12 h boundary). A, B, D, E are unverified with sources; the human must confirm them against NERC's MYTO order PDFs (unreadable by the build tooling) before release. UI/Stats must treat unverified bands as unconfirmed; promise copy is always an estimate and never mentions refund, compensation or claim.
+- Decision (ADR 0019): `bands.json` ships A 20, B 16, C 12, D 8, E 4 hours/day. Only Band C is marked verified (NERC 2021 notice fixes the 12 h floor via the D/E < 12 h boundary). A, B, D, E are unverified with sources; the human must confirm them against NERC's MYTO order PDFs (unreadable by the build tooling) before release. UI/Stats must treat unverified bands as unconfirmed; promise copy is always an estimate and never mentions refund, compensation or claim.
 - Band config lives as an app asset (`app.outage.log.BandConfig`), not in packages/shared: it is phone-only (the Worker never shows supply promise), so no shared single-source copy is needed and no build-time asset copy was added.
 
 ## 2026-11-15 field-telemetry tasks 5 to 7 (work/field-telemetry-5-7)
