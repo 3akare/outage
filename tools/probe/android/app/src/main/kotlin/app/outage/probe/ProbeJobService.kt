@@ -45,12 +45,22 @@ class ProbeJobService : JobService() {
         // M14: the two sources disagree on charging or on level
         f["mismatch"] = (bm["bmCharging"] != null && f["charging"] != null && bm["bmCharging"] != f["charging"]) ||
             (bm["bmPct"] != null && f["batteryPct"] != null && bm["bmPct"] != f["batteryPct"])
-        val id = log.append("JOB_STOP", f)
-        // M6: read the plug again one second later, while the process is still alive; then make sure a job is queued
+        val id = log.append("JOB_STOP", f) // R2: record the stop FIRST, then act
+        // ADR 0001 + docs/probe/2026-11-15-samsung-a.md: reschedule immediately, never via the OS backoff policy.
+        // Returning true would reschedule with the job's default 30 s EXPONENTIAL backoff, which grew the gap after
+        // every ~10-minute TIMEOUT (~50, 61, 142, ... s) and wrecked armed time. We return false and schedule a fresh
+        // job ourselves. This fires once per stop (~10 min apart), well below JobScheduler's runaway-throttle threshold.
+        // https://developer.android.com/reference/android/app/job/JobService#onStopJob(android.app.job.JobParameters)
+        // https://developer.android.com/reference/android/app/job/JobInfo#BACKOFF_POLICY_EXPONENTIAL
+        // This is the single reschedule path: schedule() replaces the stable JOB_ID with a fresh job that runs once
+        // charging is satisfied, so the next JOB_START is one event and M5 stays measurable. We do NOT also reschedule
+        // in the callback below: once the fresh job is running, getPendingJob is null, so ensureScheduled would
+        // schedule() a second time and churn the running job.
+        if (RestartPolicy.shouldRescheduleImmediately(Prefs(this).sensorOn)) Scheduler.schedule(this)
+        // M6: read the plug again one second later, while the process is still alive (no rescheduling here).
         main.postDelayed({
             log.append("BATTERY", linkedMapOf<String, Any?>("source" to "JOB_RECHECK", "recheckOf" to id).apply { putAll(Facts.battery(this@ProbeJobService)) })
-            if (Prefs(this).sensorOn) Scheduler.ensureScheduled(this)
         }, 1_000)
-        return true // ask the system to reschedule (https://developer.android.com/reference/android/app/job/JobService#onStopJob(android.app.job.JobParameters))
+        return RestartPolicy.RESCHEDULE_VIA_OS // false: end this job, no OS backoff; the fresh job above runs next
     }
 }
