@@ -590,7 +590,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 
 ## 2026-11-22 fix(ci): post-deploy check accepts same-origin scripts [spec:ux-redesign]
 - The `deploy-worker` run for the PR #20 merge failed at "Post-deploy header check" with "/ body nonce differs from CSP nonce": the landing page has no inline element, only `<script src="/app.js">`, so no `nonce="…"` was in the body.
-- The check moved to `.github/scripts/post-deploy-check.sh`. Every `<script>` or `<style>` must carry the CSP nonce unless it is a same-origin `src="/…"`; stylesheets must be same-origin; the `__OUTAGE_NONCE__` placeholder must not appear; the nonce must change per request. Pages: `/`, `/judge`, `/install`, `/app`.
+- The check moved to `.github/scripts/post-deploy-check.sh`. Every `<script>` or `<style>` must carry the CSP nonce unless it is a same-origin `src="/…"`; stylesheets must be same-origin; the `__OUTAGE_NONCE__` placeholder must not appear; the nonce must change per request. Pages: `/`, `/app`, `/app/simulate`, `/install` (`/judge` is now a 301 with `no-store`, so its target is checked instead).
 - `.kiro/scripts/test/post-deploy-check.test.mjs` runs it against a stub server: passes on nonce-carrying inline plus same-origin, fails on an inline script or style without the nonce, a wrong nonce, the placeholder, an external or protocol-relative script, and a repeated nonce. Run against the live URL: exit 0.
 
 ## 2026-11-22 refactor(api): one folder per job, and a file map [ADR 0031]

@@ -11,7 +11,8 @@ UA='outage-deploy-check/1.0 (github actions)'
 TMP="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
 fail() { echo "::error title=Post-deploy check failed::$1"; exit 1; }
 
-for path in / /judge /install /app; do
+# /judge is a 301 to /app/simulate (ADR 0029), so the page itself is checked.
+for path in / /app /app/simulate /install; do
   h=$(curl -sS -D - -o "$TMP/body" -A "$UA" "$URL$path" | tr -d '\r')
   echo "$h" | grep -qi '^cache-control: public, max-age=[0-9]*, s-maxage=[0-9]*' || fail "$path has no public cache-control"
   csp_nonce=$(echo "$h" | grep -i '^content-security-policy:' | grep -o "script-src 'nonce-[^']*'" | sed "s/script-src 'nonce-//;s/'$//" || true)
