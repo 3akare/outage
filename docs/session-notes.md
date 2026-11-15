@@ -41,6 +41,15 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Open for the orchestrator: merge `work/detection-d5` into `main` and push (definition of done item 7).
 - area-cells task 12 is partly done: README and traceability (A1 to A12) exist. Still open: ADR 0006 addendum with measured startup and CPU numbers (needs the detection-engine task 17 benchmark and a deployed measurement).
 
+## field-telemetry tasks 1 to 3 (2026-11-15)
+- Answered by the human on 2026-11-15 ("yes to all"): questions 1 to 4 below (maker gate accepts Samsung, gap edges, `withdrawn` and `key` on `OUTAGE_RECORD`, stored `fieldSent` and `missPending` within ADR 0011). Applied: `GATE_OEM_MAKERS` now includes Samsung, R10.1 and design section 4 updated. Still open: the miss armed count is per cell, R5.5 says per scope.
+- [ANSWERED yes, 2026-11-15] Task 2 assumption: the field delay gate pools job and receiver scheduling delays; the field maker gate is Tecno or Infinix only (R10.1) while the probe gate also accepts Samsung (ADR 0013). Confirm whether the field gate should accept Samsung too (`GATE_OEM_MAKERS` in `packages/shared/src/field-metrics.ts`).
+- [ANSWERED yes, 2026-11-15] Task 1 assumption: gap histogram edges are 1, 5, 15, 60 and 240 minutes plus an open-ended bucket (`GAP_EDGES_MS`). Design says only "fixed edges". The Kotlin aggregator (task 4) must use the same edges.
+- [ANSWERED yes, 2026-11-15] Task 3: `OUTAGE_RECORD` has one field not in design section 4: `withdrawn` (boolean). Without it an all-"No" false alarm cannot be reported, because the engine drops the outage. Confirm, or pick another way. The record also has `key` (opaque hash) so a later update replaces the earlier one.
+- [ANSWERED yes, 2026-11-15] Task 3 stored data: the area actor state gains `fieldSent` (per reported outage: opaque key, scope key, cells, start, last counts) and `missPending` (install ID, unplug seq, due time, removed by delete-my-data). Both hold only what the actor's log and engine states already hold, inside the same actor, for at most 30 days (`fieldSent`) or one window (`missPending`). The emitted records themselves are not stored anywhere yet (task 5, ADR 0011). Confirm this is within ADR 0011.
+- Task 3: the miss armed count is the "recently armed" members in the unplug's cell at the time the miss is resolved (one window after the unplug). R5.5 says "in its scope"; the cell is the smallest scope. Confirm.
+- `workers/api` integration test needs `XDG_CONFIG_HOME` writable in this sandbox (wrangler writes `~/.config/.wrangler`); without it the suite fails on main too. CI is unaffected.
+
 ## 2026-11-15 detection-engine task 17 (benchmark)
 - Assumption: the free-plan Durable Object budget is 10 ms CPU per call. The DO limits table says 30 s, but its FAQ says Durable Objects follow the Worker plan's per-invocation limit (Free: 10 ms). We use the stricter reading.
 - Assumption: "live events" means events inside the horizon held in one engine state; the timed call is one evaluate() with one new event.

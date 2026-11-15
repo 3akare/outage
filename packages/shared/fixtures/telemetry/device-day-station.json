@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "installId": "kg4yq7mxwb2ndpr3tfhj5vcsaz",
+  "day": "2026-11-14",
+  "maker": "samsung",
+  "androidMajor": 14,
+  "mode": {
+    "normalMs": 0,
+    "stationMs": 72000000
+  },
+  "chargingMs": 72000000,
+  "armedMs": 71000000,
+  "gaps": [],
+  "delayJobMs": [],
+  "delayReceiverMs": [],
+  "replugToRingMs": [],
+  "prompts": {
+    "shown": 4,
+    "yes": 2,
+    "no": 1,
+    "timeout": 1
+  },
+  "alarms": {
+    "expected": 0,
+    "rung": 0
+  },
+  "writeFailures": 0,
+  "standby": {},
+  "exemption": false,
+  "stopReasons": {}
+}

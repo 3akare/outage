@@ -378,6 +378,24 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Fix in `packages/detection/src/sweep.ts`: when an outage closes (RESTORED or EXPIRED), `refinalize` recomputes the finalized buckets of the days from its start to its end and clears the lambda cache. The property is unchanged. No threshold, param, dependency or stored data changed.
 - Test: the shrunk counterexample is a fixed case in `packages/detection/test/d5-regress.test.ts`. The CI seed fails on the old code and passes now.
 
+## 2026-11-15 field-telemetry task 1: DeviceDay schema and strict validator
+- `packages/shared/src/device-day.ts`: `DeviceDay` type and `parseDeviceDay` (hand-written, no schema library). Exact keys at every level (R3.4), size cap 8 KiB (R2.3), at most 64 job and 64 receiver delay samples and 16 replug-to-ring samples, gap histogram with fixed edges `GAP_EDGES_MS` (1, 5, 15, 60, 240 min, then open-ended), `armedMs <= chargingMs`, histogram buckets sum to the gap count.
+- Fixtures in `packages/shared/fixtures/telemetry/`: `device-day.json`, `device-day-station.json`, `device-day-invalid.json` (14 named rejects with codes). Tests: `packages/shared/test/device-day.test.ts` (F1 schema part, property tests with fast-check).
+- The largest aggregate the caps allow is under 8 KiB, so `TOO_LARGE` is a safety net, not a reachable branch; the test pins that.
+- Not done here: the Kotlin test that reads these fixtures (task 4 needs the Android aggregator first).
+
+## 2026-11-15 field-telemetry task 2: metric functions and gate evaluation
+- `packages/shared/src/field-metrics.ts`: `nearestRank` (same definition as `tools/probe/analyze/src/stats.ts`), `percentileOrHidden` (hidden below 20 samples), `armedRatio` (null below 1 h), `alarmRate`, gap histogram helpers (`gapBucket`, `addGapToHist`, `mergeHists`, `histPercentileBucket`, `bucketUpperMs`) and `evaluateGates` (armed, delay, maker, milestone, kill criterion).
+- Tests F3 and F7 in `packages/shared/test/field-metrics.test.ts` (property tests plus boundary cases at exactly 90% and 60 s).
+- Reading of the spec, to confirm: the delay gate pools `delayJobMs` and `delayReceiverMs` (time until the Sensor noticed the plug-in); replug-to-ring is reported but is not gated. The maker gate accepts Tecno or Infinix only (R10.1), unlike the probe gate, which the human widened to Samsung. Armed gates use normal-mode days only (R4.5); a day with more than 26 h of charging is ignored as suspect. No threshold changed.
+
+## 2026-11-15 field-telemetry task 3: outage classes, OUTAGE_RECORD and MISS
+- `packages/shared/src/field-outage.ts`: `OutageRecordOut`, `MissRecordOut`, `classifyOutage` (design section 5 table) and `countLabels` ("No" wins over "Yes", as `labelFor` in the engine).
+- `workers/api/src/area/field.ts` and the reducer: `AreaOutput.fieldRecords` carries `OUTAGE_RECORD` (counts only, an opaque 16-hex key, no install ID, no cell, no scope key) and `MISS` (unplug time and armed count in its cell). The model outbox collects them; nothing consumes them until the telemetry actor (task 5).
+- Found while testing: a "No" label makes an unplug human in the engine, so an all-"No" outage leaves the engine and its record would never show the false alarm. Fix: a reported outage that its evaluated engine no longer holds is emitted once with `withdrawn: true` and fresh label counts; an outage the engine re-dates within one window keeps its record key and earliest start. Only the scope shown for a cell with a drop reports an outage, so a cell outage is not counted again by its parent.
+- A "Yes" label waits one detection window (`missPending`, and `nextAlarm` wakes the actor) before it can be a miss; an unplug that also has a "No" label is not a miss.
+- Tests F4 in `packages/shared/test/field-outage.test.ts` and `workers/api/test/area-field.test.ts`.
+
 ## 2026-11-15 detection-engine task 17: evaluation benchmark
 - `packages/detection/bench/evaluate-bench.mjs` (`npm run bench -w packages/detection`) times one `evaluate()` with one new event on a stored state for 100, 500 and 5,000 live events, at 30 phones and at 10 events per phone. Kept out of `npm test`. No new dependency.
 - Confirmed with the Cloudflare docs: Workers Free gives 10 ms CPU per request; a Durable Object has the same per-invocation limit as the Worker plan, so we plan for 10 ms.
@@ -387,3 +405,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `tools/sim/src/fixture.ts`: `outage30Fixture(jitterMs)` builds a 30-phone outage in the existing fixture format (ADR 0015) with `syntheticFixture`. Every event and label carries `simulated: true`.
 - Contract test `tools/sim/test/outage30.test.ts`: over random jitter (0 to 2 s), the replay shows CONFIRMED no later than 10 s after the last UNPLUG. The engine is called through `buildReplay`; no detection logic in `tools/sim`, no params change.
 - The `demo-label-check` hook script and its two hooks in `file-checks.json` already existed (with tests in `hooks.test.mjs`). Nothing was added or loosened; `node .kiro/scripts/demo-label-check.mjs --all` passes.
+
+## 2026-11-15 field-telemetry tasks 1 to 3: human answers applied, main merged in
+- Merged origin/main (PRs #4, #6, #7) into `work/field-telemetry-1-3`; conflicts only in `docs/status.md`, `docs/kiro-log.md` and `docs/session-notes.md`, both sides kept.
+- The human answered "yes to all": `GATE_OEM_MAKERS` in `packages/shared/src/field-metrics.ts` now accepts Tecno, Infinix or Samsung (as ADR 0013), the F7 test checks Samsung passes and Pixel does not, and field-telemetry R10.1 says so. Design section 4 now lists `key` and `withdrawn` on `OUTAGE_RECORD`. Gap edges, `fieldSent` and `missPending` are approved; no code change.
+- Still open: the miss armed count is per cell, R5.5 says per scope.

@@ -83,7 +83,7 @@ Telemetry is opt-in and holds no location.
 3. THE candidate entry SHALL give the outage's day, device count and the command to export it.
 
 ### R10 Gate summary
-1. THE report SHALL state, at the top, whether the milestone-1 gate (armed ratio at least 90% on at least one phone, restore delay p95 at most 60 seconds, Tecno or Infinix working after battery exemption) is met, not met or not measurable yet.
+1. THE report SHALL state, at the top, whether the milestone-1 gate (armed ratio at least 90% on at least one phone, restore delay p95 at most 60 seconds, Tecno, Infinix or Samsung working after battery exemption, as in ADR 0013) is met, not met or not measurable yet.
 2. THE report SHALL state the kill criterion status (armed ratio below 50% on every phone even with exemption and the fallback).
 
 ## Analysis of requirements (gaps found and how they were fixed)
