@@ -39,6 +39,7 @@ It runs the detection engine (`detection-engine`) once per scope. It does not co
 3. THE system SHALL create an area actor only when an event first arrives for its parent.
 4. WHEN a batch contains cells from several parents, THE Ingest API SHALL make one call per parent.
 5. THE area actor SHALL be the single writer of its state.
+6. THE area actor SHALL publish each public scope view to the public index when it changes, and SHALL send a removal when the scope is no longer publishable (amendment from `web-and-area-pages` R8.2, ADR 0010).
 
 ### R3 Membership
 1. WHEN an event arrives, THE area actor SHALL record or refresh the install's membership in the event's cell with the event time.

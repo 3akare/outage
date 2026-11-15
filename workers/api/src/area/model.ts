@@ -12,6 +12,7 @@ import {
   type AreaInput,
   type AreaState,
   emptyAreaState,
+  type PublishBatch,
   reduce,
   type ScopeEngine,
   type ScopeView,
@@ -37,7 +38,9 @@ export interface Outbox {
   notices: NoticeBatch[];
   removals: RemovalRequest[];
   pushes: PassedPush[];
+  publish: PublishBatch;
 }
+const emptyOutbox = (): Outbox => ({ notices: [], removals: [], pushes: [], publish: { put: [], remove: [] } });
 
 const rowId = (r: Omit<ModelRow, 'json'>): string => `${r.table}\u0000${r.key}\u0000${r.part}`;
 
@@ -107,7 +110,7 @@ export class AreaModel implements DetectionPort {
   private state: AreaState;
   private written = new Map<string, string>(); // row id -> json last written
   private dirtySinceMs: number | null = null;
-  private outbox: Outbox = { notices: [], removals: [], pushes: [] };
+  private outbox: Outbox = emptyOutbox();
   private nextAlarmMs: number | null = null;
   private lastViews: ScopeView[] = [];
 
@@ -149,9 +152,14 @@ export class AreaModel implements DetectionPort {
     return Object.keys(this.state.members).length === 0 && Object.keys(this.state.engines).length === 0;
   }
 
+  /** A publish that failed goes back to the outbox; the newest put or remove per scope wins (R8.2). */
+  requeuePublish(batch: PublishBatch): void {
+    this.outbox.publish = mergePublish(batch, this.outbox.publish);
+  }
+
   drainOutbox(): Outbox {
     const o = this.outbox;
-    this.outbox = { notices: [], removals: [], pushes: [] };
+    this.outbox = emptyOutbox();
     return o;
   }
 
@@ -206,10 +214,26 @@ export class AreaModel implements DetectionPort {
     this.outbox.notices.push(...out.notices);
     this.outbox.removals.push(...out.removals);
     this.outbox.pushes.push(...out.pushes);
+    this.outbox.publish = mergePublish(this.outbox.publish, out.publish);
     this.nextAlarmMs = out.nextAlarmMs;
     this.lastViews = out.views;
     this.dirtySinceMs ??= input.nowMs;
   }
+}
+
+/** `later` wins over `earlier` per scope key. */
+export function mergePublish(earlier: PublishBatch, later: PublishBatch): PublishBatch {
+  const ops = new Map<string, PublishBatch['put'][number] | null>();
+  for (const p of earlier.put) ops.set(p.scopeKey, p);
+  for (const k of earlier.remove) ops.set(k, null);
+  for (const p of later.put) ops.set(p.scopeKey, p);
+  for (const k of later.remove) ops.set(k, null);
+  const out: PublishBatch = { put: [], remove: [] };
+  for (const [k, v] of [...ops].sort(([a], [b]) => (a < b ? -1 : 1))) {
+    if (v) out.put.push(v);
+    else out.remove.push(k);
+  }
+  return out;
 }
 
 /** Reducer config for a parent. `neighbors` is precomputed by the shell (h3-js is loaded lazily, R13.4). */

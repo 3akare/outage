@@ -14,6 +14,7 @@ import { SqlAreaStore, SqlModelStore } from './area-store.ts';
 import { CONFIG, type Tunables } from './config.ts';
 import { type Env, REGISTRY_NAME } from './env.ts';
 import { NoopDetectionPort } from './ports.ts';
+import { INDEX_NAME } from './web/index-core.ts';
 
 export class AreaActor extends DurableObject<Env> {
   private core: AreaCore;
@@ -113,6 +114,12 @@ export class AreaActor extends DurableObject<Env> {
     const calls: Promise<unknown>[] = [];
     for (const b of out.notices) calls.push(this.actor(b.toParent).receiveNotices(b.notices));
     for (const r of out.removals) calls.push(this.actor(parentOf(r.oldCell)).removeMember(r));
+    const pub = out.publish;
+    if (pub.put.length > 0 || pub.remove.length > 0) {
+      const index = this.env.PUBLIC_INDEX.get(this.env.PUBLIC_INDEX.idFromName(INDEX_NAME));
+      const model = this.model;
+      calls.push(index.apply(pub).catch(() => model.requeuePublish(pub)));
+    }
     await Promise.allSettled(calls);
   }
 

@@ -6,12 +6,13 @@ import type { Env } from './env.ts';
 import { REGISTRY_NAME } from './env.ts';
 import { type Deps, handleRequest } from './handlers.ts';
 import { RegisterLimiter } from './limiter.ts';
-import { RegistryActor } from './registry-actor.ts';
 import { RevocationCache } from './registry.ts';
+import { RegistryActor } from './registry-actor.ts';
 import { hashInstallId } from './token.ts';
+import { PublicIndex } from './web/index-actor.ts';
 
-export { AreaActor, RegistryActor };
 export type { Env };
+export { AreaActor, PublicIndex, RegistryActor };
 
 // Isolate-level state: lenient after an isolate restart, never stricter (same direction as the actors' memory state).
 const limiter = new RegisterLimiter(CONFIG.REGISTER_PER_SOURCE_PER_HOUR);
@@ -27,7 +28,8 @@ function makeDeps(env: Env): Deps {
     randomBytes: (n) => crypto.getRandomValues(new Uint8Array(n)),
     // R2.5 needs a per-source budget. The address is read only to be hashed with the hour into an in-memory key; it is never
     // stored or logged, and the hash cannot be reversed to an address after the hour. Flagged for the human (notes-ingest.md).
-    sourceKey: async (req) => hashInstallId(`${req.headers.get('cf-connecting-ip') ?? ''}|${Math.floor(Date.now() / 3_600_000)}`),
+    sourceKey: async (req) =>
+      hashInstallId(`${req.headers.get('cf-connecting-ip') ?? ''}|${Math.floor(Date.now() / 3_600_000)}`),
     limiter,
     cfg: CONFIG,
     area: {

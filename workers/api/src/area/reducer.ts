@@ -129,6 +129,8 @@ export interface AreaState {
   episodes: Episodes;
   history: Record<string, HistoryRec>;
   counters: Record<string, number>;
+  /** JSON of each view last sent to the public index, by scope key (web-and-area-pages R8.2). Public data only. */
+  published: Record<ScopeKey, string>;
 }
 
 export function emptyAreaState(parent: string): AreaState {
@@ -151,6 +153,7 @@ export function emptyAreaState(parent: string): AreaState {
     episodes: {},
     history: {},
     counters: {},
+    published: {},
   };
 }
 
@@ -178,12 +181,19 @@ export interface ScopeView {
   view: PublicScopeView | null; // null: not publishable (R9.1), the page shows an install invitation
 }
 
+export interface PublishBatch {
+  put: { scopeKey: ScopeKey; view: PublicScopeView }[];
+  remove: ScopeKey[];
+}
+
 export interface AreaOutput {
   /** Pushes after per-cell, per-episode de-duplication, for the alerts system (R10.3). */
   pushes: PassedPush[];
   notices: NoticeBatch[];
   removals: RemovalRequest[];
   views: ScopeView[];
+  /** Changes for the public index (web-and-area-pages R8.2): a view that changed, and scopes no longer publishable. */
+  publish: PublishBatch;
   /** Earliest time the shell must call TICK: a flush of queued state events or an open outage reaching 12 hours (R11.5). */
   nextAlarmMs: number | null;
   /** Scopes evaluated by this call, each at most once (R11.4). */
@@ -653,9 +663,23 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
     }),
   }));
 
+  // Publisher (web-and-area-pages R8.2): send a view only when it changed; a tombstone when it is no longer publishable
+  // (fewer than 3 members, R9.1) or its scope is gone.
+  const publish: PublishBatch = { put: [], remove: [] };
+  const published: Record<ScopeKey, string> = {};
+  for (const { scopeKey, view } of views) {
+    if (!view) continue;
+    const j = JSON.stringify(view);
+    published[scopeKey] = j;
+    if (s.published[scopeKey] !== j) publish.put.push({ scopeKey, view });
+  }
+  for (const k of Object.keys(s.published).sort()) if (!(k in published)) publish.remove.push(k);
+  s.published = published;
+
   return {
     state: s,
     out: {
+      publish,
       pushes: pushed.passed,
       notices,
       removals,

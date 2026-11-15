@@ -145,7 +145,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
 | R1.4, R3 | W1 | `W1_page_without_script` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
-| R4.3, R11.1 | W2 | `W2_public_privacy` | 4, 7 | partly: pages tested (`workers/api/test/web-pages.test.ts`); index part is task 7 |
+| R4.3, R11.1 | W2 | `W2_public_privacy` | 4, 7 | test written (`workers/api/test/web-pages.test.ts`, `workers/api/test/web-index.test.ts`) |
 | R2 | W3 | `W3_five_states` | 4 | test written (`workers/api/test/web-pages.test.ts`) |
 | R9 | W4 | `W4_cache_ttl` | 5 | unit tests (`workers/api/test/web-cache.test.ts`); deployed-domain check open |
 | R6.4, R6.6 | W5 | `W5_replay_matches_engine` | 9 | planned |
