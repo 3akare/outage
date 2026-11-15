@@ -28,7 +28,7 @@ jobs:
       - run: npm run probe:test
 
   visual:
-    # 390 x 844 visual check of the public pages (ADR 0020). Screenshots are uploaded as an artifact.
+    # 390 x 844 visual check of the public pages (ADR 0019). Screenshots are uploaded as an artifact.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

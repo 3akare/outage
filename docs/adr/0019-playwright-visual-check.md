@@ -1,4 +1,4 @@
-# ADR 0020: Playwright as a dev dependency for the 390 px visual check
+# ADR 0019: Playwright as a dev dependency for the 390 px visual check
 
 Status: ACCEPTED 2026-11-15, under the human's blanket approval.
 
