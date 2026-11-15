@@ -541,3 +541,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - The app must be the full experience, so Area becomes a real map and a new Insights screen carries the charts. Wrote `.kiro/specs/app-map-insights/` (requirements, design, tasks), ADR 0022 (custom Canvas hex map, no basemap, no tile server) and ADR 0023 (custom Canvas charts, Vico compared and rejected). No new Gradle dependency, so `approved-dependencies.json` is unchanged.
 - Amended `app-shell` requirements: Area is a map, bottom bar gains Insights.
 - Open: the Worker route `/api/map.json` and its fixture are task 1 of the new spec. API facts for gestures, Canvas and bottom sheets are marked unverified until task 2 checks them with Context7.
+
+## 2026-11-15 feat(map): pure map geometry, parser, insights calc and demo data [spec:app-map-insights task:2,4]
+- Added `app.outage.map` (model with the 3-phone floor, `AreaMapParser`, projection, hex grid hit test, pan and zoom transform with clamps, `DemoAreaMap`) and `app.outage.insights` (`InsightsCalc`, `PromiseText`, `DemoOutages`). No Android imports, no new dependency (ADR 0022, ADR 0023). 124 JVM tests pass, covering AM1 to AM4 and IN1 to IN6.
+- Parser tests use an inline JSON string because no shared map fixture exists yet. Demo hexes are generated without H3; ids start with `sim-`.
+- Open for the human: task 1 (Worker `/api/map.json` and shared fixture) must land so Kotlin tests can read the shared file. Lint was not run. Compose screens, gesture API checks with Context7 and the tap sheet are tasks 3 and 5 to 11.
