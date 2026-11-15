@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "checked": "2026-11-15",
+  "regulator": "Nigerian Electricity Regulatory Commission (NERC)",
+  "note": "Promised minimum hours of power per day under NERC's service-based tariff (2020 MYTO, as revised). A band is marked verified only where the figure or its boundary appears in a NERC publication readable as text. NERC's full MYTO orders are PDF-only and could not be read by the build tooling, so the human must confirm every figure against the NERC order before release (power-log design section 2, R5.5). No figure here is invented: each carries its sources.",
+  "officialSources": [
+    "https://nerc.gov.ng/wp-content/uploads/2021/01/PUBLIC%20NOTICE%20ON%20TARIFFS_rev_c.pdf",
+    "https://nerc.gov.ng/wp-content/uploads/2020/08/NERC_PRESS%20RELEASE%20ON%20PROCTECTING%20CUSTOMERS_vf.pdf",
+    "https://nerc.gov.ng/wp-content/uploads/2024/04/Addendum-1-to-the-April-MYTO-Supplementary-Order_PHEDC.pdf"
+  ],
+  "bands": [
+    {
+      "id": "A",
+      "name": "Band A",
+      "promisedMinHoursPerDay": 20,
+      "verified": false,
+      "officialSource": "https://nerc.gov.ng/wp-content/uploads/2024/04/Addendum-1-to-the-April-MYTO-Supplementary-Order_PHEDC.pdf",
+      "sources": [
+        "https://nairametrics.com/2021/05/28/nerc-to-enforce-compensation-to-electricity-consumers-for-under-supply-from-july/",
+        "https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/"
+      ],
+      "checked": "2026-11-15",
+      "note": "NERC's April 2024 Band A supplementary order sets Band A feeders' minimum service requirements; the 20-hour figure is reported by news outlets and awaits confirmation against the order text."
+    },
+    {
+      "id": "B",
+      "name": "Band B",
+      "promisedMinHoursPerDay": 16,
+      "verified": false,
+      "officialSource": null,
+      "sources": [
+        "https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/",
+        "https://nairametrics.com/2021/05/28/nerc-to-enforce-compensation-to-electricity-consumers-for-under-supply-from-july/"
+      ],
+      "checked": "2026-11-15",
+      "note": "The 16-hour minimum is from news reports only; no readable NERC text confirms it."
+    },
+    {
+      "id": "C",
+      "name": "Band C",
+      "promisedMinHoursPerDay": 12,
+      "verified": true,
+      "officialSource": "https://nerc.gov.ng/wp-content/uploads/2021/01/PUBLIC%20NOTICE%20ON%20TARIFFS_rev_c.pdf",
+      "sources": [
+        "https://nerc.gov.ng/wp-content/uploads/2020/08/NERC_PRESS%20RELEASE%20ON%20PROCTECTING%20CUSTOMERS_vf.pdf",
+        "https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/"
+      ],
+      "checked": "2026-11-15",
+      "note": "NERC's 2021 public notice and 2020 press release state that bands D and E are served less than an average of 12 hours of supply per day, which places Band C's floor at 12 hours."
+    },
+    {
+      "id": "D",
+      "name": "Band D",
+      "promisedMinHoursPerDay": 8,
+      "verified": false,
+      "officialSource": "https://nerc.gov.ng/wp-content/uploads/2021/01/PUBLIC%20NOTICE%20ON%20TARIFFS_rev_c.pdf",
+      "sources": [
+        "https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/"
+      ],
+      "checked": "2026-11-15",
+      "note": "The NERC 2021 notice confirms only that Band D is served less than 12 hours per day; the exact 8-hour minimum is from news reports and awaits NERC confirmation."
+    },
+    {
+      "id": "E",
+      "name": "Band E",
+      "promisedMinHoursPerDay": 4,
+      "verified": false,
+      "officialSource": "https://nerc.gov.ng/wp-content/uploads/2021/01/PUBLIC%20NOTICE%20ON%20TARIFFS_rev_c.pdf",
+      "sources": [
+        "https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/"
+      ],
+      "checked": "2026-11-15",
+      "note": "The NERC 2021 notice confirms only that Band E is served less than 12 hours per day; the exact 4-hour minimum is from news reports and awaits NERC confirmation."
+    }
+  ]
+}

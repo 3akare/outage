@@ -14,7 +14,7 @@ Depends on `sensor-android` (task 9), `alerts-and-light-alarm` (tasks 1, 4), `ar
 - [ ] 2. Choose and set up local storage (the sensor's SQLite database or a second one, plain `SQLiteOpenHelper`) and the `RAW_INPUT` store with migrations. Record the choice in an ADR. Room needs human approval (ADR 0012).
   - Depends on: `sensor-android` 9
   - Requirements: R1
-- [ ] 3. Band config file with sources and checked date, plus a validator and the copy strings in the string pack.
+- [x] 3. Band config file with sources and checked date, plus a validator and the copy strings in the string pack.
   - Depends on: `alerts-and-light-alarm` 2
   - Requirements: R5.5
 

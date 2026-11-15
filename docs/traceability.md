@@ -25,7 +25,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R6 | I4 | `I4_bucket_invariants` | 5 | test written (`workers/api/test/core.test.ts`) |
 | R8 | I5 | `I5_batch_isolation` | 4 | test written (`workers/api/test/handlers.test.ts`) |
 | R9.7, R10, R4.3 | I6 (supports P9) | `I6_excluded_events` | 5 | test written (`workers/api/test/core.test.ts`) |
-| R9 | I7 | `I7_uploader_convergence` | 6 | planned |
+| R9 | I7 | `I7_uploader_convergence_under_any_failure_pattern` (`apps/android/app/src/test/kotlin/app/outage/net/UploaderTest.kt`) | 6 | test written |
 | R1 | I8 | `I8_strict_schema` | 2 | test written (`packages/shared/test/ingest.test.ts`) |
 | R11 | I9 | `I9_write_behind_state` | 7 | test written (`workers/api/test/core.test.ts`) |
 | R7, R8, R12.1 | - | `workers/api/test/integration.test.ts` (Workers runtime) | 8 | test written |
@@ -112,6 +112,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R3 | PL4 | `PL4_daily_stats` | 6 | planned |
 | R4 | PL5 | `PL5_light_score` | 6 | planned |
 | R5 | PL6 | `PL6_promise_copy` | 6 | planned |
+| R5.5 | - (band config + copy) | `BandConfigTest` (`apps/android/app/src/test/kotlin/app/outage/log/BandConfigTest.kt`) | 3 | test written |
 | R6 | PL7 | `PL7_freezer_guard_lifecycle` | 7 | planned |
 | R1.3, R8.2 | PL8 | `PL8_no_wall_clock_upload` | 8 | planned |
 | R8 | PL9 | `PL9_share_card_privacy` | 8 | planned |
