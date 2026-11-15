@@ -440,3 +440,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Bumped the probe app to `versionCode 2`, `versionName 0.0.2`. Release tag for the orchestrator to push: `probe-v0.0.2` (the `android` workflow publishes the signed debug APK for `probe-v*`).
 - Verified on the JVM/Node, not on a phone: the analyze numbers and the restart decision. NOT verified: that the fix raises armed time on the Samsung. The human installs the new APK and reruns; feasibility-probe task 8 stays unticked.
 - Checks: `tools/probe/android` `:app:assembleDebug :app:testDebugUnitTest :app:lintDebug` BUILD SUCCESSFUL (10 unit tests pass: 7 ProbeContractTest + 3 RestartPolicyTest). `tools/probe/analyze` `npm test` 14 pass. No TypeScript changed.
+
+## 2026-11-15 docs(steering): record blanket human approval, accept open ADRs [spec:none task:governance]
+- Branch `work/human-blanket-approval`. The human said to stop asking for permission and decide. Recorded in `docs/session-notes.md` under Decisions.
+- Steering (`definition-of-done`, `tech`, `privacy`, `release`, `docs-servers`): the "ask the human" steps now say blanket approval was given on 2026-11-15; agents decide and record the choice in an ADR. Every privacy rule is unchanged. `product.md` claims discipline is unchanged. No hook script was edited.
+- ADRs 0005, 0007, 0008, 0009, 0011, 0014, 0015, 0016 marked ACCEPTED (2026-11-15). ADR 0009 routing: option 1 as its Decision recommends. ADR 0013 stays PROPOSED until the probe Result exists.
+- Spec amendments that follow from the decisions: area-cells R11.4 (one re-hint pass, ADR 0014) and the public-rule note; field-telemetry R5.5 (miss armed count per cell).
+- All open questions in `docs/session-notes.md` resolved and moved to Decisions. `docs/status.md` now lists only human-only items.

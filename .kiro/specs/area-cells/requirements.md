@@ -106,7 +106,7 @@ It runs the detection engine (`detection-engine`) once per scope. It does not co
 1. THE area actor SHALL evaluate the affected scopes when a batch contains a detection event.
 2. WHEN a batch contains only state events, THE area actor SHALL merge them and evaluate at the next detection event or after the flush interval, whichever is first.
 3. THE decisions SHALL be the same as if every batch had been evaluated at once.
-4. THE area actor SHALL evaluate each scope at most once per request.
+4. THE area actor SHALL evaluate each scope at most once per request, except one re-hint pass for a scope whose same-parent hint context changed (ADR 0014, amended 2026-11-15).
 5. THE area actor SHALL set an alarm for the earliest time an open outage could reach 12 hours, so unknown-end decisions happen on time.
 
 ### R12 Delete and expiry
@@ -151,7 +151,7 @@ Done by Kiro Web. Run Kiro's Analyze Requirements in IDE on this file and record
 - **Shard by res-7 parent** (ADR 0006). The brief says one Durable Object per area cell; the area actor is one per parent, which still evaluates at res 8.
 - **"Armed" for scope selection means recently armed in 24 hours**, not armed this second (ADR 0006).
 - **Link rule:** 3 co-outages in 7 days, links limited to one parent in this version.
-- **Public rule:** publish only scopes with 3 or more members (ADR 0007). This is a privacy rule; the human should confirm it.
+- **Public rule:** publish only scopes with 3 or more members (ADR 0007). This is a privacy rule; accepted under the human's blanket approval of 2026-11-15.
 - **Manual-report hint:** 2 distinct installs in 10 minutes (starting value, a detection-adjacent threshold, so flagged in ADR 0006).
 - **Phone side.** The app (Kotlin) looks up its own cell with `com.uber:h3`, which needs human approval (ADR 0012). The Worker re-checks every cell with its own helpers.
 - **No new dependency on the Worker side.** `h3-js` is in the approved stack. It is used lazily and only on the Worker for neighbors, with pure-TypeScript parent and validity code for the hot path.

@@ -10,4 +10,4 @@ inclusion: always
 - Never show a boundary or marker that reveals one sensor's location.
 - Share cards carry no location.
 - Delete-my-data must work: one call removes everything tied to an install ID on the server and on the phone.
-- Ask the human before changing what data is stored.
+- Blanket approval 2026-11-15: record stored-data changes in an ADR. Rules above stay.

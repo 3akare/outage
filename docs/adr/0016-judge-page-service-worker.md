@@ -1,6 +1,6 @@
 # ADR 0016: The Judge page uses a small service worker for offline refresh
 
-Status: PROPOSED (2026-11-15). Needs the human's confirmation.
+Status: ACCEPTED 2026-11-15, under the human's blanket approval.
 
 ## Context
 web-and-area-pages R6.7 asks that `/judge` work with no network after load and survive a refresh. The site CSP is `default-src 'none'`, and a normal reload revalidates the page over the network.

@@ -1,6 +1,6 @@
 # ADR 0008: Light Alarm is native and event-driven; pushes use FCM directly
 
-Status: ACCEPTED (2026-11-14) by delegation. Needs the human for two items: the Firebase project with its service-account key, and the stored quiet window.
+Status: ACCEPTED 2026-11-15, under the human's blanket approval (push data, quiet window). Only the human can create the Firebase project and its service-account key; the code is written so it runs without them.
 
 Amended by ADR 0012 (2026-11-14): push is FCM direct; the app is native Kotlin.
 
