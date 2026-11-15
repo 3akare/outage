@@ -12,3 +12,10 @@ Cloudflare Worker with Durable Objects. One Worker serves the `/v1/*` ingest API
 - Pushes are counted and dropped until the alerts-and-light-alarm spec provides a sender (R10.3).
 
 Tests: `npm test -w workers/api`. Properties A1 to A12 are listed in `docs/traceability.md`.
+
+## Field telemetry (spec: field-telemetry)
+
+- `POST /v1/telemetry`: one `DeviceDay` aggregate per install and local day. Install token, strict schema (`parseDeviceDay`), at most 6 uploads per install per hour, last upload wins, duplicates answered `accepted`.
+- `GET /v1/admin/field/:day` (`YYYY-MM-DD`): `Authorization: Bearer <FIELD_READ_TOKEN>`. Returns device-days with per-request aliases `D1`, `D2`, ... (sorted install IDs; the map is not stored), silent devices of the last 7 days, outage records that started on that UTC day, and misses. No install ID and no cell. `500 server_not_configured` when the secret is not set.
+- `TelemetryActor` (`src/telemetry/`): one SQLite Durable Object named `telemetry`. Tables `device_day`, `outage_record`, `miss_record`. The area actors send their `OUTAGE_RECORD` and `MISS` outputs here after each change (requeued on failure). Rows older than 90 days are pruned by a daily alarm. Delete-my-data (`POST /v1/delete`) also removes the install's `device_day` rows.
+- Secret: `wrangler secret put FIELD_READ_TOKEN` (run in `workers/api`). Never committed.

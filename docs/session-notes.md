@@ -75,3 +75,9 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 ## 2026-11-15 power-log task 3 (work/ingest-6-powerlog-3): band config
 - Decision (ADR 0017): `bands.json` ships A 20, B 16, C 12, D 8, E 4 hours/day. Only Band C is marked verified (NERC 2021 notice fixes the 12 h floor via the D/E < 12 h boundary). A, B, D, E are unverified with sources; the human must confirm them against NERC's MYTO order PDFs (unreadable by the build tooling) before release. UI/Stats must treat unverified bands as unconfirmed; promise copy is always an estimate and never mentions refund, compensation or claim.
 - Band config lives as an app asset (`app.outage.log.BandConfig`), not in packages/shared: it is phone-only (the Worker never shows supply promise), so no shared single-source copy is needed and no build-time asset copy was added.
+
+## 2026-11-15 field-telemetry tasks 5 to 7 (work/field-telemetry-5-7)
+- Decision: the scheduled Kiro Web run opens a pull request; it cannot commit to `main` (ADR 0018). R7.3 amended.
+- Decision: report rules the spec left open are in ADR 0017 (ARMED_CRITICAL supersedes LOW per class and day, outage signatures use `other:unknown:normal`, UPLOAD_GAP at two missing days, gap reasons printed only if safe).
+- Open for the human: deploy the Worker (migration v4), `wrangler secret put FIELD_READ_TOKEN`, create the schedule in app.kiro.dev from `.kiro/schedules/field-test.md`. Task 4 (phone aggregator) is not done, so no real device-day exists yet.
+- Note for the orchestrator: a kill-criterion line from one phone and 9 h of charging is what `evaluateGates` (task 2) returns; the probe note called the same run INCOMPLETE. Left as the spec says (R10.2); the report prints the hours so a reader can see the data is thin.

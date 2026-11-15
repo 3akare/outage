@@ -46,12 +46,14 @@ const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object
 const nat = (x: unknown, max = Number.MAX_SAFE_INTEGER): x is number =>
   typeof x === 'number' && Number.isInteger(x) && x >= 0 && x <= max;
 
+// Plain fields, not parameter properties: Node's strip-only TypeScript mode (used by tools/field) cannot run those.
 class Reject extends Error {
-  constructor(
-    readonly code: DeviceDayCode,
-    readonly path: string,
-  ) {
+  readonly code: DeviceDayCode;
+  readonly path: string;
+  constructor(code: DeviceDayCode, path: string) {
     super(code);
+    this.code = code;
+    this.path = path;
   }
 }
 const bad = (path: string): never => {

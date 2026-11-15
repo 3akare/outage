@@ -25,3 +25,8 @@ The field test needs armed time, delays, alarm outcomes and label-based false al
 - The server learns per-phone daily numbers keyed by an anonymous install ID. An attacker with the database could see which anonymous installs are Tecno phones on Android 13 with poor armed time. No location or contact data.
 - If the Kiro schedule cannot hold a secret, the human runs `/field-test` and the process is the same.
 - The 8 KiB cap and one row per device-day keep the free-tier cost near zero.
+
+## Addendum 2026-11-15 (task 5, no new stored fields)
+- The admin answer also lists "silent" devices: installs whose newest device-day in the last 7 days is before the requested day. It carries alias, maker, Android major and that last date, all already stored. It lets the report raise `UPLOAD_GAP` without storing anything new.
+- Outage records are listed by the UTC day they started; misses by the UTC day of the unplug.
+- Upload rate limit: 6 per install per hour, kept in Worker isolate memory only.
