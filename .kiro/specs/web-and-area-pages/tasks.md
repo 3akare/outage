@@ -45,7 +45,7 @@ Depends on `area-cells` (tasks 8, 10), `detection-engine` (tasks 13, 16), `event
 
 ## Wave 4
 
-- [ ] 10. Judge page: banner, controls, explanation panel, "Your spot only" frame, offline refresh. Tests W6.
+- [x] 10. Judge page: banner, controls, explanation panel, "Your spot only" frame, offline refresh. Tests W6.
   - Depends on: 8, 9
   - Requirements: R6
 

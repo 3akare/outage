@@ -24,6 +24,7 @@ function deps(views: readonly PublicScopeView[] | null, over: Partial<WebDeps> =
     areas: AREAS,
     index,
     cache: new PageCache({ now: () => NOW }),
+    replay: () => null,
     now: () => NOW,
     ...over,
   };

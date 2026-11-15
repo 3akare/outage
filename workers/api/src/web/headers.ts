@@ -31,6 +31,7 @@ export function contentSecurityPolicy(nonce: string): string {
     `style-src 'nonce-${nonce}'`,
     "img-src 'self' data:",
     "connect-src 'self'",
+    "worker-src 'self'", // the Judge page's service worker (R6.7)
     "base-uri 'none'",
     "form-action 'none'",
     "frame-ancestors 'none'",
