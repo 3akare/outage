@@ -2,7 +2,7 @@ package app.outage.map
 
 import app.outage.shell.ColorRole
 
-/** How a hex is filled. A pattern per state so colour is never the only signal (R6.2, ADR 0022). */
+/** How a hex is filled (ADR 0028: normal solid, possible hatch, confirmed dots, restored outline fill, no data empty outline). A pattern per state so colour is never the only signal (R6.2, ADR 0022). */
 enum class CellPattern { PLAIN, SOLID, HATCH, DOTS, OUTLINE }
 
 /**
@@ -13,11 +13,11 @@ enum class CellPattern { PLAIN, SOLID, HATCH, DOTS, OUTLINE }
 data class CellStyle(val role: ColorRole, val pattern: CellPattern, val labelName: String, val describeName: String) {
     companion object {
         fun of(state: CellState): CellStyle = when (state) {
-            CellState.NORMAL -> CellStyle(ColorRole.PRIMARY, CellPattern.PLAIN, "status_normal", "map_desc_normal")
+            CellState.NORMAL -> CellStyle(ColorRole.PRIMARY, CellPattern.SOLID, "status_normal", "map_desc_normal")
             CellState.POSSIBLE -> CellStyle(ColorRole.TERTIARY, CellPattern.HATCH, "status_possible", "map_desc_possible")
-            CellState.CONFIRMED -> CellStyle(ColorRole.ERROR, CellPattern.SOLID, "status_confirmed", "map_desc_confirmed")
-            CellState.RESTORED -> CellStyle(ColorRole.PRIMARY, CellPattern.DOTS, "status_restored", "map_desc_restored")
-            CellState.NO_DATA -> CellStyle(ColorRole.PRIMARY, CellPattern.OUTLINE, "map_no_data", "map_desc_no_data")
+            CellState.CONFIRMED -> CellStyle(ColorRole.ERROR, CellPattern.DOTS, "status_confirmed", "map_desc_confirmed")
+            CellState.RESTORED -> CellStyle(ColorRole.PRIMARY, CellPattern.OUTLINE, "status_restored", "map_desc_restored")
+            CellState.NO_DATA -> CellStyle(ColorRole.PRIMARY, CellPattern.PLAIN, "map_no_data", "map_desc_no_data")
         }
     }
 }

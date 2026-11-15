@@ -13,7 +13,9 @@ class OnboardingFlowTest {
     private val order = OnboardingStep.entries
 
     private fun invariant(rec: OnboardingRecord, where: String) {
-        if (rec.step.ordinal > OnboardingStep.SPOT.ordinal) assertTrue(where + ": past Spot without a cell", rec.cell != null)
+        // A one-step first run (ADR 0026) finishes with consent and no cell, so that record is the one exception.
+        val firstRunDone = rec.completed && rec.hasConsent && rec.step == OnboardingStep.FINISH
+        if (rec.step.ordinal > OnboardingStep.SPOT.ordinal && !firstRunDone) assertTrue(where + ": past Spot without a cell", rec.cell != null)
         if (rec.step.ordinal > OnboardingStep.CONSENT.ordinal) assertTrue(where + ": past Consent without consent", rec.hasConsent)
         rec.cell?.let { assertTrue(where + ": stored cell is not a cell", OnboardingFlow.isCell(it)) }
     }
@@ -255,5 +257,32 @@ class OnboardingFlowTest {
             flow.startSetup(f); flow.chooseSpot(Gen.cell(r), null, null, f); flow.agree(1, 7, false, f)
             assertEquals(OnboardingStep.FINISH, flow.current)
         }
+    }
+
+    // ux-redesign UX8 (ADR 0026): first run is one step. One call records consent and finishes, with no cell needed.
+    @Test
+    fun UX8_first_run_one_call_gives_consent_and_completes() {
+        val store = MemoryStore()
+        val flow = OnboardingFlow.open(store, facts0)
+        assertFalse(flow.registrationAllowed)
+        assertTrue(flow.firstRun(OnboardingFlow.CONSENT_VERSION, 1234))
+        assertTrue(flow.registrationAllowed)
+        assertTrue(flow.snapshot.completed)
+        assertEquals(OnboardingStep.FINISH, flow.current)
+        assertNull(flow.snapshot.cell)
+        // Reopening keeps it done: the record is not sent back to Spot.
+        val again = OnboardingFlow.open(store, facts0)
+        assertEquals(OnboardingStep.FINISH, again.current)
+        assertTrue(again.snapshot.completed)
+        assertTrue(again.registrationAllowed)
+    }
+
+    @Test
+    fun UX8_first_run_only_from_welcome_and_needs_a_consent_version() {
+        val flow = OnboardingFlow.open(MemoryStore(), facts0)
+        assertFalse(flow.firstRun(0, 5))
+        assertFalse(flow.registrationAllowed)
+        assertTrue(flow.firstRun(1, 5))
+        assertFalse(flow.firstRun(1, 6))
     }
 }

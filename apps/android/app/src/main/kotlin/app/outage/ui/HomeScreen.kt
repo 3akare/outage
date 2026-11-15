@@ -39,7 +39,7 @@ private const val REFRESH_MS = 60_000L
 
 /** Home: "Is my power on?" (R2). Reads state only; starts nothing. */
 @Composable
-fun HomeScreen(vm: HomeViewModel, scroll: ScrollState, onOpenAlarm: () -> Unit) {
+fun HomeScreen(vm: HomeViewModel, scroll: ScrollState, onOpenAlarm: () -> Unit, onOpenSetup: (String) -> Unit, hero: @Composable () -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
     // Refresh when the screen is visible, then once a minute so "Updated 2 min ago" stays true.
     // https://developer.android.com/topic/libraries/architecture/coroutines#repeatOnLifecycle
@@ -52,16 +52,25 @@ fun HomeScreen(vm: HomeViewModel, scroll: ScrollState, onOpenAlarm: () -> Unit) 
             }
         }
     }
-    HomeContent(state, scroll, onOpenAlarm)
+    HomeContent(state, scroll, onOpenAlarm, onOpenSetup, hero)
 }
 
 @Composable
-fun HomeContent(state: HomeUiState, scroll: ScrollState, onOpenAlarm: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth().verticalScroll(scroll).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
+fun HomeContent(state: HomeUiState, scroll: ScrollState, onOpenAlarm: () -> Unit, onOpenSetup: (String) -> Unit, hero: @Composable () -> Unit) {
+    // The map comes first and fills the width, the feed sits below it (ADR 0026).
+    Column(modifier = Modifier.fillMaxWidth().verticalScroll(scroll)) {
+        hero()
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
         SpotStatusCard(state)
+        if (state.sensor.kind == SensorKind.NOT_ARMED) {
+            SetupCard(R.string.setup_battery_title, R.string.setup_battery_body) { onOpenSetup("battery") }
+        }
+        if (state.area == null) {
+            SetupCard(R.string.setup_area_title, R.string.setup_area_body) { onOpenSetup("followed_area") }
+        }
         SensorCard(state)
         state.todayPowerHours?.let { PowerTodayCard(it) }
         state.alarm?.let { alarm ->
@@ -71,6 +80,18 @@ fun HomeContent(state: HomeUiState, scroll: ScrollState, onOpenAlarm: () -> Unit
                     Text(stringResource(StatusRes.alarmLabel(alarm)), style = MaterialTheme.typography.bodyLarge)
                 }
             }
+        }
+        }
+    }
+}
+
+/** A setup step that used to block first run. It waits here until done, and the card disappears once it is (ADR 0026). */
+@Composable
+private fun SetupCard(titleRes: Int, bodyRes: Int, onClick: () -> Unit) {
+    Card(onClick = onClick, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(stringResource(titleRes), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(bodyRes), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

@@ -39,10 +39,10 @@ graph LR
 
 ## Wave 3: app
 
-- [ ] 6. Compose `Theme.kt` from tokens, three item dock, route changes (Area merges into Home, Log into Insights).
+- [x] 6. Compose `Theme.kt` from tokens, three item dock, route changes (Area merges into Home, Log into Insights).
   - Depends on: 2
   - Requirements: R3, R9
-- [ ] 7. One step first run, Home with map and feed, setup cards, test UX8.
+- [x] 7. One step first run, Home with map and feed, setup cards, test UX8.
   - Depends on: 6
   - Requirements: R1, R2, R5
 

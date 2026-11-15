@@ -25,6 +25,20 @@ class OnboardingFlow private constructor(
     fun startSetup(facts: OnboardingFacts, elapsedMs: Long = 0): Boolean =
         if (record.step == OnboardingStep.WELCOME) { moveForward(facts, elapsedMs); true } else false
 
+    /**
+     * The one-step first run (ADR 0026): one button records consent and finishes setup. Only from Welcome.
+     * The spot, battery steps and the rest move to setup cards on Home and to Settings, so no cell is needed yet.
+     * Consent still comes first: nothing registers or uploads before this call (R4.3).
+     */
+    fun firstRun(version: Int, atMs: Long): Boolean {
+        if (record.step != OnboardingStep.WELCOME || version < 1) return false
+        record = record.copy(
+            step = OnboardingStep.FINISH, consentVersion = version, consentAtMs = atMs, completed = true,
+        )
+        store.save(record)
+        return true
+    }
+
     /** Spot chosen. Takes the cell only (O2). Returns false for text that is not a res-8 cell. */
     fun chooseSpot(cell: String, areaName: String?, postcodePrefix: String?, facts: OnboardingFacts, elapsedMs: Long = 0): Boolean {
         if (record.step != OnboardingStep.SPOT || !isCell(cell)) return false
@@ -130,6 +144,10 @@ class OnboardingFlow private constructor(
 
         internal fun normalize(r: OnboardingRecord, facts: OnboardingFacts): OnboardingRecord {
             var rec = r
+            // A first run (ADR 0026) is finished with consent and no cell. Keep it as it is.
+            if (rec.completed && rec.hasConsent && rec.step == OnboardingStep.FINISH) {
+                return if (rec.cell != null && !isCell(rec.cell!!)) rec.copy(cell = null, areaName = null) else rec
+            }
             if (rec.cell != null && !isCell(rec.cell!!)) rec = rec.copy(cell = null, areaName = null)
             var step = rec.step
             // Nothing past Spot without a cell, nothing past Consent without consent (R4.3).

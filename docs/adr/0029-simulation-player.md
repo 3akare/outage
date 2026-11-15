@@ -1,5 +1,7 @@
 # ADR 0029: Simulation player at /app/simulate
 
+Status: ACCEPTED (2026-11-22), under the blanket approval. Spec: `.kiro/specs/ux-redesign/`.
+
 ## Context
 The old judge page was a long list of steps with play controls. The human could not tell what it was. ADR 0027 says the web has a landing page, a real-data replica and a clearly separate simulation.
 
