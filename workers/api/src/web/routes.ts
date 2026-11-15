@@ -18,6 +18,13 @@ import {
   renderNotFound,
   renderPrivacyPage,
 } from './pages.ts';
+import {
+  JUDGE_PATH,
+  type ReplayData,
+  renderJudgePage,
+  renderJudgeReplayJson,
+  renderJudgeServiceWorker,
+} from './judge.ts';
 import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './status.ts';
 
 export interface WebDeps {
@@ -26,6 +33,8 @@ export interface WebDeps {
   areas: readonly CatalogArea[];
   index: IndexReader;
   cache: PageCache;
+  /** The static simulated replay, or null if not built. Read only by the Judge routes (R6.8, W6). */
+  replay: () => ReplayData | null;
   now(): number;
 }
 
@@ -51,7 +60,7 @@ export function robotsTxt(site: Site): string {
 export function sitemapXml(site: Site, areas: readonly CatalogArea[]): string {
   const paths = [
     '/',
-    '/judge',
+    JUDGE_PATH,
     '/install',
     '/privacy',
     ...areas.filter((a) => a.checkedBy.trim() !== '').map((a) => `/area/${a.slug}`),
@@ -84,6 +93,9 @@ const ROUTES: Route[] = [
       return renderCellPage({ site: d.site, cell: m[1], views: await d.index.views(), nowMs: d.now(), areas: d.areas });
     },
   },
+  { pattern: /^\/judge$/, render: (_m, _u, d) => renderJudgePage(d.site, d.replay()) },
+  { pattern: /^\/judge-sw\.js$/, render: () => renderJudgeServiceWorker() },
+  { pattern: /^\/api\/v1\/public\/judge\/replay$/, render: (_m, _u, d) => renderJudgeReplayJson(d.replay()) },
   { pattern: /^\/install$/, render: (_m, _u, d) => renderInstallPage({ site: d.site, install: d.install }) },
   { pattern: /^\/privacy$/, render: (_m, _u, d) => renderPrivacyPage({ site: d.site }) },
   {

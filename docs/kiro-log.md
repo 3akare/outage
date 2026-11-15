@@ -360,3 +360,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `D5_settle_equivalence` got a 120 s test timeout (2000 runs take about 16 s). Run count and assertions are unchanged.
 - `design.md` section 8 now says a settled outage closes at `start + 12 h`, matching `closeAt` in `settle.ts`.
 - CI `checks.yml` runs the detection suite with `FC_NUM_RUNS=2000`, as `testing.md` states.
+
+## 2026-11-15 web-and-area-pages task 10: Judge page
+- `workers/api/src/web/judge.ts`: `/judge`, `/judge-sw.js` and `/api/v1/public/judge/replay`. The banner "Simulated replay" and the title are in the server HTML. Every replay step (state, event, the engine's drops, armed phones, baseline rate, probability and thresholds in words) is server-rendered, so the page reads with scripts off. One nonce script adds play, pause, restart and 1x, 2x, 4x speed, and registers a small service worker that keeps the last `/judge` page for an offline refresh (R6.7). The service worker handles only `/judge`.
+- Honest provenance line: "0 real devices recorded this outage" for the synthetic fixture, "not live" always. "Your spot only" appears on the Judge page labeled as a simulated phone, and on real pages only in the legend.
+- Separation (R6.8, P9): `WebDeps.replay` is read only by the Judge routes; `/judge` never reads the public index. `index.ts` imports `packages/shared/fixtures/replay.json` (static, built by `tools/sim`). The CSP gained `worker-src 'self'`, and layout CSS gained `[hidden]` and button styles.
+- Tests W6 in `workers/api/test/web-judge.test.ts`. `docs/status.md` now says detection and area-cells are merged into main. The Playwright visual check is task 11.

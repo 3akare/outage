@@ -31,7 +31,10 @@ const CSS =
   '.state.none{background:#f1f3f5;color:#222;border-color:#777}' +
   stateCss +
   STATE_KEYS.map((k) => `svg.map path[data-state="${k}"]{fill:${STATE_COLOURS[k].edge};fill-opacity:.6}`).join('') +
-  'svg.map path.none{fill:#cfd6dd}';
+  'svg.map path.none{fill:#cfd6dd}' +
+  '[hidden]{display:none!important}button.btn{border:0;font:inherit;font-weight:600;cursor:pointer}button.btn.alt{border:2px solid #0b4f9c}' +
+  '[aria-pressed="true"]{outline:3px solid #1a1a1a}#steps .step{border-left:4px solid #ccc;padding:.25rem .75rem;margin:.5rem 0}#steps .step[aria-current]{border-left-color:#1a1a1a;background:#f4f6f8}' +
+  '#current .step{border:3px solid #1a1a1a;border-radius:12px;padding:.75rem;list-style:none}';
 
 export type LayoutInput = {
   site: Site;

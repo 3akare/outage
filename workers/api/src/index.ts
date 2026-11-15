@@ -9,11 +9,13 @@ import { RegisterLimiter } from './limiter.ts';
 import { RevocationCache } from './registry.ts';
 import { RegistryActor } from './registry-actor.ts';
 import { hashInstallId } from './token.ts';
+import replayFile from '@outage/shared/fixtures/replay.json' with { type: 'json' };
 import { PageCache } from './web/cache.ts';
 import { LISTED_AREAS } from './web/catalog/index.ts';
 import { PublicIndex } from './web/index-actor.ts';
 import { INDEX_NAME } from './web/index-core.ts';
 import { indexReader } from './web/index-reader.ts';
+import type { ReplayData } from './web/judge.ts';
 import { handleWeb, isWebPath, type WebDeps } from './web/routes.ts';
 
 export type { Env };
@@ -74,6 +76,7 @@ function webDeps(req: Request, env: Env): WebDeps {
     areas: LISTED_AREAS,
     index: indexReader(() => env.PUBLIC_INDEX.get(env.PUBLIC_INDEX.idFromName(INDEX_NAME)).getAll()),
     cache: pageCache,
+    replay: () => replayFile as unknown as ReplayData,
     now: () => Date.now(),
   };
 }
