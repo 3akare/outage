@@ -348,3 +348,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 
 ## 2026-11-14 session handoff
 - The unfinished detection engine is pushed to branch `wip/detection-engine`, not `main`, because 2 tests fail. `main` stays green. The handoff, how to start a new session, and every open question for the human are in `docs/session-notes.md`. `docs/status.md` is current.
+
+## 2026-11-15 merge gates and origin/main merge on work/detection-d5
+- Ran the four merge gates from `docs/session-notes.md` on the branch: `D5_settle_equivalence` passes, `detection-audit.mjs` is clean, `traceability.mjs --check` passes, and `npm test`, typecheck and Biome lint are green.
+- Merged `origin/main` into `work/detection-d5`. Two doc conflicts (`docs/kiro-log.md`, `docs/status.md`) were resolved by keeping both log entries and the branch status. No code changed and no threshold, dependency or stored data changed.
+- Gates were rerun on the merged tree and all pass. Output is in `/tmp/gates.log`.
+- Open for the human: push the branch and merge PR #1 into `main` (a sub-agent cannot push). ADRs 0014 and 0015 are still open.
