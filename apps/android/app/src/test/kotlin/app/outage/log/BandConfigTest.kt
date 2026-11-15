@@ -52,10 +52,13 @@ class BandConfigTest {
                 assertTrue("${b.id} verified needs official NERC source", BandConfig.isOfficialNerc(b.officialSource.orEmpty()))
             }
         }
-        // Band C's 12-hour floor is the one figure confirmed by a readable NERC notice.
-        assertTrue("Band C is verified", config.band("C")!!.verified)
-        // The flagship Band A 20-hour figure is not confirmable from readable NERC text, so it is unverified.
-        assertFalse("Band A stays unverified until the human confirms", config.band("A")!!.verified)
+        // NERC's FAQ on electricity tariffs states every band's minimum hours (checked 2026-11-15).
+        val hours = mapOf("A" to 20, "B" to 16, "C" to 12, "D" to 8, "E" to 4)
+        for ((id, h) in hours) {
+            val b = config.band(id)!!
+            assertTrue("Band $id is verified", b.verified)
+            assertEquals("Band $id hours", h, b.promisedMinHoursPerDay)
+        }
     }
 
     @Test

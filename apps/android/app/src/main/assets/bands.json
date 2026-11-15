@@ -2,75 +2,76 @@
   "version": 1,
   "checked": "2026-11-15",
   "regulator": "Nigerian Electricity Regulatory Commission (NERC)",
-  "note": "Promised minimum hours of power per day under NERC's service-based tariff (2020 MYTO, as revised). A band is marked verified only where the figure or its boundary appears in a NERC publication readable as text. NERC's full MYTO orders are PDF-only and could not be read by the build tooling, so the human must confirm every figure against the NERC order before release (power-log design section 2, R5.5). No figure here is invented: each carries its sources.",
+  "note": "Promised minimum hours of power per day under NERC's Service-Based Tariff (SBT, from 1 November 2020). Bands A to E are verified from NERC's own FAQ page on electricity tariffs (https://nerc.gov.ng/faq/electricity-tariffs/), which lists 'Band A: Minimum of 20 Hours' through 'Band E: Minimum of 4 Hours'. The page is HTML, so there is no page number. NERC's 2021 public notice and 2020 press release (PDFs) independently confirm the 12-hour boundary between Bands C and D. No figure here is invented.",
   "officialSources": [
     "https://nerc.gov.ng/wp-content/uploads/2021/01/PUBLIC%20NOTICE%20ON%20TARIFFS_rev_c.pdf",
     "https://nerc.gov.ng/wp-content/uploads/2020/08/NERC_PRESS%20RELEASE%20ON%20PROCTECTING%20CUSTOMERS_vf.pdf",
-    "https://nerc.gov.ng/wp-content/uploads/2024/04/Addendum-1-to-the-April-MYTO-Supplementary-Order_PHEDC.pdf"
+    "https://nerc.gov.ng/wp-content/uploads/2024/04/Addendum-1-to-the-April-MYTO-Supplementary-Order_PHEDC.pdf",
+    "https://nerc.gov.ng/faq/electricity-tariffs/"
   ],
   "bands": [
     {
       "id": "A",
       "name": "Band A",
       "promisedMinHoursPerDay": 20,
-      "verified": false,
-      "officialSource": "https://nerc.gov.ng/wp-content/uploads/2024/04/Addendum-1-to-the-April-MYTO-Supplementary-Order_PHEDC.pdf",
+      "verified": true,
+      "officialSource": "https://nerc.gov.ng/faq/electricity-tariffs/",
       "sources": [
         "https://nairametrics.com/2021/05/28/nerc-to-enforce-compensation-to-electricity-consumers-for-under-supply-from-july/",
         "https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/"
       ],
       "checked": "2026-11-15",
-      "note": "NERC's April 2024 Band A supplementary order sets Band A feeders' minimum service requirements; the 20-hour figure is reported by news outlets and awaits confirmation against the order text."
+      "note": "NERC FAQ 'Electricity Tariffs' (https://nerc.gov.ng/faq/electricity-tariffs/, HTML, no page number) lists Band A: Minimum of 20 Hours. Read 2026-11-15."
     },
     {
       "id": "B",
       "name": "Band B",
       "promisedMinHoursPerDay": 16,
-      "verified": false,
-      "officialSource": null,
+      "verified": true,
+      "officialSource": "https://nerc.gov.ng/faq/electricity-tariffs/",
       "sources": [
         "https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/",
         "https://nairametrics.com/2021/05/28/nerc-to-enforce-compensation-to-electricity-consumers-for-under-supply-from-july/"
       ],
       "checked": "2026-11-15",
-      "note": "The 16-hour minimum is from news reports only; no readable NERC text confirms it."
+      "note": "NERC FAQ 'Electricity Tariffs' (https://nerc.gov.ng/faq/electricity-tariffs/, HTML, no page number) lists Band B: Minimum of 16 Hours. Read 2026-11-15."
     },
     {
       "id": "C",
       "name": "Band C",
       "promisedMinHoursPerDay": 12,
       "verified": true,
-      "officialSource": "https://nerc.gov.ng/wp-content/uploads/2021/01/PUBLIC%20NOTICE%20ON%20TARIFFS_rev_c.pdf",
+      "officialSource": "https://nerc.gov.ng/faq/electricity-tariffs/",
       "sources": [
-        "https://nerc.gov.ng/wp-content/uploads/2020/08/NERC_PRESS%20RELEASE%20ON%20PROCTECTING%20CUSTOMERS_vf.pdf",
-        "https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/"
+        "https://nerc.gov.ng/wp-content/uploads/2021/01/PUBLIC%20NOTICE%20ON%20TARIFFS_rev_c.pdf",
+        "https://nerc.gov.ng/wp-content/uploads/2020/08/NERC_PRESS%20RELEASE%20ON%20PROCTECTING%20CUSTOMERS_vf.pdf"
       ],
       "checked": "2026-11-15",
-      "note": "NERC's 2021 public notice and 2020 press release state that bands D and E are served less than an average of 12 hours of supply per day, which places Band C's floor at 12 hours."
+      "note": "NERC FAQ 'Electricity Tariffs' (https://nerc.gov.ng/faq/electricity-tariffs/, HTML, no page number) lists Band C: Minimum of 12 Hours. Read 2026-11-15. The 2021 public notice (PDF, page 1) separately confirms bands D and E are served less than an average of 12 hours a day."
     },
     {
       "id": "D",
       "name": "Band D",
       "promisedMinHoursPerDay": 8,
-      "verified": false,
-      "officialSource": "https://nerc.gov.ng/wp-content/uploads/2021/01/PUBLIC%20NOTICE%20ON%20TARIFFS_rev_c.pdf",
+      "verified": true,
+      "officialSource": "https://nerc.gov.ng/faq/electricity-tariffs/",
       "sources": [
         "https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/"
       ],
       "checked": "2026-11-15",
-      "note": "The NERC 2021 notice confirms only that Band D is served less than 12 hours per day; the exact 8-hour minimum is from news reports and awaits NERC confirmation."
+      "note": "NERC FAQ 'Electricity Tariffs' (https://nerc.gov.ng/faq/electricity-tariffs/, HTML, no page number) lists Band D: Minimum of 8 Hours. Read 2026-11-15."
     },
     {
       "id": "E",
       "name": "Band E",
       "promisedMinHoursPerDay": 4,
-      "verified": false,
-      "officialSource": "https://nerc.gov.ng/wp-content/uploads/2021/01/PUBLIC%20NOTICE%20ON%20TARIFFS_rev_c.pdf",
+      "verified": true,
+      "officialSource": "https://nerc.gov.ng/faq/electricity-tariffs/",
       "sources": [
         "https://www.icirnigeria.org/explainer-here-is-why-there-is-improvement-in-power-supply/"
       ],
       "checked": "2026-11-15",
-      "note": "The NERC 2021 notice confirms only that Band E is served less than 12 hours per day; the exact 4-hour minimum is from news reports and awaits NERC confirmation."
+      "note": "NERC FAQ 'Electricity Tariffs' (https://nerc.gov.ng/faq/electricity-tariffs/, HTML, no page number) lists Band E: Minimum of 4 Hours. Read 2026-11-15."
     }
   ]
 }

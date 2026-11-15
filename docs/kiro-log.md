@@ -526,3 +526,6 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-15 chore(merge): merge origin/main (PR 15) into work/home-watch-2-4 [spec:none task:merge]
 - Merged origin/main after PR 15 landed. Only `docs/kiro-log.md` conflicted (two places); kept both sides. `docs/status.md` already lists event-ingest 6 and power-log 3 (ADR 0020). ADRs 0017 to 0020 are contiguous.
 - Checks: `npm test` (150 hook and skill tests plus all workspace suites), lint (4 warnings, not checked against the base), typecheck and `traceability.mjs --check` all exit 0. Not pushed.
+
+## 2026-11-15 fix(power-log): verify tariff band hours from NERC orders [spec:power-log task:3]
+- Read the three NERC PDFs in bands.json with pypdf: the 2021 notice (1 page) and 2020 press release only confirm the 12-hour boundary; the 2024 Band A addendum lists feeders and has no hours. Found the minimums on NERC's HTML FAQ (https://nerc.gov.ng/faq/electricity-tariffs/): A 20, B 16, C 12, D 8, E 4. Marked all five verified in bands.json, updated BandConfigTest and ADR 0020.
