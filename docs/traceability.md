@@ -180,6 +180,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R8 | F6 | `F6_signature_dedup` | 6 | passing (`tools/field/test/failures.test.ts`, `tools/field/test/cli.test.mjs`) |
 | R4.3, R10 | F7 | `F7_gate_statuses` | 2 | passing (`packages/shared/test/field-metrics.test.ts`) |
 | R7.5, R6.6 | F8 | `F8_admin_auth_and_aliases` | 5 | passing (`workers/api/test/telemetry.test.ts`, `workers/api/test/telemetry-integration.test.ts`) |
+| R7 | (no property) | `R7.2 the schedule record`, `dry run of the scheduled procedure on a recorded day` | 7 | passing (`tools/field/test/schedule.test.mjs`) |
 
 ## feasibility-probe
 

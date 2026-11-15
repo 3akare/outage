@@ -36,7 +36,7 @@ Depends on `sensor-android` (tasks 6, 10), `event-ingest` (tasks 2, 4), `area-ce
 
 ## Wave 4
 
-- [ ] 7. Schedule record `.kiro/schedules/field-test.md`, the `/field-test` steering update (replace the manual steps with the exact procedure and commands), and the human instructions to create the schedule and secret. Schedule-run dry test with a recorded day.
+- [x] 7. Schedule record `.kiro/schedules/field-test.md`, the `/field-test` steering update (replace the manual steps with the exact procedure and commands), and the human instructions to create the schedule and secret. Schedule-run dry test with a recorded day.
   - Depends on: 5, 6
   - Requirements: R7
 

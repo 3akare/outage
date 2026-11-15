@@ -17,17 +17,17 @@ Spec: `.kiro/specs/field-telemetry` (requirements R4 to R10). Steering: `/field-
 
 ## Run it
 
-Inputs: a date (default: yesterday, UTC). Environment: `WORKER_URL`, `FIELD_READ_TOKEN`.
+Inputs: a date (default: yesterday, UTC). Environment: `WORKER_URL`, `FIELD_READ_TOKEN`. The exact commands are in `.kiro/steering/field-test.md`.
 
-1. **Fetch.** `curl -fsS -H "Authorization: Bearer $FIELD_READ_TOKEN" "$WORKER_URL/v1/admin/field/$DAY" -o /tmp/field-$DAY.json`. Never echo the token or the response headers. The endpoint returns device-days and outage records with aliases (`D1`, `D2`, ...) already in place of install IDs.
-   - If the fetch fails: write `docs/field/$DAY.md` with one line, "Data not fetched: <reason>", and stop. Open no Bugfix Spec for a fetch failure alone (R7.4).
-2. **Generate.** If `tools/field/` exists (field-telemetry task 6), run its generator on the JSON. Otherwise compute by hand with `references/metrics.md` and fill `references/report-template.md`. Do not invent numbers: a metric with too few samples is "not enough data".
-3. **Check.** `node .kiro/skills/field-report/scripts/check-report.mjs docs/field/$DAY.md`. It fails on a missing section, a missing gate line, an install ID, a cell, a coordinate, a token, a phone number, or a device that is not an alias. Fix the report, never the checker.
-4. **File failures.** For each new failure signature from `references/signatures.md`:
-   `node .kiro/skills/field-report/scripts/new-bugfix.mjs --signature <SIG> --date $DAY --evidence "<numbers from the report>"`
-   The script creates `.kiro/specs/bugfix-YYYYMMDD-<slug>/` with `bugfix.md` (Current, Expected and Unchanged behavior in EARS, the Kiro Bugfix Spec form), a design and tasks placeholder, and updates `docs/field/failures.json`. A known signature only gets its count and last-seen date updated; no second spec is created. Link each spec in the report's "New failures" section.
+1. **Generate.** `node --experimental-strip-types tools/field/bin/field-report.mjs --day $DAY` fetches `GET $WORKER_URL/v1/admin/field/$DAY` with the token from the environment (never echoed), writes `docs/field/$DAY.md`, files a Bugfix Spec for each new failure signature and updates `docs/field/failures.json`. It prints one JSON line with `status`. The Worker already replaced install IDs with aliases (`D1`, `D2`, ...). No network: add `--input <file>`. Nothing written: add `--dry-run`.
+   - `fetch_failed`: the file `docs/field/$DAY.md` is one line, "Data not fetched: <reason>". Stop there. Open no Bugfix Spec for a fetch failure alone (R7.4).
+   - `failures_corrupt`, `report_rejected` or `error`: nothing was filed. Stop and tell the human.
+   - Without `tools/field` (older checkout), compute by hand with `references/metrics.md` and fill `references/report-template.md`. Do not invent numbers: a metric with too few samples is "not enough data".
+2. **Check.** `node .kiro/skills/field-report/scripts/check-report.mjs docs/field/$DAY.md`. It fails on a missing section, a missing gate line, an install ID, a cell, a coordinate, a token, a phone number, or a device that is not an alias. Fix the report, never the checker. The generator runs the same check before it writes, so a failure here means the file was changed afterwards.
+3. **File failures.** Done by step 1 with `planBugfix` from `scripts/new-bugfix.mjs`. By hand: `node .kiro/skills/field-report/scripts/new-bugfix.mjs --signature <SIG> --date $DAY --evidence "<numbers from the report>"`. The script creates `.kiro/specs/bugfix-YYYYMMDD-<slug>/` with `bugfix.md` (Current, Expected and Unchanged behavior in EARS, the Kiro Bugfix Spec form), a design and tasks placeholder, and updates `docs/field/failures.json`. A known signature only gets its count and last-seen date updated; no second spec is created. The report's "New failures" section links each spec.
+4. **Read the report.** The gate lines at the top, then the failures. A kill criterion that says "triggered" goes first in the final message.
 5. **Fixture candidates.** List any Confirmed outage recorded by 2 or more devices, with the day and device count. Do not commit a fixture. A fixture needs the sanitizer and the phone owner's approval (`demo-mode` R6).
-6. **Commit.** `docs: field report YYYY-MM-DD [spec:field-telemetry task:8]` on its own commit. Push to `main` only in git mode `main` (`.kiro/git-mode.json`).
+6. **Commit.** `docs: field report YYYY-MM-DD [spec:field-telemetry task:8]` on its own commit. Push to `main` only in git mode `main` (`.kiro/git-mode.json`). The scheduled Kiro Web task cannot push to `main`; it opens a pull request (`.kiro/schedules/field-test.md`).
 7. **Log.** One line in `docs/kiro-log.md`: day, devices, gate result, number of new specs.
 
 ## Hard rules

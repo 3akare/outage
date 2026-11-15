@@ -65,3 +65,9 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - First Samsung probe run saved (`docs/probe/2026-11-15-samsung-a.json/.md`): armed 17.7% over 9.43 h; cause was `onStopJob` returning true (OS exponential backoff, doubling gaps), not the sensor idea. Fixed: return false + reschedule a fresh job (ADR 0001 addendum has the measured facts). `RestartPolicy` + JVM test added. Probe bumped to 0.0.2; orchestrator pushes tag `probe-v0.0.2`.
 - Open for the human (not permission; needs a device): install the new APK and rerun the everyday-mode checklist to reach 12 h and re-measure armed time. feasibility-probe task 8 stays unticked.
 - Still-open risk, separate from the backoff bug: arming after plug-in is slow on the Samsung too (~28 min, ~17 min; 0 of 5 within 10 min), matching the emulator. If the rerun still fails M1/M2, this points at Station mode (ADR 0004) as primary sensor, a task-9 decision for the human.
+
+## 2026-11-15 field-telemetry tasks 5 to 7 (work/field-telemetry-5-7)
+- Decision: the scheduled Kiro Web run opens a pull request; it cannot commit to `main` (ADR 0018). R7.3 amended.
+- Decision: report rules the spec left open are in ADR 0017 (ARMED_CRITICAL supersedes LOW per class and day, outage signatures use `other:unknown:normal`, UPLOAD_GAP at two missing days, gap reasons printed only if safe).
+- Open for the human: deploy the Worker (migration v4), `wrangler secret put FIELD_READ_TOKEN`, create the schedule in app.kiro.dev from `.kiro/schedules/field-test.md`. Task 4 (phone aggregator) is not done, so no real device-day exists yet.
+- Note for the orchestrator: a kill-criterion line from one phone and 9 h of charging is what `evaluateGates` (task 2) returns; the probe note called the same run INCOMPLETE. Left as the spec says (R10.2); the report prints the hours so a reader can see the data is thin.

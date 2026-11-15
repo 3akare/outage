@@ -1,20 +1,22 @@
 #!/usr/bin/env -S node --experimental-strip-types
 // Field report CLI (field-telemetry task 6 and 7). Dependency-free Node ESM around the pure generator in src/run.ts.
-//   WORKER_URL=https://... FIELD_READ_TOKEN=... npm run report -w tools/field -- --day 2026-11-14
-//   npm run report -w tools/field -- --day 2026-11-14 --input /tmp/field-2026-11-14.json   (no network)
-// Options: --day YYYY-MM-DD (default: yesterday, UTC), --input <file>, --repo <dir> (default: current directory), --dry-run.
+//   WORKER_URL=https://... FIELD_READ_TOKEN=... node --experimental-strip-types tools/field/bin/field-report.mjs --day 2026-11-14
+//   node --experimental-strip-types tools/field/bin/field-report.mjs --day 2026-11-14 --input /tmp/field-2026-11-14.json   (no network)
+// Options: --day YYYY-MM-DD (default: yesterday, UTC), --input <file>, --repo <dir> (default: the repository this file is in),
+// --dry-run. A relative --input is read from the directory the command was started in (npm sets INIT_CWD for workspaces).
 // Prints one JSON line. Exit 0: report written or "Data not fetched" note written. Exit 1: nothing written (bad input, a
 // report that fails the checker, corrupt failures.json). The token is read from the environment and is never printed.
 // Fetch API in Node: https://nodejs.org/api/globals.html#fetch
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { checkReport } from '../../../.kiro/skills/field-report/scripts/check-report.mjs';
 import { parseFailures } from '../src/failures.ts';
 import { buildDay, corruptFailuresNote, fetchFailedNote } from '../src/run.ts';
 
 const DAY = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 const DAY_MS = 86_400_000;
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 function option(argv, name) {
   const i = argv.indexOf(name);
@@ -56,7 +58,7 @@ async function fetchDump(env, day, fetchFn) {
  */
 export async function main(io) {
   const { argv, env } = io;
-  const repo = path.resolve(option(argv, '--repo') ?? '.');
+  const repo = path.resolve(option(argv, '--repo') ?? REPO_ROOT);
   const dry = argv.includes('--dry-run');
   const day = option(argv, '--day') ?? new Date((io.nowMs ?? Date.now()) - DAY_MS).toISOString().slice(0, 10);
   if (!DAY.test(day)) return { code: 1, out: { status: 'error', reason: 'bad --day' } };
@@ -78,7 +80,7 @@ export async function main(io) {
   const inputFile = option(argv, '--input');
   if (inputFile) {
     try {
-      json = JSON.parse(readFileSync(path.resolve(inputFile), 'utf8'));
+      json = JSON.parse(readFileSync(path.resolve(env.INIT_CWD ?? process.cwd(), inputFile), 'utf8'));
     } catch {
       return { code: 1, out: { status: 'error', reason: 'cannot read --input as JSON' } };
     }
