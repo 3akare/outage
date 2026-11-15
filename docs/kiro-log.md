@@ -567,3 +567,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `/area/yaba` 404 cause: every entry in `catalog.source.json` has an empty `checkedBy`, so `LISTED_AREAS` is empty by design (W7, R10.3). `/api/map.json` was empty for the same reason: it used the listed areas. The city key `lagos` was right. Fix: `WebDeps.mapAreas` (all catalog areas) feeds only `/api/map.json`, so cells show as NO_DATA (ADR 0025). Area pages and the sitemap stay gated. I did not fill `checkedBy`: it is a person's check of each centre.
 - `gradle.properties` defaults `outageApiBase` to the live Worker (ADR 0024 updated); `-PoutageApiBase=` gives demo. `wrangler.jsonc` vars SITE_ORIGIN and APK_URL (releases page).
 - Task 5: curl against the live URL passed (cache-control, nonce equals body nonce and changes per response, nosniff); the same check is a deploy-worker.yml step.
+
+## 2026-11-22 docs(ux): one information architecture and design system for app and web [spec:ux-redesign task:1]
+- The human could not tell what the website was. New spec `ux-redesign` (requirements, design, tasks) fixes the shape: app first run is one screen and one button, Home is a map plus feed, the dock has Home, Insights and Settings (Area merges into Home, Log into Insights). Web is a landing page at `/`, a real-data replica at `/app`, and a labelled simulation at `/app/simulate`; `/judge` will redirect there.
+- ADR 0026 (information architecture), ADR 0027 (web, vanilla JS, size budget: 30 KB stays for static pages, app pages get 100 KB, strict CSP), ADR 0028 (design tokens shared by Compose and CSS). Updated `judge-demo.md` (checks and 390 x 844 plus 1280 x 800 screenshots) and `product.md`.
+- Docs only, no code. Next: task 2 tokens, task 3 landing.

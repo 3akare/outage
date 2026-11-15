@@ -257,3 +257,18 @@ Scanned 0 test file(s) under packages/detection. A property counts when a test t
 | P12 | - | - | no tests yet |
 <!-- END GENERATED -->
 | R4, R2 (app-map-insights), W7 | M1 | `map.json with an unlisted catalog` (`workers/api/test/map-json.test.ts`) | 1 | test written: unlisted catalog cells are NO_DATA on the map, `/area/<slug>` stays 404 |
+
+## ux-redesign
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R3.1, R3.2 | UX1 | dock list (web and Kotlin) | 4, 6 | not started |
+| R7.3, R8.5 | UX2 | replica and simulation data separation | 4, 5 | not started |
+| R9.2 | UX3 | token compare test | 2 | not started |
+| R10.1 | UX4 | no other origin on any route | 3 | not started |
+| R8.1 | UX5 | simulation banner in every state | 5 | not started |
+| R2.7 | UX6 | empty map renders honest empty state | 4 | not started |
+| R2.4 | UX7 | floor looks like no data | 4 | not started |
+| R1.1, R1.2 | UX8 | first-run model | 7 | not started |
+| R6.1, R6.3, R6.4 | UX9 | landing content | 3 | not started |
+| R1 to R10 | - | spec, ADRs 0026 to 0028, steering | 1 | done (docs) |
