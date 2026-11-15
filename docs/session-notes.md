@@ -66,6 +66,16 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Open for the human (not permission; needs a device): install the new APK and rerun the everyday-mode checklist to reach 12 h and re-measure armed time. feasibility-probe task 8 stays unticked.
 - Still-open risk, separate from the backoff bug: arming after plug-in is slow on the Samsung too (~28 min, ~17 min; 0 of 5 within 10 min), matching the emulator. If the rerun still fails M1/M2, this points at Station mode (ADR 0004) as primary sensor, a task-9 decision for the human.
 
+## 2026-11-15 event-ingest task 6 (work/ingest-6-powerlog-3): Uploader
+- Decision: the Uploader reads `PendingEvent` from an `OutboxPort`, not the `SensorEvent` named in design section 9, because `sensor-android` is not built (its spec waits for the probe rerun) and this task must not build the sensor. `PendingEvent` is the Outbox-to-Uploader contract; event-ingest task 10 adapts the real `SensorEvent` to it and supplies the real `Transport`. No threshold, privacy or money decision, so recorded here rather than in an ADR.
+- Decision (client tunables, not detection thresholds): back-off is full-jitter exponential with `backoffBaseMs=1000`, `backoffCapMs=300000`. The design fixes `MAX_BATCH_EVENTS=100` and client `STATE_MAX_WAIT_MS=900000` but leaves the client back-off envelope to the client; these values sit in `UploaderConfig` and can change freely (design section 4 rule).
+- `elapsedMs` is computed as `sendElapsed - recordedElapsedMs` with one `sendElapsed` per batch (R9.6). The Outbox supplies `recordedElapsedMs` (a monotonic reference); task 10's sensor adapter maps the stored elapsed column to it.
+- Not verified on a device or a real network: only JVM unit tests with a fake transport. The real HTTP transport, 401/registration handling and wiring to the sensor are event-ingest task 10.
+
+## 2026-11-15 power-log task 3 (work/ingest-6-powerlog-3): band config
+- Decision (ADR 0020): `bands.json` ships A 20, B 16, C 12, D 8, E 4 hours/day. Only Band C is marked verified (NERC 2021 notice fixes the 12 h floor via the D/E < 12 h boundary). A, B, D, E are unverified with sources; the human must confirm them against NERC's MYTO order PDFs (unreadable by the build tooling) before release. UI/Stats must treat unverified bands as unconfirmed; promise copy is always an estimate and never mentions refund, compensation or claim.
+- Band config lives as an app asset (`app.outage.log.BandConfig`), not in packages/shared: it is phone-only (the Worker never shows supply promise), so no shared single-source copy is needed and no build-time asset copy was added.
+
 ## 2026-11-15 field-telemetry tasks 5 to 7 (work/field-telemetry-5-7)
 - Decision: the scheduled Kiro Web run opens a pull request; it cannot commit to `main` (ADR 0018). R7.3 amended.
 - Decision: report rules the spec left open are in ADR 0017 (ARMED_CRITICAL supersedes LOW per class and day, outage signatures use `other:unknown:normal`, UPLOAD_GAP at two missing days, gap reasons printed only if safe).

@@ -121,4 +121,16 @@
     <string name="push_restored_title">Power is back in %1$s</string>
     <string name="push_restored_body">Phones are charging again.</string>
     <string name="push_restored_body_wide">Power looks back across a wide area.</string>
+
+    <!-- Power Log: supply promise / tariff band (power-log R5, task 3). Always an estimate; never refund, compensation or claim. -->
+    <string name="band_picker_title">Your supply band</string>
+    <string name="band_picker_hint">Pick your NERC band to compare your logged power with its promise.</string>
+    <string name="band_none">Not set</string>
+    <string name="band_name">Band %1$s</string>
+    <string name="band_promise">Band %1$s is promised at least %2$d hours of power a day.</string>
+    <string name="band_promise_unconfirmed">We have not confirmed this band\'s promised hours with NERC yet.</string>
+    <string name="promise_estimate_note">An estimate from this phone\'s own record, not an official measurement.</string>
+    <string name="promise_days_below">%1$d days below the promise this month.</string>
+    <string name="promise_avg_below">Your average is %1$.1f hours below the promise.</string>
+    <string name="promise_met">You are at or above the promise.</string>
 </resources>
