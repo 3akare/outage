@@ -24,7 +24,7 @@ Depends on `sensor-android` (tasks 6, 10), `event-ingest` (tasks 2, 4), `area-ce
 - [ ] 4. Phone aggregator and daily uploader in Kotlin (JUnit 4), using opt-in from onboarding. Tests F1, F2 (client part).
   - Depends on: 1, `sensor-android` 6, `sensor-android` 10, `onboarding` 3
   - Requirements: R1, R2
-- [ ] 5. Worker: `POST /v1/telemetry`, telemetry actor, `GET /v1/admin/field/:day` with token and per-request aliases, delete-my-data support. Tests F2 (server part), F8.
+- [x] 5. Worker: `POST /v1/telemetry`, telemetry actor, `GET /v1/admin/field/:day` with token and per-request aliases, delete-my-data support. Tests F2 (server part), F8.
   - Depends on: 1, 3, `event-ingest` 4
   - Requirements: R3, R6.6, R7.5
 
