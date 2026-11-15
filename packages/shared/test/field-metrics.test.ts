@@ -92,16 +92,22 @@ describe('F3_percentiles_and_ratio', () => {
     expect(bucketUpperMs(0)).toBe(GAP_EDGES_MS[0]);
     expect(histPercentileBucket(emptyHist(), 95)).toBeNull();
     fc.assert(
-      fc.property(fc.array(fc.nat({ max: 30 * H }), { maxLength: 80 }), fc.array(fc.nat({ max: 30 * H }), { maxLength: 80 }), (a, b) => {
-        const ha = a.reduce(addGapToHist, emptyHist());
-        const hb = b.reduce(addGapToHist, emptyHist());
-        const merged = mergeHists(ha, hb);
-        expect(merged).toEqual([...a, ...b].reduce(addGapToHist, emptyHist()));
-        expect(merged.reduce((x, y) => x + y, 0)).toBe(a.length + b.length);
-        // The histogram percentile lands in the bucket of the exact nearest-rank value.
-        const all = [...a, ...b];
-        if (all.length > 0) for (const p of [50, 95]) expect(histPercentileBucket(merged, p)).toBe(gapBucket(nearestRank(all, p) as number));
-      }),
+      fc.property(
+        fc.array(fc.nat({ max: 30 * H }), { maxLength: 80 }),
+        fc.array(fc.nat({ max: 30 * H }), { maxLength: 80 }),
+        (a, b) => {
+          const ha = a.reduce(addGapToHist, emptyHist());
+          const hb = b.reduce(addGapToHist, emptyHist());
+          const merged = mergeHists(ha, hb);
+          expect(merged).toEqual([...a, ...b].reduce(addGapToHist, emptyHist()));
+          expect(merged.reduce((x, y) => x + y, 0)).toBe(a.length + b.length);
+          // The histogram percentile lands in the bucket of the exact nearest-rank value.
+          const all = [...a, ...b];
+          if (all.length > 0)
+            for (const p of [50, 95])
+              expect(histPercentileBucket(merged, p)).toBe(gapBucket(nearestRank(all, p) as number));
+        },
+      ),
       { numRuns: NUM_RUNS },
     );
   });
@@ -109,11 +115,23 @@ describe('F3_percentiles_and_ratio', () => {
 
 describe('F7_gate_statuses', () => {
   const good = (i: number, over: Partial<DeviceDay> = {}) =>
-    day({ installId: ids[i], maker: 'tecno', exemption: true, chargingMs: 10 * H, armedMs: 9.5 * H, mode: { normalMs: 10 * H, stationMs: 0 }, ...over });
+    day({
+      installId: ids[i],
+      maker: 'tecno',
+      exemption: true,
+      chargingMs: 10 * H,
+      armedMs: 9.5 * H,
+      mode: { normalMs: 10 * H, stationMs: 0 },
+      ...over,
+    });
 
   it('F7 no data: every gate is "not enough data", the milestone is not measurable, the kill criterion too', () => {
     const g = evaluateGates([]);
-    expect([g.armed.status, g.delay.status, g.oem.status]).toEqual(['not enough data', 'not enough data', 'not enough data']);
+    expect([g.armed.status, g.delay.status, g.oem.status]).toEqual([
+      'not enough data',
+      'not enough data',
+      'not enough data',
+    ]);
     expect(g.milestone).toBe('not measurable yet');
     expect(g.kill.status).toBe('not measurable yet');
   });
@@ -136,7 +154,9 @@ describe('F7_gate_statuses', () => {
   });
 
   it('F7 delay: 19 samples is not enough, 20 over 60 s fails, a fail makes the milestone "not met"', () => {
-    expect(evaluateGates([good(0, { delayJobMs: Array(19).fill(5_000), delayReceiverMs: [] })]).delay.status).toBe('not enough data');
+    expect(evaluateGates([good(0, { delayJobMs: Array(19).fill(5_000), delayReceiverMs: [] })]).delay.status).toBe(
+      'not enough data',
+    );
     const slow = evaluateGates([good(0, { delayJobMs: Array(20).fill(60_001), delayReceiverMs: [] })]);
     expect(slow.delay.status).toBe('fail');
     expect(slow.milestone).toBe('not met');
@@ -167,13 +187,28 @@ describe('F7_gate_statuses', () => {
 
   it('F7 status follows the thresholds for any ratio and delay', () => {
     fc.assert(
-      fc.property(fc.integer({ min: H, max: 26 * H }), fc.double({ min: 0, max: 1, noNaN: true }), fc.integer({ min: 0, max: 120_000 }), (charging, f, delay) => {
-        const armed = Math.floor(charging * f);
-        const g = evaluateGates([good(0, { chargingMs: charging, armedMs: armed, mode: { normalMs: charging, stationMs: 0 }, delayJobMs: Array(20).fill(delay), delayReceiverMs: [] })]);
-        expect(g.armed.status).toBe(armed / charging >= 0.9 ? 'pass' : 'fail');
-        expect(g.delay.status).toBe(delay <= 60_000 ? 'pass' : 'fail');
-        expect(g.milestone).toBe(g.armed.status === 'pass' && g.delay.status === 'pass' && g.oem.status === 'pass' ? 'met' : 'not met');
-      }),
+      fc.property(
+        fc.integer({ min: H, max: 26 * H }),
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        fc.integer({ min: 0, max: 120_000 }),
+        (charging, f, delay) => {
+          const armed = Math.floor(charging * f);
+          const g = evaluateGates([
+            good(0, {
+              chargingMs: charging,
+              armedMs: armed,
+              mode: { normalMs: charging, stationMs: 0 },
+              delayJobMs: Array(20).fill(delay),
+              delayReceiverMs: [],
+            }),
+          ]);
+          expect(g.armed.status).toBe(armed / charging >= 0.9 ? 'pass' : 'fail');
+          expect(g.delay.status).toBe(delay <= 60_000 ? 'pass' : 'fail');
+          expect(g.milestone).toBe(
+            g.armed.status === 'pass' && g.delay.status === 'pass' && g.oem.status === 'pass' ? 'met' : 'not met',
+          );
+        },
+      ),
       { numRuns: NUM_RUNS },
     );
   });

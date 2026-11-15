@@ -8,8 +8,24 @@ import { INSTALL } from './arbs.ts';
 import { NUM_RUNS } from './runs.ts';
 
 const TOP = [
-  'v', 'installId', 'day', 'maker', 'androidMajor', 'mode', 'chargingMs', 'armedMs', 'gaps', 'delayJobMs',
-  'delayReceiverMs', 'replugToRingMs', 'prompts', 'alarms', 'writeFailures', 'standby', 'exemption', 'stopReasons',
+  'v',
+  'installId',
+  'day',
+  'maker',
+  'androidMajor',
+  'mode',
+  'chargingMs',
+  'armedMs',
+  'gaps',
+  'delayJobMs',
+  'delayReceiverMs',
+  'replugToRingMs',
+  'prompts',
+  'alarms',
+  'writeFailures',
+  'standby',
+  'exemption',
+  'stopReasons',
 ];
 const key = fc.stringMatching(/^[A-Z_]{1,12}$/);
 const count = fc.nat({ max: 1000 });

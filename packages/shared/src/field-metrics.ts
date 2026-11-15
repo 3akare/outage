@@ -21,7 +21,11 @@ export function nearestRank(values: readonly number[], p: number): number | null
 
 export type PercentileResult = { n: number; value: number | null; status: 'ok' | 'not enough data' };
 /** A percentile that is hidden below `minSamples` (R4.3). The sample count is always reported. */
-export function percentileOrHidden(values: readonly number[], p: number, minSamples = MIN_P95_SAMPLES): PercentileResult {
+export function percentileOrHidden(
+  values: readonly number[],
+  p: number,
+  minSamples = MIN_P95_SAMPLES,
+): PercentileResult {
   if (values.length < minSamples) return { n: values.length, value: null, status: 'not enough data' };
   return { n: values.length, value: nearestRank(values, p), status: 'ok' };
 }
@@ -96,7 +100,8 @@ export type FieldGates = {
 export const isSuspectDay = (d: DeviceDay): boolean => d.chargingMs > 26 * 3_600_000;
 
 /** Station mode when the station share is larger; normal otherwise (R4.5 reports the two apart). */
-export const dayMode = (d: DeviceDay): 'normal' | 'station' => (d.mode.stationMs > d.mode.normalMs ? 'station' : 'normal');
+export const dayMode = (d: DeviceDay): 'normal' | 'station' =>
+  d.mode.stationMs > d.mode.normalMs ? 'station' : 'normal';
 
 type PerDevice = { installId: string; maker: Maker; exemption: boolean; chargingMs: number; armedMs: number };
 
@@ -109,7 +114,14 @@ function perDevice(days: readonly DeviceDay[]): PerDevice[] {
       cur.chargingMs += d.chargingMs;
       cur.armedMs += d.armedMs;
       cur.exemption = cur.exemption && d.exemption; // exempt only if every day was
-    } else by.set(d.installId, { installId: d.installId, maker: d.maker, exemption: d.exemption, chargingMs: d.chargingMs, armedMs: d.armedMs });
+    } else
+      by.set(d.installId, {
+        installId: d.installId,
+        maker: d.maker,
+        exemption: d.exemption,
+        chargingMs: d.chargingMs,
+        armedMs: d.armedMs,
+      });
   }
   return [...by.values()];
 }
@@ -127,25 +139,61 @@ export function evaluateGates(days: readonly DeviceDay[]): FieldGates {
   const normalDays = days.filter((d) => dayMode(d) === 'normal');
   const devs = perDevice(normalDays).map((d) => ({ ...d, ratio: armedRatio(d.armedMs, d.chargingMs) }));
   const measurable = devs.filter((d) => d.ratio !== null);
-  const best = measurable.reduce<number | null>((b, d) => (b === null || (d.ratio ?? 0) > b ? (d.ratio ?? 0) : b), null);
+  const best = measurable.reduce<number | null>(
+    (b, d) => (b === null || (d.ratio ?? 0) > b ? (d.ratio ?? 0) : b),
+    null,
+  );
   const armed: GateResult =
     best === null
-      ? { status: 'not enough data', value: null, threshold: GATE_ARMED_RATIO, detail: 'no phone has 1 h of charging in normal mode' }
-      : { status: best >= GATE_ARMED_RATIO ? 'pass' : 'fail', value: best, threshold: GATE_ARMED_RATIO, detail: `best phone ${pct(best)} of ${measurable.length} measurable` };
+      ? {
+          status: 'not enough data',
+          value: null,
+          threshold: GATE_ARMED_RATIO,
+          detail: 'no phone has 1 h of charging in normal mode',
+        }
+      : {
+          status: best >= GATE_ARMED_RATIO ? 'pass' : 'fail',
+          value: best,
+          threshold: GATE_ARMED_RATIO,
+          detail: `best phone ${pct(best)} of ${measurable.length} measurable`,
+        };
 
   const samples = days.filter((d) => !isSuspectDay(d)).flatMap((d) => [...d.delayJobMs, ...d.delayReceiverMs]);
   const p95 = percentileOrHidden(samples, 95);
   const delay: GateResult =
     p95.value === null
-      ? { status: 'not enough data', value: null, threshold: GATE_DELAY_P95_MS, detail: `${p95.n} samples, ${MIN_P95_SAMPLES} needed` }
-      : { status: p95.value <= GATE_DELAY_P95_MS ? 'pass' : 'fail', value: p95.value, threshold: GATE_DELAY_P95_MS, detail: `p95 over ${p95.n} samples` };
+      ? {
+          status: 'not enough data',
+          value: null,
+          threshold: GATE_DELAY_P95_MS,
+          detail: `${p95.n} samples, ${MIN_P95_SAMPLES} needed`,
+        }
+      : {
+          status: p95.value <= GATE_DELAY_P95_MS ? 'pass' : 'fail',
+          value: p95.value,
+          threshold: GATE_DELAY_P95_MS,
+          detail: `p95 over ${p95.n} samples`,
+        };
 
   const oemDevs = measurable.filter((d) => GATE_OEM_MAKERS.includes(d.maker) && d.exemption);
-  const oemBest = oemDevs.reduce<number | null>((b, d) => (b === null || (d.ratio ?? 0) > b ? (d.ratio ?? 0) : b), null);
+  const oemBest = oemDevs.reduce<number | null>(
+    (b, d) => (b === null || (d.ratio ?? 0) > b ? (d.ratio ?? 0) : b),
+    null,
+  );
   const oem: GateResult =
     oemBest === null
-      ? { status: 'not enough data', value: null, threshold: GATE_ARMED_RATIO, detail: 'no Tecno or Infinix phone with the exemption on and 1 h of charging' }
-      : { status: oemBest >= GATE_ARMED_RATIO ? 'pass' : 'fail', value: oemBest, threshold: GATE_ARMED_RATIO, detail: `best Tecno or Infinix ${pct(oemBest)}` };
+      ? {
+          status: 'not enough data',
+          value: null,
+          threshold: GATE_ARMED_RATIO,
+          detail: 'no Tecno or Infinix phone with the exemption on and 1 h of charging',
+        }
+      : {
+          status: oemBest >= GATE_ARMED_RATIO ? 'pass' : 'fail',
+          value: oemBest,
+          threshold: GATE_ARMED_RATIO,
+          detail: `best Tecno or Infinix ${pct(oemBest)}`,
+        };
 
   const all = [armed, delay, oem];
   const milestone: MilestoneStatus = all.some((g) => g.status === 'fail')
@@ -160,7 +208,10 @@ export function evaluateGates(days: readonly DeviceDay[]): FieldGates {
       ? { status: 'not measurable yet', detail: 'no phone with the exemption on and 1 h of charging' }
       : exempt.every((d) => (d.ratio ?? 0) < KILL_ARMED_RATIO)
         ? { status: 'triggered', detail: `all ${exempt.length} exempt phones under ${KILL_ARMED_RATIO * 100}%` }
-        : { status: 'not triggered', detail: `${exempt.filter((d) => (d.ratio ?? 0) >= KILL_ARMED_RATIO).length} of ${exempt.length} exempt phones at or above ${KILL_ARMED_RATIO * 100}%` };
+        : {
+            status: 'not triggered',
+            detail: `${exempt.filter((d) => (d.ratio ?? 0) >= KILL_ARMED_RATIO).length} of ${exempt.length} exempt phones at or above ${KILL_ARMED_RATIO * 100}%`,
+          };
 
   return { armed, delay, oem, milestone, kill };
 }

@@ -89,8 +89,24 @@ export function parseDeviceDay(input: unknown): ParsedDeviceDay {
     const o = exact(
       input,
       [
-        'v', 'installId', 'day', 'maker', 'androidMajor', 'mode', 'chargingMs', 'armedMs', 'gaps', 'delayJobMs',
-        'delayReceiverMs', 'replugToRingMs', 'prompts', 'alarms', 'writeFailures', 'standby', 'exemption', 'stopReasons',
+        'v',
+        'installId',
+        'day',
+        'maker',
+        'androidMajor',
+        'mode',
+        'chargingMs',
+        'armedMs',
+        'gaps',
+        'delayJobMs',
+        'delayReceiverMs',
+        'replugToRingMs',
+        'prompts',
+        'alarms',
+        'writeFailures',
+        'standby',
+        'exemption',
+        'stopReasons',
       ],
       '',
     );
@@ -108,11 +124,13 @@ export function parseDeviceDay(input: unknown): ParsedDeviceDay {
     const reasons = new Set<string>();
     const gaps = (o.gaps as unknown[]).map((g, i) => {
       const e = exact(g, ['reason', 'count', 'lenHistMs'], `gaps[${i}]`);
-      if (typeof e.reason !== 'string' || !KEY_PATTERN.test(e.reason) || reasons.has(e.reason)) bad(`gaps[${i}].reason`);
+      if (typeof e.reason !== 'string' || !KEY_PATTERN.test(e.reason) || reasons.has(e.reason))
+        bad(`gaps[${i}].reason`);
       reasons.add(e.reason as string);
       if (!nat(e.count, 1_000_000)) bad(`gaps[${i}].count`);
       const h = e.lenHistMs;
-      if (!Array.isArray(h) || h.length !== GAP_BUCKETS || !h.every((n) => nat(n, 1_000_000))) bad(`gaps[${i}].lenHistMs`);
+      if (!Array.isArray(h) || h.length !== GAP_BUCKETS || !h.every((n) => nat(n, 1_000_000)))
+        bad(`gaps[${i}].lenHistMs`);
       if ((h as number[]).reduce((a, b) => a + b, 0) !== e.count) bad(`gaps[${i}].lenHistMs`);
       return { reason: e.reason as string, count: e.count as number, lenHistMs: [...(h as number[])] };
     });
