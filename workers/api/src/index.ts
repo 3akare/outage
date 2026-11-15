@@ -3,12 +3,13 @@
 import { AreaActor } from './area-actor.ts';
 import { CONFIG } from './config.ts';
 import type { Env } from './env.ts';
-import { REGISTRY_NAME } from './env.ts';
+import { REGISTRY_NAME, TELEMETRY_NAME } from './env.ts';
 import { type Deps, handleRequest } from './handlers.ts';
 import { RegisterLimiter } from './limiter.ts';
 import { PairingActor } from './pairing-actor.ts';
 import { RevocationCache } from './registry.ts';
 import { RegistryActor } from './registry-actor.ts';
+import { TelemetryActor } from './telemetry/actor.ts';
 import { hashInstallId } from './token.ts';
 import replayFile from '@outage/shared/fixtures/replay.json' with { type: 'json' };
 import { PageCache } from './web/cache.ts';
@@ -20,18 +21,27 @@ import type { ReplayData } from './web/judge.ts';
 import { handleWeb, isWebPath, type WebDeps } from './web/routes.ts';
 
 export type { Env };
-export { AreaActor, PairingActor, PublicIndex, RegistryActor };
+export { AreaActor, PairingActor, PublicIndex, RegistryActor, TelemetryActor };
 
 // Isolate-level state: lenient after an isolate restart, never stricter (same direction as the actors' memory state).
 const limiter = new RegisterLimiter(CONFIG.REGISTER_PER_SOURCE_PER_HOUR);
+const telemetryLimiter = new RegisterLimiter(CONFIG.TELEMETRY_PER_INSTALL_PER_HOUR); // keyed by install ID, memory only
 let cache: RevocationCache | undefined;
 
 function makeDeps(env: Env): Deps {
+  const telemetryActor = () => env.TELEMETRY.get(env.TELEMETRY.idFromName(TELEMETRY_NAME));
   const registry = () => env.REGISTRY.get(env.REGISTRY.idFromName(REGISTRY_NAME));
   cache ??= new RevocationCache(CONFIG.REVOCATION_CACHE_MS, () => registry().revokedHashes(Date.now()));
   const revocations = cache;
   return {
     secret: env.INSTALL_TOKEN_SECRET,
+    fieldToken: env.FIELD_READ_TOKEN,
+    telemetryLimiter,
+    telemetry: {
+      putDay: (d) => telemetryActor().putDay(d),
+      deleteInstall: (installId) => telemetryActor().deleteInstall(installId),
+      field: (day) => telemetryActor().field(day),
+    },
     now: () => Date.now(),
     randomBytes: (n) => crypto.getRandomValues(new Uint8Array(n)),
     // R2.5 needs a per-source budget. The address is read only to be hashed with the hour into an in-memory key; it is never

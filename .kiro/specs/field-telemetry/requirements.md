@@ -65,7 +65,7 @@ Telemetry is opt-in and holds no location.
 ### R7 Scheduled run
 1. A Kiro Web Schedule SHALL run at 07:00 West Africa Time (06:00 UTC) each day and run the `/field-test` procedure.
 2. THE repo SHALL record the schedule's name, time and prompt in `.kiro/schedules/field-test.md`.
-3. THE scheduled run SHALL fetch the previous day's aggregate JSON from the Worker with a read token, generate the report, commit it to `main` on its own commit, and follow the rules in R8 and R9.
+3. THE scheduled run SHALL fetch the previous day's aggregate JSON from the Worker with a read token, generate the report, commit it on its own commit (Kiro Web opens a pull request for the human to merge, never a push to `main`; ADR 0018), and follow the rules in R8 and R9.
 4. IF the fetch fails, THEN THE run SHALL write a short note in `docs/field/` saying so and SHALL open no Bugfix Spec for that failure alone.
 5. THE read token SHALL be a Wrangler secret on the Worker and a secret in the scheduled job's environment, never committed.
 

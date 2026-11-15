@@ -12,7 +12,7 @@ import type { ScopeView } from './area/reducer.ts';
 import { AreaCore, type AreaIngestInput, type AreaResponse } from './area-core.ts';
 import { SqlAreaStore, SqlModelStore } from './area-store.ts';
 import { CONFIG, type Tunables } from './config.ts';
-import { type Env, REGISTRY_NAME } from './env.ts';
+import { type Env, REGISTRY_NAME, TELEMETRY_NAME } from './env.ts';
 import { NoopDetectionPort } from './ports.ts';
 import { INDEX_NAME } from './web/index-core.ts';
 
@@ -121,6 +121,13 @@ export class AreaActor extends DurableObject<Env> {
       const index = this.env.PUBLIC_INDEX.get(this.env.PUBLIC_INDEX.idFromName(INDEX_NAME));
       const model = this.model;
       calls.push(index.apply(pub).catch(() => model.requeuePublish(pub)));
+    }
+    if (out.fieldRecords.length > 0) {
+      // Counts only (R5.1). A failed send goes back to the outbox; the telemetry actor replaces by key, so a resend is harmless.
+      const telemetry = this.env.TELEMETRY.get(this.env.TELEMETRY.idFromName(TELEMETRY_NAME));
+      const model = this.model;
+      const records = out.fieldRecords;
+      calls.push(telemetry.putRecords(records).catch(() => model.requeueFieldRecords(records)));
     }
     await Promise.allSettled(calls);
   }

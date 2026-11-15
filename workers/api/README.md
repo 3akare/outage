@@ -15,7 +15,7 @@ Tests: `npm test -w workers/api`. Properties A1 to A12 are listed in `docs/trace
 
 ## Home Watch pairing (spec: home-watch, ADR 0009)
 
-One `PairingActor` (binding `PAIRING`, migration `v4`) per two-symbol shard. The shard comes from the station's install id, so offers, pairs and delete-my-data all find the same rows without a table.
+One `PairingActor` (binding `PAIRING`, migration `v5`) per two-symbol shard. The shard comes from the station's install id, so offers, pairs and delete-my-data all find the same rows without a table.
 
 | Route | Body | Answers |
 |---|---|---|
@@ -25,3 +25,11 @@ One `PairingActor` (binding `PAIRING`, migration `v4`) per two-symbol shard. The
 | `POST /v1/delete` | adds optional `pairIds` (viewer lists its pairs, at most 25) | also removes this install's offers and pairs |
 
 The offer stores only an HMAC of the code (secret `INSTALL_TOKEN_SECRET`). Code layout: shard (2) + offer key tail (2) + secret part (6). Offers and claims use the ingest token bucket per install.
+- Cost: `npm run bench -w workers/api` measures startup, ingest and alarm CPU on a local SQLite shim. Results and the 10 ms free-plan comparison are in the ADR 0006 addendum. Small parents (70 phones) fit; 210 or more phones per parent on a cold actor do not, so watch the dashboard CPU time after deploy.
+
+## Field telemetry (spec: field-telemetry)
+
+- `POST /v1/telemetry`: one `DeviceDay` aggregate per install and local day. Install token, strict schema (`parseDeviceDay`), at most 6 uploads per install per hour, last upload wins, duplicates answered `accepted`.
+- `GET /v1/admin/field/:day` (`YYYY-MM-DD`): `Authorization: Bearer <FIELD_READ_TOKEN>`. Returns device-days with per-request aliases `D1`, `D2`, ... (sorted install IDs; the map is not stored), silent devices of the last 7 days, outage records that started on that UTC day, and misses. No install ID and no cell. `500 server_not_configured` when the secret is not set.
+- `TelemetryActor` (`src/telemetry/`): one SQLite Durable Object named `telemetry`. Tables `device_day`, `outage_record`, `miss_record`. The area actors send their `OUTAGE_RECORD` and `MISS` outputs here after each change (requeued on failure). Rows older than 90 days are pruned by a daily alarm. Delete-my-data (`POST /v1/delete`) also removes the install's `device_day` rows.
+- Secret: `wrangler secret put FIELD_READ_TOKEN` (run in `workers/api`). Never committed.

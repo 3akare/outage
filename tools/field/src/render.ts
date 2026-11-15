@@ -1,0 +1,243 @@
+// Markdown for one field day (field-telemetry R6, R10; layout in .kiro/skills/field-report/references/report-template.md).
+// A pure function of its input: no clock, no I/O, no locale. Times are UTC and shown as HH:MM:SS, because the day is in the
+// title and a full date string beside digits can look like a phone number to the report checker.
+import type { Params } from '@outage/detection';
+import {
+  type AliasedDeviceDay,
+  armedRatio,
+  classifyOutage,
+  dayMode,
+  type DeviceDay,
+  evaluateGates,
+  type FieldDump,
+  type GateResult,
+  isSuspectDay,
+  type OutageClass,
+  type OutageRecordOut,
+} from '@outage/shared';
+import { type ClassStats, classStats, type GapStat } from './stats.ts';
+import { MISS_MIN_ARMED } from './signatures.ts';
+
+export interface FilingView {
+  signature: string;
+  spec: string;
+  count: number;
+  /** Created on this run (or earlier the same day), so it is listed under "New failures". */
+  isNew: boolean;
+}
+
+export const FIXTURE_EXPORT_NOTE =
+  'ask the phone owners for their raw sensor export, then run the tools/sim sanitizer (`sanitize` in `tools/sim/src/sanitize.ts`)';
+
+const NA = 'not enough data';
+const H = 3_600_000;
+const sec = (ms: number) => (ms / 1000).toFixed(1);
+const ratio = (r: number | null) => (r === null ? 'n/a' : r.toFixed(2));
+const hours = (ms: number) => (ms / H).toFixed(1);
+const group = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const clock = (ms: number) => new Date(ms).toISOString().slice(11, 19);
+const cell = (s: string) => s.replace(/\|/g, '/');
+
+function table(head: string[], rows: string[][]): string {
+  const lines = [`| ${head.join(' | ')} |`, `|${head.map(() => '---').join('|')}|`];
+  for (const r of rows) lines.push(`| ${r.map(cell).join(' | ')} |`);
+  return lines.join('\n');
+}
+
+const upper = (ms: number | null) => (ms === null ? 'over 14400' : `up to ${sec(ms).replace(/\.0$/, '')}`);
+function gapText(g: GapStat): string {
+  const p95 = g.p95Hidden ? `p95 ${NA}` : `p95 ${upper(g.p95UpperMs)} s`;
+  return `${g.reason} ${g.count} (p50 ${upper(g.p50UpperMs)} s, ${p95})`;
+}
+function pairText(p: { p50: number | null; p95: { n: number; value: number | null } }): string {
+  if (p.p50 === null) return 'no samples';
+  return `${sec(p.p50)} / ${p.p95.value === null ? `${NA} (n=${p.p95.n})` : sec(p.p95.value)}`;
+}
+
+const CLASS_LABEL: Record<OutageClass, string> = {
+  NOT_CLASSIFIED: 'not classified',
+  CONFIRMED_TRUE: 'confirmed true',
+  FALSE_ALARM: 'false alarm',
+  INCONCLUSIVE: 'inconclusive',
+};
+
+function gateRow(name: string, g: GateResult, show: (v: number) => string, threshold: string): string[] {
+  return [
+    name,
+    g.value === null ? `not measured (${g.detail})` : `${show(g.value)} (${g.detail})`,
+    threshold,
+    g.status,
+  ];
+}
+
+/** `fixtureCandidates`: Confirmed outages that 2 or more devices recorded (R9.1). Only the engine's drop count is known. */
+export function fixtureCandidates(dump: FieldDump): OutageRecordOut[] {
+  return dump.outages.filter((o) => o.level === 'CONFIRMED' && !o.withdrawn && o.drops >= 2);
+}
+
+function paramsLine(p: Params): string {
+  return (
+    `W = ${p.windowMs / 1000} s; ` +
+    `Possible: k at least ${p.possible.minK} and p below ${p.possible.maxP}; ` +
+    `Confirmed: k at least ${p.confirmed.minK} and p below ${p.confirmed.maxP}; ` +
+    `weight cut ${p.weight.cut}; ` +
+    `prior 1 per ${group(Math.round(1 / p.baseline.priorLambdaPerSec))} s; ` +
+    `restore p95 prior ${p.restore.priorP95Ms / 1000} s ` +
+    '(values read from `packages/detection/src/params.ts`).'
+  );
+}
+
+function deviceRow(d: AliasedDeviceDay): string[] {
+  const r = armedRatio(d.armedMs, d.chargingMs);
+  const shown = isSuspectDay(d) ? 'suspect (over 26 h charging)' : ratio(r);
+  return [d.alias, d.maker, String(d.androidMajor), dayMode(d), hours(d.chargingMs), shown];
+}
+
+export function renderReport(input: { dump: FieldDump; params: Params; filings: readonly FilingView[] }): string {
+  const { dump, params, filings } = input;
+  // The gate code groups by install ID. Inside the report the alias plays that part, so no real ID is ever needed here.
+  const asDays: DeviceDay[] = dump.devices.map((d) => ({ ...d, installId: d.alias }));
+  const gates = evaluateGates(asDays);
+  const classes: ClassStats[] = classStats(dump.devices);
+  const totalCharging = dump.devices.reduce((n, d) => n + d.chargingMs, 0);
+  const out: string[] = [];
+
+  const reasons = [gates.armed, gates.delay, gates.oem].map((g) => g.detail).join('; ');
+  out.push(`# Field report ${dump.day}`);
+  out.push(`Gate status (milestone 1): ${gates.milestone} (${reasons})`);
+  out.push(`Kill criterion: ${gates.kill.status} (${gates.kill.detail})`);
+  if (gates.kill.status === 'triggered') out.push('**Stop and rethink the sensor. Tell the human first.**');
+  out.push('');
+  out.push(
+    `Data: ${dump.devices.length} opted-in devices, ${hours(totalCharging)} charging hours, generated by tools/field generator.`,
+  );
+  if (dump.devices.length === 0) out.push('No opted-in device uploaded for this day, so no gate can be measured.');
+  out.push('');
+
+  out.push('## Devices');
+  out.push(table(['Alias', 'Maker', 'Android', 'Mode', 'Charging h', 'Armed ratio'], dump.devices.map(deviceRow)));
+  if (dump.silent.length > 0) {
+    out.push('');
+    out.push(
+      `Silent today (seen in the last 7 days, no upload for this day): ${dump.silent.map((s) => `${s.alias} (${s.maker}, Android ${s.androidMajor}, last upload ${s.lastDay})`).join('; ')}.`,
+    );
+  }
+  out.push('');
+
+  out.push('## Gates');
+  out.push(
+    table(
+      ['Check', 'Value', 'Threshold', 'Status'],
+      [
+        gateRow('Armed ratio, best device (normal mode)', gates.armed, (v) => v.toFixed(2), 'at least 0.90'),
+        gateRow('Scheduling delay p95, all devices', gates.delay, (v) => `${sec(v)} s`, 'at most 60 s'),
+        gateRow(
+          'Tecno, Infinix or Samsung works after exemption',
+          gates.oem,
+          (v) => v.toFixed(2),
+          'armed at least 0.90 after exemption',
+        ),
+      ],
+    ),
+  );
+  out.push('');
+
+  out.push('## Metrics by class');
+  out.push('Class = maker and Android major. Station mode is its own class.');
+  out.push(
+    table(
+      [
+        'Class',
+        'Devices',
+        'Armed ratio',
+        'Gaps (count, p50, p95 s) by reason',
+        'Delay p50 / p95 s (job)',
+        'Delay p50 / p95 s (receiver)',
+        'Replug to ring p50 / p95 s',
+        'Prompts per day',
+        'Alarm rate',
+      ],
+      classes.map((c) => [
+        `${c.key.maker}, Android ${c.key.android}, ${c.key.mode}`,
+        String(c.devices),
+        ratio(c.ratio),
+        c.gaps.length === 0 ? 'none' : c.gaps.map(gapText).join('; '),
+        pairText(c.delayJob),
+        pairText(c.delayReceiver),
+        pairText(c.replug),
+        (c.promptsShown / c.deviceDays).toFixed(1),
+        c.alarmRate === null ? 'n/a' : `${c.alarmRate.toFixed(2)} (${c.alarmsRung} of ${c.alarmsExpected})`,
+      ]),
+    ),
+  );
+  out.push('');
+
+  out.push('## Outages');
+  const outages = dump.outages;
+  out.push(
+    table(
+      ['Start (UTC)', 'Level', 'Scope', 'Drops of armed', 'Labels yes / no / none', 'Class'],
+      outages.map((o) => [
+        clock(o.startMs),
+        o.level.toLowerCase(),
+        o.scopeClass.toLowerCase(),
+        `${o.drops} of ${o.armedN}`,
+        `${o.labelsYes} / ${o.labelsNo} / ${o.labelsNone}`,
+        CLASS_LABEL[classifyOutage(o)] + (o.withdrawn ? ' (withdrawn by the engine)' : ''),
+      ]),
+    ),
+  );
+  out.push('');
+
+  out.push('## False alarms and misses');
+  const falseAlarms = outages.filter((o) => classifyOutage(o) === 'FALSE_ALARM');
+  out.push(
+    `- False alarms: ${falseAlarms.length}.${falseAlarms
+      .map(
+        (o) =>
+          ` Confirmed at ${clock(o.confirmedMs ?? o.startMs)} UTC, ${o.drops} of ${o.armedN} phones dropped, ${o.labelsNo} labels all No.`,
+      )
+      .join('')}`,
+  );
+  const real = dump.misses.filter((m) => m.armedN >= MISS_MIN_ARMED);
+  out.push(
+    `- Misses: ${dump.misses.length}. ${
+      dump.misses.length === 0
+        ? 'None recorded.'
+        : `${real.length} with at least ${MISS_MIN_ARMED} armed phones in the cell (a failure); ${dump.misses.length - real.length} with fewer (expected, the scope cannot confirm). Armed phones in the cell: ${dump.misses.map((m) => m.armedN).join(', ')}.`
+    }`,
+  );
+  out.push('');
+
+  out.push('## New failures');
+  const fresh = filings.filter((f) => f.isNew);
+  const known = filings.filter((f) => !f.isNew);
+  out.push(
+    fresh.length === 0
+      ? '- None.'
+      : fresh.map((f) => `- \`${f.signature}\`: \`${f.spec}\` (${f.count} so far)`).join('\n'),
+  );
+  out.push(
+    `- Known signatures seen again: ${known.length === 0 ? 'none' : known.map((f) => `\`${f.signature}\` (${f.count})`).join(', ')}`,
+  );
+  out.push('');
+
+  out.push('## Fixture candidates');
+  const cands = fixtureCandidates(dump);
+  out.push(
+    cands.length === 0
+      ? '- None. A candidate is a Confirmed outage recorded by 2 or more devices.'
+      : cands
+          .map(
+            (o) =>
+              `- ${dump.day}, ${o.drops} devices, started ${clock(o.startMs)} UTC. Export: ${FIXTURE_EXPORT_NOTE}. Needs the sanitizer and the owner's approval.`,
+          )
+          .join('\n'),
+  );
+  out.push('');
+
+  out.push('## Parameters in use');
+  out.push(paramsLine(params));
+  out.push('');
+  return out.join('\n');
+}

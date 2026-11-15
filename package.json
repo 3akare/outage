@@ -16,11 +16,13 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@biomejs/biome": "2.6.7"
+    "@biomejs/biome": "2.6.7",
+    "playwright": "^1.65.1"
   },
   "workspaces": [
     "packages/*",
     "workers/*",
-    "tools/sim"
+    "tools/sim",
+    "tools/field"
   ]
 }
