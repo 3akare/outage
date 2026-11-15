@@ -12,3 +12,4 @@ Cloudflare Worker with Durable Objects. One Worker serves the `/v1/*` ingest API
 - Pushes are counted and dropped until the alerts-and-light-alarm spec provides a sender (R10.3).
 
 Tests: `npm test -w workers/api`. Properties A1 to A12 are listed in `docs/traceability.md`.
+- Cost: `npm run bench -w workers/api` measures startup, ingest and alarm CPU on a local SQLite shim. Results and the 10 ms free-plan comparison are in the ADR 0006 addendum. Small parents (70 phones) fit; 210 or more phones per parent on a cold actor do not, so watch the dashboard CPU time after deploy.
