@@ -16,3 +16,10 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - 2026-11-14 area-cells task 10: pushes from the area actor are counted and dropped until alerts-and-light-alarm provides the push sender (R10.3).
 - 2026-11-14 web task 8: `/judge` and `/api/v1/public/judge/replay` are not routed yet (tasks 9 and 10), so the footer link to Judge mode gives the 404 page until then. The install values are Worker vars `APK_URL`, `APK_VERSION`, `APK_SIZE_BYTES`, `APK_SHA256` and `SITE_ORIGIN` (unset: the page says the app is not published). The release-apk skill still says `wrangler.toml`; the repo uses `wrangler.jsonc`.
 - 2026-11-14 web task 9: the replay builder strips `simulated` only on the copy it passes to the engine at build time (ADR 0015, PROPOSED). Confirm. The replay is SYNTHETIC with 0 real devices until the field test records an outage. `replay.json` is written to `packages/shared/fixtures/` so the app (demo-mode) and the Worker (task 10) can read the same file. tools/sim is now an npm workspace.
+
+## Review follow-up 2026-11-15 (task-merge-d5-and-continue review)
+- Fixed review issue 1: `AreaActor.deleteInstall` now drains the outbox (`afterChange`). Model-level test in `area-model.test.ts` covers the queued public-index removal. No actor-level test: a published area needs a 3-phone outage in the runtime, which the integration test does not build.
+- Review issue 4 (notice loss): by design. Notices are idempotent and latest-wins (A6), removals retry on the next move, only the public-index batch is requeued. No change.
+- Open for the human: ADR 0014 (re-hint pass vs R11.4), ADR 0015 (replay builder strips `simulated` on the engine copy). Both stay PROPOSED.
+- Open for the orchestrator: merge `work/detection-d5` into `main` and push (definition of done item 7).
+- area-cells task 12 is partly done: README and traceability (A1 to A12) exist. Still open: ADR 0006 addendum with measured startup and CPU numbers (needs the detection-engine task 17 benchmark and a deployed measurement).

@@ -53,6 +53,8 @@ export class AreaActor extends DurableObject<Env> {
     if (this.model) {
       this.model.deleteInstall(installId, Date.now());
       this.model.flush();
+      // Membership may have dropped: send the public-index removal and neighbor notices now (review issue 1).
+      await this.afterChange(Date.now());
     }
     return n;
   }

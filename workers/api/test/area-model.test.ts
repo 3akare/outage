@@ -121,6 +121,21 @@ describe('area-cells task 10 model persistence', () => {
     expect(JSON.stringify([...store.rows.values()])).not.toContain('victim-77');
   });
 
+  it('R12.1 delete queues the public-index change, so a public page stops counting the deleted phone (review issue 1)', () => {
+    const m = new AreaModel('p1', new MemStore(), cfg);
+    const ids = who.slice(0, 3);
+    m.handle('p1', ids.map((id, i) => ev(id, 1, 'ARMED', 'c1', T0 - 10 * MIN + i)), T0 - 5 * MIN);
+    m.handle('p1', ids.map((id, i) => ev(id, 2, 'UNPLUG', 'c1', T0 + i * 100)), T0 + MIN);
+    const before = m.drainOutbox();
+    expect(before.publish.put.length).toBeGreaterThan(0);
+    expect(m.drainOutbox().publish).toEqual({ put: [], remove: [] });
+    m.deleteInstall(ids[0], T0 + 2 * MIN);
+    const after = m.drainOutbox();
+    // Two phones are left: nothing may be published as a put, and the earlier view must be withdrawn.
+    expect(after.publish.put).toEqual([]);
+    expect(after.publish.remove.length).toBeGreaterThan(0);
+  });
+
   it('R13.1 an empty actor reports empty, so a NORMAL-only notice can be dropped; R5.3 moves across parents produce a removal', () => {
     const m = new AreaModel('p1', new MemStore(), cfg);
     expect(m.isEmpty()).toBe(true);

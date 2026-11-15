@@ -339,3 +339,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Honest device count: `recordedDevices` is 0 for a synthetic fixture and counts only REAL phones in a recording; `source` is SYNTHETIC.
 - Tests in `tools/sim/test/replay.test.ts`: W5 (every frame equals an independent engine run on the same prefix, any phone count, jitter up to 2 s and replug spread), the committed file equals a fresh build, labels on every object, refusal of unlabeled input, DM2 default parameters. `demo-label-check --all` is clean.
 - The engine ignores simulated events, so the builder strips the flag on its private copy only: ADR 0015 (PROPOSED).
+
+## 2026-11-15 review follow-up: delete drains the outbox
+- `AreaActor.deleteInstall` now calls `afterChange`, so a delete that drops a scope below 3 phones sends the public-index removal and neighbor notices at once instead of waiting for the next ingest or alarm.
+- Test: `area-model.test.ts` "delete queues the public-index change" (R12.1, A8).
+- `workers/api/README.md` written with the area section (area-cells task 12, partial; ADR 0006 numbers still open).
+- ADRs 0014 and 0015 stay PROPOSED; listed in `docs/session-notes.md`.
