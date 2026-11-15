@@ -19,13 +19,14 @@ import {
   renderPrivacyPage,
 } from './pages.ts';
 import {
-  JUDGE_PATH,
   type ReplayData,
-  renderJudgePage,
   renderJudgeReplayJson,
   renderJudgeServiceWorker,
 } from './judge.ts';
-import { buildMapJson, cityFrom } from './map-json.ts';
+import { APP_TABS, renderAppCss, renderAppJs, renderAppPage } from './app.ts';
+import { renderSimulateJs, renderSimulatePage, SIMULATE_PATH } from './simulate.ts';
+import { renderLanding } from './landing.ts';
+import { buildMapJson, cityFrom, DEFAULT_CITY } from './map-json.ts';
 import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './status.ts';
 
 export interface WebDeps {
@@ -63,7 +64,9 @@ export function robotsTxt(site: Site): string {
 export function sitemapXml(site: Site, areas: readonly CatalogArea[]): string {
   const paths = [
     '/',
-    JUDGE_PATH,
+    ...APP_TABS.map((t) => t.path),
+    SIMULATE_PATH,
+    '/areas',
     '/install',
     '/privacy',
     ...areas.filter((a) => a.checkedBy.trim() !== '').map((a) => `/area/${a.slug}`),
@@ -75,8 +78,25 @@ export function sitemapXml(site: Site, areas: readonly CatalogArea[]): string {
 type Route = { pattern: RegExp; render: (m: RegExpExecArray, url: URL, deps: WebDeps) => Promise<Rendered> | Rendered };
 
 const ROUTES: Route[] = [
+  { pattern: /^\/$/, render: (_m, _u, d) => renderLanding(d.site) },
+  { pattern: /^\/app\.css$/, render: () => renderAppCss() },
+  { pattern: /^\/app\.js$/, render: () => renderAppJs() },
   {
-    pattern: /^\/$/,
+    // The web replica of the phone app. Real data only (never the replay). A failed index read shows the error card.
+    pattern: /^\/app(?:\/(insights|settings))?$/,
+    render: async (m, _u, d) => {
+      const tab = m[1] === 'insights' || m[1] === 'settings' ? m[1] : 'home';
+      if (tab !== 'home') return renderAppPage(tab, d.site, null);
+      const views = await d.index.views();
+      const map = views === null ? null : buildMapJson(DEFAULT_CITY, d.mapAreas ?? d.areas, views, d.now());
+      return renderAppPage('home', d.site, map);
+    },
+  },
+  // The simulation page is static. It fetches the replay JSON itself and never reads the public index (W6).
+  { pattern: /^\/app\/simulate$/, render: (_m, _u, d) => renderSimulatePage(d.site) },
+  { pattern: /^\/simulate\.js$/, render: () => renderSimulateJs() },
+  {
+    pattern: /^\/areas$/,
     render: async (_m, _u, d) =>
       renderHomePage({ site: d.site, areas: d.areas, views: await d.index.views(), nowMs: d.now() }),
   },
@@ -96,7 +116,8 @@ const ROUTES: Route[] = [
       return renderCellPage({ site: d.site, cell: m[1], views: await d.index.views(), nowMs: d.now(), areas: d.areas });
     },
   },
-  { pattern: /^\/judge$/, render: (_m, _u, d) => renderJudgePage(d.site, d.replay()) },
+  // The old judge page moved to the simulation area (ADR 0029).
+  { pattern: /^\/judge$/, render: () => ({ status: 301, contentType: 'text/plain; charset=utf-8', body: '', ttlSeconds: 0, headers: { Location: SIMULATE_PATH } }) },
   { pattern: /^\/judge-sw\.js$/, render: () => renderJudgeServiceWorker() },
   { pattern: /^\/api\/v1\/public\/judge\/replay$/, render: (_m, _u, d) => renderJudgeReplayJson(d.replay()) },
   { pattern: /^\/install$/, render: (_m, _u, d) => renderInstallPage({ site: d.site, install: d.install }) },

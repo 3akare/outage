@@ -567,3 +567,23 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `/area/yaba` 404 cause: every entry in `catalog.source.json` has an empty `checkedBy`, so `LISTED_AREAS` is empty by design (W7, R10.3). `/api/map.json` was empty for the same reason: it used the listed areas. The city key `lagos` was right. Fix: `WebDeps.mapAreas` (all catalog areas) feeds only `/api/map.json`, so cells show as NO_DATA (ADR 0025). Area pages and the sitemap stay gated. I did not fill `checkedBy`: it is a person's check of each centre.
 - `gradle.properties` defaults `outageApiBase` to the live Worker (ADR 0024 updated); `-PoutageApiBase=` gives demo. `wrangler.jsonc` vars SITE_ORIGIN and APK_URL (releases page).
 - Task 5: curl against the live URL passed (cache-control, nonce equals body nonce and changes per response, nosniff); the same check is a deploy-worker.yml step.
+
+## 2026-11-22 docs(ux): one information architecture and design system for app and web [spec:ux-redesign task:1]
+- The human could not tell what the website was. New spec `ux-redesign` (requirements, design, tasks) fixes the shape: app first run is one screen and one button, Home is a map plus feed, the dock has Home, Insights and Settings (Area merges into Home, Log into Insights). Web is a landing page at `/`, a real-data replica at `/app`, and a labelled simulation at `/app/simulate`; `/judge` will redirect there.
+- ADR 0026 (information architecture), ADR 0027 (web, vanilla JS, size budget: 30 KB stays for static pages, app pages get 100 KB, strict CSP), ADR 0028 (design tokens shared by Compose and CSS). Updated `judge-demo.md` (checks and 390 x 844 plus 1280 x 800 screenshots) and `product.md`.
+- Docs only, no code. Next: task 2 tokens, task 3 landing.
+
+## 2026-11-22 feat(web): landing page and web app replica [spec:ux-redesign task:3]
+- `/` is now a landing page (pitch, hex picture, three steps, Open web app, Watch a blackout, Install on Android). `/app`, `/app/insights`, `/app/settings` replicate the phone app: hex map as the hero from `/api/map.json` (server drawn, redrawn by `/app.js`), tap an area to zoom and see its state, feed, honest empty state "No phones reporting here yet", dock at the bottom on a phone and as a left rail at 1280 px. One stylesheet `/app.css` (`design.ts`, tokens from ADR 0028 kept inline until task 2).
+- The old text home page moved to `/areas`. `/app/simulate` and `/judge` both serve the existing replay page for now (alias, relabelled "simulation"); the real simulation player is task 5. CSP gets `'self'` next to the nonce for script and style so the two same-origin files load. Size budget test: 30 KB for static pages, 100 KB for the app with script and CSS (ADR 0027).
+- Visual check extended to 1280 x 800 and the app flow (hex tap zooms, dock moves). Screenshots in `docs/visual/`. Dock labels are 14 px (the check allows 14 px inside the dock only).
+
+## 2026-11-22 feat(web): simulation player and polish [spec:ux-redesign task:5]
+- `/app/simulate` is now the real player (`simulate.ts`, `/simulate.js`): one sentence, one button, phones drop in one hexagon, tracker Power on / Possible / Confirmed / Restored with counts, "How sure is Outage?" numbers, sticky banner "Simulated, not live data". Driven by `/api/v1/public/judge/replay`. `/judge` is a 301. Service worker caches only the four simulation paths (ADR 0029).
+- Polish: `/app` map labels are larger and nudged apart, the empty card is shorter with two side-by-side buttons, landing buttons fit on one row at 1280 px. `.btn` font shorthand was invalid on `button` (13 px text); fixed.
+- Tests: `web-judge.test.ts` rewritten (banner, 301, one button, SW paths, W6). Visual check plays the simulation at both sizes and checks offline reload. Screenshots in `docs/visual/` (`simulate-*.png`).
+
+## 2026-11-22 feat(android): one-step first run, Home map and feed, three-tab dock [spec:ux-redesign task:6,7]
+- First run is one screen with one button (`FirstRunScreen`, asks for notifications on API 33+), backed by `OnboardingFlow.firstRun`. Home is the hex map on top with the feed below and setup cards for battery and area. Dock is Home, Insights, Settings; `Route.Area` and `Route.Log` are gone, old links map to Home and Insights. Empty map says "No phones reporting here yet".
+- `ui/Tokens.kt` (ADR 0028 values, hand kept in step with `design.ts`), `Theme.kt` and `MapPalette.kt` use it; cell patterns follow the ADR. ADR 0030 records this.
+- Tests: RoutingTest updated, two new UX8 first-run tests, onboarding invariant allows the finished first-run record. Phone never runs detection. `assembleDebug`, `testDebugUnitTest`, `lintDebug` pass. No Compose screenshots (new dependency, no emulator), left to the Kiro IDE pass.

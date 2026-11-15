@@ -1,7 +1,6 @@
 package app.outage
 
 import android.app.Application
-import android.content.pm.ApplicationInfo
 import app.outage.insights.InsightsSources
 import app.outage.log.BandConfig
 import app.outage.map.AreaMapSources
@@ -23,8 +22,6 @@ class OutageApp : Application() {
     override fun onCreate() {
         super.onCreate()
         graph = ShellGraph(this)
-        // https://developer.android.com/reference/android/content/pm/ApplicationInfo#FLAG_DEBUGGABLE
-        graph.debugPlaceholderAllowed = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
         // A server delete that failed earlier is retried here, off the main thread (R5.3).
         if (graph.store.pendingServerDelete) Thread { graph.deletes.retryPending() }.start()
         registerMapAndInsights()
@@ -40,7 +37,7 @@ class OutageApp : Application() {
         val cache = FileMapCache(File(filesDir, "map"))
         val followed = PrefsFollowedArea(this)
         val source = AreaMapSources.choose(BuildConfig.API_BASE, cache) { url -> withContext(Dispatchers.IO) { MapHttp.get(url) } }
-        graph.features.register(FeatureRegistry.AREA, R.string.nav_area, { MapScreen(source, followed) }, null)
+        graph.features.register(FeatureRegistry.AREA, R.string.nav_home, { MapScreen(source, followed) }, null)
         graph.deletes.register("map_cache") { cache.clear() }
         graph.deletes.register("followed_area") { followed.clear() }
 

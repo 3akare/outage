@@ -1,5 +1,9 @@
 package app.outage.ui
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -75,15 +79,24 @@ fun AboutScreen(onBack: () -> Unit) {
     }
 }
 
-/** Debug builds only, until the onboarding spec supplies the real flow (design section 4). */
+/**
+ * First run: one screen, one button (ADR 0026). The button records consent and asks for notifications where the phone
+ * requires it. Nothing else blocks the first look: area, battery and Home Watch wait as cards on Home and in Settings.
+ */
 @Composable
-fun OnboardingPlaceholder(onDone: () -> Unit) {
+fun FirstRunScreen(onOk: () -> Unit) {
+    // https://developer.android.com/training/permissions/requesting (POST_NOTIFICATIONS is a runtime permission from API 33)
+    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { onOk() }
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
     ) {
-        Text(stringResource(R.string.onboarding_title), style = MaterialTheme.typography.headlineMedium)
-        Text(stringResource(R.string.onboarding_placeholder_body), style = MaterialTheme.typography.bodyLarge)
-        Button(onClick = onDone, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.onboarding_done)) }
+        Text(stringResource(R.string.first_run_title), style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(R.string.first_run_body), style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.first_run_privacy), style = MaterialTheme.typography.bodyMedium)
+        Button(
+            onClick = { if (Build.VERSION.SDK_INT >= 33) ask.launch(Manifest.permission.POST_NOTIFICATIONS) else onOk() },
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+        ) { Text(stringResource(R.string.first_run_ok)) }
     }
 }

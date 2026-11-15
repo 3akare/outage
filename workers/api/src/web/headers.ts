@@ -27,8 +27,8 @@ export function makeNonce(): string {
 export function contentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'none'",
-    `script-src 'nonce-${nonce}'`,
-    `style-src 'nonce-${nonce}'`,
+    `script-src 'nonce-${nonce}' 'self'`,
+    `style-src 'nonce-${nonce}' 'self'`,
     "img-src 'self' data:",
     "connect-src 'self'",
     "worker-src 'self'", // the Judge page's service worker (R6.7)

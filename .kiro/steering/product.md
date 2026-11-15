@@ -11,7 +11,7 @@ When grid power dies, every phone charging in an area stops charging in the same
 Single-player value comes first. The map is the bonus. Every feature must be useful to one person with one charging phone on day one.
 
 - One Android app is both sensor and viewer.
-- A read-only web page served by the same Cloudflare Worker (no separate web app) shows the map, area pages and Judge mode replay, for judges on iPhone.
+- The same Cloudflare Worker serves a website for judges on iPhone: a landing page at `/`, a replica of the app at `/app` using real data (map, feed, dock with Home, Insights, Settings), and a clearly separate simulation at `/app/simulate`. Area pages stay public (ADR 0027).
 - Open worldwide. Lagos is the proving ground and demo city.
 - Budget: zero. Free tiers only.
 

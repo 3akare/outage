@@ -15,7 +15,7 @@ import app.outage.ui.ShellViewModel
 
 /**
  * The only Activity. https://developer.android.com/develop/ui/compose/setup
- * Starts no sensor, service or upload (R1.4) and asks for no permission (R9.2).
+ * Starts no sensor, service or upload (R1.4). The first-run screen asks for notifications on its one button (ADR 0026).
  */
 class MainActivity : ComponentActivity() {
     private lateinit var shell: ShellViewModel
@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
         )[ShellViewModel::class.java]
         setContent {
             OutageTheme {
-                Shell(graph, shell, graph.debugPlaceholderAllowed)
+                Shell(graph, shell)
             }
         }
     }

@@ -4,8 +4,6 @@ package app.outage.shell
 sealed interface Route {
     data object Onboarding : Route
     data object Home : Route
-    data object Log : Route
-    data object Area : Route
     data object Insights : Route
     data object Settings : Route
     data class Feature(val key: String) : Route

@@ -86,9 +86,9 @@ describe('task 8 routes and JSON APIs', () => {
     expect(await head.text()).toBe('');
   });
 
-  it('R4 size budget: every public HTML page is under 30 KB', async () => {
+  it('R4 size budget: every public HTML page is under 30 KB, app pages under 100 KB in total (ADR 0027)', async () => {
     const { d } = deps([cellView(YABA.cells[0] as string, confirmedNow())]);
-    const paths = ['/', '/install', '/privacy', '/area/yaba', `/c/${YABA.cells[0]}`, '/judge'];
+    const paths = ['/', '/areas', '/install', '/privacy', '/area/yaba', `/c/${YABA.cells[0]}`, '/judge', '/app/simulate'];
     for (const path of paths) {
       const res = await handleWeb(get(path), d);
       const bytes = new TextEncoder().encode(await res.text()).length;
