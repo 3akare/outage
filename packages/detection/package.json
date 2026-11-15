@@ -5,7 +5,8 @@
   "exports": { ".": "./src/index.ts" },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest --run --passWithNoTests"
+    "test": "vitest --run --passWithNoTests",
+    "bench": "node --experimental-strip-types bench/evaluate-bench.mjs"
   },
   "dependencies": {
     "@outage/shared": "*"
