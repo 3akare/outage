@@ -2,7 +2,7 @@ package app.outage
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
-import app.outage.insights.DemoInsightsSource
+import app.outage.insights.InsightsSources
 import app.outage.log.BandConfig
 import app.outage.map.AreaMapSources
 import app.outage.map.FileMapCache
@@ -49,7 +49,7 @@ class OutageApp : Application() {
         } catch (_: Exception) {
             null
         }
-        val insights = DemoInsightsSource(band)
+        val insights = InsightsSources.choose(BuildConfig.API_BASE, band)
         graph.features.register(FeatureRegistry.INSIGHTS, R.string.nav_insights, { InsightsScreen(insights) }, null)
     }
 }

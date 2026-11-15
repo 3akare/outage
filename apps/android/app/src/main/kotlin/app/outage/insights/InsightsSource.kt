@@ -16,3 +16,30 @@ class DemoInsightsSource(private val demoBand: Band?) : InsightsSource {
     override fun input(nowMs: Long, zone: ZoneId): InsightsInput = DemoOutages.build(nowMs, zone)
     override fun band(): Band? = demoBand
 }
+
+/** The user's own outage record. The Power Log feature supplies the real one; until it exists [None] has nothing. */
+interface PowerLogTimeline {
+    fun outages(): List<Outage>
+    fun observedFromMs(nowMs: Long): Long
+
+    object None : PowerLogTimeline {
+        override fun outages(): List<Outage> = emptyList()
+        override fun observedFromMs(nowMs: Long): Long = nowMs
+    }
+}
+
+/**
+ * Real data only, never simulated (R5, R10). With no timeline yet this returns an empty input, so the screen shows
+ * its empty state instead of invented outages.
+ */
+class PowerLogInsightsSource(private val timeline: PowerLogTimeline, private val band: Band?) : InsightsSource {
+    override fun input(nowMs: Long, zone: ZoneId): InsightsInput =
+        InsightsInput(timeline.outages(), timeline.observedFromMs(nowMs), simulated = false)
+    override fun band(): Band? = band
+}
+
+object InsightsSources {
+    /** Demo only while no Worker address is built in; with one set the user sees their own record or an empty state. */
+    fun choose(apiBase: String, band: Band?): InsightsSource =
+        if (apiBase.isBlank()) DemoInsightsSource(band) else PowerLogInsightsSource(PowerLogTimeline.None, band)
+}

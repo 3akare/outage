@@ -230,3 +230,28 @@ class InsightsTest {
         assertTrue(r.daysWithData >= 55)
     }
 }
+
+/** R5, R10: with a Worker address set the Insights source is real, so it never carries simulated data. */
+class InsightsSourceChoiceTest {
+    private val zone = ZoneId.of("UTC")
+
+    @Test
+    fun a_set_api_base_gives_the_real_source_with_an_empty_state() {
+        val source = InsightsSources.choose("https://example.workers.dev", null)
+        assertTrue(source is PowerLogInsightsSource)
+        val input = source.input(1_800_000_000_000L, zone)
+        assertFalse(input.simulated)
+        assertTrue(input.outages.isEmpty())
+        val r = InsightsCalc.compute(input, 1_800_000_000_000L, zone, 30, null)
+        assertFalse(r.simulated)
+        assertEquals(0, r.outageCount)
+        assertEquals(0, r.daysWithData)
+    }
+
+    @Test
+    fun a_blank_api_base_keeps_the_labelled_demo() {
+        val source = InsightsSources.choose("", null)
+        assertTrue(source is DemoInsightsSource)
+        assertTrue(source.input(1_800_000_000_000L, zone).simulated)
+    }
+}
