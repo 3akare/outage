@@ -1,11 +1,11 @@
 // Registry: one Durable Object holding the revocation set (hashed install ids, 30-day lifetime) and the daily usage
 // counters (rows written, counts by result code and event type). Nothing here is personal data. See ADR 0003 addendum.
 import { DurableObject } from 'cloudflare:workers';
-import { dayOf } from './budget.ts';
-import { CONFIG } from './config.ts';
-import type { Env } from './env.ts';
-import { mergeCounters } from './registry.ts';
-import type { UsageReport } from './area-core.ts';
+import { dayOf } from '../ingest/budget.ts';
+import { CONFIG } from '../config.ts';
+import type { Env } from '../env.ts';
+import { mergeCounters } from './revocation.ts';
+import type { UsageReport } from '../area/core.ts';
 
 const KEEP_DAYS = 7;
 

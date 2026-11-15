@@ -1,8 +1,8 @@
 import fc from 'fast-check';
 import { res7Parent, type EventsResponse } from '@outage/shared';
 import { describe, expect, it } from 'vitest';
-import { eventTimeMs } from '../src/eventtime.ts';
-import { handleRequest } from '../src/handlers.ts';
+import { eventTimeMs } from '../src/ingest/eventtime.ts';
+import { handleRequest } from '../src/ingest/handlers.ts';
 import { ID, makeWorld, NOW, post, ROOMY, SIBLINGS, tokenFor, wire, CELL, PARENT } from './helpers.ts';
 import { NUM_RUNS } from './runs.ts';
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildCatalog } from '../src/web/catalog/build.ts';
-import { cellStates, renderMap } from '../src/web/map.ts';
-import { renderHomePage } from '../src/web/pages.ts';
+import { cellStates, renderMap } from '../src/web/area-pages/map-svg.ts';
+import { renderHomePage } from '../src/web/area-pages/pages.ts';
 import { AREAS, cellView, confirmedNow, IKEJA, NOW, parentView, SITE, YABA } from './web-helpers.ts';
 
 const countOf = (s: string, sub: string) => s.split(sub).length - 1;

@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * Design tokens from ADR 0028, the same values as `workers/api/src/web/design.ts` (TOKENS_DARK and TOKENS_LIGHT).
+ * Design tokens from ADR 0028, the same values as `workers/api/src/web/app/design.ts` (TOKENS_DARK and TOKENS_LIGHT).
  * The generator in ADR 0028 does not exist yet, so this file is written by hand. Change both files together.
  */
 object Tokens {

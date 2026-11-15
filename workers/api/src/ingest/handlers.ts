@@ -28,13 +28,13 @@ import {
   validateEvent,
   type WireEvent,
 } from '@outage/shared';
-import type { AreaEvent, AreaIngestInput, AreaResponse } from './area-core.ts';
-import type { Tunables } from './config.ts';
+import type { AreaEvent, AreaIngestInput, AreaResponse } from '../area/core.ts';
+import type { Tunables } from '../config.ts';
 import { eventTimeMs } from './eventtime.ts';
 import type { RegisterLimiter } from './limiter.ts';
-import type { ClaimInput, ClaimResult, OfferInput, OfferResult } from './pairing-core.ts';
-import { hashPairingCode } from './pairing-hash.ts';
-import { DAY_PATTERN, dayAcceptable } from './telemetry/core.ts';
+import type { ClaimInput, ClaimResult, OfferInput, OfferResult } from '../pairing/core.ts';
+import { hashPairingCode } from '../pairing/hash.ts';
+import { DAY_PATTERN, dayAcceptable } from '../telemetry/core.ts';
 import { hashInstallId, mintInstallId, mintToken, verifyToken } from './token.ts';
 
 export interface AreaGateway {

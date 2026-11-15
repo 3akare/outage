@@ -1,8 +1,8 @@
 // Pairing logic for one shard (home-watch R1, R7; ADR 0009). Synchronous over a store port, so a Durable Object runs each
 // call to completion with no interleaving, and Vitest runs it with an in-memory store. Time and randomness are inputs.
 import { decideClaim, MAX_VIEWERS_PER_STATION, OFFER_TTL_MS } from '@outage/shared';
-import { admit, type Bucket, newBucket } from './bucket.ts';
-import type { Tunables } from './config.ts';
+import { admit, type Bucket, newBucket } from '../ingest/bucket.ts';
+import type { Tunables } from '../config.ts';
 
 export interface OfferRow {
   key: string;

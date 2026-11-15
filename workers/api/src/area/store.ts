@@ -1,8 +1,8 @@
 // SQLite storage for one area actor (design section 7, amended by ADR 0006: `cell` column; LABEL columns from
 // alerts-and-light-alarm section 4). API: https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/
-import type { InstallState } from './armed.ts';
-import type { AreaStore, DetectionRow } from './area-core.ts';
-import type { ModelRow, ModelStore } from './area/model.ts';
+import type { InstallState } from '../ingest/armed.ts';
+import type { AreaStore, DetectionRow } from './core.ts';
+import type { ModelRow, ModelStore } from './model.ts';
 
 export class SqlAreaStore implements AreaStore {
   constructor(private readonly sql: SqlStorage) {

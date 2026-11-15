@@ -1,11 +1,11 @@
 // Area actor core (event-ingest tasks 5 and 7): idempotency, rate limit, write-behind armed state, budget shedding.
 // Plain TypeScript with no runtime imports. The Durable Object class (area-actor.ts) is a thin shell around it.
-import { admit, type Bucket, type Kind, newBucket } from './bucket.ts';
-import { applyStateEvent, type InstallState, needsWrite, touchSeen } from './armed.ts';
-import { bump, type Counters, dayOf, shouldShed } from './budget.ts';
-import type { Tunables } from './config.ts';
-import type { DetectionPort, IngestedItem } from './ports.ts';
-import { SeqWindow } from './seqwindow.ts';
+import { admit, type Bucket, type Kind, newBucket } from '../ingest/bucket.ts';
+import { applyStateEvent, type InstallState, needsWrite, touchSeen } from '../ingest/armed.ts';
+import { bump, type Counters, dayOf, shouldShed } from '../ingest/budget.ts';
+import type { Tunables } from '../config.ts';
+import type { DetectionPort, IngestedItem } from '../ingest/ports.ts';
+import { SeqWindow } from '../ingest/seqwindow.ts';
 import { isStateType, type EventType, type RejectCode } from '@outage/shared';
 
 /** One validated event for this actor, as the Worker hands it over. */

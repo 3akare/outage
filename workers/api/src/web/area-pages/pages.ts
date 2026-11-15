@@ -1,12 +1,12 @@
 // Page renderers: pure (data) -> Rendered. No I/O, no clock (the caller passes nowMs). Every dynamic string goes through escapeHtml.
 // Server-rendered status so the pages work with scripts off (R1.4). Real pages never show "Your spot only" as a status (R2.3).
-import type { CatalogArea } from './catalog/schema.ts';
-import { escapeHtml as e, safeHref } from './escape.ts';
-import { html, type Rendered } from './headers.ts';
-import { layout, type Site } from './layout.ts';
-import { cellStates, renderMap } from './map.ts';
-import type { PublicOutage, PublicScopeView } from './public-view.ts';
-import { areaStatus, formatDateTime, historyForCells, statusForCells, type AreaStatus } from './status.ts';
+import type { CatalogArea } from '../catalog/schema.ts';
+import { escapeHtml as e, safeHref } from '../site/escape.ts';
+import { html, type Rendered } from '../site/headers.ts';
+import { layout, type Site } from '../site/layout.ts';
+import { cellStates, renderMap } from './map-svg.ts';
+import type { PublicOutage, PublicScopeView } from '../../public-index/public-view.ts';
+import { areaStatus, formatDateTime, historyForCells, statusForCells, type AreaStatus } from '../site/status.ts';
 import {
   NO_COVERAGE_TEXT,
   PHONES_TEXT,
@@ -17,7 +17,7 @@ import {
   stateText,
   type Lang,
   type PublicStateKey,
-} from './strings.ts';
+} from '../site/strings.ts';
 import { isValidRes8Cell } from '@outage/shared';
 
 /** Views from the public index; null when the index is unavailable (design section 11). */

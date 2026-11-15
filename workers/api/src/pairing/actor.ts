@@ -1,10 +1,10 @@
 // Pairing shard actor (home-watch, ADR 0009): one Durable Object per two-symbol shard, holding the offers and pairs of the
 // stations that map to it. A thin shell over PairingCore. Alarm API: https://developers.cloudflare.com/durable-objects/api/alarms/
 import { DurableObject } from 'cloudflare:workers';
-import { CONFIG } from './config.ts';
-import type { Env } from './env.ts';
-import { type ClaimInput, type ClaimResult, type OfferInput, type OfferResult, PairingCore } from './pairing-core.ts';
-import { SqlPairStore } from './pairing-store.ts';
+import { CONFIG } from '../config.ts';
+import type { Env } from '../env.ts';
+import { type ClaimInput, type ClaimResult, type OfferInput, type OfferResult, PairingCore } from './core.ts';
+import { SqlPairStore } from './store.ts';
 
 export class PairingActor extends DurableObject<Env> {
   private readonly core: PairingCore;

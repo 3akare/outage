@@ -9,7 +9,7 @@ import {
   type ModelStore,
   toRows,
 } from '../src/area/model.ts';
-import type { IngestedItem } from '../src/ports.ts';
+import type { IngestedItem } from '../src/ingest/ports.ts';
 import { NUM_RUNS } from './runs.ts';
 
 const CELLS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'];

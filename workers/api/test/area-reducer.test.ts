@@ -3,7 +3,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { applyPush, type Episodes, type PushCandidate } from '../src/area/pushes.ts';
 import { type AreaConfig, type AreaInput, type AreaState, emptyAreaState, reduce } from '../src/area/reducer.ts';
-import type { IngestedItem } from '../src/ports.ts';
+import type { IngestedItem } from '../src/ingest/ports.ts';
 import { NUM_RUNS } from './runs.ts';
 
 const CELLS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'];

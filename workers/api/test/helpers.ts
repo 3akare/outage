@@ -1,14 +1,14 @@
 import { latLngToCell, cellToChildren } from 'h3-js';
 import { res7Parent, type WireEvent } from '@outage/shared';
-import type { InstallState } from '../src/armed.ts';
-import { AreaCore, type AreaIngestInput, type AreaResponse, type AreaStore, type DetectionRow } from '../src/area-core.ts';
+import type { InstallState } from '../src/ingest/armed.ts';
+import { AreaCore, type AreaIngestInput, type AreaResponse, type AreaStore, type DetectionRow } from '../src/area/core.ts';
 import { CONFIG, type Tunables } from '../src/config.ts';
-import type { Deps } from '../src/handlers.ts';
-import { RegisterLimiter } from '../src/limiter.ts';
-import { type OfferRow, type PairRow, PairingCore, type PairStore } from '../src/pairing-core.ts';
-import { NoopDetectionPort } from '../src/ports.ts';
+import type { Deps } from '../src/ingest/handlers.ts';
+import { RegisterLimiter } from '../src/ingest/limiter.ts';
+import { type OfferRow, type PairRow, PairingCore, type PairStore } from '../src/pairing/core.ts';
+import { NoopDetectionPort } from '../src/ingest/ports.ts';
 import { fieldDump, uploadDay } from '../src/telemetry/core.ts';
-import { mintToken } from '../src/token.ts';
+import { mintToken } from '../src/ingest/token.ts';
 import { MemoryTelemetryStore } from './telemetry-store.ts';
 
 export const SECRET = 'test-secret';

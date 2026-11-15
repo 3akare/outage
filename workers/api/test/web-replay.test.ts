@@ -2,9 +2,9 @@
 // replay, and /judge never reads the public index (R6.2, R6.8, R1.3, R6.3, R6.7, R6.9).
 import replayFile from '@outage/shared/fixtures/replay.json' with { type: 'json' };
 import { describe, expect, it } from 'vitest';
-import { PageCache } from '../src/web/cache.ts';
-import type { IndexReader } from '../src/web/index-reader.ts';
-import { explanationLines, provenanceText, type ReplayData } from '../src/web/judge.ts';
+import { PageCache } from '../src/web/site/cache.ts';
+import type { IndexReader } from '../src/public-index/reader.ts';
+import { explanationLines, provenanceText, type ReplayData } from '../src/web/simulate/replay.ts';
 import { handleWeb, type WebDeps } from '../src/web/routes.ts';
 import { AREAS, NOW, SITE, YABA } from './web-helpers.ts';
 

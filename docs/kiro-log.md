@@ -587,3 +587,13 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - First run is one screen with one button (`FirstRunScreen`, asks for notifications on API 33+), backed by `OnboardingFlow.firstRun`. Home is the hex map on top with the feed below and setup cards for battery and area. Dock is Home, Insights, Settings; `Route.Area` and `Route.Log` are gone, old links map to Home and Insights. Empty map says "No phones reporting here yet".
 - `ui/Tokens.kt` (ADR 0028 values, hand kept in step with `design.ts`), `Theme.kt` and `MapPalette.kt` use it; cell patterns follow the ADR. ADR 0030 records this.
 - Tests: RoutingTest updated, two new UX8 first-run tests, onboarding invariant allows the finished first-run record. Phone never runs detection. `assembleDebug`, `testDebugUnitTest`, `lintDebug` pass. No Compose screenshots (new dependency, no emulator), left to the Kiro IDE pass.
+
+## 2026-11-22 fix(ci): post-deploy check accepts same-origin scripts [spec:ux-redesign]
+- The `deploy-worker` run for the PR #20 merge failed at "Post-deploy header check" with "/ body nonce differs from CSP nonce": the landing page has no inline element, only `<script src="/app.js">`, so no `nonce="…"` was in the body.
+- The check moved to `.github/scripts/post-deploy-check.sh`. Every `<script>` or `<style>` must carry the CSP nonce unless it is a same-origin `src="/…"`; stylesheets must be same-origin; the `__OUTAGE_NONCE__` placeholder must not appear; the nonce must change per request. Pages: `/`, `/app`, `/app/simulate`, `/install` (`/judge` is now a 301 with `no-store`, so its target is checked instead).
+- `.kiro/scripts/test/post-deploy-check.test.mjs` runs it against a stub server: passes on nonce-carrying inline plus same-origin, fails on an inline script or style without the nonce, a wrong nonce, the placeholder, an external or protocol-relative script, and a repeated nonce. Run against the live URL: exit 0.
+
+## 2026-11-22 refactor(api): one folder per job, and a file map [ADR 0031]
+- `workers/api/src`: `ingest/`, `area/`, `pairing/`, `registry/`, `telemetry/`, `public-index/`, `web/{landing,app,simulate,area-pages,site,catalog}`. `judge.ts` is `simulate/replay.ts`, `map.ts` is `area-pages/map-svg.ts`, `registry.ts` is `registry/revocation.ts`, `web-judge.test.ts` is `web-replay.test.ts`. URLs, class names and migrations unchanged; `wrangler deploy --dry-run` bundles.
+- `ARCHITECTURE.md` lists every tracked file with its job; `architecture.test.mjs` keeps it in step with git. Steering `structure.md` points to it. A committed `.pyc` is removed.
+- The map polish (basemap) is paused at the human's request and stashed, not committed.

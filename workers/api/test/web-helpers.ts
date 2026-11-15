@@ -2,8 +2,8 @@
 import { cellToParent } from 'h3-js';
 import { buildCatalog } from '../src/web/catalog/build.ts';
 import type { CatalogArea } from '../src/web/catalog/schema.ts';
-import type { Site } from '../src/web/layout.ts';
-import type { PublicScopeView } from '../src/web/public-view.ts';
+import type { Site } from '../src/web/site/layout.ts';
+import type { PublicScopeView } from '../src/public-index/public-view.ts';
 
 export const NOW = Date.UTC(2026, 10, 20, 12, 0, 0);
 export const HOUR = 3_600_000;

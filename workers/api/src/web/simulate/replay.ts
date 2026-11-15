@@ -1,7 +1,7 @@
 // Simulation data (web-and-area-pages task 10, R6; ux-redesign task 3). The replay JSON API, its types and the service worker.
 // The page itself is in simulate.ts. The replay is simulated data from a static file. No real route receives it (R6.8, W6).
-import { json, type Rendered } from './headers.ts';
-import type { StateKey } from './strings.ts';
+import { json, type Rendered } from '../site/headers.ts';
+import type { StateKey } from '../site/strings.ts';
 
 /** The shape of `replay.json` that this page reads (design section 7). Built by `tools/sim`; never written by hand. */
 export type ReplayData = {

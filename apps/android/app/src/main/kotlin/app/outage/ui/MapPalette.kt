@@ -22,7 +22,7 @@ object MapPalette {
     val label = Tokens.Dark.text
     val labelBackdrop = Color(0xB30F141B)
 
-    /** Same fills as the web map (`.hx` in design.ts): green is solid, the others sit on the raised surface and carry a pattern. */
+    /** Same fills as the web map (`.hx` in workers/api/src/web/app/design.ts): green is solid, the others sit on the raised surface and carry a pattern. */
     fun fill(state: CellState): Color = when (state) {
         CellState.NORMAL -> Tokens.Dark.normal
         CellState.POSSIBLE, CellState.CONFIRMED, CellState.NO_DATA -> Tokens.Dark.raised2

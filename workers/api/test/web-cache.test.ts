@@ -1,7 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { PageCache, type CacheLike } from '../src/web/cache.ts';
-import { html, json, NONCE_PLACEHOLDER, type Rendered } from '../src/web/headers.ts';
+import { PageCache, type CacheLike } from '../src/web/site/cache.ts';
+import { html, json, NONCE_PLACEHOLDER, type Rendered } from '../src/web/site/headers.ts';
 
 const runs = Number(process.env.FC_NUM_RUNS ?? 100);
 const req = (path: string, method = 'GET') => new Request(`https://outage.test${path}`, { method });

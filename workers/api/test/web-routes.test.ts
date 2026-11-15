@@ -1,9 +1,9 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { PageCache } from '../src/web/cache.ts';
+import { PageCache } from '../src/web/site/cache.ts';
 import type { CatalogArea } from '../src/web/catalog/schema.ts';
-import type { IndexReader } from '../src/web/index-reader.ts';
-import type { PublicScopeView } from '../src/web/public-view.ts';
+import type { IndexReader } from '../src/public-index/reader.ts';
+import type { PublicScopeView } from '../src/public-index/public-view.ts';
 import { handleWeb, isWebPath, robotsTxt, sitemapXml, type WebDeps } from '../src/web/routes.ts';
 import { NUM_RUNS } from './runs.ts';
 import { AREAS, cellView, confirmedNow, IKEJA, NOW, SITE, YABA } from './web-helpers.ts';

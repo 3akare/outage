@@ -9,8 +9,8 @@ import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { childrenOf, neighborsOf, parentOf, res7Parent } from '@outage/shared';
 import { AreaModel, areaConfig } from '../src/area/model.ts';
-import { AreaCore } from '../src/area-core.ts';
-import { SqlAreaStore, SqlModelStore } from '../src/area-store.ts';
+import { AreaCore } from '../src/area/core.ts';
+import { SqlAreaStore, SqlModelStore } from '../src/area/store.ts';
 import { CONFIG } from '../src/config.ts';
 
 const MIN = 60_000;
@@ -25,7 +25,7 @@ const CELL = '88589c9861fffff';
 const PARENT = res7Parent(CELL);
 const CELLS = childrenOf(PARENT);
 
-/** The part of the Durable Object SqlStorage API that area-store.ts uses, over node:sqlite. */
+/** The part of the Durable Object SqlStorage API that area/store.ts uses, over node:sqlite. */
 function shim(db) {
   return {
     exec(query, ...bindings) {

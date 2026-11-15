@@ -5,7 +5,7 @@ import fixture from '@outage/shared/fixtures/telemetry/device-day.json' with { t
 import type { DeviceDay, FieldDump, FieldRecord, OutageRecordOut } from '@outage/shared';
 import { describe, expect, it } from 'vitest';
 import { CONFIG } from '../src/config.ts';
-import { handleRequest } from '../src/handlers.ts';
+import { handleRequest } from '../src/ingest/handlers.ts';
 import { dayAcceptable, dayStartMs, fieldDump, recordFieldRecords } from '../src/telemetry/core.ts';
 import { FIELD_BEARER, ID, makeWorld, NOW, post, ROOMY, tokenFor } from './helpers.ts';
 import { NUM_RUNS } from './runs.ts';

@@ -1,11 +1,11 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { cellToParent } from 'h3-js';
-import { finalize } from '../src/web/headers.ts';
-import { renderAreaPage, renderCellPage, renderHomePage, renderInstallPage, renderNotFound, renderPrivacyPage, formatOffset } from '../src/web/pages.ts';
-import type { PublicScopeView } from '../src/web/public-view.ts';
-import { areaStatus, END_UNKNOWN_AFTER_MS, formatClock, historyForCells, RESTORED_DISPLAY_MS, statusJson } from '../src/web/status.ts';
-import { stateText } from '../src/web/strings.ts';
+import { finalize } from '../src/web/site/headers.ts';
+import { renderAreaPage, renderCellPage, renderHomePage, renderInstallPage, renderNotFound, renderPrivacyPage, formatOffset } from '../src/web/area-pages/pages.ts';
+import type { PublicScopeView } from '../src/public-index/public-view.ts';
+import { areaStatus, END_UNKNOWN_AFTER_MS, formatClock, historyForCells, RESTORED_DISPLAY_MS, statusJson } from '../src/web/site/status.ts';
+import { stateText } from '../src/web/site/strings.ts';
 import { AREAS, bodyOf, cellView, confirmedNow, HOUR, IKEJA, NOW, parentView, SITE, view, YABA } from './web-helpers.ts';
 
 const runs = Number(process.env.FC_NUM_RUNS ?? 100);

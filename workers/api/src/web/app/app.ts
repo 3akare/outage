@@ -4,9 +4,9 @@
 // the area sheet. Boundaries: https://uber.github.io/h3-js/#celltoboundary (ring is [lat, lng] pairs).
 import type { MapCellState, MapJson } from '@outage/shared';
 import { APP_CSS } from './design.ts';
-import { escapeHtml as e, safeHref } from './escape.ts';
-import { html, type Rendered } from './headers.ts';
-import type { Site } from './layout.ts';
+import { escapeHtml as e, safeHref } from '../site/escape.ts';
+import { html, type Rendered } from '../site/headers.ts';
+import type { Site } from '../site/layout.ts';
 
 export const APP_TABS = [
   { id: 'home', path: '/app', label: 'Home' },

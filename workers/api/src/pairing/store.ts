@@ -1,6 +1,6 @@
 // SQLite storage for one pairing shard (ADR 0009). Tables are tiny (a few rows per station), so there are no secondary indexes:
 // each index entry would count as a row written. API: https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/
-import type { OfferRow, PairRow, PairStore } from './pairing-core.ts';
+import type { OfferRow, PairRow, PairStore } from './core.ts';
 
 type PairSql = {
   pair_id: string;

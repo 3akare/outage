@@ -1,9 +1,9 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { escapeHtml, escapeXml, safeHref } from '../src/web/escape.ts';
-import { contentSecurityPolicy, finalize, html, json, makeNonce, methodNotAllowed, NONCE_PLACEHOLDER } from '../src/web/headers.ts';
-import { layout } from '../src/web/layout.ts';
-import { PUBLIC_STATE_KEYS, STATE_KEYS, stateText } from '../src/web/strings.ts';
+import { escapeHtml, escapeXml, safeHref } from '../src/web/site/escape.ts';
+import { contentSecurityPolicy, finalize, html, json, makeNonce, methodNotAllowed, NONCE_PLACEHOLDER } from '../src/web/site/headers.ts';
+import { layout } from '../src/web/site/layout.ts';
+import { PUBLIC_STATE_KEYS, STATE_KEYS, stateText } from '../src/web/site/strings.ts';
 import { SITE } from './web-helpers.ts';
 
 const runs = Number(process.env.FC_NUM_RUNS ?? 100);
