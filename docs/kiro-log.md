@@ -297,3 +297,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-14 area-cells task 4: router and scope selector
 - `workers/api/src/area/scope.ts`: `selectScope` (CELL if 3 or more recently armed members, else the linked group if it has 3, else the parent), `routeScopes` (cell, group, parent), `pinnedScopes` and `cellStatus`. An open outage touching the cell wins and shows from its own scope; a CONFIRMED at CELL precision for a cell under 3 recently armed members is shown as POSSIBLE.
 - Tests A1, A2, A3 in `workers/api/test/area-scope.test.ts` (property tests). Ticked tasks 3, 7 and 8 as well: their code and tests (A10, A6, A8) already existed and pass. Group key is the smallest cell, so it does not depend on insertion order.
+
+## 2026-11-14 area-cells task 5: linking
+- `workers/api/src/area/links.ts`: co-outage counts from private per-cell drop records (one count per outage per pair, same parent only, trailing 7 days), `linkedPairs`, `groupsFromLinks` (connected components, sorted), `diffLinks`, `planGroups` (create or retire GROUP engines), `pruneRecords`.
+- The link table is a pure function of the outage records, so no stored link state is needed to stay correct; storage in task 10 is a cache. Records with one key merge by earliest start and largest per-cell drop count, so replays do not double count.
+- Tests A4, A5 in `workers/api/test/area-links.test.ts`. Window edge: an outage exactly 7 days old still counts.

@@ -34,7 +34,7 @@ This spec depends on `detection-engine` (tasks 1, 3, 13) and `event-ingest` (tas
 
 ## Wave 4 (needs 4)
 
-- [ ] 5. Linking: co-outage records from per-cell drops, 7-day rule, connected components, group engine create and retire. Tests A4, A5.
+- [x] 5. Linking: co-outage records from per-cell drops, 7-day rule, connected components, group engine create and retire. Tests A4, A5.
   - Depends on: 4
   - Requirements: R6
 - [ ] 6. Hints wiring: neighbor and linked levels and the manual-report count into the engine's context. Tests A7.

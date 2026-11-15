@@ -73,8 +73,8 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R4.1 to R4.4 | A1 | `A1_scope_selection` | 4 | test written (`workers/api/test/area-scope.test.ts`) |
 | R4.6 | A2 | `A2_no_confirmed_for_sparse_cell` | 4 | test written (`workers/api/test/area-scope.test.ts`) |
 | R4.5 | A3 | `A3_open_outage_keeps_scope` | 4 | test written (`workers/api/test/area-scope.test.ts`) |
-| R6.1 to R6.3 | A4 | `A4_link_rule` | 5 | planned |
-| R6.4, R6.6 | A5 | `A5_groups_deterministic` | 5 | planned |
+| R6.1 to R6.3 | A4 | `A4_link_rule` | 5 | test written (`workers/api/test/area-links.test.ts`) |
+| R6.4, R6.6 | A5 | `A5_groups_deterministic` | 5 | test written (`workers/api/test/area-links.test.ts`) |
 | R7.3, R7.4 | A6 | `A6_notice_convergence` | 7 | test written (`workers/api/test/area-neighbors.test.ts`) |
 | R7.5, R8 | A7 | `A7_hints_never_confirm_alone` | 6 | planned |
 | R9 | A8 | `A8_public_view_privacy` | 8 | test written (`workers/api/test/area-view.test.ts`) |
