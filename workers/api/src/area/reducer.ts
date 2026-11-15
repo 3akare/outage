@@ -51,6 +51,7 @@ import {
   routeScopes,
   type ScopeKey,
   type ScopeRef,
+  selectScope,
 } from './scope.ts';
 import {
   buildPublicView,
@@ -117,7 +118,14 @@ export interface AreaState {
   /** Level of each scope without hints, used as the local hint for other scopes. */
   baseLevels: Record<ScopeKey, ScopeLevel>;
   /** Scope keys of outages that were open at the last evaluation, with their level, for pinning and the alarm. */
-  open: { outageId: string; scopeKey: ScopeKey; startMs: number; level: 'POSSIBLE' | 'CONFIRMED' }[];
+  open: {
+    outageId: string;
+    scopeKey: ScopeKey;
+    startMs: number;
+    level: 'POSSIBLE' | 'CONFIRMED';
+    /** Cells whose selected scope was this one when the outage opened; only they show it (design section 4, R4.5). */
+    shownFor: string[];
+  }[];
   episodes: Episodes;
   history: Record<string, HistoryRec>;
   counters: Record<string, number>;
@@ -489,8 +497,18 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
             precision: PRECISION_OF[eng.kind],
           };
         }
-        if (d.status === 'OPEN')
-          openNow.push({ outageId: d.outageId, scopeKey: key, startMs: d.startMs, level: d.level });
+        if (d.status === 'OPEN') {
+          const before = state.open.find((o) => o.scopeKey === key && o.outageId === d.outageId);
+          const selIn = {
+            members: membersMap(s),
+            nowMs,
+            parent: s.parent,
+            parentCells: routeCtx.parentCells,
+            groups: s.groups,
+          };
+          const shownFor = before?.shownFor ?? eng.cells.filter((c) => selectScope(c, selIn).key === key).sort();
+          openNow.push({ outageId: d.outageId, scopeKey: key, startMs: d.startMs, level: d.level, shownFor });
+        }
         // Private per-cell drop counts for linking: installs with an UNPLUG at the start of the outage (design section 6).
         const drops: Record<string, Set<string>> = {};
         for (const e of s.log) {
@@ -662,7 +680,7 @@ export function openOutages(s: AreaState): OpenOutage[] {
   const out: OpenOutage[] = [];
   for (const o of s.open) {
     const e = s.engines[o.scopeKey];
-    if (e) out.push({ outageId: o.outageId, level: o.level, scope: scopeRefOf(o.scopeKey, e) });
+    if (e) out.push({ outageId: o.outageId, level: o.level, scope: scopeRefOf(o.scopeKey, e), shownFor: o.shownFor });
   }
   return out;
 }

@@ -77,14 +77,18 @@ export interface OpenOutage {
   outageId: string;
   scope: ScopeRef;
   level: 'POSSIBLE' | 'CONFIRMED';
+  /** Cells whose selected scope was this one when the outage opened (design section 4). Defaults to all scope cells. */
+  shownFor?: readonly string[];
 }
+
+const showsFor = (o: OpenOutage, cell: string): boolean => (o.shownFor ?? o.scope.cells).includes(cell);
 
 /** Scopes that must keep their engine alive because an outage is open there and touches `cell`. */
 export function pinnedScopes(cell: string, open: readonly OpenOutage[]): ScopeRef[] {
   const seen = new Set<ScopeKey>();
   const out: ScopeRef[] = [];
   for (const o of open) {
-    if (!o.scope.cells.includes(cell) || seen.has(o.scope.key)) continue;
+    if (!showsFor(o, cell) || seen.has(o.scope.key)) continue;
     seen.add(o.scope.key);
     out.push(o.scope);
   }
@@ -103,7 +107,7 @@ export interface CellStatus {
  * with fewer than 3 recently armed members is shown as POSSIBLE (A2); the engine is the first guard, this is the last.
  */
 export function cellStatus(cell: string, input: SelectInput, open: readonly OpenOutage[]): CellStatus {
-  const touching = open.filter((o) => o.scope.cells.includes(cell));
+  const touching = open.filter((o) => showsFor(o, cell));
   if (touching.length === 0) return { level: 'NORMAL', scope: selectScope(cell, input) };
   const best = [...touching].sort(
     (a, b) =>

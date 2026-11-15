@@ -52,7 +52,7 @@ This spec depends on `detection-engine` (tasks 1, 3, 13) and `event-ingest` (tas
 - [x] 10. Durable Object shell: SQLite persistence for the model in design 10, write-behind flush, partitioned engine states, counters, notice sending (DO to DO) and the flush alarm.
   - Depends on: 9, `event-ingest` 5
   - Requirements: R2, R13, R14
-- [ ] 11. Scenario tests: 8 and 2 phones, link then confirm, 30-phone outage with `CELL` precision, cross-parent notice. Runs against the reducer and, if available, Miniflare.
+- [x] 11. Scenario tests: 8 and 2 phones, link then confirm, 30-phone outage with `CELL` precision, cross-parent notice. Runs against the reducer and, if available, Miniflare.
   - Depends on: 9, `detection-engine` 16
   - Requirements: R4, R6, R7
 
