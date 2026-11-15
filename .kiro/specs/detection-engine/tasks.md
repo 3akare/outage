@@ -73,7 +73,7 @@ Kiro IDE is needed for task 15 (Correctness pass). Everything else can run in Ki
 - [ ] 15. **Kiro IDE.** Run Analyze Requirements and the Correctness pass. Assemble the whole-engine property suite P3 and P8 with all generators from design 11.1. Fix findings through ADRs and never by weakening a property. Record the result in `requirements.md` and `docs/kiro-log.md`.
   - Depends on: 14
   - Requirements: R2.3, R12.1, R15
-- [ ] 16. Fixture format and a 30-phone outage generator in `tools/sim`, every event marked `simulated: true`. Contract test: confirmed within 10 s of the last event. Add the `demo-label-check` hook script.
+- [x] 16. Fixture format and a 30-phone outage generator in `tools/sim`, every event marked `simulated: true`. Contract test: confirmed within 10 s of the last event. Add the `demo-label-check` hook script.
   - Depends on: 1, 14
   - Requirements: R14, R17
 - [x] 17. Benchmark for 100, 500 and 5,000 live events, and a report in `docs/adr/0005` addendum. If 500 events exceed the budget, open a follow-up task for the incremental implementation (D1).

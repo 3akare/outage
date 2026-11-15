@@ -382,3 +382,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `packages/detection/bench/evaluate-bench.mjs` (`npm run bench -w packages/detection`) times one `evaluate()` with one new event on a stored state for 100, 500 and 5,000 live events, at 30 phones and at 10 events per phone. Kept out of `npm test`. No new dependency.
 - Confirmed with the Cloudflare docs: Workers Free gives 10 ms CPU per request; a Durable Object has the same per-invocation limit as the Worker plan, so we plan for 10 ms.
 - Result on the sandbox VM (Xeon 8259CL, Node 22): 500 events p95 3.7 ms, inside the 5 ms target, so no D1 follow-up task. 5,000 events take 14 ms (30 phones) to 179 ms (500 phones), over budget. Numbers and method are in the ADR 0005 addendum.
+
+## 2026-11-15 detection-engine task 16: 30-phone outage generator
+- `tools/sim/src/fixture.ts`: `outage30Fixture(jitterMs)` builds a 30-phone outage in the existing fixture format (ADR 0015) with `syntheticFixture`. Every event and label carries `simulated: true`.
+- Contract test `tools/sim/test/outage30.test.ts`: over random jitter (0 to 2 s), the replay shows CONFIRMED no later than 10 s after the last UNPLUG. The engine is called through `buildReplay`; no detection logic in `tools/sim`, no params change.
+- The `demo-label-check` hook script and its two hooks in `file-checks.json` already existed (with tests in `hooks.test.mjs`). Nothing was added or loosened; `node .kiro/scripts/demo-label-check.mjs --all` passes.
