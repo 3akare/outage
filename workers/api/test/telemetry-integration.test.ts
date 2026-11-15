@@ -9,7 +9,11 @@ import { CELL, FIELD_BEARER, SECRET, wire } from './helpers.ts';
 
 const server = createTestHarness({
   workers: [
-    { configPath: './wrangler.jsonc', secrets: { INSTALL_TOKEN_SECRET: SECRET, FIELD_READ_TOKEN: FIELD_BEARER }, vars: { STATE_FLUSH_MS: '300' } },
+    {
+      configPath: './wrangler.jsonc',
+      secrets: { INSTALL_TOKEN_SECRET: SECRET, FIELD_READ_TOKEN: FIELD_BEARER },
+      vars: { STATE_FLUSH_MS: '300' },
+    },
   ],
 });
 
@@ -22,10 +26,15 @@ afterAll(async () => {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const call = (path: string, body: unknown, token?: string) =>
-  server.fetch(path, { method: 'POST', headers: token ? { authorization: `Bearer ${token}` } : {}, body: JSON.stringify(body) });
+  server.fetch(path, {
+    method: 'POST',
+    headers: token ? { authorization: `Bearer ${token}` } : {},
+    body: JSON.stringify(body),
+  });
 const admin = (day: string, token: string | null = FIELD_BEARER) =>
   server.fetch(`/v1/admin/field/${day}`, { headers: token === null ? {} : { authorization: `Bearer ${token}` } });
-const register = async () => (await (await server.fetch('/v1/register', { method: 'POST' })).json()) as { installId: string; token: string };
+const register = async () =>
+  (await (await server.fetch('/v1/register', { method: 'POST' })).json()) as { installId: string; token: string };
 const dayOf = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
 describe('field telemetry in the Workers runtime', () => {
@@ -33,7 +42,12 @@ describe('field telemetry in the Workers runtime', () => {
     const a = await register();
     const b = await register();
     const today = dayOf(Date.now());
-    const day = (installId: string, over: Partial<DeviceDay> = {}) => ({ ...(fixture as DeviceDay), installId, day: today, ...over });
+    const day = (installId: string, over: Partial<DeviceDay> = {}) => ({
+      ...(fixture as DeviceDay),
+      installId,
+      day: today,
+      ...over,
+    });
 
     expect((await call('/v1/telemetry', day(a.installId), a.token)).status).toBe(200);
     expect((await call('/v1/telemetry', day(a.installId, { armedMs: 1000 }), a.token)).status).toBe(200); // last wins

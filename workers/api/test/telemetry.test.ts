@@ -18,12 +18,20 @@ const YESTERDAY = dayOf(NOW - DAY_MS);
 const ID2 = 'aaaaaaaaaaaaaaaaaaaaaaaaab';
 const ID3 = 'bbbbbbbbbbbbbbbbbbbbbbbbbc';
 
-const base = (over: Partial<DeviceDay> = {}): DeviceDay => ({ ...(fixture as DeviceDay), installId: ID, day: YESTERDAY, ...over });
+const base = (over: Partial<DeviceDay> = {}): DeviceDay => ({
+  ...(fixture as DeviceDay),
+  installId: ID,
+  day: YESTERDAY,
+  ...over,
+});
 const upload = async (world: ReturnType<typeof makeWorld>, d: unknown, id = ID) =>
   handleRequest(await post('/v1/telemetry', d, await tokenFor(id)), world.deps);
 const admin = (world: ReturnType<typeof makeWorld>, day: string, token: string | null = FIELD_BEARER, method = 'GET') =>
   handleRequest(
-    new Request(`https://api.test/v1/admin/field/${day}`, { method, headers: token === null ? {} : { authorization: `Bearer ${token}` } }),
+    new Request(`https://api.test/v1/admin/field/${day}`, {
+      method,
+      headers: token === null ? {} : { authorization: `Bearer ${token}` },
+    }),
     world.deps,
   );
 
@@ -32,7 +40,10 @@ describe('F2_upload_idempotent (server part)', () => {
     await fc.assert(
       fc.asyncProperty(
         fc.array(
-          fc.record({ armed: fc.integer({ min: 0, max: 36_000_000 }), jobs: fc.array(fc.nat({ max: 90_000 }), { maxLength: 8 }) }),
+          fc.record({
+            armed: fc.integer({ min: 0, max: 36_000_000 }),
+            jobs: fc.array(fc.nat({ max: 90_000 }), { maxLength: 8 }),
+          }),
           { minLength: 1, maxLength: 8 },
         ),
         fc.nat({ max: 3 }),
@@ -114,7 +125,10 @@ describe('F2_upload_idempotent (server part)', () => {
     const world = makeWorld(ROOMY);
     const get = await handleRequest(new Request('https://api.test/v1/telemetry'), world.deps);
     expect(get.status).toBe(405);
-    const big = await handleRequest(await post('/v1/telemetry', 'x'.repeat(ROOMY.MAX_BODY_BYTES + 1), await tokenFor()), world.deps);
+    const big = await handleRequest(
+      await post('/v1/telemetry', 'x'.repeat(ROOMY.MAX_BODY_BYTES + 1), await tokenFor()),
+      world.deps,
+    );
     expect(big.status).toBe(413);
   });
 });
@@ -125,7 +139,10 @@ describe('R1.4 delete my data removes the install device-days', () => {
     await upload(world, base());
     await upload(world, base({ day: TODAY }));
     await upload(world, base({ installId: ID2 }), ID2);
-    const res = await handleRequest(await post('/v1/delete', { installId: ID, cells: [] }, await tokenFor()), world.deps);
+    const res = await handleRequest(
+      await post('/v1/delete', { installId: ID, cells: [] }, await tokenFor()),
+      world.deps,
+    );
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ deleted: true, rows: 2 });
     expect(world.telemetryStore.all().map((d) => d.installId)).toEqual([ID2]);
@@ -202,7 +219,12 @@ describe('F8_admin_auth_and_aliases', () => {
       ['D1', base().mode.normalMs],
       ['D2', base().mode.normalMs],
     ]);
-    expect(world.telemetryStore.all().map((d) => d.installId).sort()).toEqual([ID2, ID3]);
+    expect(
+      world.telemetryStore
+        .all()
+        .map((d) => d.installId)
+        .sort(),
+    ).toEqual([ID2, ID3]);
   });
 });
 

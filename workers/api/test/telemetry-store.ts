@@ -26,7 +26,12 @@ export class MemoryTelemetryStore implements TelemetryStore {
       const cur = best.get(d.installId);
       if (!cur || d.day > cur.day) best.set(d.installId, d);
     }
-    return [...best.values()].map((d) => ({ installId: d.installId, maker: d.maker, androidMajor: d.androidMajor, lastDay: d.day }));
+    return [...best.values()].map((d) => ({
+      installId: d.installId,
+      maker: d.maker,
+      androidMajor: d.androidMajor,
+      lastDay: d.day,
+    }));
   }
   putOutage(r: OutageRecordOut) {
     this.outages.set(r.key, r);

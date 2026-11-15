@@ -26,7 +26,11 @@ export class SqlTelemetryStore implements TelemetryStore {
   putDay(d: DeviceDay, receivedMs: number): number {
     const json = JSON.stringify(d);
     const cur = this.sql
-      .exec<{ aggregate: string }>('SELECT aggregate FROM device_day WHERE install_id = ? AND day = ?', d.installId, d.day)
+      .exec<{ aggregate: string }>(
+        'SELECT aggregate FROM device_day WHERE install_id = ? AND day = ?',
+        d.installId,
+        d.day,
+      )
       .toArray()[0];
     if (cur?.aggregate === json) return 0; // a repeated upload writes nothing
     this.sql.exec(
@@ -82,7 +86,11 @@ export class SqlTelemetryStore implements TelemetryStore {
 
   missesIn(fromMs: number, toMs: number): MissRecordOut[] {
     return this.sql
-      .exec<{ at_ms: number; armed_n: number }>('SELECT at_ms, armed_n FROM miss_record WHERE at_ms >= ? AND at_ms < ?', fromMs, toMs)
+      .exec<{ at_ms: number; armed_n: number }>(
+        'SELECT at_ms, armed_n FROM miss_record WHERE at_ms >= ? AND at_ms < ?',
+        fromMs,
+        toMs,
+      )
       .toArray()
       .map((r) => ({ kind: 'MISS' as const, atMs: r.at_ms, armedN: r.armed_n }));
   }

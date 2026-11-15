@@ -20,7 +20,10 @@ export interface TelemetryStore {
   putDay(d: DeviceDay, receivedMs: number): number;
   daysOn(day: string): DeviceDay[];
   /** Newest device-day per install with `from <= day < before`, as (installId, maker, androidMajor, lastDay). */
-  latestBefore(from: string, before: string): { installId: string; maker: DeviceDay['maker']; androidMajor: number; lastDay: string }[];
+  latestBefore(
+    from: string,
+    before: string,
+  ): { installId: string; maker: DeviceDay['maker']; androidMajor: number; lastDay: string }[];
   putOutage(r: OutageRecordOut, nowMs: number): number;
   outagesStarting(fromMs: number, toMs: number): OutageRecordOut[];
   putMiss(m: MissRecordOut, nowMs: number): number;
@@ -88,7 +91,9 @@ export function fieldDump(store: TelemetryStore, day: string, lookbackDays: numb
       .slice()
       .sort((x, y) => (x.installId < y.installId ? -1 : 1))
       .map((s) => ({ alias: a(s.installId), maker: s.maker, androidMajor: s.androidMajor, lastDay: s.lastDay })),
-    outages: store.outagesStarting(start, start + DAY_MS).sort((x, y) => x.startMs - y.startMs || (x.key < y.key ? -1 : 1)),
+    outages: store
+      .outagesStarting(start, start + DAY_MS)
+      .sort((x, y) => x.startMs - y.startMs || (x.key < y.key ? -1 : 1)),
     misses: store.missesIn(start, start + DAY_MS).sort((x, y) => x.atMs - y.atMs || x.armedN - y.armedN),
   };
 }
