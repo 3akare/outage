@@ -76,7 +76,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R6.1 to R6.3 | A4 | `A4_link_rule` | 5 | test written (`workers/api/test/area-links.test.ts`) |
 | R6.4, R6.6 | A5 | `A5_groups_deterministic` | 5 | test written (`workers/api/test/area-links.test.ts`) |
 | R7.3, R7.4 | A6 | `A6_notice_convergence` | 7 | test written (`workers/api/test/area-neighbors.test.ts`) |
-| R7.5, R8 | A7 | `A7_hints_never_confirm_alone` | 6 | planned |
+| R7.5, R8 | A7 | `A7_hints_never_confirm_alone` | 6 | test written (`workers/api/test/area-hints.test.ts`) |
 | R9 | A8 | `A8_public_view_privacy` | 8 | test written (`workers/api/test/area-view.test.ts`) |
 | R10 | A9 | `A9_push_dedup` | 9 | planned |
 | R3.2, R5 | A10 | `A10_move_closes_old_cell` | 3 | test written (`workers/api/test/area-members.test.ts`) |

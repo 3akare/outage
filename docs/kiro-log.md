@@ -302,3 +302,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `workers/api/src/area/links.ts`: co-outage counts from private per-cell drop records (one count per outage per pair, same parent only, trailing 7 days), `linkedPairs`, `groupsFromLinks` (connected components, sorted), `diffLinks`, `planGroups` (create or retire GROUP engines), `pruneRecords`.
 - The link table is a pure function of the outage records, so no stored link state is needed to stay correct; storage in task 10 is a cache. Records with one key merge by earliest start and largest per-cell drop count, so replays do not double count.
 - Tests A4, A5 in `workers/api/test/area-links.test.ts`. Window edge: an outage exactly 7 days old still counts.
+
+## 2026-11-14 area-cells task 6: hints wiring
+- `workers/api/src/area/hints.ts`: `buildContext` turns the neighbor table, local cell levels and linked cells into the engine `Context`; `manualHint` passes a manual-report count only for 2 or more distinct installs (R8.2), zero until the later spec (R8.3). Notices older than 12 hours give no hint.
+- Test A7 in `workers/api/test/area-hints.test.ts` runs the real engine: with k below 3 here and in every hinting scope, no decision or push is CONFIRMED. A positive case shows a neighbor with k = 6 raises k = 3 to CONFIRMED, named NEIGHBOR.
+- `workers/api/package.json` now lists `@outage/detection` (this repository's own workspace package, already in `.kiro/approved-dependencies.json`); lockfile updated offline. No external dependency added.
