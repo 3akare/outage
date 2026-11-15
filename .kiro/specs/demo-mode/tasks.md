@@ -17,7 +17,7 @@ Depends on `detection-engine` (tasks 13, 16), `web-and-area-pages` (task 9), `on
 
 ## Wave 2
 
-- [ ] 3. `ScenarioGenerator` and `demoPlan(params)` in `tools/sim`: seeded neighbors, jitter, margin search, "not reachable" result, unplug track written into `replay.json` by the real engine. Tests DM2, DM4, DM5.
+- [x] 3. `ScenarioGenerator` and `demoPlan(params)` in `tools/sim`: seeded neighbors, jitter, margin search, "not reachable" result, unplug track written into `replay.json` by the real engine. Tests DM2, DM4, DM5.
   - Depends on: `detection-engine` 13
   - Requirements: R4.3, R4.4, R4.6
 - [ ] 4. `DemoSession` (Kotlin): playback position of the unplug track, injected clock, labels on every object, architecture test (reads only the replay file). Tests DM1, DM3.

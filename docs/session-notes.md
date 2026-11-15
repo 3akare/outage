@@ -59,3 +59,6 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 ## 2026-11-15 demo-mode tasks 2 and 3 (work/demo-mode-2-3)
 - Task 2 assumption: the scanner does not look for email or phone-number shapes. `privacy-guard` blocks those words in source, and the fixture schema cannot hold them. If the human wants them scanned, the patterns need a reviewed allow marker.
 - Task 2 assumption: a raw recording spanning two res-7 parents is refused, because the fixture format has one `cell`.
+- Task 3 assumption: the engine run uses a nominal 5 min between the judge's unplug and replug. The phone plays replug frames at the judge's real replug time plus the frame offset, so the judge's real outage length does not change the frames. Restore is decided by quorum of replugs in the engine run; if a later engine change makes restore depend on the outage length, the build test fails.
+- Task 3 assumption: margin means 2 extra drops over the smallest confirming number (the requirements' 7 drops against 5 needed), and the plan starts at 10 armed phones. Both are options of `demoPlan`, not thresholds.
+- Task 3: the judge's drop is the `judgeEvent` marker on a frame, so no frame lists a non-simulated event (DM5 reading: "exactly one real drop" is the live unplug the phone waits for).

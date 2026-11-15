@@ -82,7 +82,9 @@ describe('W5 replay matches the engine', () => {
   });
 
   it('W5_replay_matches_engine: the committed replay.json equals a fresh build (regenerate with npm run build:replay -w tools/sim)', () => {
-    expect(committed).toEqual(JSON.parse(JSON.stringify(buildReplay(syntheticFixture()))));
+    // The unplug track (demo-mode task 3) is checked against a fresh build in scenario.test.ts.
+    const { unplugTrack: _track, ...replayPart } = committed;
+    expect(replayPart).toEqual(JSON.parse(JSON.stringify(buildReplay(syntheticFixture()))));
   });
 });
 
