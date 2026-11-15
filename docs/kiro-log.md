@@ -377,3 +377,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - CI run 43698156024 (seed -677795666) failed `D5_settle_equivalence` at 2000 runs. Cause: the sweep finalizes a day's baseline bucket at day end + W. If an outage that started that day was still open, its exposure was subtracted up to infinity. `settle()` later folds the same day from the closed outage (subtracting only to the restore time), so the settled run had about 100 s more exposure in that hour and a slightly different `lambdaPerSec`, `muValue` and `p` for later windows.
 - Fix in `packages/detection/src/sweep.ts`: when an outage closes (RESTORED or EXPIRED), `refinalize` recomputes the finalized buckets of the days from its start to its end and clears the lambda cache. The property is unchanged. No threshold, param, dependency or stored data changed.
 - Test: the shrunk counterexample is a fixed case in `packages/detection/test/d5-regress.test.ts`. The CI seed fails on the old code and passes now.
+
+## 2026-11-15 detection-engine task 17: evaluation benchmark
+- `packages/detection/bench/evaluate-bench.mjs` (`npm run bench -w packages/detection`) times one `evaluate()` with one new event on a stored state for 100, 500 and 5,000 live events, at 30 phones and at 10 events per phone. Kept out of `npm test`. No new dependency.
+- Confirmed with the Cloudflare docs: Workers Free gives 10 ms CPU per request; a Durable Object has the same per-invocation limit as the Worker plan, so we plan for 10 ms.
+- Result on the sandbox VM (Xeon 8259CL, Node 22): 500 events p95 3.7 ms, inside the 5 ms target, so no D1 follow-up task. 5,000 events take 14 ms (30 phones) to 179 ms (500 phones), over budget. Numbers and method are in the ADR 0005 addendum.

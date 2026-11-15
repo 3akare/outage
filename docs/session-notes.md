@@ -40,3 +40,9 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Open for the human: ADR 0014 (re-hint pass vs R11.4), ADR 0015 (replay builder strips `simulated` on the engine copy). Both stay PROPOSED.
 - Open for the orchestrator: merge `work/detection-d5` into `main` and push (definition of done item 7).
 - area-cells task 12 is partly done: README and traceability (A1 to A12) exist. Still open: ADR 0006 addendum with measured startup and CPU numbers (needs the detection-engine task 17 benchmark and a deployed measurement).
+
+## 2026-11-15 detection-engine task 17 (benchmark)
+- Assumption: the free-plan Durable Object budget is 10 ms CPU per call. The DO limits table says 30 s, but its FAQ says Durable Objects follow the Worker plan's per-invocation limit (Free: 10 ms). We use the stricter reading.
+- Assumption: "live events" means events inside the horizon held in one engine state; the timed call is one evaluate() with one new event.
+- Numbers come from the sandbox VM, not CI or workerd. Re-measure on the deployed Worker for ADR 0006 (area-cells task 12).
+- Open for the human: 5,000 live events exceed 10 ms (up to about 179 ms at 500 phones). No D1 follow-up opened, since the task's rule is about 500 events. Decide whether to open it now or wait for field counts.
