@@ -5,3 +5,4 @@ export * from './h3.ts';
 export * from './ingest.ts';
 export * from './device-day.ts';
 export * from './field-metrics.ts';
+export * from './field-outage.ts';

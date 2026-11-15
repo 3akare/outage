@@ -12,7 +12,9 @@ import {
   type Params,
   removeInstall,
 } from '@outage/detection';
+import type { FieldRecord } from '@outage/shared';
 import type { IngestedItem } from '../ports.ts';
+import { type Coverage, type FieldObservation, type FieldSent, fieldStep, type MissPending, resolveMisses } from './field.ts';
 import { buildContext } from './hints.ts';
 import {
   coalesceOutages,
@@ -28,6 +30,7 @@ import {
   applyRemoval,
   counts,
   expireMembers,
+  recentlyArmedCount,
   type Member,
   type MemberStep,
   type RemovalRequest,
@@ -129,6 +132,10 @@ export interface AreaState {
   episodes: Episodes;
   history: Record<string, HistoryRec>;
   counters: Record<string, number>;
+  /** Last emitted OUTAGE_RECORD per outage (field-telemetry R5), so only a changed record is emitted again. */
+  fieldSent: FieldSent;
+  /** "Yes" labels waiting for the engine to have a full window before they can count as a miss (field-telemetry R5.5). */
+  missPending: MissPending[];
   /** JSON of each view last sent to the public index, by scope key (web-and-area-pages R8.2). Public data only. */
   published: Record<ScopeKey, string>;
 }
@@ -153,6 +160,8 @@ export function emptyAreaState(parent: string): AreaState {
     episodes: {},
     history: {},
     counters: {},
+    fieldSent: {},
+    missPending: [],
     published: {},
   };
 }
@@ -199,6 +208,8 @@ export interface AreaOutput {
   /** Scopes evaluated by this call, each at most once (R11.4). */
   evaluated: ScopeKey[];
   rejected: number;
+  /** Field-telemetry records (`OUTAGE_RECORD`, `MISS`), counts only, for the telemetry actor (field-telemetry task 5). */
+  fieldRecords: FieldRecord[];
 }
 
 const bump = (c: Record<string, number>, k: string, n = 1): Record<string, number> => ({ ...c, [k]: (c[k] ?? 0) + n });
@@ -337,6 +348,16 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
     s.log = [...s.log, ...fresh];
     s.labels = [...s.labels, ...freshLabels];
   }
+  // A "Yes" label is checked for a miss once its unplug is one window old (field-telemetry R5.5).
+  const missPending = [...s.missPending];
+  for (const l of freshLabels) {
+    if (l.answer !== 'YES') continue;
+    const u = s.log.find((e) => e.type === 'UNPLUG' && e.installId === l.installId && e.seq === l.unplugSeq);
+    if (u) missPending.push({ installId: l.installId, unplugSeq: l.unplugSeq, dueMs: u.eventTimeMs + cfg.params.windowMs });
+  }
+  s.missPending = missPending;
+  const fieldRecords: FieldRecord[] = [];
+  const observed = new Map<string, FieldObservation>();
   let feed = fresh;
   let feedLabels = freshLabels;
   if (input.type === 'EVENTS') {
@@ -371,6 +392,7 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
     s.labels = s.labels.filter((l) => l.installId !== id);
     s.pending = s.pending.filter((e) => e.installId !== id);
     s.pendingLabels = s.pendingLabels.filter((l) => l.installId !== id);
+    s.missPending = s.missPending.filter((m) => m.installId !== id);
     s.engines = Object.fromEntries(
       Object.entries(s.engines).map(([k, e]) => [k, { ...e, state: removeInstall(e.state, id) }]),
     );
@@ -481,6 +503,7 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
   const history = { ...s.history };
   const openNow = s.open.filter((o) => !results.has(o.scopeKey));
   const candidates: PushCandidate[] = [];
+  const fieldSel = { members: membersMap(s), nowMs, parent: s.parent, parentCells: routeCtx.parentCells, groups: s.groups };
   const absorb = (keys: readonly ScopeKey[]): void => {
     for (const key of keys) {
       const res = results.get(key);
@@ -529,6 +552,17 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
           drops[e.cell] = set;
         }
         const dropsByCell = Object.fromEntries(Object.entries(drops).map(([c, ids]) => [c, ids.size]));
+        // Field telemetry (R5.1): the last observation per outage this request; records are built after all runs.
+        observed.set(`${key}|${d.outageId}`, {
+          outageKey: `${key}|${d.outageId}`,
+          outageId: d.outageId,
+          scopeKey: key,
+          scopeClass: eng.kind,
+          cells: eng.cells,
+          decisions: res.decisions.filter((x) => x.outageId === d.outageId),
+          latest: d,
+          selected: Object.keys(dropsByCell).some((c) => selectScope(c, fieldSel).key === key),
+        });
         if (Object.keys(dropsByCell).length >= 2)
           newRecords.push({ outageKey: `${key}|${d.outageId}`, startMs: d.startMs, dropsByCell });
         // Push candidates, one per cell the outage touched (R10.1).
@@ -597,6 +631,34 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
     (o, i, all) => all.findIndex((x) => x.scopeKey === o.scopeKey && x.outageId === o.outageId) === i,
   );
   s.engines = engines;
+
+  // Field telemetry (R5): outage records from this request's observations, then misses.
+  const held = new Map<string, Set<string>>();
+  for (const [k, res] of results) {
+    const ids = new Set(res.decisions.map((d) => d.outageId));
+    for (const a of engines[k]?.state.archive ?? []) ids.add(a.id);
+    held.set(k, ids);
+  }
+  const fs = fieldStep({
+    sent: s.fieldSent,
+    observed,
+    held,
+    log: s.log,
+    labels: s.labels,
+    labelsChanged: feedLabels.length > 0 || deleteId !== null,
+    windowMs,
+    pruneBeforeMs: nowMs - HISTORY_MS,
+  });
+  s.fieldSent = fs.sent;
+  fieldRecords.push(...fs.records);
+  const coverage: Coverage[] = Object.values(history).flatMap((h) => {
+    const cellsOf = engines[h.scopeKey]?.cells;
+    return cellsOf ? [{ cells: new Set(cellsOf), startMs: h.startMs, endMs: h.endMs }] : [];
+  });
+  const missMembers = membersMap(s);
+  const resolved = resolveMisses(s.missPending, s.log, s.labels, coverage, (c) => recentlyArmedCount(missMembers, c, nowMs), nowMs);
+  s.missPending = resolved.keep;
+  fieldRecords.push(...resolved.misses);
 
   // Public levels, notices (R7.1, R7.2), views (R9) and pushes (R10).
   const scopeLevels: Record<ScopeKey, ScopeLevel> = {};
@@ -687,6 +749,7 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
       nextAlarmMs: nextAlarm(s, cfg),
       evaluated,
       rejected,
+      fieldRecords,
     },
   };
 }
@@ -696,6 +759,7 @@ export function nextAlarm(s: AreaState, cfg: Pick<AreaConfig, 'params' | 'stateF
   const times: number[] = [];
   if (s.pendingSinceMs !== null) times.push(s.pendingSinceMs + cfg.stateFlushMs);
   for (const o of s.open) times.push(o.startMs + cfg.params.unknownEndMs);
+  for (const m of s.missPending) times.push(m.dueMs);
   return times.length === 0 ? null : Math.min(...times);
 }
 

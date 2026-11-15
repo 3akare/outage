@@ -15,7 +15,7 @@ Depends on `sensor-android` (tasks 6, 10), `event-ingest` (tasks 2, 4), `area-ce
 - [x] 2. Metric functions: `nearestRank`, armed ratio, gap histogram helpers, gate evaluation. Tests F3, F7.
   - Depends on: `event-ingest` 1
   - Requirements: R4, R10
-- [ ] 3. Outage classification and label counting rules; `OUTAGE_RECORD` and `MISS` in the area actor outputs. Test F4.
+- [x] 3. Outage classification and label counting rules; `OUTAGE_RECORD` and `MISS` in the area actor outputs. Test F4.
   - Depends on: `area-cells` 9, `detection-engine` 13
   - Requirements: R5
 

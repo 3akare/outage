@@ -3,6 +3,7 @@
 // state behind as rows (design section 10, R13.3): one row per changed part, unchanged parts are never rewritten.
 // No Cloudflare imports: the SQL store is in area-store.ts, a memory store in the tests.
 import { DEFAULT_PARAMS, type EngineState } from '@outage/detection';
+import type { FieldRecord } from '@outage/shared';
 import type { DetectionPort, IngestedItem } from '../ports.ts';
 import type { RemovalRequest } from './members.ts';
 import type { Notice, NoticeBatch } from './neighbors.ts';
@@ -39,8 +40,16 @@ export interface Outbox {
   removals: RemovalRequest[];
   pushes: PassedPush[];
   publish: PublishBatch;
+  /** Field-telemetry records. Nothing consumes them until the telemetry actor exists (field-telemetry task 5). */
+  fieldRecords: FieldRecord[];
 }
-const emptyOutbox = (): Outbox => ({ notices: [], removals: [], pushes: [], publish: { put: [], remove: [] } });
+const emptyOutbox = (): Outbox => ({
+  notices: [],
+  removals: [],
+  pushes: [],
+  publish: { put: [], remove: [] },
+  fieldRecords: [],
+});
 
 const rowId = (r: Omit<ModelRow, 'json'>): string => `${r.table}\u0000${r.key}\u0000${r.part}`;
 
@@ -214,6 +223,7 @@ export class AreaModel implements DetectionPort {
     this.outbox.notices.push(...out.notices);
     this.outbox.removals.push(...out.removals);
     this.outbox.pushes.push(...out.pushes);
+    this.outbox.fieldRecords.push(...out.fieldRecords);
     this.outbox.publish = mergePublish(this.outbox.publish, out.publish);
     this.nextAlarmMs = out.nextAlarmMs;
     this.lastViews = out.views;
