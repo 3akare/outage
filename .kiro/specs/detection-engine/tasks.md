@@ -10,10 +10,10 @@ Kiro IDE is needed for task 15 (Correctness pass). Everything else can run in Ki
 
 ## Wave 1
 
-- [ ] 1. Shared types and the ingest amendment: add `EngineEvent`, `Label`, `Context`, `Decision`, `Explanation` to `packages/shared`. Amend `event-ingest` design section 9 and task 5 so `DetectionPort` also receives `ARMED` and `DISARMED` events. Update golden fixtures.
+- [x] 1. Shared types and the ingest amendment: add `EngineEvent`, `Label`, `Context`, `Decision`, `Explanation` to `packages/shared`. Amend `event-ingest` design section 9 and task 5 so `DetectionPort` also receives `ARMED` and `DISARMED` events. Update golden fixtures.
   - Depends on: `event-ingest` task 2
   - Requirements: R2, R13
-- [ ] 2. Scaffold `packages/detection` (TypeScript strict, Vitest, fast-check). Replace the placeholder `README.md` with the contract and a pointer to the spec.
+- [x] 2. Scaffold `packages/detection` (TypeScript strict, Vitest, fast-check). Replace the placeholder `README.md` with the contract and a pointer to the spec.
   - Depends on: `event-ingest` task 1
   - Requirements: R1
 

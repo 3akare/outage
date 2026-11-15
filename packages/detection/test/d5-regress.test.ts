@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { evaluate, initialState, type Params } from '../src/index.ts';
 import { DAY_MS } from '../src/time.ts';
 import { HOUR, MIN, T0, ev, input, P } from './helpers/build.ts';
-import { buildScenario } from './helpers/scenario.ts';
+import { type Scenario, buildScenario } from './helpers/scenario.ts';
 
 const NEVER: Params = { ...P, horizonMs: 1e13 };
 function run(events: ReturnType<typeof buildScenario>, params: Params, chunks: number, finalNow: number) {
@@ -19,7 +19,7 @@ function run(events: ReturnType<typeof buildScenario>, params: Params, chunks: n
 }
 describe('D5 regression', () => {
   it('D5_settle_equivalence: a restored outage is kept until start + 12 h, even when it ended before the cut', () => {
-    const scenario = { installs: 3, humans: [], outages: [{ startMs: 1454400000, dropPerMille: 500, jitterMs: [0,0,0,0,0,0,0,0], lengthMs: 120000, replugSpreadMs: 0 }], noisy: 0 } as any;
+    const scenario = { installs: 3, humans: [], outages: [{ startMs: 1454400000, dropPerMille: 500, jitterMs: [0,0,0,0,0,0,0,0], lengthMs: 120000, replugSpreadMs: 0 }], noisy: 0 } satisfies Scenario;
     const base = buildScenario(scenario);
     const events = [...base];
     for (const id of new Set(base.map((e) => e.installId))) for (let j = 0; j < 12; j++) events.push(ev(id, 1000 + j, 'BATTERY_FULL', T0 + (j + 1) * 2 * DAY_MS + 7 * HOUR));
@@ -30,6 +30,17 @@ describe('D5 regression', () => {
     const kept = new Set(s.outputs.decisions.map((d) => d.outageId));
     const inside = f.outputs.decisions.filter((d) => d.startMs + P.unknownEndMs >= now - P.horizonMs + P.windowMs);
     for (const d of inside) expect(kept.has(d.outageId)).toBe(true);
+    expect(s.outputs.decisions).toEqual(f.outputs.decisions.filter((d) => kept.has(d.outageId)));
+    expect(s.outputs.areaStatus).toEqual(f.outputs.areaStatus);
+  });
+  it('D5_settle_equivalence: two human unplugs long after one outage (CI seed -677795666)', () => {
+    const scenario = {"installs":5,"humans":[{"install":0,"atMs":2071510001,"downMs":5000},{"install":1,"atMs":2071600000,"downMs":5000}],"outages":[{"startMs":0,"dropPerMille":500,"jitterMs":[0,0,0,0,0,0,0,0,0,0,0,0],"lengthMs":1566668,"replugSpreadMs":246664}],"noisy":0} satisfies Scenario;
+    const events = [...buildScenario(scenario)];
+    for (const id of new Set(events.map((e) => e.installId))) for (let j = 0; j < 12; j++) events.push(ev(id, 1000 + j, 'BATTERY_FULL', T0 + (j + 1) * 2 * DAY_MS + 7 * HOUR));
+    const now = Math.max(...events.map((e) => e.eventTimeMs)) + 46800000;
+    const s = run(events, P, 2, now);
+    const f = run(events, NEVER, 2, now);
+    const kept = new Set(s.outputs.decisions.map((d) => d.outageId));
     expect(s.outputs.decisions).toEqual(f.outputs.decisions.filter((d) => kept.has(d.outageId)));
     expect(s.outputs.areaStatus).toEqual(f.outputs.areaStatus);
   });

@@ -366,3 +366,14 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Honest provenance line: "0 real devices recorded this outage" for the synthetic fixture, "not live" always. "Your spot only" appears on the Judge page labeled as a simulated phone, and on real pages only in the legend.
 - Separation (R6.8, P9): `WebDeps.replay` is read only by the Judge routes; `/judge` never reads the public index. `index.ts` imports `packages/shared/fixtures/replay.json` (static, built by `tools/sim`). The CSP gained `worker-src 'self'`, and layout CSS gained `[hidden]` and button styles.
 - Tests W6 in `workers/api/test/web-judge.test.ts`. `docs/status.md` now says detection and area-cells are merged into main. The Playwright visual check is task 11.
+
+## 2026-11-15 cleanup and web-and-area-pages task 11 (code parts)
+- detection-engine tasks 1 and 2 ticked: shared types and the ingest amendment (design section 9) exist, and `packages/detection` is scaffolded and tested. Its README was still the placeholder; it now states the contract.
+- area-cells task 12 stays open: traceability A1 to A12, the kiro-log entry and the README area section are done, but ADR 0006 has no measured startup or CPU numbers.
+- web-and-area-pages task 11: added test `R4 size budget` (every public HTML page under 30 KB), the visual-check list in `.kiro/steering/judge-demo.md`, and W1 traceability. The 390 x 844 visual check is NOT done: the sandbox kills `wrangler dev` when a command ends, so the Playwright browser got ERR_CONNECTION_REFUSED. Task stays unticked.
+- `docs/status.md` lists ADR 0016 under "Open for the human".
+
+## 2026-11-15 D5 fix: re-finalize baseline days when an outage closes
+- CI run 43698156024 (seed -677795666) failed `D5_settle_equivalence` at 2000 runs. Cause: the sweep finalizes a day's baseline bucket at day end + W. If an outage that started that day was still open, its exposure was subtracted up to infinity. `settle()` later folds the same day from the closed outage (subtracting only to the restore time), so the settled run had about 100 s more exposure in that hour and a slightly different `lambdaPerSec`, `muValue` and `p` for later windows.
+- Fix in `packages/detection/src/sweep.ts`: when an outage closes (RESTORED or EXPIRED), `refinalize` recomputes the finalized buckets of the days from its start to its end and clears the lambda cache. The property is unchanged. No threshold, param, dependency or stored data changed.
+- Test: the shrunk counterexample is a fixed case in `packages/detection/test/d5-regress.test.ts`. The CI seed fails on the old code and passes now.
