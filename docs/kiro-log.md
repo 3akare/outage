@@ -536,3 +536,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Added `docs/deploy.md` (click path in plain English), a pointer in `workers/api/README.md`, and ADR 0021.
 - Found: workers.dev applies Browser Integrity Check, so the smoke check sends a descriptive User-Agent. The Worker reads `APK_SHA256`, not `APK_SHA`.
 - Open for the human: add the secrets listed in `docs/deploy.md`. Firebase is not used by this workflow. CI files go through a PR, not straight to main.
+
+## 2026-11-15 docs(map): spec and ADRs for the in-app outage map and Insights [spec:app-map-insights task:none]
+- The app must be the full experience, so Area becomes a real map and a new Insights screen carries the charts. Wrote `.kiro/specs/app-map-insights/` (requirements, design, tasks), ADR 0022 (custom Canvas hex map, no basemap, no tile server) and ADR 0023 (custom Canvas charts, Vico compared and rejected). No new Gradle dependency, so `approved-dependencies.json` is unchanged.
+- Amended `app-shell` requirements: Area is a map, bottom bar gains Insights.
+- Open: the Worker route `/api/map.json` and its fixture are task 1 of the new spec. API facts for gestures, Canvas and bottom sheets are marked unverified until task 2 checks them with Context7.
