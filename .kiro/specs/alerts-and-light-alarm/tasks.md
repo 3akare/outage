@@ -22,7 +22,7 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 - [ ] 3. `AlarmPolicy` pure core, `WakeStore` interface with an in-memory fake, expiry and reboot handling. Tests L1, L2, L4, L9, L10.
   - Depends on: 1, `sensor-android` 4
   - Requirements: R1, R2, R3.1, R3.2, R4
-- [ ] 6. `PushPlanner` and the quiet-window function, string selection by precision, size check. Tests L5, L6, L12.
+- [x] 6. `PushPlanner` and the quiet-window function, string selection by precision, size check. Tests L5, L6, L12.
   - Depends on: 1, 2
   - Requirements: R6, R7
 
@@ -31,13 +31,13 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 - [ ] 4. Kotlin adapters in `apps/android` (packages `alarm`, `sensor`): `PromptNotifier`, `NotificationActionReceiver`, SQLite `WakeStore`, `ChannelSetup`, `LightAlarm` (audio, notification, optional full-screen intent, wake lock, telemetry), wiring into `ChargingJobService` and `StationService`. Tests L3, L11 (JUnit 4). Device checks recorded in `docs/probe-checklist.md`.
   - Depends on: 3, `sensor-android` 7, `station-mode` 3
   - Requirements: R1, R2, R3, R4, R9.3
-- [ ] 7. FCM HTTP v1 client with injectable `fetch`: access token from the `FCM_SERVICE_ACCOUNT` secret (Web Crypto), one message per request, error mapping (`UNREGISTERED`, `QUOTA_EXCEEDED`, `UNAVAILABLE`), back-off, deferral across invocations. Test L8.
+- [x] 7. FCM HTTP v1 client with injectable `fetch`: access token from the `FCM_SERVICE_ACCOUNT` secret (Web Crypto), one message per request, error mapping (`UNREGISTERED`, `QUOTA_EXCEEDED`, `UNAVAILABLE`), back-off, deferral across invocations. Test L8.
   - Depends on: 6
   - Requirements: R8, R11
 
 ## Wave 4
 
-- [ ] 5. Subscriptions in the area actor: schema, follow and unfollow endpoints, strict validation, `PUSH_SENT` memory, deferred-send alarm, push hook from `area-cells` outputs, delete-my-data. Test L7.
+- [x] 5. Subscriptions in the area actor: schema, follow and unfollow endpoints, strict validation, `PUSH_SENT` memory, deferred-send alarm, push hook from `area-cells` outputs, delete-my-data. Test L7.
   - Depends on: 7, `area-cells` 9, `event-ingest` 4
   - Requirements: R6, R8, R10
 - [ ] 8. Screens (Jetpack Compose, approved 2026-11-14) and `net` package: channel creation, permission flow, FCM token registration and refresh, follow and quiet-hours screens, Test Light Alarm, Alarm check list, in-app prompt for denied notifications, string pack wiring; JVM unit tests for the follow request against the contract fixtures.

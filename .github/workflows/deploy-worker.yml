@@ -109,6 +109,22 @@ jobs:
             echo "FIELD_READ_TOKEN pushed."
           fi
 
+      # The Firebase service-account JSON for push (alerts-and-light-alarm R11.3). Piped, never printed. Without it the Worker
+      # still runs; follow works and queued pushes are dropped as NOT_CONFIGURED until the secret exists.
+      - name: Push FCM_SERVICE_ACCOUNT if the GitHub secret exists
+        if: steps.gate.outputs.ready == 'true'
+        working-directory: workers/api
+        env:
+          FCM_SERVICE_ACCOUNT: ${{ secrets.FCM_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          if [ -z "$FCM_SERVICE_ACCOUNT" ]; then
+            echo "::notice title=FCM_SERVICE_ACCOUNT not set::The GitHub secret FCM_SERVICE_ACCOUNT is empty, so the Worker cannot send pushes. Follow docs/deploy.md."
+          else
+            printf '%s' "$FCM_SERVICE_ACCOUNT" | npx wrangler secret put FCM_SERVICE_ACCOUNT > /dev/null
+            echo "FCM_SERVICE_ACCOUNT pushed."
+          fi
+
       # workers.dev checks the browser integrity, so curl sends a descriptive User-Agent.
       - name: Smoke check
         if: steps.gate.outputs.ready == 'true'

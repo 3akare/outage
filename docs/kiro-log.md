@@ -604,6 +604,23 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - feasibility-probe task 8 stays unticked (gate not met). `ARCHITECTURE.md` lists the two new files; the file-map test passes. No code changed; `tools/probe/analyze` run only to read numbers.
 - 2026-11-16 docs(adr): trimmed ADR 0001 probe addenda to key facts, detail lives in docs/probe (feasibility-probe task 8); fixes agents resource-limit test.
 
+## 2026-11-23 feat(alerts): PushPlanner and quiet window [spec:alerts-and-light-alarm task:6]
+- `workers/api/src/alerts/`: `quiet.ts` (window test, minutes of day plus UTC offset), `strings.ts` (English push text, wide-area wording for COARSE), `planner.ts` (pure `plan`: drops decisions older than 10 minutes and non-public cells, skips kinds not followed and already sent or queued, picks `alerts` or `alerts-quiet`, checks the 4 KiB limit). Messages carry no token.
+- Tests L5, L6, L12 in `workers/api/test/alerts-planner.test.ts`. LABEL (task 1) was already in main, so no shared type change was needed.
+
+## 2026-11-23 feat(alerts): FCM v1 client and send loop [spec:alerts-and-light-alarm task:7]
+- `workers/api/src/alerts/fcm.ts`: `FcmClient` with injected `fetch`. Builds an RS256 JWT through Web Crypto from the `FCM_SERVICE_ACCOUNT` secret, exchanges it at the Google OAuth endpoint, caches the access token until a minute before expiry, refreshes once after a 401. One message per request with high priority, 600 s ttl and the channel id. Maps UNREGISTERED, QUOTA_EXCEEDED (Retry-After honoured), UNAVAILABLE/INTERNAL/failed request to retry, anything else to drop. Missing or malformed secret gives a drop, never an error that holds the value.
+- `workers/api/src/alerts/sender.ts`: `runSends` sends at most 40 messages per invocation, drops messages older than 10 minutes, removes a subscription on UNREGISTERED, and on a retryable error backs off (1 min doubling, cap 1 h) and holds the rest of the batch.
+- Test L8 in `workers/api/test/alerts-fcm.test.ts` (JWT signature verified with a key generated at run time).
+- Docs checked: FCM error codes, FCM v1 message fields, Google service-account OAuth, Cloudflare Web Crypto. URLs are in the file header comment.
+
+## 2026-11-23 feat(alerts): subscriptions, follow endpoints, push hook, delete [spec:alerts-and-light-alarm task:5]
+- `packages/shared/src/follow.ts`: strict `parseFollowRequest` and `parseUnfollowRequest` (no extra fields, token pattern, window 0..1439 or both null, offset within 14 h).
+- `workers/api/src/alerts/`: `store.ts` (SQLite `subscription`, `push_queue`, `push_sent`), `core.ts` (follow, unfollow, `onPushes`, delete, prune), `hook.ts` (public precision per pushed cell, so pushes only go for cells with a public status). `AreaActor` gained `follow`, `unfollow`, the push hook in `send()`, queue dispatch (40 per invocation), the queue time in its alarm, and deletion in `deleteInstall`.
+- `workers/api/src/ingest/handlers.ts`: `POST /v1/follow` and `/v1/unfollow` with install token, revocation check and a per-install limit. `FCM_SERVICE_ACCOUNT` added to `Env`.
+- `.github/workflows/deploy-worker.yml` pushes `FCM_SERVICE_ACCOUNT` as a Wrangler secret when the GitHub secret is set (piped, not printed); `docs/deploy.md` explains it. ADR 0035 records the storage and sending decisions.
+- Test L7 in `alerts-server.test.ts` (UNREGISTERED removal, delete-my-data, one row per install and cell, endpoints) and `alerts-sql.test.ts` (the real SQL text on SQLite).
+- Note: `npm test` showed a different `post-deploy-check` node test failing on each run in this sandbox when run with the whole suite; they pass alone and on main. The TypeScript suites all pass.
 ## 2026-11-23 docs: feasibility gate waived, receiver-primary sensor [spec:sensor-android task:0, spec:station-mode task:0]
 - The human waived the feasibility gate (no more probe runs, no Tecno or Infinix test). ADR 0013 now records the waiver, both Samsung runs' numbers and the residual risk. Feasibility-probe tasks 8 to 10 are closed by waiver. `docs/status.md` updated.
 - New ADR 0032: the foreground-service receiver is the primary sensor for everyone, the job is the backup. `sensor-android` and `station-mode` requirements, design and tasks carry an amendment note and a new order. Shared schema and privacy rules unchanged.
@@ -625,3 +642,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `StringPackTest` AS7 (app-shell R7) failed on the battery step line `Text("${i + 1}. $s")`. Moved to string resource `battery_step_item`.
 - `agents.test.mjs` limit (85,000 characters of file:// resources) failed for `sensor-engineer`. Dropped ADR 0001 and sensor-android `tasks.md` from its resources. No test changed.
 - Full checks now exit 0: Gradle testDebugUnitTest, lint and assembleDebug; npm test, lint and typecheck; spec-lint; architecture test. This replaces the "only assembleDebug" note above.
+
+## 2026-11-23 chore(merge): merge origin/main into work/alerts-server [spec:alerts-and-light-alarm task:merge]
+- Conflicts were in `ARCHITECTURE.md` (ADR range row) and `docs/kiro-log.md`; both sides kept. Main already had ADR 0032 (receiver-primary sensor), so the push subscriptions ADR was renumbered to `docs/adr/0035-push-subscriptions-and-sending.md` and its one log reference updated. The ADR range row now reads 0001 to 0035.
+- `npm test`, lint, typecheck, spec-lint and the architecture test pass. `npm test` failed once in four runs with the output lost; the likely cause is the known flaky `post-deploy-check` test (unconfirmed).
+- Open: confirm which test flaked.

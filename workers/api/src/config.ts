@@ -19,6 +19,7 @@ export const CONFIG = {
   TELEMETRY_PER_INSTALL_PER_HOUR: 6, // field-telemetry R3.3: a phone uploads about once a day, plus retries
   TELEMETRY_RETENTION_MS: 90 * 86_400_000, // field-telemetry R1.5
   TELEMETRY_SILENT_LOOKBACK_DAYS: 7,
+  FOLLOW_PER_INSTALL_PER_HOUR: 60, // follow, unfollow and token refresh are rare; this only stops a flood
   REVOCATION_CACHE_MS: 15_000, // Worker isolate caches the revoked set this long (one registry call per refresh)
 } as const;
 

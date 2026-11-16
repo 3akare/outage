@@ -26,6 +26,7 @@ export { AreaActor, PairingActor, PublicIndex, RegistryActor, TelemetryActor };
 // Isolate-level state: lenient after an isolate restart, never stricter (same direction as the actors' memory state).
 const limiter = new RegisterLimiter(CONFIG.REGISTER_PER_SOURCE_PER_HOUR);
 const telemetryLimiter = new RegisterLimiter(CONFIG.TELEMETRY_PER_INSTALL_PER_HOUR); // keyed by install ID, memory only
+const followLimiter = new RegisterLimiter(CONFIG.FOLLOW_PER_INSTALL_PER_HOUR); // keyed by install ID, memory only
 let cache: RevocationCache | undefined;
 
 function makeDeps(env: Env): Deps {
@@ -54,6 +55,11 @@ function makeDeps(env: Env): Deps {
       ingest: (parent, input) => env.AREA.get(env.AREA.idFromName(parent)).ingest(input),
       deleteInstall: (parent, installId) => env.AREA.get(env.AREA.idFromName(parent)).deleteInstall(installId),
     },
+    alerts: {
+      follow: (parent, request) => env.AREA.get(env.AREA.idFromName(parent)).follow(request),
+      unfollow: (parent, installId, cell) => env.AREA.get(env.AREA.idFromName(parent)).unfollow(installId, cell),
+    },
+    followLimiter,
     pairing: {
       createOffer: (shard, input) => env.PAIRING.get(env.PAIRING.idFromName(shard)).createOffer(input),
       claim: (shard, input) => env.PAIRING.get(env.PAIRING.idFromName(shard)).claim(input),
