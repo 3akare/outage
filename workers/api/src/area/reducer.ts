@@ -84,6 +84,14 @@ export interface LoggedLabel {
   answer: 'YES' | 'NO';
   cell: string;
 }
+/** A "Power is out" report (power-log R7.4). Kept for the manual hint window only (area-cells R8.1). */
+export interface LoggedReport {
+  installId: string;
+  cell: string;
+  eventTimeMs: number;
+}
+export const REPORT_WINDOW_MS = 600_000; // area-cells R8.1: 10 minutes
+
 export interface ScopeEngine {
   kind: ScopeKind;
   cells: string[];
@@ -109,6 +117,8 @@ export interface AreaState {
   engines: Record<ScopeKey, ScopeEngine>;
   log: LoggedEvent[];
   labels: LoggedLabel[];
+  /** Recent manual reports (power-log R7.4). A state saved before power-log has no row and loads as empty. */
+  reports: LoggedReport[];
   /** Events already in `log` that no engine has seen yet (state-only batches, R11.2). */
   pending: LoggedEvent[];
   pendingLabels: LoggedLabel[];
@@ -147,6 +157,7 @@ export function emptyAreaState(parent: string): AreaState {
     engines: {},
     log: [],
     labels: [],
+    reports: [],
     pending: [],
     pendingLabels: [],
     pendingSinceMs: null,
@@ -278,6 +289,7 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
   let rejected = 0;
   const fresh: LoggedEvent[] = [];
   const freshLabels: LoggedLabel[] = [];
+  const freshReports: LoggedReport[] = [];
   let hasDetection = false;
   let forceAll = false;
   let deleteId: string | null = null;
@@ -287,6 +299,12 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
     for (const it of input.items) {
       if (cfg.parentOf(it.cell) !== s.parent) {
         rejected++; // BAD_ROUTE: the Worker computes the parent, so this is a routing bug (design section 11)
+        continue;
+      }
+      // A report is a hint source only: it never moves membership and never reaches an engine as an event.
+      if (it.type === 'REPORT') {
+        freshReports.push({ installId: it.installId, cell: it.cell, eventTimeMs: it.eventTimeMs });
+        hasDetection = true;
         continue;
       }
       const step: MemberStep = applyMemberEvent(
@@ -342,6 +360,11 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
   } else if (input.type === 'DELETE') {
     deleteId = input.installId;
   }
+
+  // Manual reports: keep the last 10 minutes only, drop a deleted install's (area-cells R8.1, R12.1).
+  s.reports = [...s.reports, ...freshReports].filter(
+    (r) => nowMs - r.eventTimeMs <= REPORT_WINDOW_MS && r.installId !== deleteId,
+  );
 
   // Log and queue (R11.2). State-only batches wait for a detection event or the flush interval.
   if (fresh.length > 0 || freshLabels.length > 0) {
@@ -404,6 +427,7 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
   const touched = new Map<ScopeKey, ScopeRef>();
   for (const e of feed) for (const r of routeScopes(e.cell, routeCtx)) touched.set(r.key, r);
   for (const l of feedLabels) for (const r of routeScopes(l.cell, routeCtx)) touched.set(r.key, r);
+  for (const r of freshReports) for (const ref of routeScopes(r.cell, routeCtx)) touched.set(ref.key, ref); // the hint may change
   if (input.type === 'TICK' || forceAll) {
     // Unknown-end decisions need a later `nowMs` (R11.5); deletes and notices re-evaluate what they touch.
     for (const [k, e] of Object.entries(s.engines)) {
@@ -468,7 +492,7 @@ export function reduce(state: AreaState, input: AreaInput, cfg: AreaConfig): { s
         }),
       ),
       linkedCells,
-      manualInstalls: 0, // R8.3: zero until the manual-report spec defines storage
+      manualInstalls: new Set(s.reports.filter((r) => cells.has(r.cell)).map((r) => r.installId)).size, // R8.3
     });
   };
   /** mode: 'feed' = this request's new events, 'replay' = the whole log (new GROUP), 'rehint' = no new events. */

@@ -35,6 +35,7 @@ object WireJson {
         e.plugType?.let { parts.add("\"plugType\":" + str(it)) }
         e.refSeq?.let { parts.add("\"refSeq\":" + it) }
         e.answer?.let { parts.add("\"answer\":" + str(it)) }
+        e.kind?.let { parts.add("\"kind\":" + str(it)) }
         sb.append('{').append(parts.joinToString(",")).append('}')
     }
 
@@ -93,5 +94,6 @@ object WireJson {
         plugType = m["plugType"] as String?,
         refSeq = (m["refSeq"] as Double?)?.toLong(),
         answer = m["answer"] as String?,
+        kind = m["kind"] as String?,
     )
 }

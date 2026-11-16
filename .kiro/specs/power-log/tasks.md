@@ -8,7 +8,7 @@ Depends on `sensor-android` (task 9), `alerts-and-light-alarm` (tasks 1, 4), `ar
 
 ## Wave 1
 
-- [ ] 1. Amend the schemas for `REPORT` events (kind `OUT`): sensor types, ingest strict schema and tests, contract fixtures in `packages/shared/fixtures/`, and the area actor's report counter feeding the hint.
+- [x] 1. Amend the schemas for `REPORT` events (kind `OUT`): sensor types, ingest strict schema and tests, contract fixtures in `packages/shared/fixtures/`, and the area actor's report counter feeding the hint.
   - Depends on: `event-ingest` 2, `area-cells` 6
   - Requirements: R7.4, R7.5
 - [ ] 2. Choose and set up local storage (the sensor's SQLite database or a second one, plain `SQLiteOpenHelper`) and the `RAW_INPUT` store with migrations. Record the choice in an ADR. Room needs human approval (ADR 0012).

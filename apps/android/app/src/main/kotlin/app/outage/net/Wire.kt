@@ -17,6 +17,9 @@ object WireType {
     const val REPLUG = "REPLUG"
     const val LABEL = "LABEL"
 
+    /** power-log R7.4: the "Power is out" tap, kind OUT. Prompt like every non-state event. */
+    const val REPORT = "REPORT"
+
     /** State events are write-behind on the server and may wait before upload (R9.2, ADR 0002). */
     val STATE = setOf(ARMED, DISARMED)
 
@@ -39,6 +42,7 @@ data class WireEvent(
     val plugType: String? = null,
     val refSeq: Long? = null,
     val answer: String? = null,
+    val kind: String? = null,
 )
 
 data class EventsRequest(val installId: String, val events: List<WireEvent>)

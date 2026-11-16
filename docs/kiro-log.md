@@ -647,3 +647,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Conflicts were in `ARCHITECTURE.md` (ADR range row) and `docs/kiro-log.md`; both sides kept. Main already had ADR 0032 (receiver-primary sensor), so the push subscriptions ADR was renumbered to `docs/adr/0035-push-subscriptions-and-sending.md` and its one log reference updated. The ADR range row now reads 0001 to 0035.
 - `npm test`, lint, typecheck, spec-lint and the architecture test pass. `npm test` failed once in four runs with the output lost; the likely cause is the known flaky `post-deploy-check` test (unconfirmed).
 - Open: confirm which test flaked.
+
+## 2026-11-23 feat(log): REPORT events [spec:power-log task:1]
+- Added the `REPORT` wire event (kind `OUT`) to the shared types and strict validator, the Kotlin wire, a contract fixture, the ingest handoff and the area reducer. The reducer keeps reports for 10 minutes and feeds the distinct-install count to the manual hint (ADR 0036).
+- `npm test`, typecheck and lint were run before the commit; no new test was written for it (human asked for no more tests).
