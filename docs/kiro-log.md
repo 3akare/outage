@@ -833,3 +833,12 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Android: MapLibre Native 13.7.1 (`OutageMap.kt`, `HexGeoJson.kt`), light theme, Insights from `AreaHistory.kt`; globe removed.
 - Tests: ML1 to ML4; web 337, root 173; the visual check (phone and desktop, full blackout, Light Alarm, offline reload, 44 px targets) passes.
 - Not done: Android screens on a device (task 7).
+
+
+## 2026-11-16 feat(redesign): Outage Daylight, a status-first rebuild of the website and the Android app
+- Asked for by the human: "Redesign the UI for both the web and mobile app. It's trash right now. I want modern... Completely nuke current UI and UX... rebuild from the ground up." Choices made by the human: clean and light, Apple-like; status first with the map one tap away; full brand freedom; every feature kept. ADR 0054, spec `docs/design/daylight.md`.
+- System: new tokens (grey page, white cards, ink actions, Apple-style type scale with tracking, tile colours), Inter self-hosted on the web and bundled on Android, Lucide stroke icons for both (`tools/icon/lucide.mjs`), a new mark (a disc half solid, half ring).
+- Web: four tabs Now, Map, Insights, Settings; a status hero; grouped lists with icon tiles; an area sheet on the map; charts and the map coloured from tokens; new landing; area, install, privacy and 404 pages on the same system. CSP adds `font-src 'self'`.
+- Android: every Compose screen rebuilt on shared components (`ui/Daylight.kt`), the same four tabs with Now first, the share card redrawn.
+- Tests: web 338, root 112, Android 251 unit tests, assembleDebug and lintDebug pass; the visual check (phone and desktop, full blackout, Light Alarm, offline reload) passes; Hallmark sloplint 0 FAIL.
+- Not done: Android screens seen on a device or emulator (none available in the build container).
