@@ -103,7 +103,7 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 |---|---|---|---|---|
 | R1 | L1 | `L1_one_prompt_per_unplug` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt`) |
 | R3.1, R3.2 | L2 | `L2_ring_iff_conditions` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt`) |
-| R3.3, R3.5 | L3 | `L3_alarm_has_no_network` | 4 | planned |
+| R3.3, R3.5 | L3 | `L3_alarm_has_no_network` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmAdaptersTest.kt`) |
 | R2 | L4 | `L4_first_answer_wins` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt`) |
 | R7 | L5 | `L5_quiet_window` | 6 | done (`workers/api/test/alerts-planner.test.ts`) |
 | R6 | L6 | `L6_push_planning` | 6 | done (`workers/api/test/alerts-planner.test.ts`) |
@@ -111,7 +111,7 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 | R8.1, R8.3 | L8 | `L8_batching_and_retry` | 7 | done (`workers/api/test/alerts-fcm.test.ts`) |
 | R4.1, R4.2 | L9 | `L9_expiry_and_reboot` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt`) |
 | R1.4, R3 | L10 | `L10_replay_equivalence` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt`) |
-| R1.2, R9 | L11 | `L11_channel_config` | 4 | planned |
+| R1.2, R9 | L11 | `L11_channel_config` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmAdaptersTest.kt`) |
 | R6.6, R10.5 | L12 | `L12_string_pack` | 2, 6 | server texts tested in `workers/api/test/alerts-planner.test.ts`; Android test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt`) |
 
 ## power-log

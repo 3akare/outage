@@ -30,6 +30,7 @@ class OutageApp : Application() {
     override fun onCreate() {
         super.onCreate()
         graph = ShellGraph(this)
+        app.outage.alarm.ChannelSetup.ensure(this)
         registerMapAndInsights()
         registerSensor()
         // A server delete that failed earlier is retried here, off the main thread (R5.3). After registerSensor,
@@ -73,6 +74,7 @@ class OutageApp : Application() {
         )
         graph.sensorState = { Sensor.peek()?.state() }
         graph.deletes.register("sensor") { Sensor.get(this).deleteAllData() }
+        graph.deletes.register("alarm") { app.outage.alarm.AlarmHost.get(this).deleteAll() }
         if (BuildConfig.API_BASE.isNotBlank()) {
             val api = IngestApi(BuildConfig.API_BASE, UrlConnectionPost)
             graph.deletes.registerServer {

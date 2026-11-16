@@ -123,6 +123,14 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/OutageApp.kt` | Application class: builds the shell graph and chooses real or demo map and insights sources |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmState.kt` | Light Alarm state shown on Home |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/StringPackCheck.kt` | Checks a string pack has every alarm string |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmCore.kt` | Glue from sensor events to AlarmPolicy and the effects interface |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmHost.kt` | One alarm layer per process: SQLite store, prompt, ring, label queue |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/ChannelSetup.kt` | Creates the notification channels |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/ChannelSpecs.kt` | Channel definitions as data (power-check, light-alarm, alerts, alerts-quiet) |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/LightAlarm.kt` | Rings the alarm: audio, vibration, notification, full-screen intent, wake lock |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/NotificationActionReceiver.kt` | Handles Yes, No and Stop taps with no screen open |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/PromptNotifier.kt` | Quiet "Power just went?" prompt with two actions |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/SqliteWakeStore.kt` | Wake and prompt memory in SQLite |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmPolicy.kt` | Pure Light Alarm decisions: prompt, answer, wake, ring, expiry, reboot |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/WakeStore.kt` | Wake and prompt memory interface and an in-memory fake |
 | `apps/android/app/src/main/kotlin/app/outage/insights/DemoOutages.kt` | About 60 days of labelled sample outages for demo mode |
@@ -206,6 +214,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/res/values/themes.xml` | Light app theme |
 | `apps/android/app/src/main/res/values-night/themes.xml` | Dark app theme |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt` | Alarm strings exist in every pack |
+| `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmAdaptersTest.kt` | Alarm path has no network (L3), channel config (L11), core glue |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt` | AlarmPolicy properties L1, L2, L4, L9, L10 |
 | `apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt` | Insights numbers (IN1 to IN6) |
 | `apps/android/app/src/test/kotlin/app/outage/log/BandConfigTest.kt` | Shipped band config is valid and sourced |
