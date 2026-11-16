@@ -704,3 +704,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Entry: "Try Judge mode" on the first-run screen (no consent needed, dock hidden) and a Settings row. One shell route `feature:judge` (ADR 0038).
 - The demo alarm is a stand-in (default alarm sound for 5 s and on-screen "Demo" text) until the Light Alarm path from `alerts-and-light-alarm` is merged (ADR 0038).
 - Tests: `JudgeFlowTest` (5).
+
+## 2026-11-23 feat(tokens): one token source for web and app [spec:ux-redesign task:2]
+- `packages/shared/design/tokens.json` is the source. `tools/tokens/build.mjs` writes `tokens.css`, `workers/api/src/web/app/tokens.gen.ts` (used by `design.ts`) and `ui/Tokens.kt`. `--check` finds stale files. The Kotlin output matches the old hand file, plus the two Light values (`accent`, `noData`) it lacked.
+- Test UX3 in `.kiro/scripts/test/tokens.test.mjs`. Built on the human's order; only the generator and UX3 were run, not the full suite.
+
+## 2026-11-23 feat(detection): golden fixture harness [spec:detection-engine task:18]
+- `test/golden.test.ts` replays every `fixtures/*.json` and compares decisions. The folder has no fixtures until the field test records one. README and traceability updated. Task 15 (Kiro IDE pass) left open.

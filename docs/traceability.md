@@ -284,7 +284,7 @@ Scanned 15 test file(s) under packages/detection. A property counts when a test 
 |---|---|---|---|---|
 | R3.1, R3.2 | UX1 | dock list (web and Kotlin) | 4, 6 | web done (web-app.test.ts); Kotlin dock is three items in `ui/Shell.kt`, old `log` and `area` links map to Insights and Home (RoutingTest); no JVM test for the dock list itself |
 | R7.3, R8.5 | UX2 | replica and simulation data separation | 4, 5 | done: web-app.test.ts, web-replay.test.ts (W6) |
-| R9.2 | UX3 | token compare test | 2 | not started (Kotlin `ui/Tokens.kt` is hand written until the generator exists) |
+| R9.2 | UX3 | token compare test | 2 | done: `.kiro/scripts/test/tokens.test.mjs`; `ui/Tokens.kt`, `tokens.css` and `tokens.gen.ts` are generated |
 | R10.1 | UX4 | no other origin on any route | 3 | done: workers/api/test/web-app.test.ts |
 | R8.1 | UX5 | simulation banner in every state | 5 | done: web-replay.test.ts, visual check plays every state |
 | R2.7 | UX6 | empty map renders honest empty state | 4 | done: web-app.test.ts |
@@ -293,3 +293,5 @@ Scanned 15 test file(s) under packages/detection. A property counts when a test 
 | R6.1, R6.3, R6.4 | UX9 | landing content | 3 | done: web-app.test.ts |
 | R1 to R10 | - | spec, ADRs 0026 to 0028, steering | 1 | done (docs) |
 | - | - | ADR 0032: receiver primary, job backup (sensor-android and station-mode amended) | sensor-android 1 to 12, station-mode 1 to 8 | docs done; code not started |
+
+| R17 | - | golden fixture replay | detection-engine 18 | harness done: `packages/detection/test/golden.test.ts`; no fixtures until the field test |

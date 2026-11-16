@@ -15,6 +15,10 @@ evaluate(state: EngineState, input: EngineInput, params: Params): { state: Engin
 - Parameters live in `src/params.ts` (ADR 0005). `assertParams` rejects impossible values. Do not change a threshold without the human.
 - Shared types (`EngineEvent`, `Label`, `Context`, `Decision`, `Explanation`) live in `packages/shared/src/engine.ts`.
 
+## Golden fixtures
+
+`fixtures/*.json` holds recorded real outages. `test/golden.test.ts` replays each one and compares the full decision list. The folder is empty until the field test records a fixture (see `fixtures/README.md`).
+
 ## Where to read more
 
 - Spec: `.kiro/specs/detection-engine/` (requirements, design, tasks).
