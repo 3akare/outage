@@ -11,8 +11,8 @@ UA='outage-deploy-check/1.0 (github actions)'
 TMP="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
 fail() { echo "::error title=Post-deploy check failed::$1"; exit 1; }
 
-# /judge is a 301 to /app/simulate (ADR 0029), so the page itself is checked.
-for path in / /app /app/simulate /install; do
+# /judge and /app are 301s to /app/simulate (ADR 0029, ADR 0049): they are checked as redirects below, and the page itself here.
+for path in / /app/simulate /install /privacy; do
   h=$(curl -sS -D - -o "$TMP/body" -A "$UA" "$URL$path" | tr -d '\r')
   echo "$h" | grep -qi '^cache-control: public, max-age=[0-9]*, s-maxage=[0-9]*' || fail "$path has no public cache-control"
   csp_nonce=$(echo "$h" | grep -i '^content-security-policy:' | grep -o "script-src 'nonce-[^']*'" | sed "s/script-src 'nonce-//;s/'$//" || true)
@@ -35,6 +35,12 @@ for path in / /app /app/simulate /install; do
   done <<< "$links"
   echo "$h" | grep -qi '^x-content-type-options: nosniff' || fail "$path lacks nosniff"
   echo "Post-deploy check ok: $path"
+done
+
+for path in /app /judge; do
+  r=$(curl -sS -o /dev/null -A "$UA" -w '%{http_code} %{redirect_url}' "$URL$path")
+  [ "$r" = "301 $URL/app/simulate" ] || fail "$path should be a 301 to /app/simulate, got: $r"
+  echo "Post-deploy check ok: $path redirects to /app/simulate"
 done
 
 nonce_of() { curl -sS -A "$UA" -D - -o /dev/null "$URL/" | grep -i '^content-security' | grep -o "nonce-[^']*" | head -1; }
