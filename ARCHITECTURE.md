@@ -209,6 +209,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/ui/charts/Ring.kt` | Progress ring |
 | `apps/android/app/src/main/res/drawable/` | Vector icons: launcher, dock tabs, sensor and status icons, map buttons |
 | `apps/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` | Adaptive launcher icon |
+| `apps/android/app/src/main/res/raw/light_alarm_fallback.wav` | Bundled alarm sound used when the system alarm sound cannot be resolved |
 | `apps/android/app/src/main/res/values/strings.xml` | Every English UI string |
 | `apps/android/app/src/main/res/values-pcm/strings.xml` | Optional Nigerian Pidgin strings (fall back to English per key) |
 | `apps/android/app/src/main/res/values/themes.xml` | Light app theme |
