@@ -5,20 +5,16 @@ import android.media.RingtoneManager
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -164,7 +160,7 @@ fun JudgeScreen(vm: DemoViewModel, plugs: PlugObserver = AndroidPlugObserver(Loc
 
     val flow = ui.flow
     when {
-        !ui.loaded -> Column(Modifier.fillMaxSize()) { DemoBanner(stringResource(R.string.demo_banner)) }
+        !ui.loaded -> Column(Modifier.fillMaxSize().background(Day.page)) { DemoBanner(stringResource(R.string.demo_banner)) }
         flow == null || !flow.available -> JudgeError(onLeave)
         ui.page == JudgeFlow.Page.REPLAY -> DemoReplayScreen(flow.player!!) { vm.back() }
         ui.page == JudgeFlow.Page.UNPLUG -> {
@@ -187,80 +183,72 @@ fun JudgeScreen(vm: DemoViewModel, plugs: PlugObserver = AndroidPlugObserver(Loc
 }
 
 @Composable
+private fun DemoPage(banner: String, titleRes: Int, onBack: () -> Unit, content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
+    // The banner sits outside the scroll, so it cannot be hidden (R2.1).
+    Column(Modifier.fillMaxSize().background(Day.page)) {
+        DemoBanner(banner)
+        DayPage(title = stringResource(titleRes), onBack = onBack, content = content)
+    }
+}
+
+@Composable
 private fun JudgeError(onLeave: () -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        DemoBanner(stringResource(R.string.demo_banner))
-        SubScreenHeader(R.string.demo_home_title, onLeave)
-        Text(stringResource(R.string.demo_replay_error), Modifier.padding(Tokens.space16), style = MaterialTheme.typography.bodyLarge)
+    DemoPage(stringResource(R.string.demo_banner), R.string.demo_home_title, onLeave) {
+        DayCard(padding = 20.dp) { PageText(stringResource(R.string.demo_replay_error)) }
     }
 }
 
 @Composable
 private fun JudgeHomePage(vm: DemoViewModel, onLeave: () -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        DemoBanner(stringResource(R.string.demo_banner))
-        SubScreenHeader(R.string.demo_home_title, onLeave)
-        Column(
-            Modifier.fillMaxSize().padding(Tokens.space16).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Tokens.space12),
-        ) {
-            Text(stringResource(R.string.demo_home_body), style = MaterialTheme.typography.bodyLarge)
-            Button(onClick = { vm.open(JudgeFlow.Page.REPLAY) }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                Text(stringResource(R.string.demo_watch_replay))
-            }
-            Button(onClick = { vm.open(JudgeFlow.Page.UNPLUG) }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                Text(stringResource(R.string.demo_unplug_my_phone))
-            }
-            OutlinedButton(onClick = { vm.open(JudgeFlow.Page.HOW) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.demo_how_it_works))
-            }
-            TextButton(onClick = onLeave, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(stringResource(R.string.demo_leave)) }
+    DemoPage(stringResource(R.string.demo_banner), R.string.demo_home_title, onLeave) {
+        Box(Modifier.padding(horizontal = Gutter + 4.dp)) { PageText(stringResource(R.string.demo_home_body)) }
+        Gap(20.dp)
+        DayCard {
+            DayRow(stringResource(R.string.demo_watch_replay), tile = R.drawable.ic_sym_play to Tokens.Colors.tilePink, chevron = true) { vm.open(JudgeFlow.Page.REPLAY) }
+            RowDivider(TileInset)
+            DayRow(stringResource(R.string.demo_unplug_my_phone), tile = R.drawable.ic_sym_plug to Tokens.Colors.tileGreen, chevron = true) { vm.open(JudgeFlow.Page.UNPLUG) }
+            RowDivider(TileInset)
+            DayRow(stringResource(R.string.demo_how_it_works), tile = R.drawable.ic_sym_info to Tokens.Colors.tileBlue, chevron = true) { vm.open(JudgeFlow.Page.HOW) }
         }
+        Gap(20.dp)
+        ActionStack { FillButton(stringResource(R.string.demo_leave), onLeave, Modifier.fillMaxWidth()) }
     }
 }
 
 @Composable
 private fun UnplugPage(ui: JudgeUi, vm: DemoViewModel) {
     val s = ui.session ?: return
-    Column(Modifier.fillMaxSize()) {
-        DemoBanner(s.banner)
-        SubScreenHeader(R.string.demo_unplug_title) { vm.back() }
-        Column(
-            Modifier.fillMaxSize().padding(Tokens.space16).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Tokens.space12),
-        ) {
-            val instruction = when (ui.instruction) {
-                JudgeFlow.Instruction.PLUG_IN_FIRST -> R.string.demo_plug_in_first
-                JudgeFlow.Instruction.UNPLUG_NOW -> R.string.demo_unplug_now
-                JudgeFlow.Instruction.PLUG_BACK -> R.string.demo_plug_back
-                JudgeFlow.Instruction.DONE -> R.string.demo_state_restored
-                JudgeFlow.Instruction.SIMULATE_ONLY -> R.string.demo_simulate_note
-            }
-            Text(stringResource(instruction), style = MaterialTheme.typography.headlineSmall)
-            if (ui.usbOnly) Text(stringResource(R.string.demo_usb_note), style = MaterialTheme.typography.bodyMedium)
+    DemoPage(s.banner, R.string.demo_unplug_title, { vm.back() }) {
+        val instruction = when (ui.instruction) {
+            JudgeFlow.Instruction.PLUG_IN_FIRST -> R.string.demo_plug_in_first
+            JudgeFlow.Instruction.UNPLUG_NOW -> R.string.demo_unplug_now
+            JudgeFlow.Instruction.PLUG_BACK -> R.string.demo_plug_back
+            JudgeFlow.Instruction.DONE -> R.string.demo_state_restored
+            JudgeFlow.Instruction.SIMULATE_ONLY -> R.string.demo_simulate_note
+        }
+        DemoHero(s.state, stringResource(instruction)) {
+            if (ui.usbOnly) Text(stringResource(R.string.demo_usb_note), style = DayType.subhead, color = Day.ink2)
+            if (s.step != DemoSession.Step.WAITING) Text(stringResource(R.string.demo_your_drop), style = DayType.subhead, color = Day.ink2)
+            Text(stringResource(R.string.demo_count, s.drops, s.armed), style = DayType.callout, color = Day.ink2)
             StepTracker(s.state)
-            if (s.step != DemoSession.Step.WAITING) Text(stringResource(R.string.demo_your_drop), style = MaterialTheme.typography.bodyMedium)
             PhoneDots(
                 s.phones.map { p ->
                     Triple(if (p.isJudge) stringResource(R.string.demo_your_phone) else p.label, p.off, p.isJudge)
                 },
             )
-            Text(stringResource(R.string.demo_count, s.drops, s.armed), style = MaterialTheme.typography.bodyLarge)
-            s.confirmedAfterMs?.let { Text(stringResource(R.string.demo_confirmed_after, it), style = MaterialTheme.typography.bodyMedium) }
-            if (ui.alarmRang) Text(stringResource(R.string.demo_alarm_text), style = MaterialTheme.typography.titleMedium)
-            ExplanationCard(s.explanation)
-            // R4.9: labelled simulated buttons, for emulators and judges without a charger.
-            Text(stringResource(R.string.demo_simulate_note), style = MaterialTheme.typography.bodySmall)
+            s.confirmedAfterMs?.let { Text(stringResource(R.string.demo_confirmed_after, it), style = DayType.subhead, color = Day.muted) }
+            if (ui.alarmRang) Text(stringResource(R.string.demo_alarm_text), style = DayType.headline, color = LocalStatusColors.current.restored.color)
+        }
+        Gap()
+        ExplanationCard(s.explanation)
+        // R4.9: labelled simulated buttons, for emulators and judges without a charger.
+        GroupFooter(stringResource(R.string.demo_simulate_note))
+        Gap()
+        ActionStack {
             when (s.step) {
-                DemoSession.Step.WAITING -> OutlinedButton(onClick = vm::simulateUnplug, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                    Text(stringResource(R.string.demo_simulate_unplug))
-                }
-                DemoSession.Step.UNPLUGGED -> OutlinedButton(onClick = vm::simulateReplug, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                    Text(stringResource(R.string.demo_simulate_replug))
-                }
-                DemoSession.Step.REPLUGGED -> OutlinedButton(onClick = { vm.open(JudgeFlow.Page.UNPLUG) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                    Text(stringResource(R.string.demo_restart))
-                }
+                DemoSession.Step.WAITING -> FillButton(stringResource(R.string.demo_simulate_unplug), vm::simulateUnplug, Modifier.fillMaxWidth())
+                DemoSession.Step.UNPLUGGED -> FillButton(stringResource(R.string.demo_simulate_replug), vm::simulateReplug, Modifier.fillMaxWidth())
+                DemoSession.Step.REPLUGGED -> FillButton(stringResource(R.string.demo_restart), { vm.open(JudgeFlow.Page.UNPLUG) }, Modifier.fillMaxWidth())
             }
         }
     }
@@ -268,23 +256,26 @@ private fun UnplugPage(ui: JudgeUi, vm: DemoViewModel) {
         // The demo prompt, labelled by the banner behind it (R4.8). The real prompt is suppressed meanwhile (R5.5).
         AlertDialog(
             onDismissRequest = { vm.answerPrompt(false) },
-            title = { Text(stringResource(R.string.demo_prompt_title)) },
-            text = { Text(stringResource(R.string.demo_banner)) },
-            confirmButton = { TextButton(onClick = { vm.answerPrompt(true) }) { Text(stringResource(R.string.demo_prompt_yes)) } },
-            dismissButton = { TextButton(onClick = { vm.answerPrompt(false) }) { Text(stringResource(R.string.demo_prompt_no)) } },
+            containerColor = Day.card,
+            title = { Text(stringResource(R.string.demo_prompt_title), style = DayType.title3) },
+            text = { Text(stringResource(R.string.demo_banner), style = DayType.callout, color = Day.ink2) },
+            confirmButton = { TextAction(stringResource(R.string.demo_prompt_yes), { vm.answerPrompt(true) }) },
+            dismissButton = { TextAction(stringResource(R.string.demo_prompt_no), { vm.answerPrompt(false) }) },
         )
     }
 }
 
 @Composable
 private fun HowItWorksPage(onBack: () -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        DemoBanner(stringResource(R.string.demo_banner))
-        SubScreenHeader(R.string.demo_how_it_works, onBack)
-        Column(Modifier.fillMaxSize().padding(Tokens.space16), verticalArrangement = Arrangement.spacedBy(Tokens.space12)) {
-            Text(stringResource(R.string.demo_how_1), style = MaterialTheme.typography.bodyLarge)
-            Text(stringResource(R.string.demo_how_2), style = MaterialTheme.typography.bodyLarge)
-            Text(stringResource(R.string.demo_how_3), style = MaterialTheme.typography.bodyLarge)
+    DemoPage(stringResource(R.string.demo_banner), R.string.demo_how_it_works, onBack) {
+        DayCard {
+            listOf(R.string.demo_how_1, R.string.demo_how_2, R.string.demo_how_3).forEachIndexed { i, res ->
+                if (i > 0) RowDivider()
+                Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text((i + 1).toString(), style = DayType.title2Num, color = Day.muted)
+                    Text(stringResource(res), style = DayType.body, color = Day.ink)
+                }
+            }
         }
     }
 }

@@ -5,12 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RectF
-import android.graphics.Shader
 import android.graphics.Typeface
+import android.os.Build
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.content.FileProvider
 import app.outage.R
 import app.outage.log.ShareFacts
@@ -36,42 +36,46 @@ object ShareCardImage {
         val bmp = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        paint.shader = LinearGradient(0f, 0f, 0f, HEIGHT.toFloat(), Color.rgb(11, 61, 58), Color.rgb(6, 28, 36), Shader.TileMode.CLAMP)
-        c.drawRect(0f, 0f, WIDTH.toFloat(), HEIGHT.toFloat(), paint)
-        paint.shader = null
+        // Daylight (ADR 0054): the grey page, one white card, ink text, the "on" green for the ring, Inter.
+        val page = Tokens.Colors.paper2.toArgb()
+        val ink = Tokens.Colors.ink.toArgb()
+        val muted = Tokens.Colors.muted.toArgb()
+        val inter = runCatching { ResourcesCompat.getFont(ctx, R.font.inter) }.getOrNull() ?: Typeface.DEFAULT
+        c.drawColor(page)
+        paint.color = Tokens.Colors.paper.toArgb()
+        c.drawRoundRect(RectF(60f, 60f, WIDTH - 60f, HEIGHT - 60f), 72f, 72f, paint)
 
         fun text(s: String, x: Float, y: Float, size: Float, color: Int, bold: Boolean = false, align: Paint.Align = Paint.Align.CENTER) {
             paint.color = color
             paint.textSize = size
             paint.textAlign = align
-            paint.typeface = if (bold) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+            paint.typeface = if (Build.VERSION.SDK_INT >= 28) Typeface.create(inter, if (bold) 700 else 400, false) else Typeface.create(inter, if (bold) Typeface.BOLD else Typeface.NORMAL)
+            paint.letterSpacing = if (size >= 100f) -0.03f else -0.01f
             c.drawText(s, x, y, paint)
         }
 
         val mid = WIDTH / 2f
-        val white = Color.WHITE
-        val soft = Color.rgb(176, 208, 204)
-        text(ctx.getString(R.string.log_share_card_title, ShareCardText.monthName(f)), mid, 150f, 56f, soft, bold = true)
+        text(ctx.getString(R.string.log_share_card_title, ShareCardText.monthName(f)), mid, 190f, 52f, muted, bold = true)
 
         // Ring: the Light Score as a share of the circle.
-        val ring = RectF(mid - 270f, 250f, mid + 270f, 790f)
+        val ring = RectF(mid - 260f, 280f, mid + 260f, 800f)
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 44f
         paint.strokeCap = Paint.Cap.ROUND
-        paint.color = Color.argb(60, 255, 255, 255)
+        paint.color = Tokens.Colors.paper3.toArgb()
         c.drawArc(ring, 0f, 360f, false, paint)
-        paint.color = Color.rgb(120, 230, 190)
+        paint.color = Tokens.Map.normal.toArgb()
         c.drawArc(ring, -90f, 360f * ((f.score ?: 0) / 100f), false, paint)
         paint.style = Paint.Style.FILL
-        text(ShareCardText.scoreText(ctx, f), mid, 560f, if (f.score == null) 64f else 190f, white, bold = true)
-        text(ctx.getString(R.string.ins_ring_title), mid, 650f, 54f, soft)
+        text(ShareCardText.scoreText(ctx, f), mid, 590f, if (f.score == null) 64f else 190f, ink, bold = true)
+        text(ctx.getString(R.string.ins_ring_title), mid, 670f, 48f, muted)
 
-        text(ctx.getString(R.string.log_share_card_hours, f.powerHours), mid, 930f, 72f, white, bold = true)
-        text(ctx.getString(R.string.log_share_card_outages, f.outageCount), mid, 1020f, 60f, white)
-        text(ctx.getString(R.string.log_share_card_estimate, f.daysCovered), mid, 1100f, 48f, soft)
+        text(ctx.getString(R.string.log_share_card_hours, f.powerHours), mid, 940f, 72f, ink, bold = true)
+        text(ctx.getString(R.string.log_share_card_outages, f.outageCount), mid, 1025f, 56f, ink)
+        text(ctx.getString(R.string.log_share_card_estimate, f.daysCovered), mid, 1095f, 44f, muted)
 
-        text(ctx.getString(R.string.log_share_card_name), mid, 1230f, 64f, white, bold = true)
-        ShareCardText.link()?.let { text(it, mid, 1290f, 38f, soft) }
+        text(ctx.getString(R.string.log_share_card_name), mid, 1210f, 60f, ink, bold = true)
+        ShareCardText.link()?.let { text(it, mid, 1262f, 36f, muted) }
         return bmp
     }
 
