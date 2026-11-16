@@ -40,13 +40,13 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 - [x] 5. Subscriptions in the area actor: schema, follow and unfollow endpoints, strict validation, `PUSH_SENT` memory, deferred-send alarm, push hook from `area-cells` outputs, delete-my-data. Test L7.
   - Depends on: 7, `area-cells` 9, `event-ingest` 4
   - Requirements: R6, R8, R10
-- [ ] 8. Screens (Jetpack Compose, approved 2026-11-14) and `net` package: channel creation, permission flow, FCM token registration and refresh, follow and quiet-hours screens, Test Light Alarm, Alarm check list, in-app prompt for denied notifications, string pack wiring; JVM unit tests for the follow request against the contract fixtures.
+- [x] 8. Screens (Jetpack Compose, approved 2026-11-14) and `net` package: channel creation, permission flow, FCM token registration and refresh, follow and quiet-hours screens, Test Light Alarm, Alarm check list, in-app prompt for denied notifications, string pack wiring; JVM unit tests for the follow request against the contract fixtures.
   - Depends on: 4, 2, `event-ingest` 10
   - Requirements: R1.7, R5, R6.1, R6.2, R7, R9
 
 ## Wave 5
 
-- [ ] 9. Scenario test in `tools/sim`: simulated outage creates a planned push set for followers, marked simulated and never sent. Update `docs/traceability.md` (L1 to L12), `docs/probe-checklist.md`, `docs/kiro-log.md`.
+- [x] 9. Scenario test in `tools/sim`: simulated outage creates a planned push set for followers, marked simulated and never sent. Update `docs/traceability.md` (L1 to L12), `docs/probe-checklist.md`, `docs/kiro-log.md`.
   - Depends on: 5, 8, `detection-engine` 16
   - Requirements: all
 

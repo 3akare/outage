@@ -1,5 +1,5 @@
 {
-  "_comment": "Dependencies the human approved. npm packages in `allowed`, Gradle coordinates (group:artifact) in `gradleAllowed`, Gradle plugin ids in `gradlePluginsAllowed`. Anything else needs the human: the dependency guard asks before it is installed. Add an entry only after the human approves it. Stack: native Kotlin app, Cloudflare Worker, TypeScript, Vitest + fast-check, h3-js (ADR 0012). 2026-11-14: the human chose Biome for lint and format. @outage/* are this repository's own workspace packages, not external dependencies. 2026-11-14: the human approved Jetpack Compose (BOM, ui, foundation, material3, the Compose compiler plugin, and the activity and lifecycle bridges Compose needs to host screens and ViewModels). Navigation libraries are not included.",
+  "_comment": "Dependencies the human approved. npm packages in `allowed`, Gradle coordinates (group:artifact) in `gradleAllowed`, Gradle plugin ids in `gradlePluginsAllowed`. Anything else needs the human: the dependency guard asks before it is installed. Add an entry only after the human approves it. Stack: native Kotlin app, Cloudflare Worker, TypeScript, Vitest + fast-check, h3-js (ADR 0012). 2026-11-14: the human chose Biome for lint and format. @outage/* are this repository's own workspace packages, not external dependencies. 2026-11-14: the human approved Jetpack Compose (BOM, ui, foundation, material3, the Compose compiler plugin, and the activity and lifecycle bridges Compose needs to host screens and ViewModels). Navigation libraries are not included. 2026-11-23: Firebase Messaging (BoM, firebase-messaging) and the google-services plugin approved under the blanket approval, free on Spark, ADR 0036.",
   "allowed": [
     "typescript",
     "vitest",
@@ -35,16 +35,18 @@
     "androidx.activity:activity-compose",
     "androidx.lifecycle:lifecycle-viewmodel-compose",
     "androidx.lifecycle:lifecycle-runtime-compose",
-    "androidx.lifecycle:lifecycle-runtime-ktx"
+    "androidx.lifecycle:lifecycle-runtime-ktx",
+    "com.google.firebase:firebase-bom",
+    "com.google.firebase:firebase-messaging"
   ],
   "gradlePluginsAllowed": [
     "com.android.application",
     "com.android.library",
-    "org.jetbrains.kotlin.plugin.compose"
+    "org.jetbrains.kotlin.plugin.compose",
+    "com.google.gms.google-services"
   ],
   "pendingApproval": [
     "com.uber:h3",
-    "com.google.firebase:firebase-messaging",
     "org.jetbrains.kotlinx:kotlinx-serialization-json",
     "androidx.room",
     "androidx.datastore",

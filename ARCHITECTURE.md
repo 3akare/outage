@@ -125,6 +125,18 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/alarm/StringPackCheck.kt` | Checks a string pack has every alarm string |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmCore.kt` | Glue from sensor events to AlarmPolicy and the effects interface |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmHost.kt` | One alarm layer per process: SQLite store, prompt, ring, label queue |
+| `apps/android/app/src/main/kotlin/app/outage/net/Follow.kt` | Follow and unfollow request bodies (match the shared strict schema), quiet window, `FollowApi` |
+| `apps/android/app/src/main/kotlin/app/outage/net/PushHost.kt` | Push registration (optional Firebase), follow store, token refresh service |
+| `apps/android/app/src/main/kotlin/app/outage/onboarding/Spot.kt` | Spot from a position or a map pick, first-result-wins; cell only |
+| `apps/android/app/src/main/kotlin/app/outage/onboarding/LocationSource.kt` | One coarse position, once, with an 8 s wait |
+| `apps/android/app/src/main/kotlin/app/outage/onboarding/Permissions.kt` | Alarm check list data and system permission reads and intents |
+| `apps/android/app/src/main/kotlin/app/outage/ui/AlarmScreens.kt` | Light Alarm settings (Test Light Alarm, Alarm check) and Notifications permission screen |
+| `apps/android/app/src/main/kotlin/app/outage/ui/SpotScreen.kt` | Your spot: location once or map pick with a tappable hex grid |
+| `apps/android/app/src/main/kotlin/app/outage/ui/FollowSelfTestScreens.kt` | Follow switches and quiet hours, and the charger self-test screen |
+| `apps/android/app/src/test/kotlin/app/outage/net/FollowTest.kt` | Follow request against the shared schema, quiet window, API answers |
+| `apps/android/app/src/test/kotlin/app/outage/onboarding/SpotAndChecksTest.kt` | O2 no coordinates stored, spot resolution, Alarm check list |
+| `tools/sim/src/push-plan.ts` | Planned follower pushes for a simulated outage, marked simulated, never sent |
+| `tools/sim/test/push-plan.test.ts` | Scenario test for the simulated push plan |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/ChannelSetup.kt` | Creates the notification channels |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/ChannelSpecs.kt` | Channel definitions as data (power-check, light-alarm, alerts, alerts-quiet) |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/LightAlarm.kt` | Rings the alarm: audio, vibration, notification, full-screen intent, wake lock |
@@ -690,5 +702,5 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `docs/probe/2026-11-15-samsung-b.md` | Probe result: Samsung phone, second run (probe v0.0.2) |
 | `docs/probe/2026-11-15-samsung-b.json` | Raw numbers behind the second Samsung result |
 | `docs/wip/detection-engine-notes.md` | Working notes for the detection engine |
-| `docs/adr/` | Architecture decision records 0001 to 0035, one decision each (context, decision, alternatives, consequences) |
+| `docs/adr/` | Architecture decision records 0001 to 0037, one decision each (context, decision, alternatives, consequences) |
 | `docs/visual/` | Website screenshots written by `workers/api/visual/check.mjs` (390 x 844 and `-desktop` 1280 x 800) |

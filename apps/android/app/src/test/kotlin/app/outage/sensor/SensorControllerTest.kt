@@ -169,11 +169,15 @@ class SensorControllerTest {
         assertEquals(4, list.size)
     }
 
-    /** R12, station-mode R10.2: the manifest asks for no microphone, motion, location or advertising permission and no dataSync service. */
+    /**
+     * R12, station-mode R10.2: the manifest asks for no microphone, motion, fine or background location, advertising permission
+     * and no dataSync service. Coarse location is the one exception (onboarding R3.2, ADR 0037): asked once, in context,
+     * on the Spot screen, never by the sensor.
+     */
     @Test
     fun R12_manifest_privacy_check() {
         val m = File("src/main/AndroidManifest.xml").readText()
-        for (bad in listOf("RECORD_AUDIO", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "ACCESS_BACKGROUND_LOCATION",
+        for (bad in listOf("RECORD_AUDIO", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION",
             "BODY_SENSORS", "ACTIVITY_RECOGNITION", "HIGH_SAMPLING_RATE_SENSORS", "AD_ID", "READ_PHONE_STATE", "dataSync")) {
             assertFalse("manifest must not contain $bad", m.contains(bad))
         }

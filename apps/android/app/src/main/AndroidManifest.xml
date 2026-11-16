@@ -22,6 +22,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- Onboarding spot (R3.2): coarse only, asked once in context when the user taps "Use my location once". Never fine location. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
@@ -60,6 +62,15 @@
         <receiver
             android:name=".alarm.NotificationActionReceiver"
             android:exported="false" />
+
+        <!-- Token refresh for follow pushes (ADR 0036). https://firebase.google.com/docs/cloud-messaging/android/client -->
+        <service
+            android:name=".net.OutageMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <receiver
             android:name=".sensor.BootReceiver"

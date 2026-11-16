@@ -61,6 +61,14 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v6
+      # Push config (ADR 0036). Optional: without the secret the build still works and push stays off. See docs/deploy.md.
+      - name: Write the Firebase config from the secret
+        env:
+          FIREBASE_CONFIG_B64: ${{ secrets.FIREBASE_CONFIG_B64 }}
+        run: |
+          if [ -n "$FIREBASE_CONFIG_B64" ]; then
+            printf '%s' "$FIREBASE_CONFIG_B64" | base64 -d > app/google-services.json
+          fi
       - name: Compile, unit test, lint
         run: ./gradlew --no-daemon :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
       - name: Name the APK
