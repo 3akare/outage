@@ -680,3 +680,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `tools/sim/test/home-scenario.test.ts`: silence shows ON then "Station offline" with last known ON, never OFF; after reconnect OFF since the real cut, or ON since the real return; a fast-check property over cut time, outage length, router delay and upload order.
 - `docs/probe-checklist.md` has a Home Watch section. Traceability lists H1 to H8 plus the scenario and the open latency row.
 - Task 9 stays unticked: the device push latency check is left for the human and needs Firebase Messaging in the app (ADR 0037). The human asked for no device testing now.
+
+## 2026-11-23 feat(sensor): plug observer and demo flag [spec:demo-mode task:1]
+- `sensor-android` amended with R13 and a design note: `PlugObserver` (a code-registered `ACTION_BATTERY_CHANGED` receiver that reports only plug changes, no Job, no Outbox) and `DemoFlag` (in-process, suppresses the "Power just went?" prompt while a demo is open, cleared on leave or after 30 s in the background).
+- The prompt itself is not built in this branch; whoever builds it must check `DemoFlag.suppressPrompt(now)` before showing it.
+- Tests: `PlugObserverTest` (3). Gradle testDebugUnitTest and lint clean.

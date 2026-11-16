@@ -17,6 +17,7 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/` (`SensorCoreTest.
 | R9.1 | S7 | `S7_seq_strictly_increasing_across_restart_and_ack` | 5 | passing |
 | R5.3, R5.4 | S8 | `S8_recovery_after_reboot_and_process_death`, `R5_4_reboot_recovery_records_gap` | 8 | passing |
 | R2.3 | - | `R2_3_write_failure_is_counted_and_job_still_rescheduled` | 9 | passing |
+| R13.1 to R13.3 | - | `R13_1_only_plug_changes_are_reported_not_level_ticks`, `R13_2_demo_flag_suppresses_the_prompt_only_while_open`, `R13_3_demo_flag_clears_after_30_seconds_in_the_background` | demo-mode 1 | passing (`PlugObserverTest.kt`) |
 | R9.4, R9.5 | - | `R9_4_events_across_reboot_are_lost`, `R9_5_retention_drops_old_acked_events` | 5 | passing |
 | R10 | - | `R10_telemetry_armed_ratio_and_gaps`, `R10_no_charging_gives_null_ratio` | 6 | passing |
 | R4.3, R11 | - | `R4_3_replug_reaches_listener_in_process`, `R11_start_arms_schedules_job_and_starts_receiver` | 9 | passing |

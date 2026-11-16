@@ -166,6 +166,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorState.kt` | Why the sensor is or is not armed |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorStateMachine.kt` | The sensor state machine (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SqliteEventStore.kt` | The outbox on SQLite |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/PlugObserver.kt` | Foreground plug observer and the in-process `DemoFlag` (sensor-android R13) |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/Telemetry.kt` | Armed time, charging time and gaps from the event log (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/shell/Connectivity.kt` | Whether the phone has a working network |
 | `apps/android/app/src/main/kotlin/app/outage/shell/DeleteRegistry.kt` | Delete-my-data: every feature registers its phone-side delete |
@@ -220,6 +221,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt` | Onboarding state machine (O1, O3, O7, O8) |
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingTestSupport.kt` | In-memory onboarding store for tests |
 | `apps/android/app/src/test/kotlin/app/outage/sensor/SensorControllerTest.kt` | Sensor engine against fake adapters (S7, R2, R10, R11, R12) |
+| `apps/android/app/src/test/kotlin/app/outage/sensor/PlugObserverTest.kt` | Plug change filter and demo flag (R13) |
 | `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt` | Decision table and state machine (S1 to S8, T1 to T7) |
 | `apps/android/app/src/test/kotlin/app/outage/shell/DeleteRegistryTest.kt` | Delete-my-data registry (AS6) |
 | `apps/android/app/src/test/kotlin/app/outage/shell/HomeReducerTest.kt` | Home state reduction (AS5) |
