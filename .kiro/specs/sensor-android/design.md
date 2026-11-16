@@ -220,7 +220,7 @@ data class SensorEvent(
 )
 ```
 
-The install ID and H3 cell are added by the Uploader (app code outside the `sensor` package) when it builds the ingest payload. This keeps the sensor free of location data (R9.6). The wire shape is defined in `packages/shared`, and a contract fixture test reads the same JSON in Kotlin and in the Worker so the two types cannot drift.
+The install ID and H3 cell are added by the Uploader (app code outside the `sensor` package) when it builds the ingest payload. This keeps the sensor free of location data (R9.6). The wire shape is defined in `core/shared`, and a contract fixture test reads the same JSON in Kotlin and in the Worker so the two types cannot drift.
 
 Retention: events and telemetry older than 7 days are deleted on start and on ack (R9.5, R10.5).
 
@@ -229,7 +229,7 @@ Retention: events and telemetry older than 7 days are deleted on start and on ac
 ## 8. Interfaces
 
 ```kotlin
-// apps/android/app/src/main/kotlin/.../sensor/SensorController.kt
+// android/outage/app/src/main/kotlin/.../sensor/SensorController.kt
 interface SensorController {
     fun start(): SensorState
     fun stop()
@@ -246,7 +246,7 @@ interface SensorController {
 Plug observer and demo flag (R13, added for `demo-mode` task 1):
 
 ```kotlin
-// apps/android/app/src/main/kotlin/app/outage/sensor/PlugObserver.kt
+// android/outage/app/src/main/kotlin/app/outage/sensor/PlugObserver.kt
 interface PlugObserver {
     fun start(onChange: (Plug) -> Unit): Boolean  // false when the receiver cannot be registered
     fun stop()

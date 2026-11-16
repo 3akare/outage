@@ -17,7 +17,7 @@ The Light Alarm works with no network and with the app closed. Pushes need the n
 - **Follower**: an install that follows an area cell to receive pushes.
 - **Subscription**: one follower's FCM registration token, followed cell, push kinds and quiet window.
 - **Quiet hours**: a daily window in which pushes arrive without sound.
-- **Alarm layer**: Kotlin code in the `sensor`, `alarm` and `log` packages of `apps/android`. It runs with the app screens closed.
+- **Alarm layer**: Kotlin code in the `sensor`, `alarm` and `log` packages of `android/outage`. It runs with the app screens closed.
 
 ## Requirements
 

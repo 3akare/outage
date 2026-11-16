@@ -1,0 +1,134 @@
+import java.io.File
+
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.plugin.compose")
+}
+
+// Push (ADR 0036): the google-services plugin turns the Firebase console config file (see docs/deploy.md for its exact
+// place in this folder) into Firebase resources. The file is never in git, so the plugin is applied only when it exists.
+// Without it the app builds and runs, push registration stays off and Light Alarm works fully offline.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
+// The OEM battery guide has one copy in git: core/shared/src/oem-guide.json (ADR 0012, onboarding R7.9).
+// This task copies it into generated assets at build time. Wiring: variant.sources.assets.addGeneratedSourceDirectory
+// https://developer.android.com/reference/tools/gradle-api/9.1/com/android/build/api/variant/SourceDirectories
+abstract class CopyOemGuide : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val guide: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun copy() {
+        val out = outputDir.get().asFile
+        out.mkdirs()
+        guide.get().asFile.copyTo(File(out, "oem-guide.json"), overwrite = true)
+    }
+}
+
+// demo-mode R7.2: the app ships the same replay file the Worker serves (`@outage/shared/fixtures/replay.json`), copied
+// at build time so there is one copy in git. DM7 checks the source path.
+abstract class CopyReplay : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val replay: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun copy() {
+        val out = outputDir.get().asFile
+        out.mkdirs()
+        replay.get().asFile.copyTo(File(out, "replay.json"), overwrite = true)
+    }
+}
+
+android {
+    namespace = "app.outage"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "app.outage"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 1
+        versionName = "0.1.0"
+        // Worker address for the live map. Empty means the labelled demo map (ADR 0022). Set with -PoutageApiBase=https://...
+        buildConfigField("String", "API_BASE", "\"" + (providers.gradleProperty("outageApiBase").orNull ?: "") + "\"")
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+        }
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    lint {
+        // Pidgin (values-pcm) is optional and falls back to English per key (app-shell R7.2),
+        // so a key missing from values-pcm is not an error. AS7 checks the opposite direction.
+        disable += "MissingTranslation"
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        val copyGuide = tasks.register<CopyOemGuide>("copyOemGuide" + variant.name.replaceFirstChar { it.uppercase() }) {
+            guide.set(layout.projectDirectory.file("../../../core/shared/src/oem-guide.json"))
+        }
+        variant.sources.assets?.addGeneratedSourceDirectory(copyGuide, CopyOemGuide::outputDir)
+        val copyReplay = tasks.register<CopyReplay>("copyReplay" + variant.name.replaceFirstChar { it.uppercase() }) {
+            replay.set(layout.projectDirectory.file("../../../core/shared/fixtures/replay.json"))
+        }
+        variant.sources.assets?.addGeneratedSourceDirectory(copyReplay, CopyReplay::outputDir)
+    }
+}
+
+dependencies {
+    // Compose BOM pins the Compose library versions together.
+    // https://developer.android.com/develop/ui/compose/bom (2026.06.01 is the newest stable in
+    // https://dl.google.com/android/maven2/androidx/compose/compose-bom/maven-metadata.xml)
+    implementation(platform("androidx.compose:compose-bom:2026.06.01"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.material3:material3")
+
+    // ComponentActivity.setContent, ViewModel and lifecycle bridges for Compose.
+    // https://developer.android.com/develop/ui/compose/setup
+    // Newest stable lines that compile against compileSdk 36 (activity 1.13 and lifecycle 2.11 need 37). Versions in https://dl.google.com/android/maven2/androidx/<group>/<artifact>/maven-metadata.xml
+    implementation("androidx.activity:activity-compose:1.12.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
+
+    // Firebase Messaging for follow pushes (ADR 0036). The BoM pins the version. FCM is free on the Spark plan.
+    // https://firebase.google.com/docs/android/learn-more#bom (35.2.0 is the newest in
+    // https://dl.google.com/android/maven2/com/google/firebase/firebase-bom/maven-metadata.xml)
+    implementation(platform("com.google.firebase:firebase-bom:35.2.0"))
+    implementation("com.google.firebase:firebase-messaging")
+
+    // MapLibre Native for Android (ADR 0053): the street map under the hex grid, drawn from OpenFreeMap's vector tiles
+    // (no key, no account). 13.7.1 is the newest flat-map release in
+    // https://repo1.maven.org/maven2/org/maplibre/gl/android-sdk/maven-metadata.xml (globe builds are separate "-globe" lines).
+    // https://maplibre.org/maplibre-native/android/api/
+    implementation("org.maplibre.gl:android-sdk:13.7.1")
+
+    // JUnit 4 is approved by ADR 0012.
+    testImplementation("junit:junit:4.13.2")
+}

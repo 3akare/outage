@@ -20,7 +20,7 @@ Depends on `sensor-android` (tasks 4, 7, 9), `event-ingest` (tasks 3, 4, 10), `a
 
 ## Wave 2
 
-- [x] 4. OEM guide file, schema validator and maker matching. Tests O4, O5. The file `packages/shared/src/oem-guide.json` and its validator (`.kiro/skills/oem-battery-guide/scripts/validate-guide.mjs`) already exist from the `oem-battery-guide` skill: a Gradle task copies it into the app assets, the app reads it, the matching rules are written in Kotlin with JUnit 4 tests, and the skill's validator stays the data check. Initial entries are sourced and marked unverified.
+- [x] 4. OEM guide file, schema validator and maker matching. Tests O4, O5. The file `core/shared/src/oem-guide.json` and its validator (`.kiro/skills/oem-battery-guide/scripts/validate-guide.mjs`) already exist from the `oem-battery-guide` skill: a Gradle task copies it into the app assets, the app reads it, the matching rules are written in Kotlin with JUnit 4 tests, and the skill's validator stays the data check. Initial entries are sourced and marked unverified.
   - Depends on: 3
   - Requirements: R7.1 to R7.4, R7.9
 - [x] 5. Spot (Kotlin): coarse location via `LocationManager`, first-result-wins within 8 seconds, cell only, mocked check, map pick with hex grid from the catalog. Tests O2.

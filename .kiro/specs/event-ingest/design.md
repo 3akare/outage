@@ -11,12 +11,12 @@ flowchart LR
     S[Sensor Outbox<br/>Kotlin SQLite] --> U[Uploader<br/>Kotlin]
     U -->|POST /v1/events| W[Worker<br/>validate, auth, route]
     W -->|one RPC per parent| C[Area actor<br/>Durable Object]
-    C -->|DetectionPort| D[detection engine<br/>packages/detection]
+    C -->|DetectionPort| D[detection engine<br/>core/detection]
 ```
 
 - The **Worker** is stateless. It authenticates, validates each event, computes event time, groups events by res-7 parent, and calls each area actor once.
 - The **area actor** owns idempotency, rate limiting, armed state and stored detection events for one res-7 parent. It calls the engine through `DetectionPort`.
-- The **Uploader** lives in `apps/android` (Kotlin, injectable transport and clock) so JUnit can drive it with a fake transport. The event schema and API shapes are covered by contract fixtures in `packages/shared/fixtures/`, read by the Worker tests (Vitest) and the app tests (JUnit). The H3 cell on the phone comes from `com.uber:h3` (needs human approval, ADR 0012).
+- The **Uploader** lives in `android/outage` (Kotlin, injectable transport and clock) so JUnit can drive it with a fake transport. The event schema and API shapes are covered by contract fixtures in `core/shared/fixtures/`, read by the Worker tests (Vitest) and the app tests (JUnit). The H3 cell on the phone comes from `com.uber:h3` (needs human approval, ADR 0012).
 
 ## 2. Verified platform facts
 
@@ -42,7 +42,7 @@ Daily limits are shared by all users, so every request and row is a cost.
 
 Rough sizing, only to check the approach is viable. Assume 30 phones with `ARMED`/`DISARMED` churn every 10 minutes (unconfirmed, ADR 0001) and 5 detection events per phone per day. Without write-behind that is about 30 × 288 = 8,640 rows/day. With write-behind, short gaps that recover inside the flush interval write nothing. Detection events are about 150 rows/day. Both fit with a large margin. At 10× the phones the naive design would pass 80,000 rows/day; write-behind keeps it far below. These are estimates and will be replaced by field data.
 
-## 4. Starting values (tunables in `workers/api/src/config.ts`)
+## 4. Starting values (tunables in `web/config.ts`)
 
 These are operational limits, not detection thresholds. Change them freely, record changes in the log.
 
@@ -63,7 +63,7 @@ These are operational limits, not detection thresholds. Change them freely, reco
 ## 5. Wire format
 
 ```ts
-// packages/shared/src/ingest.ts
+// core/shared/src/ingest.ts
 type WireEvent = {
   installId: string;                 // 128-bit random, base32
   seq: number;                       // integer >= 0
@@ -205,7 +205,7 @@ erDiagram
 ## 9. Interfaces
 
 ```ts
-// workers/api/src/ingest/ports.ts
+// web/api/ingest/ports.ts
 interface DetectionPort {
   handle(cell: string, events: IngestedEvent[], receiveTimeMs: number): void | Promise<void>;
 }
@@ -220,7 +220,7 @@ type IngestedEvent = {
 AMENDED 2026-11-14 by the `detection-engine` spec: `DetectionPort.handle` also receives `ARMED` and `DISARMED` state events, because the engine rebuilds armed intervals from them. The type below gains `ARMED | DISARMED` and an optional `simulated` marker is never passed (ingest rejects it). The detection spec decides what happens next. Until it exists, a `NoopDetectionPort` records events only, so ingest can be built and tested alone.
 
 ```kotlin
-// apps/android (Kotlin), shape only
+// android/outage (Kotlin), shape only
 interface Transport { fun post(req: EventsRequest, token: String): Result }   // EventsResponse or HttpError
 interface OutboxPort { fun getPending(limit: Int): List<SensorEvent>; fun ack(upToSeq: Long) }
 class Uploader(outbox: OutboxPort, transport: Transport, clock: Clock, rng: Random, config: UploaderConfig) { fun flush() }
@@ -248,6 +248,6 @@ Property IDs `I1` to `I9` belong to this spec. Each test title names its ID. The
 | I8 | Any extra field in an event is rejected, and no wire event field can carry a location or a wall-clock time. | R1 | `I8_strict_schema` |
 | I9 | For any batch and state flush timing, the stored armed state equals the last state event by event time, and unchanged state causes no write. | R11 | `I9_write_behind_state` |
 
-Other tests: token verify and constant-time compare; register stores nothing; delete removes all rows for an install in listed cells and invalidates the token (R12); counters hold no install IDs (R13); the Worker (Vitest) and the app (JUnit) both parse the contract fixtures in `packages/shared/fixtures/`; I7 runs in JUnit with a seeded random failure pattern over a fake transport; end-to-end test using Miniflare or `wrangler dev` locally (confirm tooling with the docs server).
+Other tests: token verify and constant-time compare; register stores nothing; delete removes all rows for an install in listed cells and invalidates the token (R12); counters hold no install IDs (R13); the Worker (Vitest) and the app (JUnit) both parse the contract fixtures in `core/shared/fixtures/`; I7 runs in JUnit with a seeded random failure pattern over a fake transport; end-to-end test using Miniflare or `wrangler dev` locally (confirm tooling with the docs server).
 
 Traceability: `docs/traceability.md` links requirement, property, test and task.

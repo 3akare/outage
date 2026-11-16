@@ -50,7 +50,7 @@ test('auditParams: a value hidden in a comment is ignored', () => {
 
 test('auditSource: flags every impure API, ignores comments and the allow marker', () => {
   const bad = ['Date.now()', 'new Date()', 'Math.random()', 'fetch("x")', 'process.env.X', 'setTimeout(f, 1)', 'require("fs")'];
-  for (const b of bad) assert.equal(auditSource('packages/detection/src/a.ts', `const x = ${b};`).length, 1, b);
+  for (const b of bad) assert.equal(auditSource('core/detection/src/a.ts', `const x = ${b};`).length, 1, b);
   assert.equal(auditSource('a.ts', "import fs from 'node:fs';").length, 1);
   assert.equal(auditSource('a.ts', '// Date.now() is not used here\nconst x = 1;').length, 0);
   assert.equal(auditSource('a.ts', '/* Math.random() */ const x = 1;').length, 0);
@@ -83,7 +83,7 @@ test('audit(): not scaffolded is info; a full tree is clean; a broken tree repor
   const root = mkdtempSync(path.join(tmpdir(), 'audit-'));
   const empty = audit(root); assert.equal(empty.summary.errors, 0); assert.equal(empty.findings[0].severity, 'info');
 
-  const base = path.join(root, 'packages', 'detection');
+  const base = path.join(root, 'core', 'detection');
   mkdirSync(path.join(base, 'src'), { recursive: true }); mkdirSync(path.join(base, 'fixtures'), { recursive: true });
   writeFileSync(path.join(base, 'src', 'params.ts'), GOOD_PARAMS);
   writeFileSync(path.join(base, 'src', 'engine.ts'), 'export const evaluate = (s: number, nowMs: number) => s + nowMs;');
@@ -96,7 +96,7 @@ test('audit(): not scaffolded is info; a full tree is clean; a broken tree repor
   writeFileSync(path.join(base, 'src', 'params.ts'), GOOD_PARAMS.replace('minSamples: 20', 'minSamples: 5'));
   const r = audit(root);
   assert.equal(r.summary.errors, 2);
-  assert.ok(r.findings.some((f) => f.rule === 'purity' && f.file === 'packages/detection/src/engine.ts'));
+  assert.ok(r.findings.some((f) => f.rule === 'purity' && f.file === 'core/detection/src/engine.ts'));
   assert.ok(r.findings.some((f) => f.rule === 'params' && /minSamples/.test(f.message)));
 });
 
@@ -104,7 +104,7 @@ test('detection-audit CLI: exit codes and JSON output', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'audit-cli-'));
   const ok = spawnSync('node', [path.join(scripts, 'detection-audit.mjs'), '--root', root, '--json'], { encoding: 'utf8' });
   assert.equal(ok.status, 0); assert.equal(JSON.parse(ok.stdout).summary.errors, 0);
-  mkdirSync(path.join(root, 'packages', 'detection', 'src'), { recursive: true });
+  mkdirSync(path.join(root, 'core', 'detection', 'src'), { recursive: true });
   const bad = spawnSync('node', [path.join(scripts, 'detection-audit.mjs'), '--root', root], { encoding: 'utf8' });
   assert.equal(bad.status, 1); assert.match(bad.stdout, /params\.ts is missing/);
 });

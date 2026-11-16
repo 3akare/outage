@@ -4,16 +4,16 @@ Rules: only real dependencies are listed. Tasks in the same wave run in parallel
 
 Highest reasoning effort for every task in this spec. Checkpoint before tasks 9, 11, 12 and 14. Plan mode first for tasks 1, 2 and 14 (each touches more than 3 files). Confirm fast-check and Vitest APIs with the Context7 server and put the doc URL in a comment.
 
-The `packages/detection` code is pure: no I/O, no clock, no randomness. Do not change a threshold in `params.ts` without the human (ADR 0005).
+The `core/detection` code is pure: no I/O, no clock, no randomness. Do not change a threshold in `params.ts` without the human (ADR 0005).
 
 Kiro IDE is needed for task 15 (Correctness pass). Everything else can run in Kiro Web.
 
 ## Wave 1
 
-- [x] 1. Shared types and the ingest amendment: add `EngineEvent`, `Label`, `Context`, `Decision`, `Explanation` to `packages/shared`. Amend `event-ingest` design section 9 and task 5 so `DetectionPort` also receives `ARMED` and `DISARMED` events. Update golden fixtures.
+- [x] 1. Shared types and the ingest amendment: add `EngineEvent`, `Label`, `Context`, `Decision`, `Explanation` to `core/shared`. Amend `event-ingest` design section 9 and task 5 so `DetectionPort` also receives `ARMED` and `DISARMED` events. Update golden fixtures.
   - Depends on: `event-ingest` task 2
   - Requirements: R2, R13
-- [x] 2. Scaffold `packages/detection` (TypeScript strict, Vitest, fast-check). Replace the placeholder `README.md` with the contract and a pointer to the spec.
+- [x] 2. Scaffold `core/detection` (TypeScript strict, Vitest, fast-check). Replace the placeholder `README.md` with the contract and a pointer to the spec.
   - Depends on: `event-ingest` task 1
   - Requirements: R1
 
@@ -82,7 +82,7 @@ Kiro IDE is needed for task 15 (Correctness pass). Everything else can run in Ki
 
 ## Wave 8
 
-- [x] 18. Golden fixture replay harness (empty until the field test produces a fixture), `packages/detection/README.md` final text, `docs/traceability.md` update for P1 to P12 and D1 to D6, `docs/kiro-log.md`.
+- [x] 18. Golden fixture replay harness (empty until the field test produces a fixture), `core/detection/README.md` final text, `docs/traceability.md` update for P1 to P12 and D1 to D6, `docs/kiro-log.md`.
   - Depends on: 15, 16, 17
   - Requirements: R17
 

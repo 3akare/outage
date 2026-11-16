@@ -6,7 +6,7 @@ import { readdirSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 
 const check = process.argv.includes('--check');
-const base = path.join(ROOT, 'packages', 'detection');
+const base = path.join(ROOT, 'core', 'detection');
 
 function tests(dir, acc = []) {
   if (!existsSync(dir)) return acc;
@@ -45,7 +45,7 @@ const block = [
   '<!-- BEGIN GENERATED: detection properties (.kiro/scripts/traceability.mjs) -->',
   '## Detection properties P1 to P12 (generated)',
   '',
-  `Scanned ${files.length} test file(s) under packages/detection. A property counts when a test title names its ID.`,
+  `Scanned ${files.length} test file(s) under core/detection. A property counts when a test title names its ID.`,
   '',
   '| ID | Test file | Test title | Status |',
   '|---|---|---|---|',

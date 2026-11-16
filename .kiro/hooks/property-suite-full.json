@@ -3,7 +3,7 @@
   "hooks": [
     {
       "name": "property-suite-full",
-      "description": "Expensive Stop hook (Part B, confirm prompts): run the full fast-check property suite for packages/detection with FC_NUM_RUNS=2000. The question appears only when detection tests exist and changed since the last full pass. CI runs the same suite headless on every push to main.",
+      "description": "Expensive Stop hook (Part B, confirm prompts): run the full fast-check property suite for core/detection with FC_NUM_RUNS=2000. The question appears only when detection tests exist and changed since the last full pass. CI runs the same suite headless on every push to main.",
       "trigger": "Stop",
       "action": { "type": "command", "command": "node .kiro/scripts/property-suite-full.mjs" },
       "timeout": 1500,

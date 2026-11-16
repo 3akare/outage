@@ -2,13 +2,13 @@
 
 Rules: only real dependencies are listed. Tasks in the same wave run in parallel. A task is done only per `definition-of-done.md`. Commit after each, for example `feat(app): router [spec:app-shell task:2]`.
 
-Plan mode first for task 1 (new Gradle project, more than 3 files). Confirm every Compose and Android API with a docs server and put the URL in a comment. Build and test with `.kiro/scripts/android-sandbox.sh gradle apps/android :app:assembleDebug :app:testDebugUnitTest :app:lintDebug`.
+Plan mode first for task 1 (new Gradle project, more than 3 files). Confirm every Compose and Android API with a docs server and put the URL in a comment. Build and test with `.kiro/scripts/android-sandbox.sh gradle android/outage :app:assembleDebug :app:testDebugUnitTest :app:lintDebug`.
 
 Dependencies approved: the ADR 0012 toolchain and Jetpack Compose with Material 3 (human, 2026-11-14). No navigation library.
 
 ## Wave 1 (no dependencies)
 
-- [x] 1. Scaffold `apps/android`: Gradle project (AGP 9.2.1, built-in Kotlin, Compose compiler plugin, Compose BOM), `app` module with packages `ui`, `shell`, `sensor`, `alarm`, `log`, `net`; `MainActivity` with `setContent`; extend `.github/workflows/android.yml` to build and test it.
+- [x] 1. Scaffold `android/outage`: Gradle project (AGP 9.2.1, built-in Kotlin, Compose compiler plugin, Compose BOM), `app` module with packages `ui`, `shell`, `sensor`, `alarm`, `log`, `net`; `MainActivity` with `setContent`; extend `.github/workflows/android.yml` to build and test it.
   - Requirements: R1, R8.2
 
 ## Wave 2 (needs 1)
@@ -37,7 +37,7 @@ Dependencies approved: the ADR 0012 toolchain and Jetpack Compose with Material 
 - [x] 7. Settings screen and `DeleteRegistry` with the pending server delete. Test AS6.
   - Depends on: 6
   - Requirements: R4, R5, R9
-- [x] 8. Onboarding placeholder slot (debug only) until `onboarding` task 7; traceability (AS1 to AS8); `docs/kiro-log.md`; `apps/android/README.md`; device check AS8 added to `docs/probe-checklist.md`.
+- [x] 8. Onboarding placeholder slot (debug only) until `onboarding` task 7; traceability (AS1 to AS8); `docs/kiro-log.md`; `android/outage/README.md`; device check AS8 added to `docs/probe-checklist.md`.
   - Depends on: 5, 6, 7
   - Requirements: R1.1, R6.3
 

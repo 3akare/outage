@@ -28,7 +28,7 @@ if (mode === 'push') {
 }
 
 if (mode === 'suite') {
-  if (!exists('packages/detection/package.json')) skip();
+  if (!exists('core/detection/package.json')) skip();
   const walk = (d) => {
     let n = 0, newest = 0;
     for (const e of readdirSync(d, { withFileTypes: true })) {
@@ -41,12 +41,12 @@ if (mode === 'suite') {
     return { n, newest };
   };
   let info;
-  try { info = walk(path.join(ROOT, 'packages/detection')); } catch { skip(); }
+  try { info = walk(path.join(ROOT, 'core/detection')); } catch { skip(); }
   if (!info.n) skip();
   const last = readState('suite.json', {});
   if (last.newest && info.newest <= last.newest) skip();
   process.stdout.write(JSON.stringify({
-    question: `Run the full property suite for packages/detection (FC_NUM_RUNS=2000, can take several minutes)? ${info.n} test file(s).`,
+    question: `Run the full property suite for core/detection (FC_NUM_RUNS=2000, can take several minutes)? ${info.n} test file(s).`,
     options: options('Yes, run it', 'Skip this time'),
   }) + '\n');
   process.exit(0);

@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: ["apps/android/**/*.kt", "apps/android/**/strings*.xml"]
+fileMatchPattern: ["android/outage/**/*.kt", "android/outage/**/strings*.xml"]
 ---
 
 # UI copy

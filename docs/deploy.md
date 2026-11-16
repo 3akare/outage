@@ -63,8 +63,8 @@ Follow pushes need the app to register with Firebase Cloud Messaging (free on th
 
 1. Firebase console, your project, **Project settings**, **Your apps**, add an Android app with package name `app.outage` (skip the optional steps).
 2. Download `google-services.json` from that page.
-3. Put it at exactly `apps/android/app/google-services.json`. Git ignores it. The build applies the Google services plugin only when the file is there.
-4. For the GitHub build, store the file as a repository secret instead: run `base64 -w0 google-services.json` and save the output as the Actions secret `FIREBASE_CONFIG_B64`. The `app` job in `.github/workflows/android.yml` decodes it to `apps/android/app/google-services.json` before the Gradle build.
+3. Put it at exactly `android/outage/app/google-services.json`. Git ignores it. The build applies the Google services plugin only when the file is there.
+4. For the GitHub build, store the file as a repository secret instead: run `base64 -w0 google-services.json` and save the output as the Actions secret `FIREBASE_CONFIG_B64`. The `app` job in `.github/workflows/android.yml` decodes it to `android/outage/app/google-services.json` before the Gradle build.
 
 Without the file the app still builds and runs. Push registration is off, following an area shows "Push is not set up on this build", and Light Alarm, Test Light Alarm and the Alarm check work fully offline. Decision record: `docs/adr/0036-firebase-messaging-on-the-phone.md`.
 

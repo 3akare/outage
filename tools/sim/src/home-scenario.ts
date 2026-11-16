@@ -1,6 +1,6 @@
 // Home Watch scenario (home-watch task 9, design section 10): the station's power goes off, the home router goes down with
 // it, and the station reconnects hours later. Build time and test only. It drives the same pure functions the Worker uses
-// (`homeState`, `mergeWindow` in packages/shared) on a timeline of deliveries, so the viewer's answer at each moment can be
+// (`homeState`, `mergeWindow` in core/shared) on a timeline of deliveries, so the viewer's answer at each moment can be
 // checked. Every event the scenario makes is simulated and carries `simulated: true`.
 import { HEARTBEAT_ON_BATTERY, homeState, type HomeView, mergeWindow, type StationEvent } from '@outage/shared';
 

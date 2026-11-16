@@ -1,6 +1,6 @@
 {
   "name": "detection-auditor",
-  "description": "Read-only auditor of the detection engine. Checks packages/detection and its tests against Part G of the brief, ADR 0005 and the detection-engine spec, and reports gaps with a verdict. Use after any change under packages/detection, before a milestone gate, and in CI. It never edits files.",
+  "description": "Read-only auditor of the detection engine. Checks core/detection and its tests against Part G of the brief, ADR 0005 and the detection-engine spec, and reports gaps with a verdict. Use after any change under core/detection, before a milestone gate, and in CI. It never edits files.",
   "prompt": "file://./prompts/detection-auditor.md",
   "model": "claude-opus-4.8",
   "tools": ["read", "shell", "@context7"],
@@ -14,8 +14,8 @@
   },
   "resources": [
     "file://.kiro/steering/**/*.md",
-    "file://packages/detection/AGENTS.md",
-    "file://packages/detection/README.md",
+    "file://core/detection/AGENTS.md",
+    "file://core/detection/README.md",
     "file://.kiro/specs/detection-engine/requirements.md",
     "file://.kiro/specs/detection-engine/design.md",
     "file://.kiro/specs/detection-engine/tasks.md",

@@ -21,7 +21,7 @@ jobs:
       - run: npm run lint
       - run: npm test
       - name: Detection property suite (2000 runs)
-        run: FC_NUM_RUNS=2000 npx vitest --run --dir packages/detection
+        run: FC_NUM_RUNS=2000 npx vitest --run --dir core/detection
       - run: node .kiro/scripts/spec-lint.mjs
       - run: npm run probe:install
       - run: npm run probe:typecheck
@@ -37,7 +37,7 @@ jobs:
           node-version: '22'
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: bash workers/api/visual/run.sh
+      - run: bash web/visual/run.sh
         env:
           SHOTS: ${{ runner.temp }}/visual
       - uses: actions/upload-artifact@v4

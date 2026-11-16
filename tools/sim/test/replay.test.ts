@@ -1,7 +1,7 @@
 import { DEFAULT_PARAMS, evaluate, initialState } from '@outage/detection';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import committed from '../../../packages/shared/fixtures/replay.json' with { type: 'json' };
+import committed from '../../../core/shared/fixtures/replay.json' with { type: 'json' };
 import { DEFAULT_SYNTHETIC, LAGOS_PARENT, type SyntheticOptions, syntheticFixture } from '../src/fixture.ts';
 import { buildReplay, type Fixture, ReplayError, recordedDevices } from '../src/replay.ts';
 import { NUM_RUNS } from './runs.ts';

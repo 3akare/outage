@@ -20,7 +20,7 @@ flowchart LR
     RG --> BS[Bugfix Spec per new failure]
 ```
 
-- The **aggregator** runs on the phone. It is a pure Kotlin class in the app's telemetry package, tested with JUnit 4 (`./gradlew testDebugUnitTest`) without a device. The `DeviceDay` shape, its strict validator and the metric functions live in `packages/shared` (TypeScript, server side), and the **report generator** lives in `tools/field` (TypeScript). Both sides read the same `DeviceDay` examples in `packages/shared/fixtures/`, so the Kotlin output and the server schema cannot drift apart.
+- The **aggregator** runs on the phone. It is a pure Kotlin class in the app's telemetry package, tested with JUnit 4 (`./gradlew testDebugUnitTest`) without a device. The `DeviceDay` shape, its strict validator and the metric functions live in `core/shared` (TypeScript, server side), and the **report generator** lives in `tools/field` (TypeScript). Both sides read the same `DeviceDay` examples in `core/shared/fixtures/`, so the Kotlin output and the server schema cannot drift apart.
 - The **scheduled run** is a Kiro Web agent run, using `/field-test`. It calls the generator, writes files, and files Bugfix Specs. It never edits app code.
 
 ## 2. Verified facts and sources
@@ -37,7 +37,7 @@ To confirm: how a Kiro Web Schedule stores a prompt and secrets, the Bugfix Spec
 
 ### Aggregate
 
-The type is written in TypeScript in `packages/shared` for the server schema. The Kotlin aggregator produces JSON of the same shape.
+The type is written in TypeScript in `core/shared` for the server schema. The Kotlin aggregator produces JSON of the same shape.
 
 ```ts
 type DeviceDay = {
@@ -194,7 +194,7 @@ No install IDs and no cells appear.
 
 ## 9. Testing strategy
 
-Property IDs `F1` to `F8`. Vitest and fast-check for the Worker, `packages/shared` and `tools/field`. JUnit 4 for the phone aggregator (F1 client part, F2 client part), which also reads the `DeviceDay` fixtures from `packages/shared/fixtures/`.
+Property IDs `F1` to `F8`. Vitest and fast-check for the Worker, `core/shared` and `tools/field`. JUnit 4 for the phone aggregator (F1 client part, F2 client part), which also reads the `DeviceDay` fixtures from `core/shared/fixtures/`.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|

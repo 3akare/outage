@@ -1,6 +1,6 @@
 # Requirements: ux-redesign
 
-Status: APPROVED by delegation on 2026-11-22 (standing rule: decide, record in an ADR, proceed). Design in `design.md`, tasks in `tasks.md`. Decisions: ADR 0026 (information architecture), ADR 0027 (web), ADR 0028 (design system).
+Status: APPROVED by delegation on 2026-11-22 (standing rule: decide, record in an ADR, proceed). Design in `design.md`, tasks in `tasks.md`. Decisions: ADR 0026 (information architecture), ADR 0027 (web), ADR 0028 (design system). Amended on 2026-11-24 by `material-redesign` (ADR 0048 to 0050): R1 first run now asks for location (optional), R2 Home is a full-screen map with a sheet, R3 the bar is Insights, Home, Settings, R7 the `/app` replica is replaced by the app in the browser at `/app/simulate`, R9 tokens are Material 3.
 
 ## Introduction
 

@@ -791,3 +791,45 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Merge fix: two `SwitchRow` composables with the same signature; kept the one in `FreezerScreen.kt` with the `contentDescription` label. `REPORT` and the heartbeat reason are both in `ingest.ts`.
 - Checks on both final trees: `npm test`, lint, typecheck, spec-lint, architecture test and Gradle unit tests, lint and assembleDebug all exit 0.
 - Open: #26 has no kiro-log entry for its own merge; add one if the human wants it. No device run.
+
+## 2026-11-24 refactor(repo): top level is android, web and core [spec:none task:layout]
+- Asked for by the human: the repository should open on Android and web, with the probe beside the app and the landing page, UI and API as folders. ADR 0047 holds the old-to-new table. Entries above this one keep the old paths (`apps/android`, `workers/api`, `packages/*`, `tools/probe`).
+- Moves only, with `git mv` so history follows: `apps/android` to `android/outage`, the whole probe to `android/probe`, `workers/api` to `web` (`api/`, `landing/`, `ui/app`, `ui/simulate`, `areas/`, `site/`, entry `worker.ts`), `packages/*` to `core/*`. No URL, Durable Object, migration, npm package name or Kotlin package changed.
+- Updated with it: npm workspaces, `wrangler.jsonc` (`main`), the four workflows, hook matchers and scripts, agent write rules (sensor-engineer keeps to `android/outage` and the probe app, not the probe Worker), steering `fileMatchPattern` lines, all specs, skills, the Power README, `docs/traceability.md`.
+- `ARCHITECTURE.md` and its test are deleted. The map is the root `README.md` and `.kiro/steering/structure.md`; `structure.test.mjs` checks that the paths they name exist.
+- Shaped by: steering `structure.md` and `definition-of-done.md`, ADR 0031 (superseded in part).
+
+## 2026-11-24 feat(design): Material 3 everywhere, new mark, the app in the browser, map-first Android [spec:material-redesign tasks:1-6]
+- Asked for by the human: one modern look on every platform with the `material-3` skill (installed in `.agents/skills/material-3`, linked for Claude Code in `.claude/skills/`), a power-button mark whose stem is a charging bolt, location on first run, landing on a map, Home in the middle of the bar, and a web copy of the app for judges. ADR 0048 to 0050.
+- Tokens: a full Material 3 scheme (light, dark), four state custom colours, map fills, type, shape, space; generated once with Google's colour library outside the repo, values only. CSS uses `--md-sys-*` names.
+- Mark and icons: `tools/icon/build.mjs` writes the adaptive icon (with a themed layer), `ic_mark`, 30 `ic_sym_*` glyphs from `core/shared/design/icons.json`, the web logo and `/favicon.svg`.
+- Web: landing with GitHub, Google Play and Aptoide buttons (the last two only when configured), `/app/simulate` rebuilt as the Android app (first run, map and sheet, replay, notification, Light Alarm, Insights, Settings), `/app` redirects, area pages on the shared stylesheet. Checked with Playwright at 390 x 844 and 1366 x 860, light and dark, the whole blackout played; no console errors.
+- Android: `Theme.kt` from every token role with `LocalStatusColors`; first run Use my location or Not now (coarse, once, cell only); Home is a `BottomSheetScaffold` over a full-screen map with the spot centred; bar Insights, Home, Settings; grouped Settings. Unit tests, lint and assembleDebug pass.
+- Tests: MD1 to MD8 (`tokens.test.mjs`, `icon.test.mjs`, `MaterialShellTest`, web tests updated). The old `/app` replica tests were replaced; UX8 is replaced by MD4.
+- Not done: Android screenshots (no emulator in the cloud session; task 7). Bands per area on the map need area-to-band data; the user's own band shows on the spot card.
+- Shaped by: steering `product.md`, `privacy.md`, `copy.md`; skill `material-3`; ADR 0037 (coarse location), ADR 0022 (no basemap).
+
+## 2026-11-24 feat(globe): a real rotating globe, one dark design, a new mark; Material skill removed [spec:material-redesign tasks:8-10]
+- Asked for by the human after rejecting the Material 3 look: "use an actual globe that rotates", "remove the Material skill", "the logo is hideous". ADR 0051.
+- Removed the `material-3` skill (`.agents/`, its links in `.claude/skills` and `.kiro/skills`, `skills-lock.json`) and its mentions. Steering now says not to reinstall it.
+- Globe: orthographic projection on a canvas, the same maths on the web (`web/ui/globe/globe.ts`, `/globe.js`) and Android (`map/GlobeMath.kt`, `ui/Globe.kt`). Land is 8,107 dots from Natural Earth 1:50m (public domain) in `core/shared/geo/land-dots.json`, plus the Lagos coast; `tools/geo/build.mjs` rebuilds them. It turns by itself, drags, pinches, flies down to the spot; blocks keep their state patterns; a beacon marks the city from far away.
+- Design: one dark palette in `tokens.json` (no light mode), glass panels over the globe, space background on the web, first run over the turning globe on both platforms. CSS names `--c-*`, `--map-*`.
+- Mark: white power ring with a yellow bolt stem on navy, flat. Four directions were drawn; D was chosen.
+- Tests: GL1 to GL4 (`GlobeMathTest`), web tests for `/globe.js` and the simulated blocks, token and icon tests updated. `npm test`, lint, typecheck, spec-lint, the visual check (phone and desktop, the whole blackout, offline reload) and Android tests, lint and assembleDebug pass.
+- Not done: Android screens on a device (task 7, no emulator in the cloud session).
+
+## 2026-11-24 feat(design): Hallmark Midnight, Mona Sans, and the simulated city at real Lagos places [spec:material-redesign tasks:11-12]
+- Asked for by the human: install Hallmark; use real locations ("Lekki and Yaba aren't that close"). ADR 0052.
+- Installed `Nutlope/hallmark` (MIT) with `npx skills add Nutlope/hallmark --skill hallmark`. Its linter could not run here (the session refused third-party scripts); its Floor was followed by hand. Theme Midnight, Mona Sans self-hosted at `/fonts/mona-sans.woff2`, CSP `font-src 'self'`.
+- Landing rebuilt in Hallmark's shape; app in the browser restyled (square, no glass, no device frame, no dot-joined labels); area pages on the same header and container; the globe without glow on both platforms.
+- Demo city: 10 real areas (catalog plus Lekki from OpenStreetMap) as 174 real H3 resolution-8 blocks, one generator for web and Android. Yaba to Lekki is 11.3 km.
+- Android: Midnight colours on the Material roles, square shapes, Mona Sans (wide light cut for headings). Compiles; screens not seen on a device.
+
+
+## 2026-11-16 feat(redesign): Google-Maps-style app on MapLibre and OpenFreeMap, wordmark icon, Insights charts [spec:material-redesign tasks:13-14]
+- Asked for by the human: "Nuke the entire website and app UI… I basically want Google Maps with translucent hex grids… useful graphs and insights… use a real map package." Choices made by the human: MapLibre + OpenFreeMap, wordmark icon, all four Insights groups, landing plus the app in the browser. ADR 0053.
+- Web: MapLibre GL JS 6.16.0 vendored at build into `web/public/vendor/`, page scripts in `web/public/js/` (`map.js`, `data.js`, `charts.js`, `app.js`, `landing.js`), new `/app.css`, `/demo-city.json` route, CSP widened only on map pages. Globe, Mona Sans, `core/shared/geo` and `tools/geo` removed.
+- Data: six weeks of simulated outages and a made-up tariff band per area in `demo-city.json` and `DemoCity.kt`.
+- Android: MapLibre Native 13.7.1 (`OutageMap.kt`, `HexGeoJson.kt`), light theme, Insights from `AreaHistory.kt`; globe removed.
+- Tests: ML1 to ML4; web 337, root 173; the visual check (phone and desktop, full blackout, Light Alarm, offline reload, 44 px targets) passes.
+- Not done: Android screens on a device (task 7).

@@ -25,7 +25,7 @@ This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (tas
 - [x] 3. `StationService`, `PowerReceiver`, notification channel and strings, `StationModeStore`, guarded receiver registration, `START_STICKY`, `onTimeout` handling, blocked-start handling.
   - Depends on: 2, `sensor-android` task 7
   - Requirements: R1, R2, R3, R6, R9
-- [x] 4. Manifest entries in `apps/android` (service with `specialUse` and its property, permissions, receiver) and a manifest check script.
+- [x] 4. Manifest entries in `android/outage` (service with `specialUse` and its property, permissions, receiver) and a manifest check script.
   - Depends on: 2
   - Requirements: R2.1, R10.2
 
@@ -46,7 +46,7 @@ This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (tas
 
 ## Wave 6
 
-- [x] 8. Update `docs/traceability.md` (T1 to T7), `docs/kiro-log.md`, `docs/probe-checklist.md` (Station section: unplug at 100%, Doze, OEMs, boot), and `apps/android/README.md`.
+- [x] 8. Update `docs/traceability.md` (T1 to T7), `docs/kiro-log.md`, `docs/probe-checklist.md` (Station section: unplug at 100%, Doze, OEMs, boot), and `android/outage/README.md`.
   - Depends on: 5, 6, 7
   - Requirements: all
 

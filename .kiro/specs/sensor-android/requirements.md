@@ -4,7 +4,7 @@ Status: APPROVED by delegation on 2026-11-14 (human: "make the right decisions")
 
 ## Introduction
 
-The Sensor is the `sensor` package of the native Kotlin app (`apps/android`, ADR 0012). It watches whether a phone is charging and emits events when charging stops or resumes. When grid power dies, every charging phone in an area stops charging at once. The Sensor turns that into timestamped events that `event-ingest` and `detection-engine` consume.
+The Sensor is the `sensor` package of the native Kotlin app (`android/outage`, ADR 0012). It watches whether a phone is charging and emits events when charging stops or resumes. When grid power dies, every charging phone in an area stops charging at once. The Sensor turns that into timestamped events that `event-ingest` and `detection-engine` consume.
 
 The Sensor does not decide whether an outage happened. It reports facts and its confidence in them.
 
@@ -12,7 +12,7 @@ The Sensor does not decide whether an outage happened. It reports facts and its 
 
 ## Glossary
 
-- **Sensor**: the `sensor` package of `apps/android`.
+- **Sensor**: the `sensor` package of `android/outage`.
 - **Job**: the JobScheduler job with the charging constraint (`setRequiresCharging(true)`).
 - **Detection plug**: AC or dock power. USB-from-computer and wireless are non-detection plugs.
 - **Event types**: `ARMED`, `UNPLUG`, `BATTERY_FULL`, `REPLUG`, `DISARMED`.

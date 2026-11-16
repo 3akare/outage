@@ -1,11 +1,11 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "packages/detection/**"
+fileMatchPattern: "core/detection/**"
 ---
 
 # Detection engine
 
-Live reference: #[[file:packages/detection/README.md]]
+Live reference: #[[file:core/detection/README.md]]
 
 Pure function: `(cell state, events, clock) -> (new state, outputs)`. No I/O, no `Date.now()`. Order- and delay-independent. Every decision carries an explanation (counts, baseline, probability).
 

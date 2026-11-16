@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Static audit of packages/detection against the brief (Part G), ADR 0005 and the detection-engine spec.
+// Static audit of core/detection against the brief (Part G), ADR 0005 and the detection-engine spec.
 // It checks what a script can check; the detection-auditor agent does the judgment work on top of this output.
 //   purity     no clock, randomness, network, storage or Node built-ins in the engine (spec R1.2)
 //   params     every threshold still has the approved value (ADR 0005, Part G); a changed value is an ERROR until the human approves it
@@ -97,7 +97,7 @@ export function auditTests(files) {
     for (const m of text.matchAll(TITLE)) for (const id of m[2].matchAll(/(?<![A-Za-z0-9])P(1[0-2]|[1-9])(?![0-9])/g)) if (!ids.has('P' + id[1])) ids.set('P' + id[1], rel);
     text.split('\n').forEach((l, i) => { if (/\b(it|test|describe)\.(skip|todo)\b|\b(xit|xdescribe|xtest)\(/.test(l)) out.push({ severity: 'error', rule: 'tests', file: rel, line: i + 1, message: 'skipped or todo test (Part H: never mark a task done with skipped tests)' }); });
   }
-  if (!files.length) { out.push({ severity: 'error', rule: 'tests', message: 'no test files under packages/detection' }); return { out, ids }; }
+  if (!files.length) { out.push({ severity: 'error', rule: 'tests', message: 'no test files under core/detection' }); return { out, ids }; }
   for (let i = 1; i <= 12; i++) if (!ids.has('P' + i)) out.push({ severity: 'error', rule: 'tests', message: `property P${i} has no test whose title names it` });
   if (!/fc\.assert\s*\(/.test(all)) out.push({ severity: 'error', rule: 'tests', message: 'no fc.assert call: properties must be tested with fast-check' });
   if (!/FC_NUM_RUNS/.test(all)) out.push({ severity: 'warn', rule: 'tests', message: 'tests do not read FC_NUM_RUNS; the hooks and CI use it to scale runs' });
@@ -107,16 +107,16 @@ export function auditTests(files) {
 }
 
 export function audit(root) {
-  const base = path.join(root, 'packages', 'detection');
+  const base = path.join(root, 'core', 'detection');
   const findings = [];
-  if (!existsSync(path.join(base, 'src'))) return { findings: [{ severity: 'info', rule: 'scope', message: 'packages/detection/src does not exist yet (not scaffolded). Nothing to audit.' }], summary: { errors: 0, warnings: 0, infos: 1 }, properties: {} };
+  if (!existsSync(path.join(base, 'src'))) return { findings: [{ severity: 'info', rule: 'scope', message: 'core/detection/src does not exist yet (not scaffolded). Nothing to audit.' }], summary: { errors: 0, warnings: 0, infos: 1 }, properties: {} };
   const files = walk(base).filter((f) => /\.[cm]?[jt]sx?$/.test(f));
   for (const f of files.filter((x) => !isTest(x) && /[\\/]src[\\/]/.test(x))) {
     const rel = path.relative(root, f).split(path.sep).join('/');
     findings.push(...auditSource(rel, readFileSync(f, 'utf8')));
   }
   const params = files.find((f) => /[\\/]params\.[cm]?[jt]s$/.test(f));
-  if (!params) findings.push({ severity: 'error', rule: 'params', message: 'packages/detection/src/params.ts is missing (R1.4: every threshold lives in one file)' });
+  if (!params) findings.push({ severity: 'error', rule: 'params', message: 'core/detection/src/params.ts is missing (R1.4: every threshold lives in one file)' });
   else findings.push(...auditParams(readFileSync(params, 'utf8')));
   const tests = files.filter(isTest).map((f) => ({ rel: path.relative(root, f).split(path.sep).join('/'), text: readFileSync(f, 'utf8') }));
   const t = auditTests(tests); findings.push(...t.out);

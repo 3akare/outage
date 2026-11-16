@@ -1,4 +1,4 @@
-// Per-device and per-class numbers for the report (field-telemetry R4). Pure; the formulas live in packages/shared.
+// Per-device and per-class numbers for the report (field-telemetry R4). Pure; the formulas live in core/shared.
 import {
   type AliasedDeviceDay,
   alarmRate,

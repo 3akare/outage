@@ -37,4 +37,4 @@ Class = maker and Android major. Station mode is its own class.
 - None. A candidate is a Confirmed outage recorded by 2 or more devices.
 
 ## Parameters in use
-W = 90 s; Possible: k at least 2 and p below 0.05; Confirmed: k at least 3 and p below 0.001; weight cut 0.5; prior 1 per 1,800 s; restore p95 prior 60 s (values read from `packages/detection/src/params.ts`).
+W = 90 s; Possible: k at least 2 and p below 0.05; Confirmed: k at least 3 and p below 0.001; weight cut 0.5; prior 1 per 1,800 s; restore p95 prior 60 s (values read from `core/detection/src/params.ts`).

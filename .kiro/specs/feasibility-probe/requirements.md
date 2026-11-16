@@ -1,6 +1,6 @@
 # Requirements: feasibility-probe (Quick Spec)
 
-Status: Quick Spec, generated without approval gates as the brief allows for this one throwaway probe. Dated 2026-11-14. Design in `design.md`, tasks in `tasks.md`. The probe code is throwaway and lives in `tools/probe/`; delete it after the gate is decided. The numbers and ADRs it produces are not throwaway.
+Status: Quick Spec, generated without approval gates as the brief allows for this one throwaway probe. Dated 2026-11-14. Design in `design.md`, tasks in `tasks.md`. The probe code is throwaway and lives in `android/probe/`; delete it after the gate is decided. The numbers and ADRs it produces are not throwaway.
 
 ## Introduction
 
@@ -76,5 +76,5 @@ THE probe SHALL measure, per device and condition:
 
 ## Decisions
 - Use the human's phones; the matrix is whatever is available. The summary lists coverage gaps honestly.
-- The probe uses `tools/probe/android`, `tools/probe/worker` and `tools/probe/analyze`. These are outside the monorepo layout on purpose, since they are throwaway.
+- The probe uses `android/probe`, `android/probe/worker` and `android/probe/analyze`. These are outside the monorepo layout on purpose, since they are throwaway.
 - New dependencies: none beyond the toolchain approved by ADR 0012 (Kotlin, Gradle, the Android Gradle plugin) and Wrangler, TypeScript and Vitest for the Worker and the analysis. The Android code uses only platform classes (`SQLiteOpenHelper`, `HttpURLConnection`, `JobScheduler`, plain Views).

@@ -6,9 +6,9 @@ on:
   push:
     branches: [main]
     tags: ['probe-v*']
-    paths: ['tools/probe/android/**', 'apps/android/**', 'packages/shared/src/oem-guide.json', '.github/workflows/android.yml']
+    paths: ['android/probe/**', 'android/outage/**', 'core/shared/src/oem-guide.json', '.github/workflows/android.yml']
   pull_request:
-    paths: ['tools/probe/android/**', 'apps/android/**', 'packages/shared/src/oem-guide.json', '.github/workflows/android.yml']
+    paths: ['android/probe/**', 'android/outage/**', 'core/shared/src/oem-guide.json', '.github/workflows/android.yml']
   workflow_dispatch:
 
 permissions:
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: tools/probe/android
+        working-directory: android/probe
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/android
+        working-directory: android/outage
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6

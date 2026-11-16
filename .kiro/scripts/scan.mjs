@@ -48,7 +48,7 @@ const CODE_EXT = /\.(ts|js|mjs|cjs|kt|kts|java|json|xml|gradle)$/;
 const PRIVACY_SKIP = /(^|\/)(node_modules|\.kiro|docs|dist|build|\.gradle|fixtures|__tests__|test|tests|catalog)\/|\.(test|spec)\.[a-z]+$|Test\.kt$|\.md$|package(-lock)?\.json$/;
 
 export function privacyApplies(p) {
-  return CODE_EXT.test(p) && !PRIVACY_SKIP.test(p) && !/^tools\/probe\//.test(p);
+  return CODE_EXT.test(p) && !PRIVACY_SKIP.test(p) && !/^android\/probe\//.test(p);
 }
 
 const PERMISSIONS = /\b(RECORD_AUDIO|ACCESS_FINE_LOCATION|ACCESS_BACKGROUND_LOCATION|READ_CONTACTS|READ_PHONE_STATE|READ_PHONE_NUMBERS|READ_SMS|READ_CALL_LOG|BODY_SENSORS)\b/;

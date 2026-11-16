@@ -4,7 +4,7 @@ Format: Agent Skills standard, one folder per skill with `SKILL.md` (frontmatter
 
 | Skill | Use it for | Data and code it owns | Tests |
 |---|---|---|---|
-| `oem-battery-guide` | Exact steps per phone maker (Tecno, Infinix, itel, Samsung, Xiaomi, Pixel) to stop the OS killing Outage | `packages/shared/src/oem-guide.json`, `scripts/validate-guide.mjs` | 10 |
+| `oem-battery-guide` | Exact steps per phone maker (Tecno, Infinix, itel, Samsung, Xiaomi, Pixel) to stop the OS killing Outage | `core/shared/src/oem-guide.json`, `scripts/validate-guide.mjs` | 10 |
 | `field-report` | One day of telemetry to `docs/field/YYYY-MM-DD.md`, gates, Bugfix Specs for new failures | `scripts/check-report.mjs`, `scripts/new-bugfix.mjs` | 10 |
 | `release-apk` | Tagged Gradle build on GitHub Actions, signed APK check, GitHub release, install page values, smoke test | `scripts/preflight.mjs`, `scripts/apk-info.mjs` | 10 |
 

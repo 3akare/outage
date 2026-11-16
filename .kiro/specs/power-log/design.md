@@ -172,7 +172,7 @@ sequenceDiagram
 
 ## 10. Testing strategy
 
-Property IDs `PL1` to `PL9`. JUnit 4 tests with seeded random inputs for `TimelineBuilder` and `Stats`; the Freezer Guard receiver logic in JVM tests where possible. The upload payload shape (PL8) is checked against the fixtures in `packages/shared/fixtures/`.
+Property IDs `PL1` to `PL9`. JUnit 4 tests with seeded random inputs for `TimelineBuilder` and `Stats`; the Freezer Guard receiver logic in JVM tests where possible. The upload payload shape (PL8) is checked against the fixtures in `core/shared/fixtures/`.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|

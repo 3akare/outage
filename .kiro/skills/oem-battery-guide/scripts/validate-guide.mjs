@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Validate the OEM battery guide (oem-guide.json) against the onboarding spec (R7) and properties O4 and O5.
-// Default file: ../references/oem-guide.json next to this script (the grid-sensing Power), else packages/shared/src/oem-guide.json (the repository).
+// Default file: ../references/oem-guide.json next to this script (the grid-sensing Power), else core/shared/src/oem-guide.json (the repository).
 // No dependencies. Usage:
 //   node validate-guide.mjs [path] [--require-verified] [--json]
 // Exit 0 when valid, 1 on any error. --require-verified also fails if a maker (except "other") has no device check.
@@ -102,7 +102,7 @@ function main() {
   const args = process.argv.slice(2);
   const here = path.dirname(fileURLToPath(import.meta.url));
   const inPower = path.resolve(here, '../references/oem-guide.json');
-  const file = args.find((a) => !a.startsWith('--')) || (existsSync(inPower) ? inPower : path.resolve(here, '../../../../packages/shared/src/oem-guide.json'));
+  const file = args.find((a) => !a.startsWith('--')) || (existsSync(inPower) ? inPower : path.resolve(here, '../../../../core/shared/src/oem-guide.json'));
   let guide;
   try { guide = JSON.parse(readFileSync(file, 'utf8')); } catch (e) { console.error(`cannot read ${file}: ${e.message}`); process.exit(1); }
   const { errors, status } = validateGuide(guide, { requireVerified: args.includes('--require-verified') });

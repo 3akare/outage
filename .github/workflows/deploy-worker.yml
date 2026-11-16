@@ -1,4 +1,4 @@
-# Deploys workers/api to Cloudflare (ADR 0021, guide: docs/deploy.md).
+# Deploys web to Cloudflare (ADR 0021, guide: docs/deploy.md).
 # Skips with a notice, not a failure, until the Cloudflare secrets exist.
 # Wrangler in CI (token and account ID): https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/
 # Wrangler secret commands: https://developers.cloudflare.com/workers/wrangler/commands/workers/#secret
@@ -11,8 +11,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'workers/api/**'
-      - 'packages/**'
+      - 'web/**'
+      - 'core/**'
       - '.github/workflows/deploy-worker.yml'
 
 permissions:
@@ -67,7 +67,7 @@ jobs:
       - name: Deploy the Worker
         id: deploy
         if: steps.gate.outputs.ready == 'true'
-        working-directory: workers/api
+        working-directory: web
         run: |
           set -o pipefail
           npx wrangler deploy 2>&1 | tee "$RUNNER_TEMP/deploy.log"
@@ -84,7 +84,7 @@ jobs:
       # so it is created once and never overwritten. The value is piped, never printed.
       - name: Create INSTALL_TOKEN_SECRET if missing
         if: steps.gate.outputs.ready == 'true'
-        working-directory: workers/api
+        working-directory: web
         run: |
           set -euo pipefail
           npx wrangler secret list --format json > "$RUNNER_TEMP/secrets.json"
@@ -97,7 +97,7 @@ jobs:
 
       - name: Push FIELD_READ_TOKEN if the GitHub secret exists
         if: steps.gate.outputs.ready == 'true'
-        working-directory: workers/api
+        working-directory: web
         env:
           FIELD_READ_TOKEN: ${{ secrets.FIELD_READ_TOKEN }}
         run: |
@@ -113,7 +113,7 @@ jobs:
       # still runs; follow works and queued pushes are dropped as NOT_CONFIGURED until the secret exists.
       - name: Push FCM_SERVICE_ACCOUNT if the GitHub secret exists
         if: steps.gate.outputs.ready == 'true'
-        working-directory: workers/api
+        working-directory: web
         env:
           FCM_SERVICE_ACCOUNT: ${{ secrets.FCM_SERVICE_ACCOUNT }}
         run: |

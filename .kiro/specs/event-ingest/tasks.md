@@ -8,12 +8,12 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 
 ## Wave 1 (no dependencies)
 
-- [x] 1. Scaffold `packages/shared` (TypeScript strict, Vitest, fast-check) and `workers/api` (Wrangler, SQLite-backed DO migration, `config.ts` with the tunables). Root scripts for typecheck, lint and test.
+- [x] 1. Scaffold `core/shared` (TypeScript strict, Vitest, fast-check) and `web` (Wrangler, SQLite-backed DO migration, `config.ts` with the tunables). Root scripts for typecheck, lint and test.
   - Requirements: R1.4, R11.6
 
 ## Wave 2 (needs 1)
 
-- [x] 2. Strict wire schema and hand-written validator in `packages/shared` (`UNKNOWN_FIELD`, `BAD_CELL` via H3 helper, `BAD_ELAPSED`, `TIME_LOST`, `SIMULATED_REJECTED`). Tests I3, I8.
+- [x] 2. Strict wire schema and hand-written validator in `core/shared` (`UNKNOWN_FIELD`, `BAD_CELL` via H3 helper, `BAD_ELAPSED`, `TIME_LOST`, `SIMULATED_REJECTED`). Tests I3, I8.
   - Depends on: 1
   - Requirements: R1, R4, R10.1
 - [x] 3. Install token: HMAC-SHA-256 mint and constant-time verify with WebCrypto. Tests for tamper, wrong secret.
@@ -28,7 +28,7 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 - [x] 5. Area actor core: SQLite schema, idempotency by primary key, token bucket with detection-first policy, `DetectionPort` (receives detection and state events, per the `detection-engine` amendment) with `NoopDetectionPort`. Tests I2, I4, I6.
   - Depends on: 2
   - Requirements: R5, R6, R7.3, R7.4, R10
-- [x] 6. Uploader in `apps/android` (Kotlin, JUnit; contract fixtures in `packages/shared/fixtures/`): ordering, batching, back-off with jitter, send-time `elapsedMs`, ack policy, exclusion of simulated and LOST events. Tests I7.
+- [x] 6. Uploader in `android/outage` (Kotlin, JUnit; contract fixtures in `core/shared/fixtures/`): ordering, batching, back-off with jitter, send-time `elapsedMs`, ack policy, exclusion of simulated and LOST events. Tests I7.
   - Depends on: 2
   - Requirements: R9
 
@@ -49,13 +49,13 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 
 ## Wave 6 (needs 6, 9)
 
-- [x] 10. Wire the Uploader in `apps/android` to the real transport and the Sensor package (after `sensor-android` task 9 exists). Registration flow on first start.
+- [x] 10. Wire the Uploader in `android/outage` to the real transport and the Sensor package (after `sensor-android` task 9 exists). Registration flow on first start.
   - Depends on: 6, 9 and `sensor-android` task 9
   - Requirements: R2.1, R9
 
 ## Wave 7
 
-- [x] 11. Update `docs/traceability.md` (I1 to I9), `docs/kiro-log.md`, and `workers/api/README.md` including the exact human step `wrangler secret put INSTALL_TOKEN_SECRET`. Record measured free-tier usage from a local load run.
+- [x] 11. Update `docs/traceability.md` (I1 to I9), `docs/kiro-log.md`, and `web/README.md` including the exact human step `wrangler secret put INSTALL_TOKEN_SECRET`. Record measured free-tier usage from a local load run.
   - Depends on: 10
   - Requirements: all
 

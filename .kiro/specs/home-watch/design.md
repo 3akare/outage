@@ -214,7 +214,7 @@ erDiagram
 
 ## 10. Testing strategy
 
-Property IDs `H1` to `H8`, Vitest and fast-check (server side). The viewer and station screens in the Kotlin app have JUnit 4 tests on their `ViewModel`s, reading the pair and home-state shapes from `packages/shared/fixtures/`.
+Property IDs `H1` to `H8`, Vitest and fast-check (server side). The viewer and station screens in the Kotlin app have JUnit 4 tests on their `ViewModel`s, reading the pair and home-state shapes from `core/shared/fixtures/`.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|
@@ -227,6 +227,6 @@ Property IDs `H1` to `H8`, Vitest and fast-check (server side). The viewer and s
 | H7 | The multiplexed alarm fires at the earliest due timer, never later than the station silence limit plus one alarm granularity, and re-arms only when it changes. | R6 | `H7_alarm_multiplexer` |
 | H8 | Deleting data from either side leaves no pair, offer or push token for that install. | R1.10, R7.4 | `H8_delete_removes_pairs` |
 
-Other tests: the viewer wording for each state and time zone; a scenario in `tools/sim` (station goes off, router down, reconnects 2 hours later, state corrected); a 60-second push-latency measurement in the device checklist; FCM sender reuse tests from `alerts`; Kotlin tests that parse the pair and home-state fixtures from `packages/shared/fixtures/`.
+Other tests: the viewer wording for each state and time zone; a scenario in `tools/sim` (station goes off, router down, reconnects 2 hours later, state corrected); a 60-second push-latency measurement in the device checklist; FCM sender reuse tests from `alerts`; Kotlin tests that parse the pair and home-state fixtures from `core/shared/fixtures/`.
 
 Traceability: `docs/traceability.md`.

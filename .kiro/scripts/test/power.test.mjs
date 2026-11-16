@@ -83,7 +83,7 @@ test('the Power is portable: no path into the rest of the repository, no secrets
 
 test('copies of project data are identical to their source (sync)', () => {
   const pairs = [
-    ['packages/shared/src/oem-guide.json', 'powers/grid-sensing/skills/oem-battery-guide/references/oem-guide.json'],
+    ['core/shared/src/oem-guide.json', 'powers/grid-sensing/skills/oem-battery-guide/references/oem-guide.json'],
     ['.kiro/skills/oem-battery-guide/scripts/validate-guide.mjs', 'powers/grid-sensing/skills/oem-battery-guide/scripts/validate-guide.mjs'],
     ['.kiro/skills/oem-battery-guide/references/sources.md', 'powers/grid-sensing/skills/oem-battery-guide/references/sources.md'],
   ];

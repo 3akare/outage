@@ -1,6 +1,6 @@
 # Tasks: feasibility-probe (Quick Spec)
 
-Rules: this is the first code in the repo, so the usual rule applies: commit after each task, tests pass, push to `main`. The probe code is throwaway (`tools/probe/`); the docs and ADR it produces are not.
+Rules: this is the first code in the repo, so the usual rule applies: commit after each task, tests pass, push to `main`. The probe code is throwaway (`android/probe/`); the docs and ADR it produces are not.
 
 Highest reasoning effort for tasks 2 and 3 (Kotlin sensor). Checkpoint before tasks 2 and 3. Plan mode first for task 1. Confirm every Android and Cloudflare API with the docs servers and put the doc URL in a comment.
 
@@ -8,7 +8,7 @@ Ask the human before adding any dependency beyond the ADR 0012 toolchain (Kotlin
 
 ## Wave 1
 
-- [x] 1. Scaffold `tools/probe/android` (Kotlin, Gradle, plain Views), `tools/probe/worker` (Wrangler, one SQLite-backed Durable Object), and `tools/probe/analyze` (Vitest), plus `.github/workflows/android.yml` that builds and tests the APK and publishes it to a GitHub Release. Root scripts for typecheck, lint, test. Plan mode first.
+- [x] 1. Scaffold `android/probe` (Kotlin, Gradle, plain Views), `android/probe/worker` (Wrangler, one SQLite-backed Durable Object), and `android/probe/analyze` (Vitest), plus `.github/workflows/android.yml` that builds and tests the APK and publishes it to a GitHub Release. Root scripts for typecheck, lint, test. Plan mode first.
   - Requirements: R1 to R5
 - [x] 2. `docs/probe-checklist.md`: the step-by-step tester script for M1 to M14 with a log sheet for each device, and the phone matrix table.
   - Requirements: R6, R8.3
@@ -48,7 +48,7 @@ Ask the human before adding any dependency beyond the ADR 0012 toolchain (Kotlin
 - [x] 9. (Closed by waiver; result in ADR 0013.) Write `docs/probe/summary.md` and ADR 0013 (gate result and chosen path); update ADR 0001 and ADR 0004 with measured facts; list decisions for the human. If the gate fails, stop and write the options ADR.
   - Depends on: 8
   - Requirements: R8
-- [x] 10. (Closed by waiver; the probe stays archived in `tools/probe/`, and the probe Worker endpoint and token are removed when the human next deploys.) Remove the probe Worker endpoint and token, or record that the human did; decide whether `tools/probe/` is deleted or archived; update `docs/kiro-log.md`.
+- [x] 10. (Closed by waiver; the probe stays archived in `android/probe/`, and the probe Worker endpoint and token are removed when the human next deploys.) Remove the probe Worker endpoint and token, or record that the human did; decide whether `android/probe/` is deleted or archived; update `docs/kiro-log.md`.
   - Depends on: 9
   - Requirements: R7.4
 

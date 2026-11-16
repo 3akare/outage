@@ -70,7 +70,7 @@ function main() {
   else {
     console.log(`${info.file}: ${info.sizeMiB} MiB, sha256 ${info.sha256}`);
     console.log(`package: manifest ${info.hasManifest}, dex ${info.hasDex}, signed v1 ${info.signedV1}, signed v2+ ${info.signedV2plus}`);
-    console.log('\nWorker vars for the /install page (workers/api/wrangler.toml):\n' + toToml(info.wranglerVars));
+    console.log('\nWorker vars for the /install page (web/wrangler.toml):\n' + toToml(info.wranglerVars));
   }
   if (info.problems.length) { console.error('PROBLEMS:\n' + info.problems.map((p) => '  - ' + p).join('\n')); process.exit(1); }
 }

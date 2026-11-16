@@ -11,7 +11,10 @@ When grid power dies, every phone charging in an area stops charging in the same
 Single-player value comes first. The map is the bonus. Every feature must be useful to one person with one charging phone on day one.
 
 - One Android app is both sensor and viewer.
-- The same Cloudflare Worker serves a website for judges on iPhone: a landing page at `/`, a replica of the app at `/app` using real data (map, feed, dock with Home, Insights, Settings), and a clearly separate simulation at `/app/simulate`. Area pages stay public (ADR 0027).
+- The same Cloudflare Worker serves the website: a landing page at `/` (what Outage is, "Try the app in your browser", downloads: Google Play and Aptoide when listed, the APK from GitHub always), and the Android app in the browser at `/app/simulate`, screen for screen on a simulated city, for judges and anyone without an Android phone (ADR 0049). Area pages stay public. `/app` redirects to `/app/simulate`.
+- The app: install, answer "Use my location" or "Not now", land on a full-screen hex map centred on your spot, with a sheet for your spot and feed and a bar of Insights, Home (middle), Settings (ADR 0050).
+- One look everywhere: Hallmark's theme Midnight with Mona Sans from one token file, a real rotating globe as the map, and the Outage mark (ADR 0051, ADR 0052). Use the Hallmark skill (`.agents/skills/hallmark`) for any UI work and keep its Floor. The Material 3 skill was removed at the human's request; do not reinstall it.
+- The simulated city is real Lagos geography: real areas at their real places as real H3 blocks; only the power states are made up (ADR 0052).
 - Open worldwide. Lagos is the proving ground and demo city.
 - Budget: zero. Free tiers only.
 

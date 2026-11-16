@@ -2,7 +2,7 @@
   "name": "@outage/sim",
   "private": true,
   "type": "module",
-  "description": "Simulator and replay builder. Build time only; calls packages/detection as a library.",
+  "description": "Simulator and replay builder. Build time only; calls core/detection as a library.",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest --run",

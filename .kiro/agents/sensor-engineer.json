@@ -1,6 +1,6 @@
 {
   "name": "sensor-engineer",
-  "description": "Kotlin and Android only. Builds and tests the native Kotlin Android app's sensor (JobScheduler charging sensor, Station mode receiver driver, native Light Alarm, outbox) and the throwaway feasibility probe app, from the sensor-android, station-mode, alerts-and-light-alarm and feasibility-probe specs. Use for work under apps/android and tools/probe/android. Hands TypeScript, Worker and detection work back.",
+  "description": "Kotlin and Android only. Builds and tests the native Kotlin Android app's sensor (JobScheduler charging sensor, Station mode receiver driver, native Light Alarm, outbox) and the throwaway feasibility probe app, from the sensor-android, station-mode, alerts-and-light-alarm and feasibility-probe specs. Use for work under android/outage and android/probe. Hands TypeScript, Worker and detection work back.",
   "prompt": "file://./prompts/sensor-engineer.md",
   "model": "claude-opus-4.8",
   "tools": [
@@ -19,7 +19,7 @@
   },
   "resources": [
     "file://.kiro/steering/**/*.md",
-    "file://apps/android/AGENTS.md",
+    "file://android/outage/AGENTS.md",
     "file://.kiro/specs/sensor-android/requirements.md",
     "file://.kiro/specs/sensor-android/design.md",
     "file://.kiro/specs/station-mode/requirements.md",
@@ -34,8 +34,11 @@
           "**"
         ],
         "exclude": [
-          "apps/android/**",
-          "tools/probe/android/**",
+          "android/outage/**",
+          "android/probe/app/**",
+          "android/probe/gradle/**",
+          "android/probe/*.kts",
+          "android/probe/gradle.properties",
           ".github/workflows/android.yml",
           "docs/probe-checklist.md",
           "docs/kiro-log.md",
@@ -53,8 +56,11 @@
       {
         "capability": "fs_write",
         "match": [
-          "apps/android/**",
-          "tools/probe/android/**",
+          "android/outage/**",
+          "android/probe/app/**",
+          "android/probe/gradle/**",
+          "android/probe/*.kts",
+          "android/probe/gradle.properties",
           ".github/workflows/android.yml",
           "docs/probe-checklist.md",
           "docs/kiro-log.md",

@@ -92,7 +92,7 @@ flowchart LR
     T --> FX
     C --> FX
     FX --> APPROVE{owner of the phones approves}
-    APPROVE -->|yes| REPO[commit to packages/detection/fixtures]
+    APPROVE -->|yes| REPO[commit to core/detection/fixtures]
 ```
 
 - The raw recording is never committed. The sanitizer is a script in `tools/sim` with a test that scans output for forbidden shapes (install ID pattern, res-8 cell pattern, ISO dates).
@@ -132,7 +132,7 @@ All text follows `copy.md`. The banner text is "Simulated replay" on the replay 
 
 ## 10. Testing strategy
 
-Property IDs `DM1` to `DM7`. Vitest and fast-check for `tools/sim` and the replay build (DM2, DM4, DM6, DM7 build side). JUnit 4 for the app side (DM1, DM3, DM5, DM7 app side), reading the replay file and `packages/shared/fixtures/`.
+Property IDs `DM1` to `DM7`. Vitest and fast-check for `tools/sim` and the replay build (DM2, DM4, DM6, DM7 build side). JUnit 4 for the app side (DM1, DM3, DM5, DM7 app side), reading the replay file and `core/shared/fixtures/`.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|

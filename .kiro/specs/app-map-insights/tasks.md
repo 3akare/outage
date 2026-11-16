@@ -20,7 +20,7 @@ graph LR
 
 ## Wave 1: data and pure logic
 
-- [x] 1. Worker route `GET /api/map.json` and shared types plus fixture in `packages/shared/fixtures/`. Vitest checks the floor (no cell under 3 phones shows a state, no counts in the output).
+- [x] 1. Worker route `GET /api/map.json` and shared types plus fixture in `core/shared/fixtures/`. Vitest checks the floor (no cell under 3 phones shows a state, no counts in the output).
   - Requirements: R2, R11.2
 - [x] 2. `AreaMap` model, `AreaMapParser` (MiniJson), `MapProjection`, `MapTransform`, hit test. JUnit 4 tests AM1 to AM4. Confirm gesture and Canvas APIs with Context7 first.
   - Depends on: 1
