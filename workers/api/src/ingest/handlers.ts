@@ -6,6 +6,7 @@ import {
   type DeleteRequest,
   type EventResult,
   type EventsResponse,
+  type FollowRequest,
   type DeviceDay,
   type FieldDump,
   generateCode,
@@ -17,6 +18,8 @@ import {
   parseDeleteRequest,
   parseDeviceDay,
   parseEventsRequest,
+  parseFollowRequest,
+  parseUnfollowRequest,
   parseOfferRequest,
   parseRemovePairRequest,
   type RegisterResponse,
@@ -48,6 +51,11 @@ export interface PairingGateway {
   removePair(shard: string, pairId: string, installId: string): Promise<boolean>;
   deleteInstall(shard: string, installId: string): Promise<number>;
 }
+/** Subscriptions live in the area actor of the followed cell's res-7 parent (alerts-and-light-alarm design 5.1). */
+export interface AlertsGateway {
+  follow(parent: string, request: FollowRequest): Promise<void>;
+  unfollow(parent: string, installId: string, cell: string): Promise<void>;
+}
 export interface RegistryGateway {
   isRevoked(installId: string): Promise<boolean>;
   revoke(installId: string): Promise<void>;
@@ -72,6 +80,9 @@ export interface Deps {
   sourceKey(req: Request): Promise<string> | string;
   limiter: RegisterLimiter;
   area: AreaGateway;
+  alerts: AlertsGateway;
+  /** Per-install budget for follow and unfollow (design 5.4); keyed by install ID, memory only. */
+  followLimiter: RegisterLimiter;
   pairing: PairingGateway;
   registry: RegistryGateway;
   cfg: Tunables;
@@ -359,6 +370,34 @@ async function telemetry(req: Request, deps: Deps): Promise<Response> {
   return json(200, { status: 'accepted' });
 }
 
+// ---- POST /v1/follow, /v1/unfollow (alerts-and-light-alarm design 5.4, R6.1, R6.2, R8.5) ---------------------------------
+
+async function follow(req: Request, deps: Deps): Promise<Response> {
+  const body = await readJson(req, deps);
+  if (!body.ok) return body.res;
+  const parsed = parseFollowRequest(body.value); // strict: no extra field, a bad token or window is rejected, nothing stored
+  if (!parsed.ok) return fail(400, 'malformed');
+  const r = parsed.value;
+  if (!(await authorized(req, r.installId, deps, true))) return fail(401, 'unauthorized');
+  const verdict = deps.followLimiter.allow(r.installId, deps.now());
+  if (!verdict.ok) return fail(429, 'rate_limited', retryHeader(verdict.retryAfterMs));
+  await deps.alerts.follow(res7Parent(r.cell), r); // following before coverage is allowed; pushes still need a public status
+  return json(200, { following: true });
+}
+
+async function unfollow(req: Request, deps: Deps): Promise<Response> {
+  const body = await readJson(req, deps);
+  if (!body.ok) return body.res;
+  const parsed = parseUnfollowRequest(body.value);
+  if (!parsed.ok) return fail(400, 'malformed');
+  const r = parsed.value;
+  if (!(await authorized(req, r.installId, deps, true))) return fail(401, 'unauthorized');
+  const verdict = deps.followLimiter.allow(r.installId, deps.now());
+  if (!verdict.ok) return fail(429, 'rate_limited', retryHeader(verdict.retryAfterMs));
+  await deps.alerts.unfollow(res7Parent(r.cell), r.installId, r.cell);
+  return json(200, { following: false });
+}
+
 // ---- GET /v1/admin/field/:day ----------------------------------------------------------------------------------
 
 const ADMIN_FIELD_PREFIX = '/v1/admin/field/';
@@ -400,5 +439,7 @@ const ROUTES: Record<string, { method: string; needsSecret: boolean; handler: (r
   '/v1/pair/claim': { method: 'POST', needsSecret: true, handler: pairClaim },
   '/v1/pair/remove': { method: 'POST', needsSecret: true, handler: pairRemove },
   '/v1/telemetry': { method: 'POST', needsSecret: true, handler: telemetry },
+  '/v1/follow': { method: 'POST', needsSecret: true, handler: follow },
+  '/v1/unfollow': { method: 'POST', needsSecret: true, handler: unfollow },
   '/v1/stats': { method: 'GET', needsSecret: false, handler: stats },
 };

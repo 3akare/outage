@@ -11,6 +11,7 @@ export interface Env {
   PUBLIC_INDEX: DurableObjectNamespace<PublicIndex>;
   TELEMETRY: DurableObjectNamespace<TelemetryActor>;
   FIELD_READ_TOKEN?: string; // wrangler secret put FIELD_READ_TOKEN (never in the repo); protects GET /v1/admin/field/:day
+  FCM_SERVICE_ACCOUNT?: string; // wrangler secret put FCM_SERVICE_ACCOUNT (the Firebase service-account JSON, never in the repo)
   INSTALL_TOKEN_SECRET?: string; // wrangler secret put INSTALL_TOKEN_SECRET (never in the repo)
   // Public site configuration (web-and-area-pages R7.4): plain vars, set by the release-apk skill. Unset = left out.
   SITE_ORIGIN?: string; // e.g. https://outage.example; defaults to the request's origin

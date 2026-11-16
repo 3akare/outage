@@ -95,7 +95,7 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R2 | L4 | `L4_first_answer_wins` | 3 | planned |
 | R7 | L5 | `L5_quiet_window` | 6 | done (`workers/api/test/alerts-planner.test.ts`) |
 | R6 | L6 | `L6_push_planning` | 6 | done (`workers/api/test/alerts-planner.test.ts`) |
-| R8.2, R10.2 | L7 | `L7_token_hygiene_and_delete` | 5 | planned |
+| R8.2, R10.2 | L7 | `L7_token_hygiene_and_delete` | 5 | done (`workers/api/test/alerts-server.test.ts`, `alerts-sql.test.ts`) |
 | R8.1, R8.3 | L8 | `L8_batching_and_retry` | 7 | done (`workers/api/test/alerts-fcm.test.ts`) |
 | R4.1, R4.2 | L9 | `L9_expiry_and_reboot` | 3 | planned |
 | R1.4, R3 | L10 | `L10_replay_equivalence` | 3 | planned |

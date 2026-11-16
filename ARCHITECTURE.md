@@ -242,6 +242,9 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/src/area/pushes.ts` | One push per cell and outage episode |
 | `workers/api/src/alerts/quiet.ts` | Quiet-window test for push channels |
 | `workers/api/src/alerts/strings.ts` | English push texts |
+| `workers/api/src/alerts/core.ts` | Subscriptions and push queue logic for the area actor |
+| `workers/api/src/alerts/store.ts` | SQLite tables for subscriptions, push memory and queue |
+| `workers/api/src/alerts/hook.ts` | Adds public precision to the area actor's pushes |
 | `workers/api/src/alerts/fcm.ts` | FCM HTTP v1 client with service-account token |
 | `workers/api/src/alerts/sender.ts` | Push send loop with batching and back-off |
 | `workers/api/src/alerts/planner.ts` | Plans push messages for followers |
@@ -295,6 +298,9 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/test/area-model.test.ts` | Area model and outbox |
 | `workers/api/test/area-neighbors.test.ts` | Neighbour notices (A6) |
 | `workers/api/test/area-reducer.test.ts` | Reducer properties (A9, A11, A12) |
+| `workers/api/test/alerts-memory-store.ts` | In-memory alerts store for tests |
+| `workers/api/test/alerts-server.test.ts` | Test L7, follow endpoints and the push hook |
+| `workers/api/test/alerts-sql.test.ts` | Alerts store against real SQLite |
 | `workers/api/test/alerts-helpers.ts` | Shared builders for the alerts tests |
 | `workers/api/test/alerts-fcm.test.ts` | Test L8 for the FCM client and send loop |
 | `workers/api/test/alerts-planner.test.ts` | Tests L5, L6, L12 for the push planner |
@@ -370,6 +376,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `packages/shared/src/engine.ts` | Types shared by the engine, Worker and simulator |
 | `packages/shared/src/h3.ts` | H3 helpers |
 | `packages/shared/src/map.ts` | `/api/map.json` types |
+| `packages/shared/src/follow.ts` | Follow and unfollow request shapes |
 | `packages/shared/src/pairing.ts` | Home Watch code alphabet, shard and request shapes |
 | `packages/shared/src/device-day.ts` | Field telemetry device-day schema |
 | `packages/shared/src/field-dump.ts` | Shape of the admin field endpoint's answer |
@@ -388,6 +395,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `packages/shared/test/h3-bits.test.ts` | H3 bit helpers |
 | `packages/shared/test/h3.test.ts` | H3 validation |
 | `packages/shared/test/ingest.test.ts` | Ingest validator |
+| `packages/shared/test/follow.test.ts` | Follow request schema |
 | `packages/shared/test/pairing.test.ts` | Pairing shapes |
 | `packages/shared/test/scaffold.test.ts` | Schema version |
 
@@ -647,5 +655,5 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `docs/probe/2026-11-15-samsung-b.md` | Probe result: Samsung phone, second run (probe v0.0.2) |
 | `docs/probe/2026-11-15-samsung-b.json` | Raw numbers behind the second Samsung result |
 | `docs/wip/detection-engine-notes.md` | Working notes for the detection engine |
-| `docs/adr/` | Architecture decision records 0001 to 0031, one decision each (context, decision, alternatives, consequences) |
+| `docs/adr/` | Architecture decision records 0001 to 0032, one decision each (context, decision, alternatives, consequences) |
 | `docs/visual/` | Website screenshots written by `workers/api/visual/check.mjs` (390 x 844 and `-desktop` 1280 x 800) |

@@ -613,3 +613,11 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `workers/api/src/alerts/sender.ts`: `runSends` sends at most 40 messages per invocation, drops messages older than 10 minutes, removes a subscription on UNREGISTERED, and on a retryable error backs off (1 min doubling, cap 1 h) and holds the rest of the batch.
 - Test L8 in `workers/api/test/alerts-fcm.test.ts` (JWT signature verified with a key generated at run time).
 - Docs checked: FCM error codes, FCM v1 message fields, Google service-account OAuth, Cloudflare Web Crypto. URLs are in the file header comment.
+
+## 2026-11-23 feat(alerts): subscriptions, follow endpoints, push hook, delete [spec:alerts-and-light-alarm task:5]
+- `packages/shared/src/follow.ts`: strict `parseFollowRequest` and `parseUnfollowRequest` (no extra fields, token pattern, window 0..1439 or both null, offset within 14 h).
+- `workers/api/src/alerts/`: `store.ts` (SQLite `subscription`, `push_queue`, `push_sent`), `core.ts` (follow, unfollow, `onPushes`, delete, prune), `hook.ts` (public precision per pushed cell, so pushes only go for cells with a public status). `AreaActor` gained `follow`, `unfollow`, the push hook in `send()`, queue dispatch (40 per invocation), the queue time in its alarm, and deletion in `deleteInstall`.
+- `workers/api/src/ingest/handlers.ts`: `POST /v1/follow` and `/v1/unfollow` with install token, revocation check and a per-install limit. `FCM_SERVICE_ACCOUNT` added to `Env`.
+- `.github/workflows/deploy-worker.yml` pushes `FCM_SERVICE_ACCOUNT` as a Wrangler secret when the GitHub secret is set (piped, not printed); `docs/deploy.md` explains it. ADR 0032 records the storage and sending decisions.
+- Test L7 in `alerts-server.test.ts` (UNREGISTERED removal, delete-my-data, one row per install and cell, endpoints) and `alerts-sql.test.ts` (the real SQL text on SQLite).
+- Note: `npm test` showed a different `post-deploy-check` node test failing on each run in this sandbox when run with the whole suite; they pass alone and on main. The TypeScript suites all pass.

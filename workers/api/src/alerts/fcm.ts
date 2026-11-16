@@ -180,7 +180,8 @@ export class FcmClient implements PushSender {
       }
       const code = errorCodeOf(await res.json().catch(() => null), res.status);
       if (code === 'UNREGISTERED') return { kind: 'unregistered' };
-      if (code === 'QUOTA_EXCEEDED') return { kind: 'retry', reason: 'QUOTA_EXCEEDED', retryAfterMs: retryAfter(res, this.deps.now()) };
+      if (code === 'QUOTA_EXCEEDED')
+        return { kind: 'retry', reason: 'QUOTA_EXCEEDED', retryAfterMs: retryAfter(res, this.deps.now()) };
       if (code === 'UNAVAILABLE' || code === 'INTERNAL' || res.status >= 500) {
         return { kind: 'retry', reason: 'UNAVAILABLE', retryAfterMs: retryAfter(res, this.deps.now()) };
       }

@@ -7,7 +7,12 @@ import { push, sub } from './alerts-helpers.ts';
 import { CELL, ID, NOW, SIBLINGS } from './helpers.ts';
 
 const RUNS = Number(process.env.FC_NUM_RUNS ?? 100);
-const IDS = ['kg4yq7mxwb2ndpr3tfhj5vcsaz', 'aaaaaaaaaaaaaaaaaaaaaaaaaa', 'bbbbbbbbbbbbbbbbbbbbbbbbbb', 'cccccccccccccccccccccccccc'];
+const IDS = [
+  'kg4yq7mxwb2ndpr3tfhj5vcsaz',
+  'aaaaaaaaaaaaaaaaaaaaaaaaaa',
+  'bbbbbbbbbbbbbbbbbbbbbbbbbb',
+  'cccccccccccccccccccccccccc',
+];
 const none = { has: () => false };
 
 describe('L5_quiet_window', () => {
@@ -70,7 +75,9 @@ describe('L6_push_planning', () => {
         const keys = out.map((m) => sentKey(m.installId, m.cell, m.episodeId, m.kind));
         expect(new Set(keys).size).toBe(keys.length);
         for (const m of out) {
-          expect(subs.some((s) => s.installId === m.installId && s.cell === m.cell && s.kinds.includes(m.kind))).toBe(true);
+          expect(subs.some((s) => s.installId === m.installId && s.cell === m.cell && s.kinds.includes(m.kind))).toBe(
+            true,
+          );
           expect(`${m.title} ${m.body}`).not.toMatch(/\d/); // no number, so none under 3 (R6.6)
           const text = JSON.stringify(m.data) + m.title + m.body;
           for (const id of IDS) expect(text).not.toContain(id);

@@ -10,6 +10,8 @@ import { NoopDetectionPort } from '../src/ingest/ports.ts';
 import { fieldDump, uploadDay } from '../src/telemetry/core.ts';
 import { mintToken } from '../src/ingest/token.ts';
 import { MemoryTelemetryStore } from './telemetry-store.ts';
+import { AlertsCore } from '../src/alerts/core.ts';
+import { MemAlertsStore } from './alerts-memory-store.ts';
 
 export const SECRET = 'test-secret';
 export const FIELD_BEARER = 'field-test-bearer';
@@ -142,8 +144,18 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
   const revoked = new Set<string>();
   const shards = new Map<string, { store: MemoryPairStore; core: PairingCore }>();
   const telemetryStore = new MemoryTelemetryStore();
+  const alertStores = new Map<string, MemAlertsStore>();
+  const alertsOf = (parent: string) => {
+    let a = alertStores.get(parent);
+    if (!a) {
+      a = new MemAlertsStore();
+      alertStores.set(parent, a);
+    }
+    return a;
+  };
   const world = {
     telemetryStore,
+    alertsOf,
     now: NOW,
     shards,
     shard(name: string) {
@@ -198,9 +210,19 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
       },
       async deleteInstall(parent, installId) {
         if (world.failParents.has(parent)) throw new Error('actor down');
-        return world.area(parent).core.deleteInstall(installId);
+        return world.area(parent).core.deleteInstall(installId) + alertsOf(parent).deleteInstall(installId);
       },
     },
+    alerts: {
+      async follow(parent, request) {
+        if (world.failParents.has(parent)) throw new Error('actor down');
+        new AlertsCore(alertsOf(parent)).follow(request, world.now);
+      },
+      async unfollow(parent, installId, cell) {
+        new AlertsCore(alertsOf(parent)).unfollow(installId, cell);
+      },
+    },
+    followLimiter: new RegisterLimiter(cfg.FOLLOW_PER_INSTALL_PER_HOUR),
     pairing: {
       async createOffer(shard, input) {
         return world.shard(shard).core.createOffer(input);

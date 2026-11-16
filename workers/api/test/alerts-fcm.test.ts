@@ -1,6 +1,13 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { backoffMs, FcmClient, type FcmOutgoing, type PushSender, type SendResult, signAssertion } from '../src/alerts/fcm.ts';
+import {
+  backoffMs,
+  FcmClient,
+  type FcmOutgoing,
+  type PushSender,
+  type SendResult,
+  signAssertion,
+} from '../src/alerts/fcm.ts';
 import { plan, sentKey } from '../src/alerts/planner.ts';
 import { MAX_SENDS_PER_INVOCATION, type PushQueue, type QueuedMessage, runSends } from '../src/alerts/sender.ts';
 import { CELL, NOW } from './helpers.ts';
@@ -20,7 +27,11 @@ async function makeAccount() {
   let bin = '';
   for (const b of der) bin += String.fromCharCode(b);
   const pem = `-----BEGIN ${PEM_LABEL}-----\n${btoa(bin).replace(/(.{64})/g, '$1\n')}\n-----END ${PEM_LABEL}-----\n`;
-  const secret = JSON.stringify({ project_id: 'demo-project', client_email: 'svc@demo-project.iam.example', private_key: pem });
+  const secret = JSON.stringify({
+    project_id: 'demo-project',
+    client_email: 'svc@demo-project.iam.example',
+    private_key: pem,
+  });
   return { secret, pem, publicKey: pair.publicKey };
 }
 
@@ -67,7 +78,9 @@ describe('L8_fcm_client', () => {
       exp: Math.floor(NOW / 1000) + 3600,
     });
     const sig = Uint8Array.from(unb64(s), (ch) => ch.charCodeAt(0));
-    expect(await crypto.subtle.verify('RSASSA-PKCS1-v1_5', publicKey, sig, new TextEncoder().encode(`${h}.${c}`))).toBe(true);
+    expect(await crypto.subtle.verify('RSASSA-PKCS1-v1_5', publicKey, sig, new TextEncoder().encode(`${h}.${c}`))).toBe(
+      true,
+    );
   });
 
   it('caches the access token across sends, and sends one message per request', async () => {
@@ -99,7 +112,10 @@ describe('L8_fcm_client', () => {
     const { secret } = await makeAccount();
     const cases: [() => Response, SendResult][] = [
       [() => err(404, 'UNREGISTERED'), { kind: 'unregistered' }],
-      [() => err(429, 'QUOTA_EXCEEDED', { 'retry-after': '120' }), { kind: 'retry', reason: 'QUOTA_EXCEEDED', retryAfterMs: 120_000 }],
+      [
+        () => err(429, 'QUOTA_EXCEEDED', { 'retry-after': '120' }),
+        { kind: 'retry', reason: 'QUOTA_EXCEEDED', retryAfterMs: 120_000 },
+      ],
       [() => err(503, 'UNAVAILABLE'), { kind: 'retry', reason: 'UNAVAILABLE', retryAfterMs: null }],
       [() => err(500, 'INTERNAL'), { kind: 'retry', reason: 'UNAVAILABLE', retryAfterMs: null }],
       [() => err(400, 'INVALID_ARGUMENT'), { kind: 'drop', code: 'INVALID_ARGUMENT' }],
@@ -216,10 +232,12 @@ describe('L8_batching_and_retry', () => {
     const row = { ...(m as NonNullable<typeof m>), attempts: 0, nextTryMs: NOW };
     q.rows = [row];
     let calls = 0;
-    const sender: PushSender = { send: async () => {
+    const sender: PushSender = {
+      send: async () => {
         calls++;
         return { kind: 'ok', name: null };
-      } };
+      },
+    };
     await runSends(q, sender, NOW);
     await runSends(q, sender, NOW + 1);
     expect(calls).toBe(1);
