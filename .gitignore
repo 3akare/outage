@@ -35,3 +35,4 @@ google-services.json
 
 # NOTE: never ignore /.kiro. It is the evidence judges score (the evidence-guard hook blocks it).
 web/public/vendor/
+.claude/worktrees/
