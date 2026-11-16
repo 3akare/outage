@@ -240,6 +240,9 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/src/area/links.ts` | Links outages in nearby cells into groups |
 | `workers/api/src/area/hints.ts` | Builds detection hints from neighbours and linked cells |
 | `workers/api/src/area/pushes.ts` | One push per cell and outage episode |
+| `workers/api/src/alerts/quiet.ts` | Quiet-window test for push channels |
+| `workers/api/src/alerts/strings.ts` | English push texts |
+| `workers/api/src/alerts/planner.ts` | Plans push messages for followers |
 | `workers/api/src/area/view.ts` | Builds the public view field by field from a whitelist |
 | `workers/api/src/area/field.ts` | Field-test records (outages and misses) from the reducer |
 | `workers/api/src/pairing/actor.ts` | `PairingActor` Durable Object for Home Watch |
@@ -290,6 +293,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/test/area-model.test.ts` | Area model and outbox |
 | `workers/api/test/area-neighbors.test.ts` | Neighbour notices (A6) |
 | `workers/api/test/area-reducer.test.ts` | Reducer properties (A9, A11, A12) |
+| `workers/api/test/alerts-planner.test.ts` | Tests L5, L6, L12 for the push planner |
 | `workers/api/test/area-scenarios.test.ts` | End-to-end area scenarios |
 | `workers/api/test/area-scope.test.ts` | Scope selection (A1 to A3) |
 | `workers/api/test/area-view.test.ts` | Public view whitelist (A8) |
