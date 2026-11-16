@@ -620,3 +620,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - First run already started the sensor (afa2008). Added Settings "Power sensor" switch and "Battery setup" screen (oem-guide.json steps plus the exemption prompt), `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`.
 - Docs: android and Worker READMEs, probe-checklist Station section, ARCHITECTURE.md. Station-mode task 1 deferred in ADR 0034. Load run needs a person.
 - Only `assembleDebug` was run, by instruction.
+
+## fix(sensor): string pack and agent resource limits [spec:sensor-android task:12]
+- `StringPackTest` AS7 (app-shell R7) failed on the battery step line `Text("${i + 1}. $s")`. Moved to string resource `battery_step_item`.
+- `agents.test.mjs` limit (85,000 characters of file:// resources) failed for `sensor-engineer`. Dropped ADR 0001 and sensor-android `tasks.md` from its resources. No test changed.
+- Full checks now exit 0: Gradle testDebugUnitTest, lint and assembleDebug; npm test, lint and typecheck; spec-lint; architecture test. This replaces the "only assembleDebug" note above.
