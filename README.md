@@ -23,7 +23,7 @@ web/          One Cloudflare Worker. The phone and the browser both talk to it.
 core/
   detection/  The engine that decides "this is a blackout". Pure TypeScript, no I/O.
   shared/     The wire format between phone and server, test fixtures, design tokens
-tools/        sim (builds the replay), field (daily field report), tokens (design tokens), icon (the wordmark and icons)
+tools/        sim (builds the replay), field (daily field report), tokens (design tokens), icon (the mark and the Lucide icons)
 powers/       A Kiro Power that packages the reusable skills
 docs/         Decisions (adr/), build log, status, traceability
 .kiro/        Kiro steering, specs, hooks, skills and agents
@@ -53,8 +53,8 @@ Each folder has its own `README.md` with the detail: `android/outage/README.md`,
 | An API the phone calls | `web/api/ingest/handlers.ts` |
 | The wire format | `core/shared/src/ingest.ts`, then `android/outage/app/src/main/kotlin/app/outage/net/Wire.kt` |
 | A detection threshold | `core/detection/src/params.ts` (needs an ADR first) |
-| Colours, type, shapes | `core/shared/design/tokens.json`, then `node tools/tokens/build.mjs` |
-| The app icon, the mark, icons | `tools/icon/build.mjs` and `core/shared/design/icons.json`, then `node tools/icon/build.mjs` |
+| Colours, type, shapes | `core/shared/design/tokens.json`, then `node tools/tokens/build.mjs` (the system: `docs/design/daylight.md`) |
+| The app icon, the mark, icons | `tools/icon/build.mjs`; icons come from Lucide via `tools/icon/lucide.mjs` into `core/shared/design/icons.json`, then `node tools/icon/build.mjs` |
 | The list of Lagos areas | `web/areas/catalog/catalog.source.json` |
 
 ## Commands

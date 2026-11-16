@@ -113,6 +113,9 @@ try {
     await pg.click('.scrim button[data-a="1"]');
     await pg.waitForTimeout(600);
     await pg.waitForTimeout(3400); // the fly-in to the spot
+    await pg.screenshot({ path: `${SHOTS}/simulate-home${tag}.png` });
+    await pg.click('nav.rail button[data-tab="map"]');
+    await pg.waitForTimeout(1200);
     const map = await pg.evaluate(() => {
       const c = document.querySelector('#map canvas.maplibregl-canvas');
       return { w: c?.width ?? 0, h: c?.height ?? 0 };
@@ -120,9 +123,14 @@ try {
     if (map.w < 100 || map.h < 100) fail(where, `street map not drawn: ${JSON.stringify(map)}`);
     else ok(where, `MapLibre street map drawn ${map.w}x${map.h}, flew to the spot`);
     const bar = await pg.locator('nav.rail button').allInnerTexts();
-    if (bar.map((s) => s.trim()).join(',') !== 'Insights,Home,Settings') fail(where, `bar is ${bar.join(',')}`);
-    else ok(where, 'bar is Insights, Home, Settings');
-    await pg.screenshot({ path: `${SHOTS}/simulate-home${tag}.png` });
+    if (bar.map((s) => s.trim()).join(',') !== 'Now,Map,Insights,Settings') fail(where, `bar is ${bar.join(',')}`);
+    else ok(where, 'bar is Now, Map, Insights, Settings');
+    await pg.screenshot({ path: `${SHOTS}/simulate-map${tag}.png` });
+    await pg.click('#map', { position: { x: Math.round(size.w / 2), y: Math.round((size.h - 140) / 2) } });
+    await pg.waitForTimeout(1600);
+    await pg.screenshot({ path: `${SHOTS}/simulate-area${tag}.png` });
+    await pg.click('nav.rail button[data-tab="now"]');
+    await pg.waitForTimeout(300);
     await pg.waitForFunction(() => !document.getElementById('go').disabled);
     await pg.click('#go');
     for (const [state, name] of [['POSSIBLE', 'possible'], ['CONFIRMED', 'confirmed']]) {
@@ -201,7 +209,7 @@ try {
       for (const k of await caches.keys()) for (const r of await (await caches.open(k)).keys()) out.push(new URL(r.url).pathname);
       return out.sort();
     });
-    const allowed = ['/app/simulate', '/js/app.js', '/js/map.js', '/js/data.js', '/js/charts.js', '/app.css', '/favicon.svg', '/demo-city.json',
+    const allowed = ['/app/simulate', '/fonts/inter.woff2', '/js/app.js', '/js/map.js', '/js/data.js', '/js/charts.js', '/app.css', '/favicon.svg', '/demo-city.json',
       '/vendor/maplibre-gl/maplibre-gl.mjs', '/vendor/maplibre-gl/maplibre-gl-worker.mjs', '/vendor/maplibre-gl/maplibre-gl.css', '/api/v1/public/judge/replay'];
     if (cached.every((p) => allowed.includes(p))) ok('cache', `only simulation files cached (${cached.join(', ')})`);
     else fail('cache', `unexpected cache entries: ${cached.join(', ')}`);

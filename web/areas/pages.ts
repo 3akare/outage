@@ -38,7 +38,7 @@ export const formatOffset = (tzOffsetMin: number): string => {
 
 function installButtons(site: Site): string {
   const href = site.apkUrl ? (safeHref(site.apkUrl) ?? '/install') : '/install';
-  return `<p><a class="btn" href="${e(href)}">Install Outage (Android)</a><a class="btn alt" href="/app/simulate">Try the app in your browser</a></p>`;
+  return `<div class="actions"><a class="btn primary" href="${e(href)}">Install Outage (Android)</a><a class="btn" href="/app/simulate">Try the app in your browser</a></div>`;
 }
 
 /** The five-state legend. "Your spot only" is described as private to one phone (R2.3). */
@@ -77,8 +77,8 @@ function statusBlock(status: AreaStatus, views: Views, tz: number, lang: Lang, a
   const precision = status.precision === 'CELL' ? '' : `<p class="note precision">${e(PRECISION_LABEL[status.precision])}</p>`;
   return (
     `<section id="status" class="state" data-state="${status.kind}"${apiAttr} aria-live="polite">` +
-    `<p class="label">${e(t.label)}</p><p class="sentence">${e(t.sentence)}</p>` +
-    `<p class="since">${e(sinceLine(status, tz))}</p>${precision}<p class="note">${e(PHONES_TEXT)}</p></section>`
+    `<div class="state-top"><p class="label">${e(t.label)}</p><p class="sentence">${e(t.sentence)}</p></div>` +
+    `<div class="state-bottom"><p class="since">${e(sinceLine(status, tz))}</p>${precision}<p class="note">${e(PHONES_TEXT)}</p></div></section>`
   );
 }
 
@@ -165,8 +165,8 @@ export function renderHomePage(input: HomePageInput): Rendered {
     .join('');
   const body =
     '<main><h1>Is there power in your area right now?</h1><p>Your phone charger is a power-grid sensor.</p>' +
-    '<p><a class="btn alt" href="/app/simulate">Try the app in your browser</a>' +
-    `<a class="btn" href="${e(site.apkUrl ? (safeHref(site.apkUrl) ?? '/install') : '/install')}">Install Outage (Android)</a></p>` +
+    '<div class="actions"><a class="btn primary" href="/app/simulate">Try the app in your browser</a>' +
+    `<a class="btn" href="${e(site.apkUrl ? (safeHref(site.apkUrl) ?? '/install') : '/install')}">Install Outage (Android)</a></div>` +
     (views === null ? `<p class="note">${e(UNAVAILABLE_TEXT)}</p>` : '') +
     renderMap(areas, states) +
     `<h2>Areas</h2>${areas.length ? `<ul class="plain">${list}</ul>` : '<p>Areas appear here once their places are checked.</p>'}` +
@@ -189,7 +189,7 @@ export function renderInstallPage(input: { site: Site; install: InstallInfo | nu
     const mb = Number.isFinite(install.sizeBytes) && install.sizeBytes > 0 ? `${(install.sizeBytes / 1_048_576).toFixed(1)} MB` : null;
     const sha = /^[0-9a-fA-F]{64}$/.test(install.sha256) ? install.sha256.toLowerCase() : null;
     details =
-      `<p><a class="btn" href="${e(href)}">Download the APK</a></p><ul class="list"><li>Version: ${e(install.version)}</li>` +
+      `<div class="actions"><a class="btn primary" href="${e(href)}">Download the APK</a></div><ul class="list"><li>Version: ${e(install.version)}</li>` +
       (mb ? `<li>Size: ${e(mb)}</li>` : '') +
       (sha ? `<li>SHA-256: <code>${e(sha)}</code></li>` : '') +
       '</ul>';

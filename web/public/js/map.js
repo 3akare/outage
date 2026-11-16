@@ -1,4 +1,4 @@
-// The street map with the power layer on top (ADR 0053). MapLibre GL JS (BSD-3-Clause), served from this origin, draws
+// The street map with the power layer on top (ADR 0053, ADR 0054). MapLibre GL JS (BSD-3-Clause), served from this origin, draws
 // OpenFreeMap's "Liberty" street map (OpenStreetMap data, no key). Over it, every block of the simulated city is a
 // see-through hexagon coloured by its power state, laid under the street and place names so they stay readable.
 // Zoomed out, the map is a globe; zoomed in, a flat street map.
@@ -7,14 +7,19 @@ import { AttributionControl, Map as MapLibre } from '/vendor/maplibre-gl/maplibr
 export const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
 export const LAGOS = [3.42, 6.52];
 
-// The power colours of the hex layer (tokens.json "map", the same on the phone).
+// The power colours of the hex layer come from the stylesheet's tokens (tokens.json "map", the same on the phone), so
+// this file holds no colour of its own. MapLibre needs real colour strings, so they are read once from :root.
+const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 export const MAP_COLOURS = {
-  NORMAL: '#34a853',
-  POSSIBLE: '#fbbc04',
-  CONFIRMED: '#ea4335',
-  RESTORED: '#12b5cb',
-  NO_DATA: '#9aa0a6',
+  NORMAL: token('--map-normal'),
+  POSSIBLE: token('--map-possible'),
+  CONFIRMED: token('--map-confirmed'),
+  RESTORED: token('--map-restored'),
+  NO_DATA: token('--map-nodata'),
 };
+const INK = token('--c-ink');
+const PAPER = token('--c-paper');
+const DOT = token('--c-focus');
 const colourBy = ['match', ['get', 'state'], ...Object.entries(MAP_COLOURS).flat(), MAP_COLOURS.NO_DATA];
 
 /** GeoJSON of the blocks: rings are [lat, lng] in the city file, GeoJSON wants [lng, lat] and a closed ring. */
@@ -80,7 +85,7 @@ export function createMap(container, city, opts = {}) {
         source: 'cells',
         paint: {
           'fill-color': colourBy,
-          'fill-opacity': ['case', ['==', ['get', 'state'], 'NO_DATA'], 0.16, ['boolean', ['feature-state', 'hover'], false], 0.55, 0.4],
+          'fill-opacity': ['case', ['==', ['get', 'state'], 'NO_DATA'], 0.12, ['boolean', ['feature-state', 'hover'], false], 0.5, 0.34],
         },
       },
       firstLabel,
@@ -93,7 +98,7 @@ export function createMap(container, city, opts = {}) {
         paint: {
           'line-color': colourBy,
           'line-width': ['interpolate', ['linear'], ['zoom'], 9, 0.4, 13, 1, 16, 2],
-          'line-opacity': 0.85,
+          'line-opacity': 0.7,
         },
       },
       firstLabel,
@@ -103,20 +108,20 @@ export function createMap(container, city, opts = {}) {
       type: 'line',
       source: 'cells',
       filter: ['==', ['get', 'id'], ''],
-      paint: { 'line-color': '#202124', 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 1.5, 15, 3.5] },
+      paint: { 'line-color': INK, 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 1.5, 15, 3.5] },
     });
     map.addSource('spot', { type: 'geojson', data: point(spot) });
     map.addLayer({
       id: 'spot-halo',
       type: 'circle',
       source: 'spot',
-      paint: { 'circle-radius': 18, 'circle-color': '#1b6ef3', 'circle-opacity': 0.18 },
+      paint: { 'circle-radius': 22, 'circle-color': DOT, 'circle-opacity': 0.16 },
     });
     map.addLayer({
       id: 'spot-dot',
       type: 'circle',
       source: 'spot',
-      paint: { 'circle-radius': 7, 'circle-color': '#1b6ef3', 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2.5 },
+      paint: { 'circle-radius': 8, 'circle-color': DOT, 'circle-stroke-color': PAPER, 'circle-stroke-width': 3 },
     });
 
     let hover = null;
