@@ -89,6 +89,7 @@
 
     <!-- Onboarding: battery step label (R7.4) -->
     <string name="battery_general_steps">General steps. Names may differ on your phone.</string>
+    <string name="battery_step_item" translatable="false">%1$d. %2$s</string>
     <string name="battery_verified_steps">Checked on a %1$s phone.</string>
 
     <!-- Light Alarm and prompt (alerts-and-light-alarm, string pack L12) -->

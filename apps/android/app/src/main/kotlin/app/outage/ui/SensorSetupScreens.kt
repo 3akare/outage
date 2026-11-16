@@ -55,7 +55,7 @@ fun BatterySetupScreen() {
             )
             maker.stepGroups.forEach { g ->
                 Text(g.title, style = MaterialTheme.typography.titleMedium)
-                g.steps.forEachIndexed { i, s -> Text("${i + 1}. $s") }
+                g.steps.forEachIndexed { i, s -> Text(stringResource(R.string.battery_step_item, i + 1, s)) }
             }
         }
     }
