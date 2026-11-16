@@ -5,6 +5,8 @@ import type { TelemetryActor } from './api/telemetry/actor.ts';
 import type { PublicIndex } from './api/public-index/actor.ts';
 
 export interface Env {
+  /** This deploy's version (wrangler.jsonc version_metadata); keys the page cache so a deploy shows at once. */
+  CF_VERSION_METADATA?: WorkerVersionMetadata;
   AREA: DurableObjectNamespace<AreaActor>;
   REGISTRY: DurableObjectNamespace<RegistryActor>;
   PAIRING: DurableObjectNamespace<PairingActor>;
