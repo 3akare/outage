@@ -1,11 +1,11 @@
-// kotlin-check: run the Kotlin unit tests after a change under apps/android or tools/probe/android (**.kt).
+// kotlin-check: run the Kotlin unit tests after a change under android/outage or android/probe (**.kt).
 // Triggers: PostFileSave (IDE, CLI v3) and PostToolUse write (Kiro Web). Also called by verify.mjs with --run.
 // It uses .kiro/scripts/android-sandbox.sh, which needs the SDK from `android-sandbox.sh setup`. Without the SDK it says so and skips.
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { debounced, extractWrites, ROOT, readPayload, run, say, tail, toolKind } from './lib.mjs';
 
-const PROJECTS = ['apps/android', 'tools/probe/android'];
+const PROJECTS = ['android/outage', 'android/probe'];
 const force = process.argv.includes('--run');
 let touched = PROJECTS;
 if (!force) {

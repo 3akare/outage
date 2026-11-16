@@ -1,12 +1,12 @@
 // alerts-and-light-alarm task 9: what the push planner would queue for followers during a simulated outage. Build time only.
-// It calls the real PushPlanner (workers/api) on the CONFIRMED and RESTORED frames of a replay and returns the planned
+// It calls the real PushPlanner (web) on the CONFIRMED and RESTORED frames of a replay and returns the planned
 // messages marked simulated. Nothing here imports the sender or FCM client, so nothing can be sent (R6, R8).
 import {
   type AreaPush,
   type PlannedMessage,
   plan,
   type Subscription,
-} from '../../../workers/api/src/alerts/planner.ts';
+} from '../../../web/api/alerts/planner.ts';
 import type { Replay } from './replay.ts';
 
 export interface SimulatedPushPlan {

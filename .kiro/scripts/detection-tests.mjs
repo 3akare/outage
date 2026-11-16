@@ -1,4 +1,4 @@
-// PostToolUse (write): after a write under packages/detection, run the fast-check suite and return failures.
+// PostToolUse (write): after a write under core/detection, run the fast-check suite and return failures.
 // Output goes to stdout with exit 0 so the agent always sees it (docs: stdout of exit 0 is added to context).
 // Never installs anything: uses `npx --no-install`.
 import { readPayload, toolKind, extractWrites, say, run, exists, debounced, tail, ROOT } from './lib.mjs';
@@ -6,15 +6,15 @@ import path from 'node:path';
 
 const payload = readPayload();
 if (toolKind(payload) !== 'write') process.exit(0);
-const touched = extractWrites(payload).map((w) => w.path).filter((p) => p.startsWith('packages/detection/') && /\.(ts|json)$/.test(p));
+const touched = extractWrites(payload).map((w) => w.path).filter((p) => p.startsWith('core/detection/') && /\.(ts|json)$/.test(p));
 if (!touched.length) process.exit(0);
 if (debounced('detection-tests:' + touched.join(','), 8000)) process.exit(0);
 
-if (!exists('packages/detection/package.json')) {
-  say('detection-tests: packages/detection is not scaffolded yet (no package.json). Skipped.');
+if (!exists('core/detection/package.json')) {
+  say('detection-tests: core/detection is not scaffolded yet (no package.json). Skipped.');
   process.exit(0);
 }
-const r = run('npx', ['--no-install', 'vitest', '--run', '--dir', 'packages/detection'], {
+const r = run('npx', ['--no-install', 'vitest', '--run', '--dir', 'core/detection'], {
   timeout: 170000,
   env: { FC_NUM_RUNS: process.env.FC_NUM_RUNS || '100' },
   cwd: path.join(ROOT),

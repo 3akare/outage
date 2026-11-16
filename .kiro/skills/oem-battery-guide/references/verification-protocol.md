@@ -10,7 +10,7 @@ Needs the Outage probe app or the real app installed, a charger, and 12 hours. R
 
 ## Apply the steps
 
-4. Open `packages/shared/src/oem-guide.json` and the maker's entry. Follow every step exactly in order, as a stranger would. Do not use knowledge the steps do not contain.
+4. Open `core/shared/src/oem-guide.json` and the maker's entry. Follow every step exactly in order, as a stranger would. Do not use knowledge the steps do not contain.
 5. For each step write down: found as written, found under another name (write the real name), or not found.
 6. Tick every checklist item the phone lets you confirm. For `battery_exemption` confirm in the app (it reads `isIgnoringBatteryOptimizations`).
 

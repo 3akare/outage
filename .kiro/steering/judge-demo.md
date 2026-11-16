@@ -16,9 +16,9 @@ Check the website the way a judge on an iPhone sees it (ADR 0027, spec `ux-redes
 
 ## Visual check (ux-redesign task 8)
 
-Repeat with `bash workers/api/visual/run.sh` (ADR 0019).
+Repeat with `bash web/visual/run.sh` (ADR 0019).
 
-Serve: `cd workers/api && npx wrangler dev` (http://localhost:8787). With the Playwright power, take a screenshot and a snapshot of each URL at **390 x 844** (`browser_resize`) and at **1280 x 800**. Save to `docs/visual/`.
+Serve: `cd web && npx wrangler dev` (http://localhost:8787). With the Playwright power, take a screenshot and a snapshot of each URL at **390 x 844** (`browser_resize`) and at **1280 x 800**. Save to `docs/visual/`.
 
 | URL | Check |
 |---|---|

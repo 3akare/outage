@@ -9,8 +9,10 @@ Active specs: sensor-android and station-mode (receiver primary, job backup, ADR
 
 Redesign (2026-11-22): spec `ux-redesign` and ADRs 0026 to 0028 written. Web becomes landing `/`, replica `/app`, simulation `/app/simulate`; app dock becomes Home, Insights, Settings with a one-step first run. Next: tokens (task 2), then web shell and landing (task 3).
 
+Layout (2026-11-24, ADR 0047): `android/outage` and `android/probe`, `web` (`api`, `landing`, `ui`, `areas`), `core/detection` and `core/shared`. Old paths in the log and older ADRs translate through ADR 0047.
+
 ## Live
-- Worker deployed at https://outage-api.bakaredavid007.workers.dev (deploy-worker.yml, 2026-11-21). Android builds default to it (ADR 0024). `/area/<slug>` returns 404 until a person fills `checkedBy` in `workers/api/src/web/catalog/catalog.source.json` (W7); the phone map already shows catalog cells as NO_DATA. `FIELD_READ_TOKEN` is still unset.
+- Worker deployed at https://outage-api.bakaredavid007.workers.dev (deploy-worker.yml, 2026-11-21). Android builds default to it (ADR 0024). `/area/<slug>` returns 404 until a person fills `checkedBy` in `web/areas/catalog/catalog.source.json` (W7); the phone map already shows catalog cells as NO_DATA. `FIELD_READ_TOKEN` is still unset.
 
 ## Done
 - Steering (15 files), 13 specs with requirements, design and tasks, ADRs 0001 to 0012 (0012 = native Kotlin stack), hooks and tests for the hook scripts, three skills (oem-battery-guide, field-report, release-apk) with scripts and tests, three custom agents (sensor-engineer, detection-auditor, pitch-writer), MCP config (cloudflare-docs, context7 live; github disabled until a token exists), the grid-sensing Power, spec-lint. 148 tests pass with `npm test`.

@@ -47,7 +47,7 @@ Anything marked "Confirm" is unverified until the named task checks it with Cont
 
 - A cell appears only if it is in the catalog. A cell under the floor appears with `state: "NO_DATA"` and no history, the same as a cell with no sensors (ADR 0007).
 - No member count, no device id. The Worker builds `ring` from `cellToBoundary` (already used for the SVG map, ADR 0010).
-- Types and a fixture go in `packages/shared` so both the Worker tests and the Kotlin tests read the same file (`structure.md`).
+- Types and a fixture go in `core/shared` so both the Worker tests and the Kotlin tests read the same file (`structure.md`).
 
 ### Kotlin model (pure)
 ```
@@ -73,7 +73,7 @@ data class InsightsState(range, counts, hoursPerDay, heatmap, longest, weeklyTre
 
 ## 3a. Data model and flow
 
-The data model is the map JSON and the Kotlin types in section 3. The shared TypeScript type is `packages/shared/src/map.ts` and the fixture is `packages/shared/fixtures/map/map.json`.
+The data model is the map JSON and the Kotlin types in section 3. The shared TypeScript type is `core/shared/src/map.ts` and the fixture is `core/shared/fixtures/map/map.json`.
 
 ```mermaid
 sequenceDiagram
@@ -160,7 +160,7 @@ Instrumented drawing is checked by a screenshot pass on an emulator or the field
 ## 7a. Testing strategy
 
 - Pure Kotlin logic is tested on the JVM with JUnit 4: `MapTest.kt` (AM1 to AM4), `MapSourceTest.kt` (AM5, AM6, label placement, cache), `MapContractTest.kt` (the shared fixture parses), `InsightsTest.kt` (IN1 to IN6, source choice), `RoutingTest.kt` and `StringPackTest.kt` (navigation and strings). Random inputs use a fixed seed.
-- The Worker route is tested with Vitest and fast-check in `workers/api/test/map-json.test.ts` (`M1_floor`: no state, time, history or count key for a cell under the floor).
+- The Worker route is tested with Vitest and fast-check in `web/test/map-json.test.ts` (`M1_floor`: no state, time, history or count key for a cell under the floor).
 - Drawing, gestures and TalkBack are not covered by JVM tests. Task 12 checks them on an emulator or phone.
 - The repository gate is `node .kiro/scripts/spec-lint.mjs`, `npm test`, and `./gradlew assembleDebug testDebugUnitTest lintDebug`.
 

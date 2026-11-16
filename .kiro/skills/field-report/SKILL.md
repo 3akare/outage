@@ -13,7 +13,7 @@ metadata:
 
 Procedure for one day of field telemetry. The numbers come from phones whose owners turned on "Share anonymous diagnostics". The report is public in the repository, so it holds no identifier of any person, phone or place.
 
-Spec: `.kiro/specs/field-telemetry` (requirements R4 to R10). Steering: `/field-test` (`.kiro/steering/field-test.md`). Detection parameters in use: `packages/detection/src/params.ts` and ADR 0005.
+Spec: `.kiro/specs/field-telemetry` (requirements R4 to R10). Steering: `/field-test` (`.kiro/steering/field-test.md`). Detection parameters in use: `core/detection/src/params.ts` and ADR 0005.
 
 ## Run it
 

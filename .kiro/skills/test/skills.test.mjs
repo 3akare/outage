@@ -49,7 +49,7 @@ for (const name of skills) {
     const repoRefs = new Set([...body.matchAll(/`((?:packages|docs|\.kiro|apps|tools|workers)\/[A-Za-z0-9_./-]+\.(?:json|md|mjs|toml))`/g)].map((m) => m[1]));
     const root = path.resolve(skillsDir, '..', '..');
     // files that do not exist yet because their task has not run are listed here on purpose
-    const planned = new Set(['docs/field/failures.json', 'workers/api/wrangler.toml', 'apps/android/app/build.gradle.kts', 'apps/android/app/src/main/AndroidManifest.xml', '.github/workflows/release.yml', 'packages/detection/src/params.ts', 'docs/probe-checklist.md', 'docs/probe/<date>-<alias>.md']);
+    const planned = new Set(['docs/field/failures.json', 'web/wrangler.toml', 'android/outage/app/build.gradle.kts', 'android/outage/app/src/main/AndroidManifest.xml', '.github/workflows/release.yml', 'core/detection/src/params.ts', 'docs/probe-checklist.md', 'docs/probe/<date>-<alias>.md']);
     for (const r of repoRefs) {
       if (/[<*]/.test(r) || planned.has(r) || /YYYY/.test(r)) continue;
       assert.ok(existsSync(path.join(root, r)), `${name}: points to ${r}, which does not exist`);

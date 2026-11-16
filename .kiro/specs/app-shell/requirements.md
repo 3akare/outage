@@ -4,7 +4,7 @@ Status: APPROVED by the human on 2026-11-14 ("Yes add the spec"; Jetpack Compose
 
 ## Introduction
 
-The app shell is the frame of the Android app (`apps/android`): the first screen a person sees after setup, the navigation between the features, the settings screen with delete-my-data, the theme, the app icon and the shared string pack. Every feature spec (`onboarding`, `alerts-and-light-alarm`, `power-log`, `home-watch`, `demo-mode`) adds its own screens into this frame. The shell decides nothing about outages; it shows what the feature packages and the Worker report.
+The app shell is the frame of the Android app (`android/outage`): the first screen a person sees after setup, the navigation between the features, the settings screen with delete-my-data, the theme, the app icon and the shared string pack. Every feature spec (`onboarding`, `alerts-and-light-alarm`, `power-log`, `home-watch`, `demo-mode`) adds its own screens into this frame. The shell decides nothing about outages; it shows what the feature packages and the Worker report.
 
 Single-player value comes first (`product.md`): the home screen must be useful with one charging phone and no network.
 

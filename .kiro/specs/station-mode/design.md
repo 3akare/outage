@@ -29,7 +29,7 @@ Both drivers write to the same Outbox through the same state machine, so de-dupl
 | `BOOT_COMPLETED` receivers cannot launch `dataSync`, `camera`, `mediaPlayback`, `phoneCall`, `mediaProjection` or `microphone` services. `specialUse` is not on the list. | same |
 | `systemExempted` needs special roles (device owner, exact-alarm permission, etc.). Not usable. | service-types page |
 
-To confirm with the docs server before implementing: manifest declarations and `startForeground(id, notification, type)` signature, `ACTION_POWER_CONNECTED` / `ACTION_POWER_DISCONNECTED` delivery to dynamic receivers, `onTimeout` for `specialUse`, `START_STICKY` behaviour, the foreground-start exemptions for `BOOT_COMPLETED`, the Android 13 notification permission and notification-channel importance rules, and the manifest entries for a foreground service and a receiver in `apps/android`.
+To confirm with the docs server before implementing: manifest declarations and `startForeground(id, notification, type)` signature, `ACTION_POWER_CONNECTED` / `ACTION_POWER_DISCONNECTED` delivery to dynamic receivers, `onTimeout` for `specialUse`, `START_STICKY` behaviour, the foreground-start exemptions for `BOOT_COMPLETED`, the Android 13 notification permission and notification-channel importance rules, and the manifest entries for a foreground service and a receiver in `android/outage`.
 
 ## 3. Key design decisions
 
@@ -143,7 +143,7 @@ sequenceDiagram
 | `PowerReceiver` | Dynamic receiver. On each broadcast reads `PowerFacts` and sends `PowerConnected` or `PowerDisconnected` to the state machine. |
 | `StationModeStore` | Persists the mode flag in the `STATE` table (`sensor-android` data model). |
 | `BootReceiver` (extended) | On boot starts the Job, and the service when the mode is ON. |
-| `AndroidManifest.xml` | Declares the service with `specialUse` and its property, the permissions and the receiver, in `apps/android`. |
+| `AndroidManifest.xml` | Declares the service with `specialUse` and its property, the permissions and the receiver, in `android/outage`. |
 | `StationController` | Kotlin API used by the app screens: `setStationMode(enabled)` and `getStationState()` returning `StationState(enabled, running, blockedReason?)`. |
 
 ## 7. Data model changes

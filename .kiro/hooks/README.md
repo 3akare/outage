@@ -16,7 +16,7 @@ Schema v1, PascalCase triggers, one JSON file per topic in this folder (https://
 | kiro-log | `kiro-log.json` | Stop | agent | Web, IDE, CLI |
 | push-to-main | `push-to-main.json` | Stop with `confirm` | command | Web, IDE, CLI |
 | property-traceability | `property-traceability.json` | PostTaskExec | command | IDE, CLI v3 (Web runs the same check inside verify-on-stop) |
-| kotlin-check | `file-checks.json` | PostFileSave `apps/android/**.kt`, `tools/probe/android/**.kt` (+ PostToolUse write for Web) | command | IDE, CLI v3, Web |
+| kotlin-check | `file-checks.json` | PostFileSave `android/outage/**.kt`, `android/probe/**.kt` (+ PostToolUse write for Web) | command | IDE, CLI v3, Web |
 | demo-label-check | `file-checks.json` | PostFileSave `tools/sim/**` (+ PostToolUse write for Web) | command | IDE, CLI v3, Web |
 | pre-compaction-notes | `compaction-notes.json` | PreCompact | command | IDE, CLI v3.1+ |
 | post-compaction-restore | `compaction-notes.json` | PostCompact | command | IDE, CLI v3.1+ |
@@ -58,7 +58,7 @@ Extra hooks beyond Part E, each enforcing a rule from the brief:
 - `kiro-log` is an agent action on Stop. It has a loop guard in its prompt ("log up to date"). If a session ever loops, set `"enabled": false` on it.
 - The exit-code rule differs a little between the Kiro docs (any non-zero blocks a PreToolUse hook) and the hook tool contract (exit 2 blocks, other codes are silent). Exit 2 satisfies both, and post hooks use exit 0 plus stdout.
 - Hook commands use `node .kiro/scripts/...` relative to the project root. In Kiro Web the workspace root is `/projects/sandbox` and the repository is `/projects/sandbox/outage`. The scripts find the repo from their own location, but Kiro must load `.kiro/hooks` from the folder it treats as the project. In Kiro Web, run `bash .kiro/scripts/link-workspace-root.sh` once per sandbox: it links the repo's steering, hooks, skills, agents, specs and scripts into `/projects/sandbox/.kiro`. Kiro picks them up from the next message on (tested 2026-11-14).
-- `kotlin-check` runs `:app:testDebugUnitTest` (which compiles first) in `apps/android` or `tools/probe/android` through `.kiro/scripts/android-sandbox.sh`. It needs the Android SDK from `android-sandbox.sh setup`; without it the hook says so and skips, and CI compiles and tests on push.
-- `detection-tests` and `verify-on-stop` skip until `packages/detection` and the root scripts exist.
+- `kotlin-check` runs `:app:testDebugUnitTest` (which compiles first) in `android/outage` or `android/probe` through `.kiro/scripts/android-sandbox.sh`. It needs the Android SDK from `android-sandbox.sh setup`; without it the hook says so and skips, and CI compiles and tests on push.
+- `detection-tests` and `verify-on-stop` skip until `core/detection` and the root scripts exist.
 
 Related checks: `node .kiro/scripts/spec-lint.mjs` (spec, ADR, steering and traceability consistency) and `node .kiro/scripts/mcp-check.mjs` (MCP servers). `npm test` runs all tests.

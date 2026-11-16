@@ -4,9 +4,9 @@ import { say, run, exists, tail, writeState, ROOT } from './lib.mjs';
 import { readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
-if (!exists('packages/detection/package.json')) { say('property-suite-full: packages/detection is not scaffolded yet. Skipped.'); process.exit(0); }
+if (!exists('core/detection/package.json')) { say('property-suite-full: core/detection is not scaffolded yet. Skipped.'); process.exit(0); }
 const runs = process.env.FC_NUM_RUNS || '2000';
-const r = run('npx', ['--no-install', 'vitest', '--run', '--dir', 'packages/detection'], { timeout: 1500000, env: { FC_NUM_RUNS: runs } });
+const r = run('npx', ['--no-install', 'vitest', '--run', '--dir', 'core/detection'], { timeout: 1500000, env: { FC_NUM_RUNS: runs } });
 const newest = (function walk(d) {
   let n = 0;
   for (const e of readdirSync(d, { withFileTypes: true })) {
@@ -15,7 +15,7 @@ const newest = (function walk(d) {
     n = Math.max(n, e.isDirectory() ? walk(p) : statSync(p).mtimeMs);
   }
   return n;
-})(path.join(ROOT, 'packages', 'detection')); // repo-rooted: Kiro Web runs hooks from the workspace root, one level above the repo
+})(path.join(ROOT, 'core', 'detection')); // repo-rooted: Kiro Web runs hooks from the workspace root, one level above the repo
 if (r.code === 0) {
   writeState('suite.json', { newest, at: Date.now(), runs });
   say(`property-suite-full: PASS with FC_NUM_RUNS=${runs}.`);

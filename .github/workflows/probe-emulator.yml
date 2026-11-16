@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: '22'
       - name: Build the probe APK
-        working-directory: tools/probe/android
+        working-directory: android/probe
         run: ./gradlew --no-daemon :app:assembleDebug
       - name: Enable KVM
         # https://github.blog/changelog/2024-04-02-github-actions-hardware-accelerated-android-virtualization-now-available/
@@ -57,12 +57,12 @@ jobs:
       - name: Run the scenario
         run: |
           export PATH="$ANDROID_HOME/platform-tools:$PATH"
-          bash tools/probe/emulator/scenario.sh tools/probe/android/app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/probe" "${{ inputs.scale }}"
+          bash android/probe/emulator/scenario.sh android/probe/app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/probe" "${{ inputs.scale }}"
       - name: Analyse
         run: |
-          python3 tools/probe/emulator/db-to-export.py "$RUNNER_TEMP/probe/probe.db" "$RUNNER_TEMP/probe/getprop.txt" emu-api35 "$RUNNER_TEMP/probe/export.json"
-          npm --prefix tools/probe/analyze ci
-          node tools/probe/analyze/src/cli.mjs "$RUNNER_TEMP/probe/export.json" --out "$RUNNER_TEMP/probe/report" --date "$(date -u +%F)"
+          python3 android/probe/emulator/db-to-export.py "$RUNNER_TEMP/probe/probe.db" "$RUNNER_TEMP/probe/getprop.txt" emu-api35 "$RUNNER_TEMP/probe/export.json"
+          npm --prefix android/probe/analyze ci
+          node android/probe/analyze/src/cli.mjs "$RUNNER_TEMP/probe/export.json" --out "$RUNNER_TEMP/probe/report" --date "$(date -u +%F)"
           cat "$RUNNER_TEMP/probe/report/summary.md" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
         if: always()

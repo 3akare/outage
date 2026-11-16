@@ -83,7 +83,7 @@ function paramsLine(p: Params): string {
     `weight cut ${p.weight.cut}; ` +
     `prior 1 per ${group(Math.round(1 / p.baseline.priorLambdaPerSec))} s; ` +
     `restore p95 prior ${p.restore.priorP95Ms / 1000} s ` +
-    '(values read from `packages/detection/src/params.ts`).'
+    '(values read from `core/detection/src/params.ts`).'
   );
 }
 

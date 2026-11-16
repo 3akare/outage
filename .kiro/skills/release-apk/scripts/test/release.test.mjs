@@ -30,7 +30,7 @@ const WORKFLOW_OK = `jobs:
           RELEASE_KEY_ALIAS: \${{ secrets.RELEASE_KEY_ALIAS }}
           KEYSTORE_B64: \${{ secrets.RELEASE_KEYSTORE_BASE64 }}`;
 const GOOD = () => ({
-  git: { branch: 'main', dirty: 0, ahead: 0, tags: ['v0.1.0'], tracked: ['.kiro/steering/product.md', 'apps/android/app/build.gradle.kts', '.env.example'] },
+  git: { branch: 'main', dirty: 0, ahead: 0, tags: ['v0.1.0'], tracked: ['.kiro/steering/product.md', 'android/outage/app/build.gradle.kts', '.env.example'] },
   gitMode: 'main',
   build: { gradle: GRADLE_OK, manifest: MANIFEST_OK, workflow: WORKFLOW_OK, prevVersionCode: 2 },
   gitignore: 'node_modules/\n*.apk\n.env\n*.jks\n',
@@ -88,12 +88,12 @@ test('preflight: the release workflow builds an APK with the four signing secret
 });
 
 test('preflight: secret files, gitignore, evidence folder, tests', () => {
-  const a = GOOD(); a.git.tracked.push('apps/android/app/google-services.json', 'release.keystore');
+  const a = GOOD(); a.git.tracked.push('android/outage/app/google-services.json', 'release.keystore');
   const r = by(preflight(a), 'secret files'); assert.equal(r.status, 'fail'); assert.match(r.detail, /google-services\.json/); assert.match(r.detail, /release\.keystore/);
   assert.equal(by(preflight(GOOD()), 'secret files').status, 'pass'); // .env.example is allowed
   const b = GOOD(); b.gitignore = 'node_modules/\n'; assert.equal(by(preflight(b), 'gitignore').status, 'fail');
   const b2 = GOOD(); b2.gitignore = 'node_modules/\n*.apk\n.env\n'; assert.equal(by(preflight(b2), 'gitignore').status, 'fail'); // no keystore line
-  const c = GOOD(); c.git.tracked = ['apps/android/app/build.gradle.kts']; assert.equal(by(preflight(c), '.kiro tracked').status, 'fail');
+  const c = GOOD(); c.git.tracked = ['android/outage/app/build.gradle.kts']; assert.equal(by(preflight(c), '.kiro tracked').status, 'fail');
   const d = GOOD(); d.verify = 'fail'; assert.equal(by(preflight(d), 'tests').status, 'fail');
   const e = GOOD(); e.verify = undefined; assert.equal(by(preflight(e), 'tests').status, 'warn');
 });

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Needs web search or fetch to read sources, and Node 20+ to run the validator. A real phone is needed to verify an entry.
 metadata:
   project: outage
-  data-file: packages/shared/src/oem-guide.json
+  data-file: core/shared/src/oem-guide.json
   spec: .kiro/specs/onboarding (R7, properties O4 and O5)
 ---
 
@@ -15,7 +15,7 @@ Outage detects a power cut because its charging job stops. If the phone's own ba
 
 ## The one source of truth
 
-`packages/shared/src/oem-guide.json`. The app reads it in the onboarding battery step. This skill edits it. Do not copy steps anywhere else.
+`core/shared/src/oem-guide.json`. The app reads it in the onboarding battery step. This skill edits it. Do not copy steps anywhere else.
 
 Shape (see `.kiro/specs/onboarding/design.md` section 5):
 
@@ -36,7 +36,7 @@ Shape (see `.kiro/specs/onboarding/design.md` section 5):
 
 1. Read `references/sources.md` for what is already known and where it came from.
 2. Look up the maker's current page with a web tool. Prefer: dontkillmyapp.com for the maker, the maker's own support page, then well-sourced guides. Never write a step you did not read in a source or see on a phone.
-3. Edit only `packages/shared/src/oem-guide.json`. Rules:
+3. Edit only `core/shared/src/oem-guide.json`. Rules:
    - Plain words. Use the app name `Outage`. Write setting names exactly as the phone shows them. One action per line, at most 160 characters.
    - Do not number steps. The app numbers them.
    - Keep `verified` empty unless a real device check is recorded.

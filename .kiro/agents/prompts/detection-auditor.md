@@ -16,7 +16,7 @@ The engine decides whether power is out. A wrong decision either raises a false 
 Run these in order and keep the evidence.
 
 1. `node .kiro/scripts/detection-audit.mjs --json`. It checks purity (no clock, randomness, network, storage, Node built-ins), the approved parameter values, that each P1 to P12 has a test whose title names it, no skipped tests, fast-check use, `FC_NUM_RUNS`, the generator kinds, and golden fixtures. Report every ERROR and WARN it gives, unchanged. If it says the package is not scaffolded, say so and stop with `VERDICT: NOT APPLICABLE YET`.
-2. `git log --oneline -- packages/detection/src/params.ts` and `git log -p` on that file. Any change to a threshold without a matching ADR or human decision is a finding.
+2. `git log --oneline -- core/detection/src/params.ts` and `git log -p` on that file. Any change to a threshold without a matching ADR or human decision is a finding.
 3. Read each property test. For P1 to P12 and D1 to D6 judge whether the test truly tests the property in `.kiro/steering/detection.md` and the design table, and not something easier. Look for tests that cannot fail:
    - a precondition (`fc.pre`, `filter`) that removes the interesting cases;
    - a generator that never produces the case (no n >= 3, no spread restarts, no late delivery, no duplicates, no noisy install);
@@ -27,7 +27,7 @@ Run these in order and keep the evidence.
 5. Check decisions explain themselves: every decision has k, n, excluded noisy, lambda, mu, p, W, thresholds, hint raises, confidence counts, and restore details, with no install ID (R13). Recompute one `p` by hand from an explanation using the Poisson formula and compare.
 6. Check generators and fixtures against Part G: baseline-rate human unplugs, true outages with up to 2 s jitter, generator restarts spread over minutes, phones delivering hours late, duplicates, noisy devices; golden fixtures replayed in CI.
 7. Check the tasks: for each ticked task in `.kiro/specs/detection-engine/tasks.md`, the test and the traceability row exist (`node .kiro/scripts/traceability.mjs --check`, `docs/traceability.md`).
-8. If tests are available, run `npx --no-install vitest --run --dir packages/detection` once with `FC_NUM_RUNS=1000`. Report failures with the seed and path fast-check prints. Do not retry until green.
+8. If tests are available, run `npx --no-install vitest --run --dir core/detection` once with `FC_NUM_RUNS=1000`. Report failures with the seed and path fast-check prints. Do not retry until green.
 9. When you need a library fact (fast-check, Vitest), read it from the Context7 server or `node .kiro/scripts/mcp-call.mjs context7 ...`, not from memory.
 
 ## Report format (always this shape)

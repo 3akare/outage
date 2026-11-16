@@ -1,9 +1,9 @@
 // demo-mode task 3: DM2 (default params), DM4 (plan confirms and restores), DM5 (one real drop). The engine is the real
-// one in packages/detection; these tests never reimplement it, they call it directly on the same fixture prefix.
+// one in core/detection; these tests never reimplement it, they call it directly on the same fixture prefix.
 import { DEFAULT_PARAMS, evaluate, initialState, type Params } from '@outage/detection';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import committed from '../../../packages/shared/fixtures/replay.json' with { type: 'json' };
+import committed from '../../../core/shared/fixtures/replay.json' with { type: 'json' };
 import { buildReplay, ReplayError, stateOf } from '../src/replay.ts';
 import { scanForbidden } from '../src/sanitize.ts';
 import {

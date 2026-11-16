@@ -1,17 +1,17 @@
 {
   "name": "outage",
   "private": true,
-  "description": "Your phone charger is a power-grid sensor. Workspaces: packages/*, workers/* and tools/sim. tools/probe has its own installs.",
+  "description": "Your phone charger is a power-grid sensor. Workspaces: core/*, web, tools/sim and tools/field. android/probe has its own installs.",
   "scripts": {
     "test": "node --test \".kiro/scripts/test/*.test.mjs\" \".kiro/skills/test/*.test.mjs\" \".kiro/skills/*/scripts/test/*.test.mjs\" \"powers/*/skills/*/scripts/test/*.test.mjs\" && npm run test:ts",
     "test:guide": "node .kiro/skills/oem-battery-guide/scripts/validate-guide.mjs",
-    "probe:install": "npm --prefix tools/probe/worker ci && npm --prefix tools/probe/analyze ci",
-    "probe:typecheck": "npm --prefix tools/probe/worker run typecheck && npm --prefix tools/probe/analyze run typecheck",
-    "probe:test": "npm --prefix tools/probe/analyze test",
+    "probe:install": "npm --prefix android/probe/worker ci && npm --prefix android/probe/analyze ci",
+    "probe:typecheck": "npm --prefix android/probe/worker run typecheck && npm --prefix android/probe/analyze run typecheck",
+    "probe:test": "npm --prefix android/probe/analyze test",
     "lint": "biome lint .",
     "typecheck": "npm run typecheck --workspaces --if-present && npm run probe:typecheck",
     "format:check": "biome format .",
-    "probe:android": ".kiro/scripts/android-sandbox.sh gradle tools/probe/android :app:assembleDebug :app:testDebugUnitTest :app:lintDebug",
+    "probe:android": ".kiro/scripts/android-sandbox.sh gradle android/probe :app:assembleDebug :app:testDebugUnitTest :app:lintDebug",
     "test:ts": "npm test --workspaces --if-present"
   },
   "license": "MIT",
@@ -20,8 +20,8 @@
     "playwright": "^1.65.1"
   },
   "workspaces": [
-    "packages/*",
-    "workers/*",
+    "core/*",
+    "web",
     "tools/sim",
     "tools/field"
   ]

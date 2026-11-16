@@ -4,7 +4,7 @@ Status: APPROVED by delegation on 2026-11-14. Based on `requirements.md`. Tasks 
 
 ## 1. Overview
 
-`packages/detection` exports one function:
+`core/detection` exports one function:
 
 ```ts
 evaluate(state: EngineState, input: EngineInput, params: Params): { state: EngineState; outputs: EngineOutputs }
@@ -256,7 +256,7 @@ Summing upward avoids subtracting numbers close to 1, so values like 1e-12 keep 
 
 ## 9. Interfaces and integration
 
-- **Called by** the cell actor in `workers/api` through `DetectionPort`. The engine does not know about Durable Objects.
+- **Called by** the cell actor in `web` through `DetectionPort`. The engine does not know about Durable Objects.
 - **Amendment to `event-ingest`:** the port must also receive `ARMED` and `DISARMED` state events, not only detection events, because armed intervals need them (task 1 of this spec, which edits `event-ingest` design section 9 and its task 5). State events in memory in the actor still follow the write-behind rule for their own bookkeeping; the engine keeps its own compact armed intervals inside its state and the actor writes that state behind.
 - **Scope** is supplied by `area-cells`. For a sparse cell the actor passes the parent cell's events and state. The engine only sees a scope.
 - **Context** for hints is assembled by the actor from other scopes.
@@ -348,7 +348,7 @@ Property definitions have two proof obligations that the Correctness pass will p
 
 - Unit tests for `weight`, `lambdaFor`, `p95`, `tail`, window sweep, restore span, hints.
 - Table tests built from the ADR 0005 table: minimum k for Possible and Confirmed at several n.
-- **Golden fixtures** under `packages/detection/fixtures/`: recorded real outages from the field test. A replay test compares the full decision list. Large fixtures go in `fixtures/large/`.
+- **Golden fixtures** under `core/detection/fixtures/`: recorded real outages from the field test. A replay test compares the full decision list. Large fixtures go in `fixtures/large/`.
 - **Simulator contract:** the 30-phone simulated outage from `tools/sim` yields CONFIRMED within 10 s of event time of the last event (milestone 2 gate). This runs in CI.
 - **Performance test:** the free Workers plan gives 10 ms CPU per request (https://developers.cloudflare.com/workers/platform/limits/). Whether a Durable Object call has the same budget must be confirmed with the Cloudflare docs server. A benchmark reports evaluation time for 100, 500 and 5,000 live events. Target: 500 live events in under 5 ms on the CI machine. If 500 events do not fit, build the incremental implementation, with D1 proving it equals the full sweep. The benchmark reports numbers; the field test supplies the real event counts per cell.
 

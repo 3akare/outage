@@ -61,8 +61,8 @@ erDiagram
     REPLAY ||--o{ FRAME : has
 ```
 
-- `MAP_JSON` is the existing contract (`packages/shared/src/map.ts`). No new field and no count.
-- `TOKENS` is `packages/shared/design/tokens.json`: colours (4 states, neutral, surface, text, accent), type scale, spacing, radii, hex stroke and pattern names.
+- `MAP_JSON` is the existing contract (`core/shared/src/map.ts`). No new field and no count.
+- `TOKENS` is `core/shared/design/tokens.json`: colours (4 states, neutral, surface, text, accent), type scale, spacing, radii, hex stroke and pattern names.
 - `tokens.css` and the Kotlin colour constants are written from `tokens.json` by `tools/tokens/build.mjs`; a test compares them.
 
 ## 5. Design system
@@ -102,7 +102,7 @@ Steps: Normal, One phone drops (Your spot only), Possible, Confirmed, Restored. 
 | UX8 | First run needs one tap and no permission other than notifications. | JUnit on the first-run model |
 | UX9 | Landing has the three actions and does not contain the 100 percent undercount claim. | Vitest on `/` |
 
-Visual: `bash workers/api/visual/run.sh` takes screenshots at 390 x 844 and 1280 x 800 (ADR 0019).
+Visual: `bash web/visual/run.sh` takes screenshots at 390 x 844 and 1280 x 800 (ADR 0019).
 
 ## 7a. Testing strategy
 

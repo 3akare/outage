@@ -2,7 +2,7 @@
 # Build Android code inside the Kiro Web sandbox. ADR 0012.
 #   .kiro/scripts/android-sandbox.sh setup            install SDK 36 and build-tools 36.0.0 (once, about 400 MB)
 #   .kiro/scripts/android-sandbox.sh gradle <dir> ... run ./gradlew in <dir> with the sandbox environment
-# Example: .kiro/scripts/android-sandbox.sh gradle tools/probe/android :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+# Example: .kiro/scripts/android-sandbox.sh gradle android/probe :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 #
 # Why the extra environment (found by running it, 2026-11-14):
 #  - /tmp is cleared between commands and /root is read-only, so everything lives in /projects/sandbox/.toolchain (outside the repo).

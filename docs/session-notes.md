@@ -41,12 +41,12 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 
 ## field-telemetry tasks 1 to 3 (2026-11-15)
 - Answered by the human on 2026-11-15 ("yes to all"): questions 1 to 4 below (maker gate accepts Samsung, gap edges, `withdrawn` and `key` on `OUTAGE_RECORD`, stored `fieldSent` and `missPending` within ADR 0011). Applied: `GATE_OEM_MAKERS` now includes Samsung, R10.1 and design section 4 updated. The miss armed count is per cell (decided 2026-11-15).
-- [ANSWERED yes, 2026-11-15] Task 2 assumption: the field delay gate pools job and receiver scheduling delays; the field maker gate is Tecno or Infinix only (R10.1) while the probe gate also accepts Samsung (ADR 0013). Confirm whether the field gate should accept Samsung too (`GATE_OEM_MAKERS` in `packages/shared/src/field-metrics.ts`).
+- [ANSWERED yes, 2026-11-15] Task 2 assumption: the field delay gate pools job and receiver scheduling delays; the field maker gate is Tecno or Infinix only (R10.1) while the probe gate also accepts Samsung (ADR 0013). Confirm whether the field gate should accept Samsung too (`GATE_OEM_MAKERS` in `core/shared/src/field-metrics.ts`).
 - [ANSWERED yes, 2026-11-15] Task 1 assumption: gap histogram edges are 1, 5, 15, 60 and 240 minutes plus an open-ended bucket (`GAP_EDGES_MS`). Design says only "fixed edges". The Kotlin aggregator (task 4) must use the same edges.
 - [ANSWERED yes, 2026-11-15] Task 3: `OUTAGE_RECORD` has one field not in design section 4: `withdrawn` (boolean). Without it an all-"No" false alarm cannot be reported, because the engine drops the outage. Confirm, or pick another way. The record also has `key` (opaque hash) so a later update replaces the earlier one.
 - [ANSWERED yes, 2026-11-15] Task 3 stored data: the area actor state gains `fieldSent` (per reported outage: opaque key, scope key, cells, start, last counts) and `missPending` (install ID, unplug seq, due time, removed by delete-my-data). Both hold only what the actor's log and engine states already hold, inside the same actor, for at most 30 days (`fieldSent`) or one window (`missPending`). The emitted records themselves are not stored anywhere yet (task 5, ADR 0011). Confirm this is within ADR 0011.
 - [DECIDED per cell, 2026-11-15] Task 3: the miss armed count is the "recently armed" members in the unplug's cell at the time the miss is resolved (one window after the unplug).
-- `workers/api` integration test needs `XDG_CONFIG_HOME` writable in this sandbox (wrangler writes `~/.config/.wrangler`); without it the suite fails on main too. CI is unaffected.
+- `web` integration test needs `XDG_CONFIG_HOME` writable in this sandbox (wrangler writes `~/.config/.wrangler`); without it the suite fails on main too. CI is unaffected.
 
 ## 2026-11-15 detection-engine task 17 (benchmark)
 - Assumption: the free-plan Durable Object budget is 10 ms CPU per call. The DO limits table says 30 s, but its FAQ says Durable Objects follow the Worker plan's per-invocation limit (Free: 10 ms). We use the stricter reading.
@@ -74,7 +74,7 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 
 ## 2026-11-15 power-log task 3 (work/ingest-6-powerlog-3): band config
 - Decision (ADR 0020): `bands.json` ships A 20, B 16, C 12, D 8, E 4 hours/day. Only Band C is marked verified (NERC 2021 notice fixes the 12 h floor via the D/E < 12 h boundary). A, B, D, E are unverified with sources; the human must confirm them against NERC's MYTO order PDFs (unreadable by the build tooling) before release. UI/Stats must treat unverified bands as unconfirmed; promise copy is always an estimate and never mentions refund, compensation or claim.
-- Band config lives as an app asset (`app.outage.log.BandConfig`), not in packages/shared: it is phone-only (the Worker never shows supply promise), so no shared single-source copy is needed and no build-time asset copy was added.
+- Band config lives as an app asset (`app.outage.log.BandConfig`), not in core/shared: it is phone-only (the Worker never shows supply promise), so no shared single-source copy is needed and no build-time asset copy was added.
 
 ## 2026-11-15 field-telemetry tasks 5 to 7 (work/field-telemetry-5-7)
 - Decision: the scheduled Kiro Web run opens a pull request; it cannot commit to `main` (ADR 0018). R7.3 amended.

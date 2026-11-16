@@ -14,7 +14,7 @@ Decided by the human on 2026-11-14 (ADR 0013). It takes about two minutes once, 
 
 1. Install the app (see Install below) and open it.
 2. Type an alias, for example `samsung-a`. Leave the Worker URL and token boxes empty.
-3. Tap `Battery settings` and allow the app (choose Allow or Unrestricted). Then follow the Samsung steps from the project guide (`packages/shared/src/oem-guide.json`, source dontkillmyapp.com/samsung), with "Outage Probe" in place of "Outage": Settings, Battery and device care, Battery, Background usage limits; turn off "Put unused apps to sleep"; take Outage Probe out of Sleeping apps and Deep sleeping apps; add it to Never sleeping apps. Note each change with `Mark note`, for example `setting: never sleeping apps`. Menu names can differ on your phone; write what you saw.
+3. Tap `Battery settings` and allow the app (choose Allow or Unrestricted). Then follow the Samsung steps from the project guide (`core/shared/src/oem-guide.json`, source dontkillmyapp.com/samsung), with "Outage Probe" in place of "Outage": Settings, Battery and device care, Battery, Background usage limits; turn off "Put unused apps to sleep"; take Outage Probe out of Sleeping apps and Deep sleeping apps; add it to Never sleeping apps. Note each change with `Mark note`, for example `setting: never sleeping apps`. Menu names can differ on your phone; write what you saw.
 4. Tap `Start`. Turn on `Reference logger`. The phone shows a small "Reference logger is on" notification; leave it.
 5. Tap `Mark note` and type `cond: daily-life`.
 6. Use and charge the phone as you always do. Power cuts are fine; they are what the app is for.
@@ -63,7 +63,7 @@ Fill one row per phone before you start. Coverage gaps are reported honestly in 
 
 Notes on the matrix
 - Android 14 or newer phones also take M12.
-- The OEM battery steps for each maker are in `packages/shared/src/oem-guide.json`. Every step in that file is unverified on a real phone. Your result is the first check, so write down exactly which screens you saw.
+- The OEM battery steps for each maker are in `core/shared/src/oem-guide.json`. Every step in that file is unverified on a real phone. Your result is the first check, so write down exactly which screens you saw.
 
 ## 3. Setup, same for every phone
 
@@ -231,7 +231,7 @@ This list is for task 7 and the Kotlin tasks, so the checklist and the app agree
 
 ## App shell check (AS8, app-shell R6.3)
 
-Not part of the probe. Do this once on a real phone with the debug build of `apps/android` (artifact `outage-app-debug`), after the field test or on any spare phone.
+Not part of the probe. Do this once on a real phone with the debug build of `android/outage` (artifact `outage-app-debug`), after the field test or on any spare phone.
 
 1. Settings > Display > Font size: set the largest size (200% if the phone allows it, otherwise the largest). Set the display size to the smallest width you can (360 dp wide or less).
 2. Open Outage. On a debug build the "Set up" placeholder shows first. Tap `Done`.

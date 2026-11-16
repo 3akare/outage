@@ -24,10 +24,10 @@ Kiro Powers panel, then Add Custom Power, then Import power from a folder (this 
 
 ## Keep it in sync
 
-`skills/oem-battery-guide/references/oem-guide.json` and `scripts/validate-guide.mjs` are copies of the project's `packages/shared/src/oem-guide.json` and `.kiro/skills/oem-battery-guide/scripts/validate-guide.mjs`. The test fails if they differ. After changing the source, copy it here:
+`skills/oem-battery-guide/references/oem-guide.json` and `scripts/validate-guide.mjs` are copies of the project's `core/shared/src/oem-guide.json` and `.kiro/skills/oem-battery-guide/scripts/validate-guide.mjs`. The test fails if they differ. After changing the source, copy it here:
 
 ```
-cp packages/shared/src/oem-guide.json powers/grid-sensing/skills/oem-battery-guide/references/oem-guide.json
+cp core/shared/src/oem-guide.json powers/grid-sensing/skills/oem-battery-guide/references/oem-guide.json
 cp .kiro/skills/oem-battery-guide/scripts/validate-guide.mjs powers/grid-sensing/skills/oem-battery-guide/scripts/validate-guide.mjs
 ```
 

@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { validateGuide, REQUIRED } from '../validate-guide.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const guideFile = path.resolve(here, '../../../../../packages/shared/src/oem-guide.json');
+const guideFile = path.resolve(here, '../../../../../core/shared/src/oem-guide.json');
 const real = () => JSON.parse(readFileSync(guideFile, 'utf8'));
 const errorsOf = (g, o) => validateGuide(g, o).errors;
 const maker = (g, id) => g.makers.find((m) => m.id === id);

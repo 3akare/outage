@@ -25,7 +25,7 @@ It does not decide whether an outage happened. That belongs to `detection-engine
 1. THE Ingest API SHALL accept events with exactly these fields: `installId`, `seq`, `type`, `elapsedMs`, `cell`, `confidence`, `timeQuality`, and optionally `stopReason`, `reason`, `schedulingDelayMs`, `batteryPct`, `plugType`.
 2. IF an event contains any other field, THEN THE Ingest API SHALL reject that event with code `UNKNOWN_FIELD`.
 3. IF `cell` is not a valid H3 index at resolution 8, THEN THE Ingest API SHALL reject the event with code `BAD_CELL`.
-4. THE schema SHALL live once in `packages/shared`, and contract fixtures in `packages/shared/fixtures/` SHALL cover it. The Worker tests (Vitest) and the app tests (JUnit) SHALL both read those fixtures.
+4. THE schema SHALL live once in `core/shared`, and contract fixtures in `core/shared/fixtures/` SHALL cover it. The Worker tests (Vitest) and the app tests (JUnit) SHALL both read those fixtures.
 5. THE Ingest API SHALL NOT accept any wall-clock timestamp from the phone.
 
 ### R2 Registration and install token
@@ -128,6 +128,6 @@ Done by Kiro Web from the brief. Kiro's Analyze Requirements runs in the IDE; ru
 
 - Install token with HMAC, no stored registration (ADR 0003). Needs the human to run `wrangler secret put INSTALL_TOKEN_SECRET`.
 - Armed state is write-behind; detection events are written through (ADR 0002).
-- Rate-limit and batch values are tunables in `workers/api/src/config.ts`, not detection thresholds. Starting values are in `design.md`.
+- Rate-limit and batch values are tunables in `web/config.ts`, not detection thresholds. Starting values are in `design.md`.
 - The app (Kotlin) builds the payload: install ID, H3 cell, Outbox and `elapsedMs`. The H3 cell on the phone needs `com.uber:h3`, which needs human approval (ADR 0012).
-- No new dependency on the Worker side. H3 helpers come from `packages/shared`, which uses `h3-js` from the approved stack; confirm its API with the docs server first.
+- No new dependency on the Worker side. H3 helpers come from `core/shared`, which uses `h3-js` from the approved stack; confirm its API with the docs server first.

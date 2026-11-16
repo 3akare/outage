@@ -7,8 +7,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
-const GRADLE = 'apps/android/app/build.gradle.kts';
-const MANIFEST = 'apps/android/app/src/main/AndroidManifest.xml';
+const GRADLE = 'android/outage/app/build.gradle.kts';
+const MANIFEST = 'android/outage/app/src/main/AndroidManifest.xml';
 const WORKFLOW = '.github/workflows/release.yml';
 const FORBIDDEN_PERMISSIONS = /(RECORD_AUDIO|ACCESS_FINE_LOCATION|ACCESS_BACKGROUND_LOCATION|READ_CONTACTS|READ_PHONE_STATE|READ_PHONE_NUMBERS|READ_SMS|READ_CALL_LOG|BODY_SENSORS)/;
 const SECRET_FILE = /(^|\/)(\.env(\..+)?|\.dev\.vars(\..+)?|google-services\.json|GoogleService-Info\.plist|[^/]+\.(pem|p12|pfx|jks|keystore)|service-?account[^/]*\.json)$/;

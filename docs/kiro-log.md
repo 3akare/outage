@@ -791,3 +791,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Merge fix: two `SwitchRow` composables with the same signature; kept the one in `FreezerScreen.kt` with the `contentDescription` label. `REPORT` and the heartbeat reason are both in `ingest.ts`.
 - Checks on both final trees: `npm test`, lint, typecheck, spec-lint, architecture test and Gradle unit tests, lint and assembleDebug all exit 0.
 - Open: #26 has no kiro-log entry for its own merge; add one if the human wants it. No device run.
+
+## 2026-11-24 refactor(repo): top level is android, web and core [spec:none task:layout]
+- Asked for by the human: the repository should open on Android and web, with the probe beside the app and the landing page, UI and API as folders. ADR 0047 holds the old-to-new table. Entries above this one keep the old paths (`apps/android`, `workers/api`, `packages/*`, `tools/probe`).
+- Moves only, with `git mv` so history follows: `apps/android` to `android/outage`, the whole probe to `android/probe`, `workers/api` to `web` (`api/`, `landing/`, `ui/app`, `ui/simulate`, `areas/`, `site/`, entry `worker.ts`), `packages/*` to `core/*`. No URL, Durable Object, migration, npm package name or Kotlin package changed.
+- Updated with it: npm workspaces, `wrangler.jsonc` (`main`), the four workflows, hook matchers and scripts, agent write rules (sensor-engineer keeps to `android/outage` and the probe app, not the probe Worker), steering `fileMatchPattern` lines, all specs, skills, the Power README, `docs/traceability.md`.
+- `ARCHITECTURE.md` and its test are deleted. The map is the root `README.md` and `.kiro/steering/structure.md`; `structure.test.mjs` checks that the paths they name exist.
+- Shaped by: steering `structure.md` and `definition-of-done.md`, ADR 0031 (superseded in part).

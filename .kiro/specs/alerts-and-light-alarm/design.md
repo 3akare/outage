@@ -265,7 +265,7 @@ sequenceDiagram
 
 ## 9. Testing strategy
 
-Properties use IDs `L1` to `L12`. Kotlin tests: JUnit 4 JVM unit tests with seeded random loops (no new dependency). Server tests: Vitest and fast-check. Contract fixtures in `packages/shared/fixtures/` (the `LABEL` event and the follow request) are read by both the Kotlin and the TypeScript tests. Test names include the ID.
+Properties use IDs `L1` to `L12`. Kotlin tests: JUnit 4 JVM unit tests with seeded random loops (no new dependency). Server tests: Vitest and fast-check. Contract fixtures in `core/shared/fixtures/` (the `LABEL` event and the follow request) are read by both the Kotlin and the TypeScript tests. Test names include the ID.
 
 | ID | Property | Requirement | Test |
 |---|---|---|---|

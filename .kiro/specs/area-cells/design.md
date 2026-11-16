@@ -255,6 +255,6 @@ Properties use IDs `A1` to `A12`, in Vitest and fast-check, with the engine used
 | A11 | After delete-my-data, no state in the actor references the install, and archive and public history are unchanged. | R12 | `A11_delete_removes_install` |
 | A12 | Deferring state-only batches gives the same decisions as evaluating every batch. | R11 | `A12_deferred_evaluation_equivalence` |
 
-Other tests: parent and validity helpers in `packages/shared` against `h3-js` for 10,000 random cells including pentagons and cells on face edges; boundary generation (union of cells) in unit tests; a simulated scenario (8 phones in one cell, 2 in a neighbor, 1 elsewhere) that checks scope labels and the 30-phone outage still confirming with `CELL` precision; a scenario where 3 sparse cells link after 3 co-outages and then confirm in the group; the shard routing amendment in the ingest tests (I2 still holds with parent routing).
+Other tests: parent and validity helpers in `core/shared` against `h3-js` for 10,000 random cells including pentagons and cells on face edges; boundary generation (union of cells) in unit tests; a simulated scenario (8 phones in one cell, 2 in a neighbor, 1 elsewhere) that checks scope labels and the 30-phone outage still confirming with `CELL` precision; a scenario where 3 sparse cells link after 3 co-outages and then confirm in the group; the shard routing amendment in the ingest tests (I2 still holds with parent routing).
 
 Traceability: `docs/traceability.md` links requirement, property, test and task.

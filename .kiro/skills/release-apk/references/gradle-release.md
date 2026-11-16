@@ -20,7 +20,7 @@ Then in the GitHub repository: Settings, Secrets and variables, Actions, New rep
 
 Keep `outage-release.jks` and the passwords in two places outside the repository. Losing the key means no phone can update the app. Never paste a value into a file, a chat or a commit.
 
-## Gradle side (`apps/android/app/build.gradle.kts`)
+## Gradle side (`android/outage/app/build.gradle.kts`)
 
 The signing values come from the environment; the file never holds a password:
 
@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/android
+        working-directory: android/outage
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6

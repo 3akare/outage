@@ -77,7 +77,7 @@ sequenceDiagram
 
 ## 5. Maker detection and the OEM guide
 
-File: `packages/shared/src/oem-guide.json`, used by the app and the `oem-battery-guide` skill. A Gradle task copies it into the app assets at build time; there is no second copy in git (ADR 0012). The app reads it with hand-written JSON parsing (kotlinx-serialization needs human approval, ADR 0012).
+File: `core/shared/src/oem-guide.json`, used by the app and the `oem-battery-guide` skill. A Gradle task copies it into the app assets at build time; there is no second copy in git (ADR 0012). The app reads it with hand-written JSON parsing (kotlinx-serialization needs human approval, ADR 0012).
 
 Shape (written as a type for reading; the app has matching Kotlin data classes):
 

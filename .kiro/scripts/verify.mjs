@@ -30,7 +30,7 @@ for (const name of ['typecheck', 'lint', 'test']) {
   const r = run('npm', ['run', '--silent', name], { timeout: 600000, env });
   steps.push({ name, status: r.code === 0 ? 'pass' : 'fail', out: r.code === 0 ? '' : tail(r.out, 60, 3000) });
 }
-if (changed.some((p) => /^(apps\/android|tools\/probe\/android)\/.*\.kts?$/.test(p))) {
+if (changed.some((p) => /^(android\/outage|android\/probe)\/.*\.kts?$/.test(p))) {
   const r = run('node', ['.kiro/scripts/kotlin-check.mjs', '--run'], { timeout: 600000 });
   const failed = /KOTLIN BUILD OR TESTS FAILED/.test(r.out);
   steps.push({ name: 'kotlin', status: failed ? 'fail' : /skipped/i.test(r.out) ? 'none' : 'pass', out: failed ? tail(r.out, 60, 3000) : '' });

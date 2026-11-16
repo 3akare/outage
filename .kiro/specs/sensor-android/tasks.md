@@ -10,9 +10,9 @@ Dependencies approved by ADR 0012 (Kotlin, Gradle, the Android Gradle plugin, An
 
 ## Wave 1 (no dependencies)
 
-- [x] 1. Scaffold the `sensor` package in `apps/android` (Gradle project, JVM unit-test source set using JUnit 4; the project itself comes from the app scaffold, reuse the probe's Gradle settings). Needs a Plan mode pass first (touches more than 3 files).
+- [x] 1. Scaffold the `sensor` package in `android/outage` (Gradle project, JVM unit-test source set using JUnit 4; the project itself comes from the app scaffold, reuse the probe's Gradle settings). Needs a Plan mode pass first (touches more than 3 files).
   - Requirements: R11
-- [x] 2. Add the `SensorEvent`, `SensorTelemetry` and `Diagnostics` types to `packages/shared`, matching design section 7.
+- [x] 2. Add the `SensorEvent`, `SensorTelemetry` and `Diagnostics` types to `core/shared`, matching design section 7.
   - Requirements: R9, R10, R11
 
 ## Wave 2 (needs 1, plus 2 where noted)
@@ -59,7 +59,7 @@ Dependencies approved by ADR 0012 (Kotlin, Gradle, the Android Gradle plugin, An
 
 ## Wave 7
 
-- [x] 12. Update `docs/traceability.md` (statuses and task IDs for S1 to S8), `docs/kiro-log.md`, and `apps/android/README.md`. The device checklist `docs/probe-checklist.md` for the feasibility probe already exists (not a CI test).
+- [x] 12. Update `docs/traceability.md` (statuses and task IDs for S1 to S8), `docs/kiro-log.md`, and `android/outage/README.md`. The device checklist `docs/probe-checklist.md` for the feasibility probe already exists (not a CI test).
   - Depends on: 3, 4, 5, 9, 10, 11
   - Requirements: all
 
