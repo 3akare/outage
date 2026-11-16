@@ -31,15 +31,15 @@ export function layout(input: LayoutInput): string {
   const canonical = `${input.site.origin}${input.path}`;
   return (
     '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
-    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f5f7">' +
     `<title>${escapeHtml(input.title)}</title>` +
     `<meta name="description" content="${escapeHtml(input.description)}">` +
     `<link rel="canonical" href="${escapeHtml(canonical)}">` +
     (input.noindex ? '<meta name="robots" content="noindex">' : '') +
     `${FAVICON_LINK}<link rel="stylesheet" href="/app.css"></head><body>` +
-    `<header class="site-top"><div class="container">${brandLink('/')}<nav aria-label="Site"><a class="link" href="/areas">Areas</a><a class="btn primary" href="/app/simulate">Try it</a></nav></div></header>` +
+    `<header class="site-top"><div class="container">${brandLink('/')}<nav aria-label="Site"><a class="hide-s" href="/areas">Areas</a><a class="hide-s" href="/install">Install</a><a class="btn primary" href="/app/simulate">Try it</a></nav></div></header>` +
     `<div class="site container">${input.body}</div>` +
-    '<footer class="site-foot"><div class="container"><ul><li><a href="/">Home</a></li><li><a href="/app/simulate">Try the app</a></li><li><a href="/install">Install</a></li><li><a href="/privacy">Privacy</a></li></ul></div></footer>' +
+    `<footer class="site-foot"><div class="container">${brandLink('/')}<ul><li><a href="/app/simulate">Try the app</a></li><li><a href="/areas">Areas</a></li><li><a href="/install">Install</a></li><li><a href="/privacy">Privacy</a></li></ul></div></footer>` +
     (input.script ? `<script nonce="${NONCE_PLACEHOLDER}">${input.script}</script>` : '') +
     '</body></html>'
   );

@@ -39,7 +39,7 @@ describe('landing /', () => {
   it('UX9: the pitch, the app in the browser, the GitHub download, and no hardware-sensor claim', async () => {
     const { res, body } = await page('/');
     expect(res.status).toBe(200);
-    expect(body).toContain('<h1 id="hero-h">See where the power is out in Lagos.</h1>');
+    expect(body).toContain('<h1 id="hero-h">Know the moment the power goes.</h1>');
     expect(body).toContain('power-grid sensor');
     expect(body).toContain('href="/app/simulate"');
     expect(body).toContain('Try the app in your browser');
@@ -64,13 +64,13 @@ describe('landing /', () => {
 });
 
 describe('the app in the browser /app/simulate', () => {
-  it('UX1: the dock is Insights, Home, Settings, with Home in the middle and selected', async () => {
+  it('UX1: the tabs are Now, Map, Insights, Settings, with Now first and selected (ADR 0054)', async () => {
     const { res, body } = await page('/app/simulate');
     expect(res.status).toBe(200);
-    expect(NAV_ORDER).toEqual(['Insights', 'Home', 'Settings']);
+    expect(NAV_ORDER).toEqual(['Now', 'Map', 'Insights', 'Settings']);
     const nav = /<nav class="rail"[^>]*>(.*?)<\/nav>/.exec(body)?.[1] ?? '';
-    expect([...nav.matchAll(/data-tab="(\w+)"/g)].map((m) => m[1])).toEqual(['insights', 'home', 'settings']);
-    expect(nav).toMatch(/data-tab="home" aria-current="page"/);
+    expect([...nav.matchAll(/data-tab="(\w+)"/g)].map((m) => m[1])).toEqual(['now', 'map', 'insights', 'settings']);
+    expect(nav).toMatch(/data-tab="now" aria-current="page"/);
   });
 
   it('ADR 0053: a real street map with the simulated city on it, and it says it is simulated', async () => {
@@ -116,12 +116,13 @@ describe('the app in the browser /app/simulate', () => {
 });
 
 describe('shared assets', () => {
-  it('serves the stylesheet (light tokens) and the favicon from the same origin, and no font', async () => {
+  it('serves the stylesheet (light tokens) and the favicon from the same origin, and only the same-origin font', async () => {
     const css = await page('/app.css');
     expect(css.res.headers.get('content-type')).toContain('text/css');
     expect(css.body).toContain('--c-paper:#ffffff');
     expect(css.body).toContain('--map-confirmed:');
-    expect(css.body).not.toMatch(/@font-face|url\(/);
+    // One font, Inter, from this origin (ADR 0054); nothing else is loaded from the stylesheet.
+    expect([...css.body.matchAll(/url\(([^)]*)\)/g)].map((m) => m[1])).toEqual(['/fonts/inter.woff2']);
     const icon = await page('/favicon.svg');
     expect(icon.res.headers.get('content-type')).toContain('image/svg+xml');
     expect(icon.body).toContain('<svg');

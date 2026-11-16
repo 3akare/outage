@@ -1,16 +1,11 @@
-// The Insights charts as plain SVG (ADR 0053), drawn at the width they are shown at so text stays 12 px on any screen.
-// One hue for magnitude (blue bars, a red ramp for the heatmap), status amber only for "below the promise", text in ink
-// greys, thin marks with 4 px rounded data ends, recessive grid. Every mark carries data-tip for the hover card.
+// The Insights charts as plain SVG (ADR 0054), drawn at the width they are shown at so text stays 13 px on any screen.
+// Ink for magnitude, the "maybe" orange only for "below the promise", a red ramp for how often the power is off, a
+// recessive grid. Colours are classes styled from the design tokens in /app.css (.chart .bm, .bb, .h0 to .h5 ...), so
+// the charts never carry a colour of their own. Every mark carries data-tip for the hover card.
 import { duration, hourLabel } from './data.js';
 
-const INK = '#202124';
-const MUTED = '#5f6368';
-const GRID = '#e8eaed';
-const BLUE = '#1b6ef3';
-const BELOW = '#e37400';
-const OTHER = '#aecbfa';
-// Sequential red for "how often the power is off": light to dark, one hue. 0 is the neutral grey.
-export const HEAT = ['#f1f3f4', '#fce8e6', '#f7b5ae', '#ee7b70', '#d93025', '#a50e0e'];
+// Six steps of "how often the power is off": h0 is never (neutral grey), h5 is every time.
+export const HEAT = ['h0', 'h1', 'h2', 'h3', 'h4', 'h5'];
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const fmtDay = (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
@@ -47,20 +42,20 @@ export function dailyBars(days, promise, band, width) {
   const y = (v) => top + plotH - (v / 24) * plotH;
   let out = '';
   for (const g of [0, 6, 12, 18, 24]) {
-    out += `<line x1="${left}" x2="${width - right}" y1="${y(g)}" y2="${y(g)}" stroke="${GRID}"/>`;
+    out += `<line x1="${left}" x2="${width - right}" y1="${y(g)}" y2="${y(g)}" class="g"/>`;
     out += text(left - 6, y(g) + 4, `${g}`, 'end');
   }
   days.forEach((d, i) => {
     const x = left + i * step + (step - bw) / 2;
     const below = d.hours < promise;
     const tip = `${fmtLong(d.date)}: ${d.hours} h of power${below ? `, ${Math.round((promise - d.hours) * 10) / 10} h short of the promise` : ''}`;
-    out += `<path d="${bar(x, y(d.hours), bw, y(0) - y(d.hours), 4)}" fill="${below ? BELOW : BLUE}" data-tip="${esc(tip)}"/>`;
+    out += `<path d="${bar(x, y(d.hours), bw, y(0) - y(d.hours), 4)}" class="${below ? 'bb' : 'bm'}" data-tip="${esc(tip)}"/>`;
     if (i % 7 === days.length % 7 || i === days.length - 1) {
       if (i === days.length - 1 || days.length - 1 - i >= 4) out += text(x + bw / 2, h - 8, fmtDay(d.date), 'middle');
     }
   });
-  out += `<line x1="${left}" x2="${width - right}" y1="${y(promise)}" y2="${y(promise)}" stroke="${INK}" stroke-width="1.5" stroke-dasharray="5 4"/>`;
-  out += `<text class="ax strong" x="${left + 6}" y="${y(promise) - 6}" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="4">Band ${esc(band)} promise, ${promise} h</text>`;
+  out += `<line x1="${left}" x2="${width - right}" y1="${y(promise)}" y2="${y(promise)}" class="pl"/>`;
+  out += `<text class="ax strong halo" x="${left + 6}" y="${y(promise) - 6}" text-anchor="start">Band ${esc(band)} promise, ${promise} h</text>`;
   return svg(width, h, `Hours of power each day for ${days.length} days. Band ${band} promises ${promise} hours.`, out);
 }
 
@@ -78,7 +73,7 @@ export function heatmap(grid, width) {
     row.forEach((v, hr) => {
       const step = v === 0 ? 0 : Math.min(HEAT.length - 1, 1 + Math.floor(v * (HEAT.length - 1) - 1e-9));
       const tip = `${DAYS_LONG[wd]}, ${hourLabel(hr)} to ${hourLabel(hr + 1)}: power off on ${Math.round(v * 100)}% of them`;
-      out += `<rect x="${left + hr * cw}" y="${top + wd * ch}" width="${cw - gap}" height="${ch - gap}" rx="2" fill="${HEAT[step]}" data-tip="${esc(tip)}"/>`;
+      out += `<rect x="${left + hr * cw}" y="${top + wd * ch}" width="${cw - gap}" height="${ch - gap}" rx="3" class="${HEAT[step]}" data-tip="${esc(tip)}"/>`;
     });
   });
   for (let hr = 0; hr < 24; hr += cw < 18 ? 6 : 3) out += text(left + hr * cw, h - 6, hourLabel(hr));
@@ -86,15 +81,15 @@ export function heatmap(grid, width) {
 }
 
 export function heatLegend() {
-  const sw = (c) => `<svg width="18" height="12" aria-hidden="true"><rect width="18" height="12" rx="2" fill="${c}"/></svg>`;
+  const sw = (c) => `<svg class="chart" width="18" height="12" aria-hidden="true"><rect width="18" height="12" rx="3" class="${c}"/></svg>`;
   return `<div class="ramp" aria-hidden="true"><span>Never</span>${HEAT.map(sw).join('')}<span>Every time</span></div>`;
 }
 
-/** Areas ranked by hours of power a day; yours in blue, a tick for each area's promise. */
+/** Areas ranked by hours of power a day; yours in ink, a tick for each area's promise. */
 export function ranked(rows, mine, width) {
   const nameW = Math.min(132, width * 0.34);
   const valueW = 64;
-  const rowH = 34;
+  const rowH = 40;
   const barH = 14;
   const plotW = width - nameW - valueW;
   const x = (v) => nameW + (v / 24) * plotW;
@@ -104,10 +99,10 @@ export function ranked(rows, mine, width) {
     const me = r.slug === mine;
     out += `<text class="${me ? 'nm strong' : 'nm'}" x="0" y="${y + barH - 1}">${esc(r.name)}</text>`;
     out += `<text class="ax" x="0" y="${y + barH + 13}">Band ${esc(r.band)} · ${r.outages} cuts</text>`;
-    out += `<rect x="${nameW}" y="${y}" width="${plotW}" height="${barH}" rx="4" fill="${GRID}"/>`;
+    out += `<rect x="${nameW}" y="${y}" width="${plotW}" height="${barH}" rx="7" class="tr"/>`;
     const tip = `${r.name}: ${r.avgHours} h of power a day on average, ${r.outages} outages. Band ${r.band} promises ${r.promise} h.`;
-    out += `<path d="${hbar(nameW, y, x(r.avgHours) - nameW, barH, 4)}" fill="${me ? BLUE : OTHER}" data-tip="${esc(tip)}"/>`;
-    out += `<line x1="${x(r.promise)}" x2="${x(r.promise)}" y1="${y - 3}" y2="${y + barH + 3}" stroke="${INK}" stroke-width="2"/>`;
+    out += `<path d="${hbar(nameW, y, x(r.avgHours) - nameW, barH, 4)}" class="${me ? 'bm' : 'ot'}" data-tip="${esc(tip)}"/>`;
+    out += `<line x1="${x(r.promise)}" x2="${x(r.promise)}" y1="${y - 3}" y2="${y + barH + 3}" class="tk"/>`;
     out += `<text class="${me ? 'val strong' : 'val'}" x="${width}" y="${y + barH - 1}" text-anchor="end">${r.avgHours} h</text>`;
   });
   return svg(width, rows.length * rowH + 8, 'Areas ranked by hours of power a day.', out);
@@ -128,14 +123,14 @@ export function weeklyLine(weeks, width) {
   const y = (v) => top + plotH - (v / nice) * plotH;
   let out = '';
   for (let g = 0; g <= nice; g += nice / 4) {
-    out += `<line x1="${left}" x2="${width - right}" y1="${y(g)}" y2="${y(g)}" stroke="${GRID}"/>`;
+    out += `<line x1="${left}" x2="${width - right}" y1="${y(g)}" y2="${y(g)}" class="g"/>`;
     out += text(left - 6, y(g) + 4, `${Math.round(g)}`, 'end');
   }
-  out += `<polyline points="${weeks.map((w, i) => `${x(i)},${y(w.offHours)}`).join(' ')}" fill="none" stroke="${BLUE}" stroke-width="2" stroke-linejoin="round"/>`;
+  out += `<polyline points="${weeks.map((w, i) => `${x(i)},${y(w.offHours)}`).join(' ')}" class="ln"/>`;
   weeks.forEach((w, i) => {
     const tip = `${fmtDay(w.from)} to ${fmtDay(w.to)}: ${w.offHours} h without power`;
-    out += `<rect x="${x(i) - plotW / weeks.length / 2}" y="${top}" width="${plotW / weeks.length}" height="${plotH}" fill="transparent" data-tip="${esc(tip)}"/>`;
-    out += `<circle cx="${x(i)}" cy="${y(w.offHours)}" r="4.5" fill="${BLUE}" stroke="#fff" stroke-width="2" pointer-events="none"/>`;
+    out += `<rect x="${x(i) - plotW / weeks.length / 2}" y="${top}" width="${plotW / weeks.length}" height="${plotH}" class="hit" data-tip="${esc(tip)}"/>`;
+    out += `<circle cx="${x(i)}" cy="${y(w.offHours)}" r="4.5" class="dt"/>`;
     out += text(x(i), h - 8, fmtDay(w.from), i === 0 ? 'start' : i === weeks.length - 1 ? 'end' : 'middle');
   });
   const lastW = weeks[weeks.length - 1];
@@ -149,17 +144,17 @@ export function miniBars(days, promise, width) {
   const step = width / days.length;
   const bw = step - 6;
   const y = (v) => 4 + (h - 22) * (1 - v / 24);
-  let out = `<line x1="0" x2="${width}" y1="${y(promise)}" y2="${y(promise)}" stroke="${INK}" stroke-dasharray="3 3"/>`;
+  let out = `<line x1="0" x2="${width}" y1="${y(promise)}" y2="${y(promise)}" class="pl thin"/>`;
   days.forEach((d, i) => {
     const x = i * step + 3;
     const below = d.hours < promise;
-    out += `<path d="${bar(x, y(d.hours), bw, y(0) - y(d.hours), 3)}" fill="${below ? BELOW : BLUE}" data-tip="${esc(`${fmtLong(d.date)}: ${d.hours} h of power`)}"/>`;
+    out += `<path d="${bar(x, y(d.hours), bw, y(0) - y(d.hours), 3)}" class="${below ? 'bb' : 'bm'}" data-tip="${esc(`${fmtLong(d.date)}: ${d.hours} h of power`)}"/>`;
     out += text(x + bw / 2, h - 4, d.date.toLocaleDateString('en-GB', { weekday: 'narrow' }), 'middle');
   });
   return svg(width, h, 'Hours of power each day for the last 7 days.', out);
 }
 
-export { duration, fmtDay, fmtLong, MUTED };
+export { duration, fmtDay, fmtLong };
 
 /** One hover card for every [data-tip] inside root. Follows the pointer; also shows on keyboard focus. */
 export function bindTips(root, tip) {
