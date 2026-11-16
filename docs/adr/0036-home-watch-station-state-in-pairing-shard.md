@@ -3,6 +3,8 @@
 Status: ACCEPTED 2026-11-23, under the human's blanket approval (decide, record, proceed). Stored-data change: see "Stored data".
 
 ## Context
+This ADR also records one deviation from `home-watch` design sections 6 to 8: the state, alarm and push planner are in the pairing shard actor, not the area actor.
+
 `home-watch` design sections 6 to 8 put the station state, the alarm multiplexer, the pair table and the push planner in the station's area actor. ADR 0009 (task 2) then put offers and pairs in a `PairingActor` per two-symbol shard, chosen from the station install, and said tasks 5 to 7 could copy what they need. A viewer's `GET /v1/home/:pairId` already routes by the first two symbols of the pair id to that shard, with no table. The area actor is chosen by the station's res-7 parent, which the viewer never knows (R4.5).
 
 ## Decision

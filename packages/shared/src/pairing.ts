@@ -1,6 +1,7 @@
 // Home Watch pairing (home-watch R1, ADR 0009): code alphabet, routing shard, attempts rule and request shapes.
 // Pure: no I/O, no clock (time is an input), randomness is injected. The Worker (workers/api) and, later, the Kotlin app's
 // fixtures use these rules; nothing here knows about storage.
+import { isCell } from './h3.ts';
 import { isInstallId } from './ingest.ts';
 
 /** 30 symbols: base32 (Crockford) without 0, 1, I, L, O, U (R1.3 decisions table). */
@@ -94,6 +95,11 @@ export function decideClaim(offer: OfferLife | undefined, nowMs: number, codeMat
 
 export interface OfferRequest {
   installId: string;
+  /**
+   * The station's res-8 cell (ADR 0036). Used once, at claim time, to tell the right area actor to forward this station's
+   * events. Never returned to a viewer and never stored on a pair. Without it the pair works but the state stays unknown.
+   */
+  cell?: string;
 }
 export interface OfferResponse {
   code: string;
@@ -127,8 +133,10 @@ const intIn = (v: unknown, lo: number, hi: number): v is number => typeof v === 
 export type Parsed<T> = { ok: true; value: T } | { ok: false };
 
 export function parseOfferRequest(raw: unknown): Parsed<OfferRequest> {
-  if (!isRecord(raw) || !hasExactKeys(raw, ['installId']) || !isInstallId(raw.installId)) return { ok: false };
-  return { ok: true, value: { installId: raw.installId } };
+  if (!isRecord(raw) || !hasExactKeys(raw, ['installId'], ['cell']) || !isInstallId(raw.installId)) return { ok: false };
+  if (raw.cell === undefined) return { ok: true, value: { installId: raw.installId } };
+  if (!isCell(raw.cell)) return { ok: false };
+  return { ok: true, value: { installId: raw.installId, cell: raw.cell } };
 }
 
 /** The claim's `code` is normalized here. A code that is not 10 alphabet symbols is a parse failure; the Worker answers it like any other bad claim. */

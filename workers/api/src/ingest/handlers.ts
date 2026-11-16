@@ -9,9 +9,12 @@ import {
   type FollowRequest,
   type DeviceDay,
   type FieldDump,
+  type HomeResponse,
+  isPairId,
   generateCode,
   generatePairId,
   HEARTBEAT_ON_BATTERY,
+  isInstallId,
   isPermanent,
   keyOfCode,
   type OfferResponse,
@@ -44,6 +47,8 @@ import { hashInstallId, mintInstallId, mintToken, verifyToken } from './token.ts
 export interface AreaGateway {
   ingest(parent: string, input: AreaIngestInput): Promise<AreaResponse>;
   deleteInstall(parent: string, installId: string): Promise<number>;
+  /** Home Watch (ADR 0036): the station's parent area actor starts forwarding this install's events to its pairing shard. */
+  watchStation(parent: string, installId: string, shard: string): Promise<void>;
 }
 /** One call per pairing shard (home-watch, ADR 0009). The shard is chosen by the caller from the code, pair id or station install. */
 export interface PairingGateway {
@@ -51,6 +56,10 @@ export interface PairingGateway {
   claim(shard: string, input: ClaimInput): Promise<ClaimResult>;
   removePair(shard: string, pairId: string, installId: string): Promise<boolean>;
   deleteInstall(shard: string, installId: string): Promise<number>;
+  /** The viewer's view of a station, from the shard the pair id names. Null for an unknown pair or another viewer. Cached 10 s. */
+  home(shard: string, pairId: string, viewerInstall: string, nowMs: number): Promise<HomeResponse | null>;
+  /** Drop a pair from the isolate's view cache after it is removed. */
+  forgetPair(pairId: string): void;
 }
 /** Subscriptions live in the area actor of the followed cell's res-7 parent (alerts-and-light-alarm design 5.1). */
 export interface AlertsGateway {
@@ -100,6 +109,7 @@ const retryHeader = (ms: number) => ({ 'retry-after': String(Math.max(1, Math.ce
 export async function handleRequest(req: Request, deps: Deps): Promise<Response> {
   const { pathname } = new URL(req.url);
   if (pathname.startsWith(ADMIN_FIELD_PREFIX)) return adminRoute(req, deps, pathname.slice(ADMIN_FIELD_PREFIX.length));
+  if (pathname.startsWith(HOME_PREFIX)) return homeRoute(req, deps, pathname.slice(HOME_PREFIX.length));
   const route = ROUTES[pathname];
   if (!route) return fail(404, 'not_found');
   if (req.method !== route.method) return fail(405, 'method_not_allowed', { allow: route.method });
@@ -264,6 +274,7 @@ async function deleteData(req: Request, deps: Deps): Promise<Response> {
   // A revoked token may still delete: if a previous attempt failed half-way, the retry must be able to finish (ADR 0003 addendum).
   if (!(await authorized(req, installId, deps, false))) return fail(401, 'unauthorized');
   await deps.registry.revoke(installId); // first, so late uploads stop before the rows go
+  for (const id of pairIds) deps.pairing.forgetPair(id);
   const parents = [...new Set(cells.map(res7Parent))];
   // Home Watch (R7.4): the install's own shard (as a station) and the shard of every pair it lists (as a viewer).
   const shards = new Set([shardFromHash(await hashInstallId(installId)), ...pairIds.map(shardOfPairId)]);
@@ -300,7 +311,13 @@ async function pairOffer(req: Request, deps: Deps): Promise<Response> {
   for (let i = 0; i < OFFER_TRIES; i++) {
     const code = generateCode(shard, deps.randomBytes);
     const codeHash = await hashPairingCode(deps.secret as string, code);
-    const res = await deps.pairing.createOffer(shard, { key: keyOfCode(code), codeHash, stationInstall, nowMs });
+    const res = await deps.pairing.createOffer(shard, {
+      key: keyOfCode(code),
+      codeHash,
+      stationInstall,
+      nowMs,
+      ...(parsed.value.cell ? { stationCell: parsed.value.cell } : {}),
+    });
     if (res.status === 'limited') return fail(429, 'rate_limited', retryHeader(res.retryAfterMs));
     if (res.status === 'full') return fail(409, 'station_full');
     if (res.status === 'ok') {
@@ -336,7 +353,15 @@ async function pairClaim(req: Request, deps: Deps): Promise<Response> {
   if (res.status === 'limited') return fail(429, 'rate_limited', retryHeader(res.retryAfterMs));
   if (res.status === 'full') return fail(409, 'station_full');
   if (res.status === 'fail') return NOT_FOUND();
-  const out: ClaimResponse = { pairId: res.pairId };
+  // Home Watch (ADR 0036): tell the station's area actor to forward its events. Best effort; the pair is already made.
+  if (res.stationCell) {
+    try {
+      await deps.area.watchStation(res7Parent(res.stationCell), res.stationInstall, shard);
+    } catch {
+      // the station can pair again; until then its state stays unknown
+    }
+  }
+  const out: ClaimResponse = { pairId: res.pairId }; // no station install, no cell (R4.5, R1.7)
   return json(200, out);
 }
 
@@ -348,6 +373,7 @@ async function pairRemove(req: Request, deps: Deps): Promise<Response> {
   const { installId, pairId } = parsed.value;
   if (!(await authorized(req, installId, deps, true))) return fail(401, 'unauthorized');
   const removed = await deps.pairing.removePair(shardOfPairId(pairId), pairId, installId);
+  deps.pairing.forgetPair(pairId);
   return removed ? json(200, { removed: true }) : NOT_FOUND(); // someone else's pair looks the same as no pair
 }
 
@@ -400,9 +426,31 @@ async function unfollow(req: Request, deps: Deps): Promise<Response> {
   return json(200, { following: false });
 }
 
+// ---- GET /v1/home/:pairId (home-watch R4, R7.5) ------------------------------------------------------------------
+
+/**
+ * The viewer's read of one station. Authentication is the viewer's install token in `Authorization: Bearer` and its id in
+ * `X-Install-Id` (a GET has no body). Only the pair's viewer gets an answer. Every other case is the same 404, so a pair id
+ * cannot be probed. The answer is state and "since" only, never a cell or an install id.
+ */
+async function homeRoute(req: Request, deps: Deps, pairId: string): Promise<Response> {
+  if (req.method !== 'GET') return fail(405, 'method_not_allowed', { allow: 'GET' });
+  if (!deps.secret) return fail(500, 'server_not_configured');
+  const installId = req.headers.get('x-install-id') ?? '';
+  if (!isInstallId(installId) || !(await authorized(req, installId, deps, true))) return fail(401, 'unauthorized');
+  if (!isPairId(pairId)) return NOT_FOUND();
+  try {
+    const view = await deps.pairing.home(shardOfPairId(pairId), pairId, installId, deps.now());
+    return view ? json(200, view) : NOT_FOUND();
+  } catch {
+    return fail(503, 'unavailable');
+  }
+}
+
 // ---- GET /v1/admin/field/:day ----------------------------------------------------------------------------------
 
 const ADMIN_FIELD_PREFIX = '/v1/admin/field/';
+const HOME_PREFIX = '/v1/home/';
 const sha256 = async (s: string) => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
 
 /** Compares digests of both values, so the comparison time does not depend on where they differ or on the length. */

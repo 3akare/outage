@@ -658,3 +658,12 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - H1 to H4 in `packages/shared/test/home.test.ts` (fast-check): silence never gives OFF, any order, duplication and batching give one state, non-power events and heartbeats change nothing, extra area input changes nothing.
 - ADR 0036 records where the state lives (the pairing shard actor, not the area actor) and the stored-data additions for tasks 5 to 7.
 
+## 2026-11-23 feat(home): station state in the shard, alarm multiplexer, home push, viewer API [spec:home-watch tasks:5,6,7] [ADR 0036]
+- Built on the human's order; only the tasks' own tests, typecheck and lint were run. No device or field test.
+- `workers/api/src/home/`: `HomeCore` (state per paired station from `foldPower`, last-seen written at most every 10 minutes, silence to OFFLINE at 30 minutes, push retry, daily prune of sent memory and 7-day-dead tokens), `planner.ts` (texts "Home: power off since 2:14 p.m.", age rule, sent memory by pair, version and kind, quiet channel, OFFLINE normal priority), `wake.ts` (`planAlarm`: set only when the alarm would sit more than a minute late), `forward.ts` and `cache.ts`.
+- The state lives in the `PairingActor` of the station's shard, not the area actor (ADR 0036). The area actor keeps a watch list (install and shard, no cell) filled when a claim succeeds, and forwards a watched station's accepted events once per batch. The offer may carry the station cell (`POST /v1/pair/offer`), used once to find the area actor and never stored on a pair.
+- `GET /v1/home/:pairId` (token plus `X-Install-Id`, viewer only, one 404 for everything else, 10 s cache per pair and viewer). `FcmOutgoing` gained optional `priority`.
+- Schema: `pair_offer.station_cell`, `pair.push_failed_ms`, tables `station_state` and `pair_sent`, `home_watch` in the area actor. Older shards get the columns by `ALTER TABLE`.
+- Tests: `home-watch.test.ts` (H6, H7 as properties, viewer API, H8 state parts), `home-sql.test.ts` (real SQLite), shared tests for the response shape and the offer cell.
+- Known gaps: a station that moves to another res-7 parent is not forwarded until it pairs again; `since` after pairing is the first heartbeat heard. Compose screens (task 8) still need `cell` in the offer request.
+

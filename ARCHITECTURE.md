@@ -271,6 +271,11 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/src/pairing/core.ts` | Pairing offers, claims and removals |
 | `workers/api/src/pairing/store.ts` | SQLite tables of one pairing shard |
 | `workers/api/src/pairing/hash.ts` | HMAC of a pairing code |
+| `workers/api/src/home/core.ts` | Home Watch core of one pairing shard: station state, silence, push, viewer view |
+| `workers/api/src/home/planner.ts` | Home push planner (pure): texts, channel, age rule, sent memory |
+| `workers/api/src/home/wake.ts` | Single-alarm planning shared by offer expiry, station silence and retries |
+| `workers/api/src/home/forward.ts` | Area actor's watch list and forwarding of a station's events to its shard |
+| `workers/api/src/home/cache.ts` | 10-second per-pair cache of the viewer's home view |
 | `workers/api/src/registry/actor.ts` | `RegistryActor`: revoked installs and daily usage counters |
 | `workers/api/src/registry/revocation.ts` | Revocation cache kept in a Worker isolate |
 | `workers/api/src/telemetry/actor.ts` | `TelemetryActor`: field-test device-days, outage and miss records |
@@ -325,6 +330,8 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/test/area-scope.test.ts` | Scope selection (A1 to A3) |
 | `workers/api/test/area-view.test.ts` | Public view whitelist (A8) |
 | `workers/api/test/pairing.test.ts` | Home Watch pairing |
+| `workers/api/test/home-watch.test.ts` | Home Watch: state, alarm multiplexer, push, viewer API, delete (H6, H7, H8 state parts) |
+| `workers/api/test/home-sql.test.ts` | Home Watch store and core on real SQLite, old-schema upgrade |
 | `workers/api/test/home-heartbeat.test.ts` | Battery heartbeat is proof of life only (H3, Worker side) |
 | `workers/api/test/telemetry.test.ts` | Telemetry endpoints and store |
 | `workers/api/test/telemetry-store.ts` | In-memory telemetry store for tests |
@@ -407,6 +414,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `packages/shared/fixtures/map/map.json` | Contract fixture for `/api/map.json` |
 | `packages/shared/fixtures/replay.json` | Simulated replay played by `/app/simulate` (built by `tools/sim`) |
 | `packages/shared/fixtures/sensor/sensor-events.json` | Sensor event fixture read by TypeScript and Kotlin tests |
+| `packages/shared/fixtures/home/home-response.json` | Viewer API response shapes, one per status |
 | `packages/shared/fixtures/ingest/event-heartbeat-battery.json` | Wire fixture: DISARMED with reason HEARTBEAT_ON_BATTERY |
 | `packages/shared/fixtures/telemetry/` | Device-day fixtures: valid, station and invalid |
 | `packages/shared/test/arbs.ts` | fast-check arbitraries |

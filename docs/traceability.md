@@ -139,9 +139,10 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 | R2.8 | H4 | `H4_state_independent_of_area` | 3 | passing (`packages/shared/test/home.test.ts`) |
 | R1.2, R1.3, R1.5 | H5 (pure part) | `H5_pairing_rules` | 2 | passing (`packages/shared/test/pairing.test.ts`) |
 | R1.1 to R1.6, R1.9, R7.2 | H5 (Worker part) | `H5_pairing_rules` | 4 | passing (`workers/api/test/pairing.test.ts`) |
-| R5, R8.3 | H6 | `H6_push_once_per_change` | 6 | planned |
-| R6 | H7 | `H7_alarm_multiplexer` | 5 | planned |
-| R1.10, R7.4 | H8 (pair part) | `H8_delete_removes_pairs`, `R1.10 remove a pair` | 4 | passing (`workers/api/test/pairing.test.ts`; offer and state parts follow in tasks 5 to 7) |
+| R5, R8.3 | H6 | `H6_push_once_per_change` | 6 | passing (`workers/api/test/home-watch.test.ts`, `home-sql.test.ts`) |
+| R6, R8.1, R8.2 | H7 | `H7_alarm_multiplexer` | 5 | passing (`workers/api/test/home-watch.test.ts`) |
+| R4, R7.5 | viewer API | `viewer API GET /v1/home/:pairId` | 7 | passing (`workers/api/test/home-watch.test.ts`, shape in `packages/shared/test/home.test.ts`) |
+| R1.10, R7.4 | H8 (pair part) | `H8_delete_removes_pairs`, `R1.10 remove a pair` | 4 | passing (`workers/api/test/pairing.test.ts`; state parts: `H8_delete_removes_pairs (state parts, R7.3, R7.4)` in `workers/api/test/home-watch.test.ts`) |
 
 ## onboarding
 

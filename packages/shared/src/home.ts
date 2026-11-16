@@ -91,3 +91,44 @@ export function mergeWindow(window: readonly StationEvent[], incoming: readonly 
   const head: StationEvent = { type: seed.state === 'OFF' ? 'UNPLUG' : 'REPLUG', timeMs: seed.sinceMs as number };
   return [head, ...all.slice(cut)];
 }
+
+// ---- viewer API shape (home-watch R4, R7.5; `GET /v1/home/:pairId`) -------------------------------------------------------
+
+/**
+ * What a viewer may learn about a station: its state and "since", when the server last heard it, and the name the viewer
+ * chose if it chose to sync one. No cell, no install id, no map (R4.5, R7.5).
+ */
+export interface HomeResponse {
+  status: HomeStatus;
+  sinceMs: number | null;
+  lastKnown: { state: 'ON' | 'OFF'; sinceMs: number } | null;
+  /** Receive time of the newest message from the station. The app shows "Station offline" with this age. */
+  lastSeenMs: number | null;
+  stationName: string | null;
+  /** Server time of this answer, so the app can show the age of a cached one. */
+  asOfMs: number;
+}
+
+const STATUSES: readonly string[] = ['UNKNOWN', 'ON', 'OFF', 'OFFLINE'];
+const isMs = (v: unknown): v is number => typeof v === 'number' && Number.isSafeInteger(v) && v >= 0;
+
+/** Strict check used by the contract test over `fixtures/home/home-response.json`. */
+export function isHomeResponse(v: unknown): v is HomeResponse {
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
+  const r = v as Record<string, unknown>;
+  const keys = Object.keys(r).sort().join(',');
+  if (keys !== 'asOfMs,lastKnown,lastSeenMs,sinceMs,stationName,status') return false;
+  const lk = r.lastKnown as Record<string, unknown> | null;
+  const lastKnownOk =
+    lk === null ||
+    (typeof lk === 'object' && Object.keys(lk).sort().join(',') === 'sinceMs,state' && (lk.state === 'ON' || lk.state === 'OFF') && isMs(lk.sinceMs));
+  return (
+    typeof r.status === 'string' &&
+    STATUSES.includes(r.status) &&
+    (r.sinceMs === null || isMs(r.sinceMs)) &&
+    lastKnownOk &&
+    (r.lastSeenMs === null || isMs(r.lastSeenMs)) &&
+    (r.stationName === null || typeof r.stationName === 'string') &&
+    isMs(r.asOfMs)
+  );
+}

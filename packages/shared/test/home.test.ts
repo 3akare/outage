@@ -1,7 +1,9 @@
 // home-watch task 3: HomeState (pure) and the station event window. Properties H1 to H4.
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { foldPower, homeState, mergeWindow, SILENCE_LIMIT_MS, type StationEvent } from '../src/home.ts';
+import responses from '../fixtures/home/home-response.json';
+import { foldPower, homeState, isHomeResponse, mergeWindow, SILENCE_LIMIT_MS, type StationEvent } from '../src/home.ts';
+import { parseOfferRequest } from '../src/pairing.ts';
 import { NUM_RUNS } from './runs.ts';
 
 const T0 = 1_800_000_000_000;
@@ -150,5 +152,20 @@ describe('H4_state_independent_of_area (R2.8)', () => {
       }),
       { numRuns: NUM_RUNS },
     );
+  });
+});
+
+describe('viewer response shape (R4, R7.5)', () => {
+  it('accepts every fixture and rejects a cell or an extra field', () => {
+    for (const r of responses as unknown[]) expect(isHomeResponse(r)).toBe(true);
+    expect(isHomeResponse({ ...(responses[0] as object), cell: '88589c984dfffff' })).toBe(false);
+    expect(isHomeResponse({ ...(responses[0] as object), status: 'DEAD' })).toBe(false);
+  });
+
+  it('an offer may carry the station cell, and only a valid res-8 cell', () => {
+    const installId = 'kg4yq7mxwb2ndpr3tfhj5vcsaz';
+    expect(parseOfferRequest({ installId, cell: '88589c984dfffff' })).toEqual({ ok: true, value: { installId, cell: '88589c984dfffff' } });
+    expect(parseOfferRequest({ installId, cell: 'nope' }).ok).toBe(false);
+    expect(parseOfferRequest({ installId }).ok).toBe(true);
   });
 });
