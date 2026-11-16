@@ -38,7 +38,7 @@ export const formatOffset = (tzOffsetMin: number): string => {
 
 function installButtons(site: Site): string {
   const href = site.apkUrl ? (safeHref(site.apkUrl) ?? '/install') : '/install';
-  return `<p><a class="btn" href="${e(href)}">Install Outage (Android)</a><a class="btn alt" href="/app/simulate">Watch a blackout</a></p>`;
+  return `<p><a class="btn" href="${e(href)}">Install Outage (Android)</a><a class="btn alt" href="/app/simulate">Try the app in your browser</a></p>`;
 }
 
 /** The five-state legend. "Your spot only" is described as private to one phone (R2.3). */
@@ -165,7 +165,7 @@ export function renderHomePage(input: HomePageInput): Rendered {
     .join('');
   const body =
     '<main><h1>Is there power in your area right now?</h1><p>Your phone charger is a power-grid sensor.</p>' +
-    '<p><a class="btn alt" href="/app/simulate">Watch a blackout</a>' +
+    '<p><a class="btn alt" href="/app/simulate">Try the app in your browser</a>' +
     `<a class="btn" href="${e(site.apkUrl ? (safeHref(site.apkUrl) ?? '/install') : '/install')}">Install Outage (Android)</a></p>` +
     (views === null ? `<p class="note">${e(UNAVAILABLE_TEXT)}</p>` : '') +
     renderMap(areas, states) +
@@ -195,7 +195,7 @@ export function renderInstallPage(input: { site: Site; install: InstallInfo | nu
       '</ul>';
   }
   const body =
-    '<main><h1>Install Outage</h1><p><strong>Android only for now.</strong> On iPhone, use the <a href="/app">web app</a> and the <a href="/app/simulate">simulation</a> to see how it works.</p>' +
+    '<main><h1>Install Outage</h1><p><strong>Android only for now.</strong> On iPhone or a computer, <a href="/app/simulate">try the app in your browser</a> with a simulated city.</p>' +
     details +
     '<h2>Allow installs from your browser</h2><ol><li>Tap the download link.</li>' +
     '<li>If Android says it blocked the install, tap Settings and turn on "Allow from this source" for your browser.</li>' +

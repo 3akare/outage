@@ -23,10 +23,11 @@ import {
   renderJudgeReplayJson,
   renderJudgeServiceWorker,
 } from './ui/simulate/replay.ts';
-import { APP_TABS, renderAppCss, renderAppJs, renderAppPage } from './ui/app/app.ts';
+import { redirectToApp, renderAppCss } from './ui/app/app.ts';
+import { renderFavicon } from './site/brand.ts';
 import { renderSimulateJs, renderSimulatePage, SIMULATE_PATH } from './ui/simulate/simulate.ts';
 import { renderLanding } from './landing/landing.ts';
-import { buildMapJson, cityFrom, DEFAULT_CITY } from './api/map/map-json.ts';
+import { buildMapJson, cityFrom } from './api/map/map-json.ts';
 import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './site/status.ts';
 
 export interface WebDeps {
@@ -64,7 +65,6 @@ export function robotsTxt(site: Site): string {
 export function sitemapXml(site: Site, areas: readonly CatalogArea[]): string {
   const paths = [
     '/',
-    ...APP_TABS.map((t) => t.path),
     SIMULATE_PATH,
     '/areas',
     '/install',
@@ -77,21 +77,13 @@ export function sitemapXml(site: Site, areas: readonly CatalogArea[]): string {
 
 type Route = { pattern: RegExp; render: (m: RegExpExecArray, url: URL, deps: WebDeps) => Promise<Rendered> | Rendered };
 
+// favicon: one SVG served for both names; browsers that ask for /favicon.ico accept it.
 const ROUTES: Route[] = [
   { pattern: /^\/$/, render: (_m, _u, d) => renderLanding(d.site) },
   { pattern: /^\/app\.css$/, render: () => renderAppCss() },
-  { pattern: /^\/app\.js$/, render: () => renderAppJs() },
-  {
-    // The web replica of the phone app. Real data only (never the replay). A failed index read shows the error card.
-    pattern: /^\/app(?:\/(insights|settings))?$/,
-    render: async (m, _u, d) => {
-      const tab = m[1] === 'insights' || m[1] === 'settings' ? m[1] : 'home';
-      if (tab !== 'home') return renderAppPage(tab, d.site, null);
-      const views = await d.index.views();
-      const map = views === null ? null : buildMapJson(DEFAULT_CITY, d.mapAreas ?? d.areas, views, d.now());
-      return renderAppPage('home', d.site, map);
-    },
-  },
+  { pattern: /^\/favicon\.(?:svg|ico)$/, render: () => renderFavicon() },
+  // The old real-data web app folded into the app in the browser (ADR 0049).
+  { pattern: /^\/app(?:\/(?:insights|settings))?$/, render: () => redirectToApp() },
   // The simulation page is static. It fetches the replay JSON itself and never reads the public index (W6).
   { pattern: /^\/app\/simulate$/, render: (_m, _u, d) => renderSimulatePage(d.site) },
   { pattern: /^\/simulate\.js$/, render: () => renderSimulateJs() },

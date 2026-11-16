@@ -1,123 +1,117 @@
-// Landing page and web app replica (ux-redesign task 2, ADR 0027). UX1, UX4, UX6, UX7, UX9 and the web part of UX2.
-import fc from 'fast-check';
+// Landing page, the app in the browser and the shared stylesheet (ADR 0027, ADR 0048, ADR 0049). UX1, UX2, UX4, UX9.
 import { describe, expect, it } from 'vitest';
 import { PageCache } from '../site/cache.ts';
-import { APP_TABS, EMPTY_TEXT, hexLayout, LOAD_ERROR_TEXT } from '../ui/app/app.ts';
+import type { Site } from '../site/layout.ts';
 import type { IndexReader } from '../api/public-index/reader.ts';
-import type { PublicScopeView } from '../api/public-index/public-view.ts';
 import { handleWeb, type WebDeps } from '../routes.ts';
-import { NUM_RUNS } from './runs.ts';
-import { AREAS, cellView, confirmedNow, NOW, SITE, YABA } from './web-helpers.ts';
+import { NAV_ORDER } from '../ui/simulate/simulate.ts';
+import { stores } from '../landing/landing.ts';
+import { AREAS, NOW, SITE } from './web-helpers.ts';
 
-function deps(views: readonly PublicScopeView[] | null): WebDeps {
-  const index: IndexReader = { views: async () => views };
-  return { site: SITE, install: null, areas: AREAS, index, cache: new PageCache({ now: () => NOW }), replay: () => null, now: () => NOW };
+function deps(site: Site = SITE): WebDeps {
+  const index: IndexReader = {
+    views: async () => {
+      throw new Error('these pages never read the public index');
+    },
+  };
+  return { site, install: null, areas: AREAS, index, cache: new PageCache({ now: () => NOW }), replay: () => null, now: () => NOW };
 }
-const page = async (path: string, views: readonly PublicScopeView[] | null = []) => {
-  const res = await handleWeb(new Request(`https://outage.test${path}`), deps(views));
+const page = async (path: string, site?: Site) => {
+  const res = await handleWeb(new Request(`https://outage.test${path}`), deps(site));
   return { res, body: await res.text() };
 };
-// The APK download is a link the person taps, not something the page loads.
-const ORIGIN = /(?:src|action)="https?:\/\/|href="https?:\/\/(?!outage\.test\/)(?![^"]*\.apk")/;
+// Nothing is loaded from another origin: no src, no stylesheet, no form action, no script import. Plain links out are fine.
+const LOADS_ELSEWHERE = /(?:src|action)="https?:\/\/|<link[^>]+href="https?:\/\/(?!outage\.test\/)|(?:fetch|import)\(['"]https?:/;
 
 describe('landing /', () => {
-  it('UX9: has the three actions, the pitch, and no hardware-sensor claim', async () => {
+  it('UX9: the pitch, the app in the browser, the GitHub download, and no hardware-sensor claim', async () => {
     const { res, body } = await page('/');
     expect(res.status).toBe(200);
-    expect(body).toContain('Your phone charger is a power-grid sensor.');
-    expect(body).toContain('href="/app">Open web app');
-    expect(body).toContain('href="/app/simulate">Watch a blackout');
-    expect(body).toContain('Install on Android');
+    expect(body).toContain('Your phone charger is a <em>power-grid sensor</em>.');
+    expect(body).toContain('href="/app/simulate"');
+    expect(body).toContain('Try the app in your browser');
+    expect(body).toContain('GitHub');
     expect(body).not.toMatch(/undercount|100 ?%/i);
     expect(body).not.toMatch(/judge/i);
+    expect(body).not.toContain('<script');
+  });
+
+  it('store buttons appear only for the links that are configured', async () => {
+    const none = await page('/');
+    expect(none.body).not.toContain('Google Play');
+    expect(none.body).not.toContain('Aptoide');
+    const all = await page('/', { ...SITE, playUrl: 'https://play.google.com/store/apps/details?id=app.outage', aptoideUrl: 'https://outage.en.aptoide.com/app' });
+    expect(all.body).toContain('Google Play');
+    expect(all.body).toContain('Aptoide');
+    expect(stores({ ...SITE, playUrl: 'javascript:alert(1)' }).map((s) => s.name)).toEqual(['GitHub']);
   });
 });
 
-describe('web app /app', () => {
-  it('UX1: every tab has the same dock, three links in the same order, with the current tab marked', async () => {
-    for (const tab of APP_TABS) {
-      const { res, body } = await page(tab.path);
-      expect(res.status).toBe(200);
-      const dock = /<nav class="dock"[^>]*>(.*?)<\/nav>/.exec(body)?.[1] ?? '';
-      const links = [...dock.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
-      expect(links).toEqual(['/app', '/app/insights', '/app/settings']);
-      expect(dock.match(/aria-current="page"/g)?.length).toBe(1);
-      expect(dock).toContain(`href="${tab.path}" aria-current="page"`);
+describe('the app in the browser /app/simulate', () => {
+  it('UX1: the dock is Insights, Home, Settings, with Home in the middle and selected', async () => {
+    const { res, body } = await page('/app/simulate');
+    expect(res.status).toBe(200);
+    expect(NAV_ORDER).toEqual(['Insights', 'Home', 'Settings']);
+    const nav = /<nav class="navbar"[^>]*>(.*?)<\/nav>/.exec(body)?.[1] ?? '';
+    expect([...nav.matchAll(/data-tab="(\w+)"/g)].map((m) => m[1])).toEqual(['insights', 'home', 'settings']);
+    expect(nav).toMatch(/data-tab="home" aria-current="page"/);
+  });
+
+  it('draws the simulated city with the spot, and says it is simulated', async () => {
+    const { body } = await page('/app/simulate');
+    expect(body).toContain('class="sim-banner"');
+    const ids = [...body.matchAll(/<path class="hx[^"]*" data-id="([^"]+)"/g)].map((m) => m[1]);
+    expect(ids.length).toBe(21);
+    expect(ids.every((id) => id.startsWith('sim-'))).toBe(true);
+    expect(body).toContain('class="hx spot" data-id="sim-0,0"');
+  });
+
+  it('the old web-app addresses send people to the app in the browser', async () => {
+    for (const p of ['/app', '/app/insights', '/app/settings']) {
+      const { res } = await page(p);
+      expect(res.status, p).toBe(301);
+      expect(res.headers.get('Location'), p).toBe('/app/simulate');
     }
   });
+});
 
-  it('UX6: with no data it draws a map of grey cells and says no phones are reporting', async () => {
-    const { body } = await page('/app', []);
-    expect(body).toContain(EMPTY_TEXT);
-    expect(body).toContain('id="hexmap"');
-    expect(body).toContain('href="/app/simulate">Watch a blackout');
-    const states = [...body.matchAll(/<path class="hx"[^>]*data-state="([A-Z_]+)"/g)].map((m) => m[1]);
-    expect(states.length).toBeGreaterThan(0);
-    expect(new Set(states)).toEqual(new Set(['NO_DATA']));
-  });
-
-  it('shows a real outage from the index and links no area page', async () => {
-    const { body } = await page('/app', [cellView(YABA.cells[0] as string, confirmedNow())]);
-    expect(body).toContain('data-state="CONFIRMED"');
-    expect(body).not.toContain(EMPTY_TEXT.concat('</h2>'));
-    expect(body).not.toContain('href="/area/');
-  });
-
-  it('UX7: a cell with no public view renders as NO_DATA, whatever the other cells do', async () => {
-    const cells = YABA.cells;
-    await fc.assert(
-      fc.asyncProperty(fc.subarray([...cells], { minLength: 0, maxLength: cells.length }), async (listed) => {
-        const { body } = await page('/app', listed.map((c) => cellView(c, confirmedNow())));
-        const drawn = new Map([...body.matchAll(/<path class="hx"[^>]*data-id="([0-9a-f]+)"[^>]*data-state="([A-Z_]+)"/g)].map((m) => [m[1], m[2]]));
-        for (const c of cells) expect(drawn.get(c)).toBe(listed.includes(c) ? 'CONFIRMED' : 'NO_DATA');
-      }),
-      { numRuns: Math.min(NUM_RUNS, 25) },
-    );
-  });
-
-  it('shows the error card when the index is unavailable', async () => {
-    const { body } = await page('/app', null);
-    expect(body).toContain(LOAD_ERROR_TEXT);
-    expect(body).not.toContain('id="hexmap"');
-  });
-
-  it('serves the script and stylesheet from the same origin; the script reads only map.json (UX2)', async () => {
-    const js = await page('/app.js');
-    expect(js.res.headers.get('content-type')).toContain('javascript');
-    expect(js.body).toContain('/api/map.json');
-    expect(js.body).not.toMatch(/replay|judge|simulate/i);
+describe('shared assets', () => {
+  it('serves the stylesheet with the Material 3 tokens and the favicon from the same origin', async () => {
     const css = await page('/app.css');
     expect(css.res.headers.get('content-type')).toContain('text/css');
-    expect(css.body).toContain('--confirmed');
+    expect(css.body).toContain('--md-sys-color-primary:');
+    expect(css.body).toContain('--md-map-confirmed:');
+    const icon = await page('/favicon.svg');
+    expect(icon.res.headers.get('content-type')).toContain('image/svg+xml');
+    expect(icon.body).toContain('<svg');
   });
 
-  it('UX4: no page or asset names another origin', async () => {
-    const all = ['/', '/app', '/app/insights', '/app/settings', '/areas', '/app.js', '/app.css'];
-    for (const p of all) {
-      const { res, body } = await page(p);
-      expect(body, p).not.toMatch(ORIGIN);
-      expect(body, p).not.toMatch(/(?:fetch|import)\(['"]https?:/);
-      expect(res.headers.get('content-security-policy'), p).toContain("default-src 'none'");
+  it('UX4: no page or asset loads anything from another origin', async () => {
+    for (const p of ['/', '/app/simulate', '/simulate.js', '/app.css', '/install', '/privacy']) {
+      const { body } = await page(p);
+      expect(body, p).not.toMatch(LOADS_ELSEWHERE);
     }
   });
 
-  it('CSP allows the same-origin script and stylesheet, and nothing else', async () => {
-    const { res } = await page('/app');
+  it('CSP allows same-origin scripts and styles, and nothing else', async () => {
+    const { res } = await page('/app/simulate');
     const csp = res.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain("default-src 'none'");
     expect(csp).toMatch(/script-src 'nonce-[^']+' 'self'(;|$)/);
     expect(csp).toMatch(/style-src 'nonce-[^']+' 'self'(;|$)/);
     expect(csp).not.toMatch(/https?:|unsafe-/);
   });
 
-  it('app pages stay under 100 KB each with the script and stylesheet', async () => {
-    const { body } = await page('/app', [cellView(YABA.cells[0] as string, confirmedNow())]);
-    const total = ['/app', '/app.js', '/app.css'];
-    let bytes = new TextEncoder().encode(body).length;
-    for (const p of total.slice(1)) bytes += new TextEncoder().encode((await page(p)).body).length;
-    expect(bytes).toBeLessThan(100 * 1024);
+  it('no inline style attributes, so the CSP never has to allow them', async () => {
+    for (const p of ['/', '/app/simulate', '/simulate.js']) {
+      const { body } = await page(p);
+      expect(body, p).not.toMatch(/\sstyle="/);
+    }
   });
 
-  it('hexLayout is empty for an empty map', () => {
-    expect(hexLayout({ city: 'lagos', generatedMs: 0, simulated: false, areas: [], cells: [] }).cells).toEqual([]);
+  it('the app in the browser stays under 150 KB with its script and stylesheet', async () => {
+    let bytes = 0;
+    for (const p of ['/app/simulate', '/simulate.js', '/app.css']) bytes += new TextEncoder().encode((await page(p)).body).length;
+    expect(bytes).toBeLessThan(150 * 1024);
   });
 });

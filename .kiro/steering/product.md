@@ -11,7 +11,9 @@ When grid power dies, every phone charging in an area stops charging in the same
 Single-player value comes first. The map is the bonus. Every feature must be useful to one person with one charging phone on day one.
 
 - One Android app is both sensor and viewer.
-- The same Cloudflare Worker serves a website for judges on iPhone: a landing page at `/`, a replica of the app at `/app` using real data (map, feed, dock with Home, Insights, Settings), and a clearly separate simulation at `/app/simulate`. Area pages stay public (ADR 0027).
+- The same Cloudflare Worker serves the website: a landing page at `/` (what Outage is, "Try the app in your browser", downloads: Google Play and Aptoide when listed, the APK from GitHub always), and the Android app in the browser at `/app/simulate`, screen for screen on a simulated city, for judges and anyone without an Android phone (ADR 0049). Area pages stay public. `/app` redirects to `/app/simulate`.
+- The app: install, answer "Use my location" or "Not now", land on a full-screen hex map centred on your spot, with a sheet for your spot and feed and a bar of Insights, Home (middle), Settings (ADR 0050).
+- One look everywhere: Material 3 from one token file, the power-ring-and-bolt mark (ADR 0048). Use the `material-3` skill for UI work.
 - Open worldwide. Lagos is the proving ground and demo city.
 - Budget: zero. Free tiers only.
 

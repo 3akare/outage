@@ -9,6 +9,8 @@ Active specs: sensor-android and station-mode (receiver primary, job backup, ADR
 
 Redesign (2026-11-22): spec `ux-redesign` and ADRs 0026 to 0028 written. Web becomes landing `/`, replica `/app`, simulation `/app/simulate`; app dock becomes Home, Insights, Settings with a one-step first run. Next: tokens (task 2), then web shell and landing (task 3).
 
+Design (2026-11-24, ADR 0048 to 0050, spec `material-redesign`): Material 3 on both platforms from one token file, new mark, `/app/simulate` is the Android app in the browser (`/app` redirects), first run asks location (optional), Home is a full-screen map with a sheet, bar is Insights, Home, Settings. Left: device screenshots (task 7).
+
 Layout (2026-11-24, ADR 0047): `android/outage` and `android/probe`, `web` (`api`, `landing`, `ui`, `areas`), `core/detection` and `core/shared`. Old paths in the log and older ADRs translate through ADR 0047.
 
 ## Live

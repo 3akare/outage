@@ -798,3 +798,14 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Updated with it: npm workspaces, `wrangler.jsonc` (`main`), the four workflows, hook matchers and scripts, agent write rules (sensor-engineer keeps to `android/outage` and the probe app, not the probe Worker), steering `fileMatchPattern` lines, all specs, skills, the Power README, `docs/traceability.md`.
 - `ARCHITECTURE.md` and its test are deleted. The map is the root `README.md` and `.kiro/steering/structure.md`; `structure.test.mjs` checks that the paths they name exist.
 - Shaped by: steering `structure.md` and `definition-of-done.md`, ADR 0031 (superseded in part).
+
+## 2026-11-24 feat(design): Material 3 everywhere, new mark, the app in the browser, map-first Android [spec:material-redesign tasks:1-6]
+- Asked for by the human: one modern look on every platform with the `material-3` skill (installed in `.agents/skills/material-3`, linked for Claude Code in `.claude/skills/`), a power-button mark whose stem is a charging bolt, location on first run, landing on a map, Home in the middle of the bar, and a web copy of the app for judges. ADR 0048 to 0050.
+- Tokens: a full Material 3 scheme (light, dark), four state custom colours, map fills, type, shape, space; generated once with Google's colour library outside the repo, values only. CSS uses `--md-sys-*` names.
+- Mark and icons: `tools/icon/build.mjs` writes the adaptive icon (with a themed layer), `ic_mark`, 30 `ic_sym_*` glyphs from `core/shared/design/icons.json`, the web logo and `/favicon.svg`.
+- Web: landing with GitHub, Google Play and Aptoide buttons (the last two only when configured), `/app/simulate` rebuilt as the Android app (first run, map and sheet, replay, notification, Light Alarm, Insights, Settings), `/app` redirects, area pages on the shared stylesheet. Checked with Playwright at 390 x 844 and 1366 x 860, light and dark, the whole blackout played; no console errors.
+- Android: `Theme.kt` from every token role with `LocalStatusColors`; first run Use my location or Not now (coarse, once, cell only); Home is a `BottomSheetScaffold` over a full-screen map with the spot centred; bar Insights, Home, Settings; grouped Settings. Unit tests, lint and assembleDebug pass.
+- Tests: MD1 to MD8 (`tokens.test.mjs`, `icon.test.mjs`, `MaterialShellTest`, web tests updated). The old `/app` replica tests were replaced; UX8 is replaced by MD4.
+- Not done: Android screenshots (no emulator in the cloud session; task 7). Bands per area on the map need area-to-band data; the user's own band shows on the spot card.
+- Shaped by: steering `product.md`, `privacy.md`, `copy.md`; skill `material-3`; ADR 0037 (coarse location), ADR 0022 (no basemap).
+

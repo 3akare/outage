@@ -16,6 +16,10 @@ export interface Env {
   // Public site configuration (web-and-area-pages R7.4): plain vars, set by the release-apk skill. Unset = left out.
   SITE_ORIGIN?: string; // e.g. https://outage.example; defaults to the request's origin
   APK_URL?: string;
+  /** Google Play listing. Unset until the app is listed; the landing page then hides the button. */
+  PLAY_URL?: string;
+  /** Aptoide listing. Unset until the app is listed; the landing page then hides the button. */
+  APTOIDE_URL?: string;
   APK_VERSION?: string;
   APK_SIZE_BYTES?: string;
   APK_SHA256?: string;

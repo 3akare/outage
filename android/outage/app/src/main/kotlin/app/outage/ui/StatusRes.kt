@@ -1,13 +1,10 @@
 package app.outage.ui
 
-import androidx.compose.material3.ColorScheme
-import androidx.compose.ui.graphics.Color
 import app.outage.R
 import app.outage.alarm.AlarmState
 import app.outage.sensor.NotArmedReason
 import app.outage.sensor.SensorKind
 import app.outage.shell.AgeLabel
-import app.outage.shell.ColorRole
 import app.outage.shell.StatusIcon
 import app.outage.shell.StatusLevel
 
@@ -29,16 +26,12 @@ object StatusRes {
         StatusIcon.POWER_ON -> R.drawable.ic_status_power_on
     }
 
-    fun container(role: ColorRole, scheme: ColorScheme): Color = when (role) {
-        ColorRole.PRIMARY -> scheme.primaryContainer
-        ColorRole.TERTIARY -> scheme.tertiaryContainer
-        ColorRole.ERROR -> scheme.errorContainer
-    }
-
-    fun onContainer(role: ColorRole, scheme: ColorScheme): Color = when (role) {
-        ColorRole.PRIMARY -> scheme.onPrimaryContainer
-        ColorRole.TERTIARY -> scheme.onTertiaryContainer
-        ColorRole.ERROR -> scheme.onErrorContainer
+    /** The colour family of a level, from the theme: green on, amber possible, red out, blue back (ADR 0048). */
+    fun colors(level: StatusLevel, s: StatusColors): StateColors = when (level) {
+        StatusLevel.NORMAL -> s.normal
+        StatusLevel.SPOT_ONLY, StatusLevel.POSSIBLE -> s.possible
+        StatusLevel.CONFIRMED -> s.confirmed
+        StatusLevel.RESTORED -> s.restored
     }
 
     fun sensorLabel(kind: SensorKind): Int = when (kind) {

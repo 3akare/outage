@@ -99,7 +99,7 @@ function webDeps(req: Request, env: Env): WebDeps {
   const origin = (env.SITE_ORIGIN ?? new URL(req.url).origin).replace(/\/$/, '');
   const apkUrl = env.APK_URL ? env.APK_URL : null;
   return {
-    site: { origin, apkUrl },
+    site: { origin, apkUrl, playUrl: env.PLAY_URL || null, aptoideUrl: env.APTOIDE_URL || null },
     install: apkUrl
       ? {
           apkUrl,

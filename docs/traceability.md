@@ -312,3 +312,19 @@ Scanned 15 test file(s) under core/detection. A property counts when a test titl
 | R1.6 | - | delete-my-data for the log | power-log 10 | code done |
 | R5, R10 | IN | real Power Log in Insights, 12-week demo | app-map-insights 6 | done, ADR 0039; demo-days assertion updated to 84 |
 | R1, R2 | F1, F2 (client) | phone aggregator and daily uploader | field-telemetry 4 | code done, ADR 0041; Kotlin tests F1, F2 not written (human asked for no more tests); consent through `TelemetryConsent` |
+
+## material-redesign
+
+| Requirement | Property | Test | Task | Status |
+|---|---|---|---|---|
+| R1.1 to R1.4 | MD1 | every Material 3 role and status colour in CSS and Kotlin | 2 | done: `.kiro/scripts/test/tokens.test.mjs` |
+| R1.5, R2.1 to R2.3 | MD2 | generated icon files current, mark inside the safe circle, one-colour themed layer | 3 | done: `.kiro/scripts/test/icon.test.mjs` |
+| R4.4 | MD3 | bar order Insights, Home, Settings; opens on Home | 5, 6 | done: `web/test/web-app.test.ts`, `MaterialShellTest` (JUnit) |
+| R3.1 to R3.5 | MD4 | first run permissions and cell-only storage | 6 | done: `MaterialShellTest` (JUnit, source checks) and the existing O2 and manifest tests; device run waits for task 7 |
+| R5.2, R5.3 | MD5 | app in the browser reads only the replay | 5 | done: `web/test/web-replay.test.ts` (W6), `web/test/web-app.test.ts` |
+| R5.1 | MD6 | store buttons only when configured | 4 | done: `web/test/web-app.test.ts` |
+| R5.5 | MD7 | no other origin, no inline style, size | 4 | done: `web/test/web-app.test.ts`, `web/test/web-kit.test.ts` |
+| R5.4 | MD8 | old `/app` addresses redirect | 5 | done: `web/test/web-app.test.ts` |
+| R1 to R5 | - | spec, ADRs 0048 to 0050, steering | 1 | done (docs) |
+| R3, R4 | - | device screenshots and TalkBack | 7 | not done: needs a phone or emulator |
+

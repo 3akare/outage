@@ -25,12 +25,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -39,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -109,13 +115,17 @@ private const val REFRESH_MS = 60_000L
 /** Path coordinates are world units times this, so float precision holds at city scale (a hex is about 0.01 degrees wide). */
 private const val U = 1000.0
 
+/** How much of the map's bottom edge is covered by the Home sheet, so controls and "my spot" stay in the clear. */
+val LocalMapBottomInset = compositionLocalOf { 0.dp }
+
 /**
- * Area: a real map of outages (app-map-insights R1 to R6). Hexes are drawn on a Canvas with no basemap and no tile
- * request (ADR 0022). Loads on open, then at most once a minute while visible (R4.4). Demo or Worker JSON arrives
- * through the same [AreaMapSource].
+ * The Home map (app-map-insights R1 to R6, ADR 0050): full screen, like a maps app, with the spot in the middle of the
+ * part the sheet does not cover. Hexes are drawn on a Canvas with no basemap and no tile request (ADR 0022). Loads on
+ * open, then at most once a minute while visible (R4.4). Demo or Worker JSON arrives through the same [AreaMapSource].
+ * [spotCell] is the user's own cell from first run or Settings; it wins when the source does not know it.
  */
 @Composable
-fun MapScreen(source: AreaMapSource, followed: PrefsFollowedArea?) {
+fun MapScreen(source: AreaMapSource, followed: PrefsFollowedArea?, spotCell: () -> String? = { null }) {
     var result by remember { mutableStateOf<MapResult?>(null) }
     var nowMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -124,13 +134,17 @@ fun MapScreen(source: AreaMapSource, followed: PrefsFollowedArea?) {
             while (true) {
                 val now = System.currentTimeMillis()
                 val r = withContext(Dispatchers.IO) { source.load(DemoAreaMap.CITY, now) }
-                if (r is MapResult.Loaded || result == null) result = r
+                val withSpot = if (r is MapResult.Loaded && r.load.spotCellId == null) {
+                    val own = withContext(Dispatchers.IO) { spotCell() }
+                    if (own != null && r.load.map.cell(own) != null) MapResult.Loaded(r.load.copy(spotCellId = own)) else r
+                } else r
+                if (withSpot is MapResult.Loaded || result == null) result = withSpot
                 nowMs = System.currentTimeMillis()
                 delay(REFRESH_MS)
             }
         }
     }
-    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(MapPalette.backgroundTop, MapPalette.backgroundBottom)))) {
+    Box(Modifier.fillMaxSize().background(LocalStatusColors.current.map.ground)) {
         when (val r = result) {
             null -> CenterMessage(R.string.map_loading, null)
             MapResult.Empty -> CenterMessage(R.string.map_none, R.string.map_none_body)
@@ -142,8 +156,8 @@ fun MapScreen(source: AreaMapSource, followed: PrefsFollowedArea?) {
 @Composable
 private fun CenterMessage(titleRes: Int, bodyRes: Int?) {
     Column(Modifier.fillMaxSize().statusBarsPadding().padding(32.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(stringResource(titleRes), style = MaterialTheme.typography.titleLarge, color = MapPalette.label)
-        if (bodyRes != null) Text(stringResource(bodyRes), style = MaterialTheme.typography.bodyMedium, color = MapPalette.label.copy(alpha = 0.75f), modifier = Modifier.padding(top = 8.dp))
+        Text(stringResource(titleRes), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
+        if (bodyRes != null) Text(stringResource(bodyRes), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 8.dp))
     }
 }
 
@@ -164,43 +178,49 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
     val possible = areaStates.count { (_, s) -> CellState.CONFIRMED !in s && CellState.POSSIBLE in s }
     val total = map.areas.size
 
-    Column(Modifier.fillMaxSize().statusBarsPadding()) {
-        Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.map_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MapPalette.label)
-                val headline = when {
-                    out > 0 -> stringResource(R.string.map_headline_out, out, total)
-                    possible > 0 -> stringResource(R.string.map_headline_possible, possible, total)
-                    else -> stringResource(R.string.map_headline_ok, total)
+    val inset = LocalMapBottomInset.current
+    Box(Modifier.fillMaxSize()) {
+        if (listView) {
+            Box(Modifier.fillMaxSize().statusBarsPadding().padding(top = 128.dp, bottom = inset)) { AreaList(map, areaStates, states, nowMs) }
+        } else {
+            HexMapView(grid, map, states, load.spotCellId, selectedId, onTap = { selectedId = it }, summary = stringResource(R.string.map_summary, total, out, possible))
+        }
+        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // The floating search-style bar of a maps app: the mark, where this is, and how it is doing.
+            Surface(
+                shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh, shadowElevation = 3.dp,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+            ) {
+                Row(Modifier.padding(start = 14.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Image(painterResource(R.drawable.ic_mark), contentDescription = null, modifier = Modifier.size(28.dp))
+                    Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+                        Text(stringResource(R.string.map_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        val headline = when {
+                            out > 0 -> stringResource(R.string.map_headline_out, out, total)
+                            possible > 0 -> stringResource(R.string.map_headline_possible, possible, total)
+                            else -> stringResource(R.string.map_headline_ok, total)
+                        }
+                        Text(headline, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                    }
+                    if (map.simulated) SimulatedChip()
+                    IconButton(onClick = { listView = !listView }, modifier = Modifier.size(48.dp)) {
+                        Image(
+                            painter = painterResource(if (listView) R.drawable.ic_nav_area else R.drawable.ic_list),
+                            contentDescription = stringResource(if (listView) R.string.map_show_map else R.string.map_show_list),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant),
+                        )
+                    }
                 }
-                Text(headline, style = MaterialTheme.typography.bodyMedium, color = MapPalette.accent(if (out > 0) CellState.CONFIRMED else if (possible > 0) CellState.POSSIBLE else CellState.NORMAL))
             }
-            if (map.simulated) SimulatedChip()
-            FilledTonalIconButton(onClick = { listView = !listView }, modifier = Modifier.size(48.dp)) {
-                Image(
-                    painter = painterResource(if (listView) R.drawable.ic_nav_area else R.drawable.ic_list),
-                    contentDescription = stringResource(if (listView) R.string.map_show_map else R.string.map_show_list),
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer),
-                )
+            if (load.fromCache) {
+                Surface(shape = RoundedCornerShape(12.dp), color = LocalStatusColors.current.possible.container) {
+                    Text(
+                        stringResource(R.string.map_offline_banner, Fmt.time(load.fetchedMs)),
+                        Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = LocalStatusColors.current.possible.onContainer, style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
             }
-        }
-        if (load.fromCache) {
-            Surface(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.tertiaryContainer) {
-                Text(
-                    stringResource(R.string.map_offline_banner, Fmt.time(load.fetchedMs)),
-                    Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = MaterialTheme.colorScheme.onTertiaryContainer, style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-        }
-        if (map.simulated) {
-            Text(stringResource(R.string.map_simulated_note), Modifier.padding(horizontal = 20.dp, vertical = 2.dp), style = MaterialTheme.typography.bodySmall, color = MapPalette.label.copy(alpha = 0.7f))
-        }
-        Box(Modifier.weight(1f).fillMaxWidth().padding(12.dp).clip(RoundedCornerShape(24.dp))) {
-            if (listView) {
-                AreaList(map, areaStates, states, nowMs)
-            } else {
-                HexMapView(grid, map, states, load.spotCellId, selectedId, onTap = { selectedId = it }, summary = stringResource(R.string.map_summary, total, out, possible))
-            }
+            if (!listView) LegendChips()
         }
     }
 
@@ -217,18 +237,20 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
 
 @Composable
 fun SimulatedChip() {
-    Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.tertiaryContainer, modifier = Modifier.padding(end = 8.dp)) {
+    val c = LocalStatusColors.current.possible
+    Surface(shape = RoundedCornerShape(8.dp), color = c.container) {
         Row(Modifier.padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Image(painterResource(R.drawable.ic_simulated), null, Modifier.size(16.dp), colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onTertiaryContainer))
-            Text(stringResource(R.string.simulated), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onTertiaryContainer)
+            Image(painterResource(R.drawable.ic_simulated), null, Modifier.size(16.dp), colorFilter = ColorFilter.tint(c.onContainer))
+            Text(stringResource(R.string.simulated), style = MaterialTheme.typography.labelLarge, color = c.onContainer)
         }
     }
 }
 
-private fun homeTransform(grid: HexGrid, spotId: String?, vp: MapViewport): MapTransform {
-    val spot = spotId?.let { grid.shape(it) } ?: return MapTransform.fitTo(vp)
-    // About 5 hex widths across the narrow side: the spot plus its ring of neighbours (R1.3).
-    return MapTransform.focusOn(spot.centre, spot.bounds.width * 5.0, vp)
+private fun homeTransform(grid: HexGrid, spotId: String?, vp: MapViewport, topPx: Double, bottomPx: Double): MapTransform {
+    val spot = spotId?.let { grid.shape(it) } ?: return MapTransform.fitTo(vp).panBy(0.0, (topPx - bottomPx) / 2, vp)
+    // About 6 hex widths across the narrow side: the spot and two rings of neighbours (R1.3). Then the spot moves to the
+    // middle of the band between the top bar and the Home sheet, like "my location" in a maps app.
+    return MapTransform.focusOn(spot.centre, spot.bounds.width * 6.0, vp).panBy(0.0, (topPx - bottomPx) / 2, vp)
 }
 
 private fun lerp(a: MapTransform, b: MapTransform, f: Float): MapTransform {
@@ -261,7 +283,11 @@ private fun HexMapView(
     var size by remember { mutableStateOf(IntSize.Zero) }
     val bounds = grid.bounds ?: return
     val vp = remember(grid, size) { MapViewport(bounds, size.width.toDouble(), size.height.toDouble(), padding = 28.0 * dp) }
-    val home = remember(vp, spotId) { homeTransform(grid, spotId, vp) }
+    val inset = LocalMapBottomInset.current
+    val topPx = with(density) { (WindowInsets.statusBars.getTop(this) + 128.dp.roundToPx()).toDouble() }
+    val bottomPx = with(density) { inset.toPx().toDouble() }
+    val home = remember(vp, spotId, bottomPx) { homeTransform(grid, spotId, vp, topPx, bottomPx) }
+    val colors = LocalStatusColors.current.map
     var transform by remember(size, map.city) { mutableStateOf<MapTransform?>(null) }
     val current = transform ?: home
     val paths = remember(grid) {
@@ -290,7 +316,7 @@ private fun HexMapView(
     )
     val labelOrder = remember(map) { map.areas.sortedByDescending { it.cellIds.size } }
 
-    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(MapPalette.backgroundTop, MapPalette.backgroundBottom)))) {
+    Box(Modifier.fillMaxSize().background(colors.ground)) {
         Canvas(
             Modifier.fillMaxSize().onSizeChanged { size = it }.semantics { contentDescription = summary }
                 .pointerInput(vp) {
@@ -320,27 +346,32 @@ private fun HexMapView(
                     val path = paths[shape.cell.id] ?: continue
                     val b = shape.bounds
                     val detail = b.width * t.scale > 18 * dp
-                    paintCell(states[shape.cell.id] ?: shape.cell.state, path, (b.minX * U).toFloat(), (b.minY * U).toFloat(), (b.maxX * U).toFloat(), (b.maxY * U).toFloat(), px, detail)
+                    paintCell(states[shape.cell.id] ?: shape.cell.state, path, (b.minX * U).toFloat(), (b.minY * U).toFloat(), (b.maxX * U).toFloat(), (b.maxY * U).toFloat(), px, colors, detail)
                 }
                 // Outage pulse: a ring that grows and fades on every confirmed hex.
                 val p = pulse.value
                 for (shape in visible) {
                     if (states[shape.cell.id] != CellState.CONFIRMED) continue
                     val path = paths[shape.cell.id] ?: continue
-                    drawPath(path, MapPalette.accent(CellState.CONFIRMED).copy(alpha = (1f - p) * 0.6f), style = Stroke((2f + 9f * p) * px))
+                    drawPath(path, colors.confirmed.copy(alpha = (1f - p) * 0.6f), style = Stroke((2f + 9f * p) * px))
                 }
                 for (shape in visible) {
                     val path = paths[shape.cell.id] ?: continue
                     if (shape.cell.id == spotId) {
-                        drawPath(path, MapPalette.spot, style = Stroke(3.2f * px))
+                        drawPath(path, colors.label, style = Stroke(3.2f * px))
+                        // "You are here": a dot with a soft halo at the centre of the spot cell, as in a maps app.
+                        val c = Offset((shape.centre.x * U).toFloat(), (shape.centre.y * U).toFloat())
+                        drawCircle(colors.spot.copy(alpha = 0.18f), 20f * px, c)
+                        drawCircle(Color.White, 9f * px, c)
+                        drawCircle(colors.spot, 6.5f * px, c)
                     }
                     if (shape.cell.id == selectedId) {
-                        drawPath(path, MapPalette.spot, style = Stroke(2.4f * px, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f * px, 4f * px))))
+                        drawPath(path, colors.label, style = Stroke(2.4f * px, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f * px, 4f * px))))
                     }
                 }
             }
             // Area names in screen space, dropped when they would overlap (design section 4).
-            val style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MapPalette.label)
+            val style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = colors.label)
             val placed = labelOrder.mapNotNull { a ->
                 val c = grid.shape(a.centreCell)?.centre ?: return@mapNotNull null
                 val sp = t.toScreen(c)
@@ -350,38 +381,39 @@ private fun HexMapView(
             val kept = LabelPlacer.place(placed.map { it.first }, size.width.toDouble(), size.height.toDouble(), 4.0 * dp).map { it.key }.toSet()
             for ((box, layout) in placed) {
                 if (box.key !in kept) continue
-                drawRoundRect(MapPalette.labelBackdrop, Offset((box.x - box.w / 2).toFloat(), (box.y - box.h / 2).toFloat()), Size(box.w.toFloat(), box.h.toFloat()), CornerRadius(box.h.toFloat() / 2))
-                drawText(layout, MapPalette.label, Offset((box.x - layout.size.width / 2).toFloat(), (box.y - layout.size.height / 2).toFloat()))
+                drawRoundRect(colors.labelHalo.copy(alpha = 0.88f), Offset((box.x - box.w / 2).toFloat(), (box.y - box.h / 2).toFloat()), Size(box.w.toFloat(), box.h.toFloat()), CornerRadius(box.h.toFloat() / 2))
+                drawText(layout, colors.label, Offset((box.x - layout.size.width / 2).toFloat(), (box.y - layout.size.height / 2).toFloat()))
             }
         }
-        Column(Modifier.align(Alignment.BottomEnd).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = inset + 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             MapButton(R.drawable.ic_add, R.string.map_zoom_in) { animateTo(current.zoomAbout(size.width / 2.0, size.height / 2.0, 1.8, vp)) }
             MapButton(R.drawable.ic_remove, R.string.map_zoom_out) { animateTo(current.zoomAbout(size.width / 2.0, size.height / 2.0, 1 / 1.8, vp)) }
             MapButton(R.drawable.ic_recenter, R.string.map_recentre) { animateTo(home) }
         }
-        Legend(Modifier.align(Alignment.BottomStart).padding(12.dp))
     }
 }
 
 @Composable
 private fun MapButton(iconRes: Int, descRes: Int, onClick: () -> Unit) {
-    FilledTonalIconButton(onClick = onClick, modifier = Modifier.size(48.dp)) {
-        Image(painterResource(iconRes), stringResource(descRes), colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer))
+    SmallFloatingActionButton(
+        onClick = onClick,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.size(48.dp),
+    ) {
+        Image(painterResource(iconRes), stringResource(descRes), colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface))
     }
 }
 
+/** The legend as a row of chips under the top bar, like map layers. Each chip has the hexagon swatch and the word (R1.7). */
 @Composable
-private fun Legend(modifier: Modifier) {
-    var open by rememberSaveable { mutableStateOf(true) }
-    Surface(modifier, shape = RoundedCornerShape(16.dp), color = MapPalette.labelBackdrop) {
-        Column(Modifier.clickable { open = !open }.heightIn(min = 48.dp).padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(stringResource(R.string.map_legend), style = MaterialTheme.typography.labelLarge, color = MapPalette.label)
-            if (open) {
-                for (state in listOf(CellState.CONFIRMED, CellState.POSSIBLE, CellState.RESTORED, CellState.NORMAL, CellState.NO_DATA)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        StateSwatch(state, 22.dp)
-                        Text(stateLabel(state), style = MaterialTheme.typography.bodySmall, color = MapPalette.label)
-                    }
+private fun LegendChips() {
+    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (state in listOf(CellState.CONFIRMED, CellState.POSSIBLE, CellState.NORMAL, CellState.RESTORED, CellState.NO_DATA)) {
+            Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh, shadowElevation = 1.dp) {
+                Row(Modifier.heightIn(min = 32.dp).padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    StateSwatch(state, 16.dp)
+                    Text(stateLabel(state), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         }
@@ -391,10 +423,11 @@ private fun Legend(modifier: Modifier) {
 /** One hexagon drawn with the same fill and pattern as the map, so the legend and the map always agree (R1.7). */
 @Composable
 fun StateSwatch(state: CellState, sizeDp: androidx.compose.ui.unit.Dp) {
+    val colors = LocalStatusColors.current.map
     Canvas(Modifier.size(sizeDp)) {
         val r = size.minDimension / 2 * 0.95f
         val path = hexPath(size.width / 2, size.height / 2, r)
-        paintCell(state, path, size.width / 2 - r, size.height / 2 - r, size.width / 2 + r, size.height / 2 + r, density)
+        paintCell(state, path, size.width / 2 - r, size.height / 2 - r, size.width / 2 + r, size.height / 2 + r, density, colors)
     }
 }
 
@@ -422,7 +455,8 @@ private fun stateWords(state: CellState): String = stringResource(
 
 @Composable
 private fun AreaList(map: AreaMap, areaStates: List<Pair<app.outage.map.MapArea, List<CellState>>>, states: Map<String, CellState>, nowMs: Long) {
-    LazyColumn(Modifier.fillMaxSize().background(MapPalette.backgroundBottom.copy(alpha = 0.6f)), verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp)) {
+    val colors = LocalStatusColors.current.map
+    LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp)) {
         items(areaStates, key = { it.first.slug }) { (area, list) ->
             val worst = listOf(CellState.CONFIRMED, CellState.POSSIBLE, CellState.RESTORED, CellState.NORMAL, CellState.NO_DATA).firstOrNull { it in list } ?: CellState.NO_DATA
             val outCount = list.count { it == CellState.CONFIRMED }
@@ -436,13 +470,13 @@ private fun AreaList(map: AreaMap, areaStates: List<Pair<app.outage.map.MapArea,
             val said = if (since != null && (worst == CellState.CONFIRMED || worst == CellState.POSSIBLE)) {
                 stringResource(R.string.map_hex_desc_since, area.name, stateWords(worst), Fmt.since(since, nowMs))
             } else stringResource(R.string.map_hex_desc, area.name, stateWords(worst))
-            Surface(Modifier.fillMaxWidth().semantics { contentDescription = said }, shape = RoundedCornerShape(16.dp), color = MapPalette.fill(worst).copy(alpha = 0.35f)) {
+            Surface(Modifier.fillMaxWidth().semantics { contentDescription = said }, shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceContainerLow) {
                 Row(Modifier.heightIn(min = 64.dp).padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     StateSwatch(worst, 36.dp)
                     Column(Modifier.weight(1f)) {
-                        Text(area.name, style = MaterialTheme.typography.titleMedium, color = MapPalette.label)
-                        Text(stateWords(worst), style = MaterialTheme.typography.bodyMedium, color = MapPalette.accent(worst))
-                        Text(detail, style = MaterialTheme.typography.bodySmall, color = MapPalette.label.copy(alpha = 0.7f))
+                        Text(area.name, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(stateWords(worst), style = MaterialTheme.typography.bodyMedium, color = MapPalette.accent(worst, colors))
+                        Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

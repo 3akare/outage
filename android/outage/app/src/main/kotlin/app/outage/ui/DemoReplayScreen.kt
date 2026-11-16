@@ -43,9 +43,9 @@ import java.util.Locale
 @Composable
 fun DemoBanner(text: String) {
     Box(
-        Modifier.fillMaxWidth().background(stateColor("POSSIBLE")).padding(horizontal = Tokens.space16, vertical = Tokens.space8),
+        Modifier.fillMaxWidth().background(LocalStatusColors.current.possible.container).padding(horizontal = Tokens.space16, vertical = Tokens.space8),
     ) {
-        Text(text, color = Color(0xFF11181F), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+        Text(text, color = LocalStatusColors.current.possible.onContainer, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
     }
 }
 

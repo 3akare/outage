@@ -7,6 +7,7 @@ import app.outage.onboarding.OnboardingStore
 import app.outage.onboarding.PrefsOnboardingStore
 import app.outage.sensor.SensorState
 import app.outage.ui.FeatureRegistry
+import app.outage.ui.SpotOutcome
 
 /**
  * The shell's long-lived objects, built once in [app.outage.OutageApp]. Nothing starts here (R1.4); the sensor starts
@@ -26,6 +27,12 @@ class ShellGraph(context: Context) {
 
     /** Set by the sensor feature; Home shows it (app-shell R2.1). */
     var sensorState: () -> SensorState? = { null }
+
+    /** Set by the spot feature: reads the position once, saves the cell and drops the position (first run, ADR 0050). */
+    var locateSpot: suspend () -> SpotOutcome = { SpotOutcome.NotFound }
+
+    /** Set by the Power Log: the chosen tariff band id (A to E) and its promised hours a day, for the Home card. */
+    var band: () -> Pair<String, Int>? = { null }
 
     val sources: StatusSources = object : StatusSources by NoStatusSources {
         override fun areaStatus(): AreaStatus? = areaCache.read()

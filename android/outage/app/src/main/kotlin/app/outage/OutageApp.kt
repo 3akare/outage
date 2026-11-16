@@ -34,6 +34,9 @@ import app.outage.net.PushHost
 import app.outage.onboarding.OnboardingFacts
 import app.outage.onboarding.OnboardingFlow
 import app.outage.onboarding.SpotChoice
+import app.outage.onboarding.LocationSource
+import app.outage.onboarding.Spot
+import app.outage.ui.SpotOutcome
 import app.outage.ui.AlarmSettingsScreen
 import app.outage.ui.FollowSection
 import app.outage.ui.PermissionsScreen
@@ -110,6 +113,7 @@ class OutageApp : Application() {
             null
         }
         bandChoice = BandChoice(logStore, config)
+        graph.band = { bandChoice.chosen()?.let { it.id to it.promisedMinHoursPerDay } }
         val recorder = LogRecorder(
             store = logStore,
             onChange = { runCatching { freezer.sync() } },
@@ -295,6 +299,22 @@ class OutageApp : Application() {
             null,
         )
         graph.deletes.register("follow") { push.deleteLocal() }
+
+        // First run: "Use my location" reads one coarse position, turns it into a cell of the published map, saves the
+        // cell only and drops the position (onboarding O2, ADR 0037, ADR 0050). A mocked position or a place outside the
+        // map is not saved here; the person can confirm or pick on the map in Settings.
+        graph.locateSpot = {
+            withContext(Dispatchers.IO) {
+                val fix = LocationSource.readOnce(this@OutageApp)
+                val map = (mapSource.load(DemoAreaMap.CITY, System.currentTimeMillis()) as? MapResult.Loaded)?.load?.map
+                val choice = if (fix != null && map != null) Spot.resolve(map, fix.lat, fix.lng, fix.mocked) else null
+                when {
+                    choice == null || choice.needsConfirm || !Spot.isRealCell(choice.cell) -> SpotOutcome.NotFound
+                    saveSpot(push, choice, null) -> SpotOutcome.Saved(choice.areaName)
+                    else -> SpotOutcome.NotFound
+                }
+            }
+        }
     }
 
     /** Stores the cell only (O2). A follow on the old cell moves to the new one. */
@@ -314,7 +334,7 @@ class OutageApp : Application() {
         val cache = FileMapCache(File(filesDir, "map"))
         val followed = PrefsFollowedArea(this)
         val source = AreaMapSources.choose(BuildConfig.API_BASE, cache) { url -> withContext(Dispatchers.IO) { MapHttp.get(url) } }
-        graph.features.register(FeatureRegistry.AREA, R.string.nav_home, { MapScreen(source, followed) }, null)
+        graph.features.register(FeatureRegistry.AREA, R.string.nav_home, { MapScreen(source, followed, spotCell = { graph.onboarding.load()?.cell }) }, null)
         graph.deletes.register("map_cache") { cache.clear() }
         graph.deletes.register("followed_area") { followed.clear() }
 

@@ -12,8 +12,8 @@ android/probe          Throwaway Milestone 1 probe, kept whole: app/ (Kotlin), w
 web/                   One Cloudflare Worker: the API and the whole website
 web/api                What the phone and the pages call: ingest, area, alerts, home, pairing, registry, telemetry, public-index, map
 web/landing            Landing page at /
-web/ui/app             Web copy of the phone app at /app (real data)
-web/ui/simulate        Judge simulation at /app/simulate (simulated data, clearly labelled)
+web/ui/app             The shared Material 3 stylesheet (/app.css); /app redirects to the app in the browser
+web/ui/simulate        The Android app in the browser at /app/simulate (simulated city, clearly labelled)
 web/areas              Public area pages and the area catalog
 web/site               Helpers every page shares
 core/detection         Pure TypeScript engine, no I/O (Worker and simulator only)
@@ -21,9 +21,11 @@ core/shared            Types, event schema, H3 helpers, oem-guide.json, design t
 tools/sim              Simulator and replay generator
 tools/field            Daily field-test report generator
 tools/tokens           Design token generator (web and Android)
+tools/icon             The mark and the shared icon set, written for Android and the web
 powers/grid-sensing    Kiro Power (Agent Plugin): charging-sensor, blackout-detection, oem-battery-guide skills
 docs/                  kiro-log.md, adr/, field/, traceability.md
 .kiro/                 steering, specs, hooks, skills, agents, settings
+.agents/skills         Third-party agent skills (material-3), pinned in skills-lock.json; linked from .kiro/skills and .claude/skills
 .github/               CI workflows and their scripts
 ```
 

@@ -1,5 +1,7 @@
 # Outage
 
+![The Outage mark](core/shared/design/icon.svg)
+
 **Your phone charger is a power-grid sensor.** When grid power fails, every phone charging in an area stops charging in the same second. Outage collects those events, confirms blackouts area by area with nobody reporting anything, and tells people when power goes and when it comes back.
 
 Open source (MIT). Android only for the sensor; the website is for everyone else, including judges without an Android phone.
@@ -13,14 +15,14 @@ android/
 web/          One Cloudflare Worker. The phone and the browser both talk to it.
   api/        The API and the Durable Objects (ingest, areas, alerts, Home Watch, telemetry)
   landing/    Landing page at /
-  ui/app/       Web copy of the phone app at /app, on real data
-  ui/simulate/  Simulation for judges at /app/simulate, clearly labelled as simulated
+  ui/app/       The Material 3 stylesheet every page shares
+  ui/simulate/  The Android app in your browser at /app/simulate, on a simulated city
   areas/      Public pages such as "Is there power in Yaba right now?"
   site/       Helpers every page shares
 core/
   detection/  The engine that decides "this is a blackout". Pure TypeScript, no I/O.
   shared/     The wire format between phone and server, test fixtures, design tokens
-tools/        sim (builds the judge replay), field (daily field report), tokens (design tokens)
+tools/        sim (builds the replay), field (daily field report), tokens (design tokens), icon (the mark and icons)
 powers/       A Kiro Power that packages the reusable skills
 docs/         Decisions (adr/), build log, status, traceability
 .kiro/        Kiro steering, specs, hooks, skills and agents
@@ -43,13 +45,14 @@ Each folder has its own `README.md` with the detail: `android/outage/README.md`,
 | A screen in the Android app | `android/outage/app/src/main/kotlin/app/outage/ui/` |
 | Words in the Android app | `android/outage/app/src/main/res/values/strings.xml` (Pidgin in `values-pcm/`) |
 | The landing page | `web/landing/landing.ts` |
-| The web copy of the app | `web/ui/app/app.ts`, styles in `web/ui/app/design.ts` |
-| The judge simulation | `web/ui/simulate/simulate.ts`; its data comes from `tools/sim` |
+| The app in the browser | `web/ui/simulate/simulate.ts`; its blackout comes from `tools/sim` |
+| Website styles | `web/ui/app/design.ts` (Material 3 token names) |
 | Which URL goes where | `web/routes.ts` |
 | An API the phone calls | `web/api/ingest/handlers.ts` |
 | The wire format | `core/shared/src/ingest.ts`, then `android/outage/app/src/main/kotlin/app/outage/net/Wire.kt` |
 | A detection threshold | `core/detection/src/params.ts` (needs an ADR first) |
-| Colours | `core/shared/design/tokens.json`, then `node tools/tokens/build.mjs` |
+| Colours, type, shapes | `core/shared/design/tokens.json`, then `node tools/tokens/build.mjs` |
+| The app icon, the mark, icons | `tools/icon/build.mjs` and `core/shared/design/icons.json`, then `node tools/icon/build.mjs` |
 | The list of Lagos areas | `web/areas/catalog/catalog.source.json` |
 
 ## Commands

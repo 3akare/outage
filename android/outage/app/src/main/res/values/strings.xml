@@ -80,8 +80,17 @@
     <!-- Onboarding placeholder (debug builds only) -->
     <string name="first_run_title">Your charger is a power sensor</string>
     <string name="first_run_body">Outage notices when your phone stops charging because the power went out. It then tells you when the lights are back, even at night.</string>
-    <string name="first_run_privacy">It never stores where you are, only a map cell about the size of a neighbourhood. You can delete everything in Settings.</string>
-    <string name="first_run_ok">OK, start</string>
+    <string name="first_run_privacy">Your position is used once to pick your area on the map, then dropped. Only the area is saved. You can delete everything in Settings.</string>
+    <string name="first_run_location_title">See power around you</string>
+    <string name="first_run_use_location">Use my location</string>
+    <string name="first_run_not_now">Not now</string>
+    <string name="first_run_spot_saved">Your spot is saved. Only the area is stored.</string>
+    <string name="first_run_spot_saved_in">Your spot is set to %1$s. Only the area is stored.</string>
+    <string name="first_run_spot_later">You can choose your spot any time in Settings.</string>
+    <string name="settings_group_power">Your power</string>
+    <string name="settings_group_phone">This phone</string>
+    <string name="settings_group_about">About</string>
+    <string name="home_band_chip">Band %1$s · %2$d h promised</string>
     <string name="setup_battery_title">Keep Outage running</string>
     <string name="setup_battery_body">Some phones stop apps in the background. Tap to see the steps for your phone.</string>
     <string name="setup_area_title">Choose your area</string>

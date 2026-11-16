@@ -7,6 +7,7 @@ Format: Agent Skills standard, one folder per skill with `SKILL.md` (frontmatter
 | `oem-battery-guide` | Exact steps per phone maker (Tecno, Infinix, itel, Samsung, Xiaomi, Pixel) to stop the OS killing Outage | `core/shared/src/oem-guide.json`, `scripts/validate-guide.mjs` | 10 |
 | `field-report` | One day of telemetry to `docs/field/YYYY-MM-DD.md`, gates, Bugfix Specs for new failures | `scripts/check-report.mjs`, `scripts/new-bugfix.mjs` | 10 |
 | `release-apk` | Tagged Gradle build on GitHub Actions, signed APK check, GitHub release, install page values, smoke test | `scripts/preflight.mjs`, `scripts/apk-info.mjs` | 10 |
+| `material-3` | Material Design 3 for Compose and the web: tokens, components, layout, theming. Use it for any UI change (ADR 0048) | Third party (hamen/material-3-skill, MIT), installed with `npx skills add hamen/material-3-skill --skill material-3`; the folder is a link to `.agents/skills/material-3`, pinned in `skills-lock.json` | none (no scripts) |
 
 Slash commands in steering (`/release`, `/field-test`, `/judge-demo`) point at these skills: `/release` runs `release-apk`, `/field-test` runs `field-report`.
 

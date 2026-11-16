@@ -21,7 +21,8 @@ Build order follows the master brief, Part I. The probe comes first and gates th
 | 12 | `field-telemetry` | 4 | F1 to F8 | sensor, area-cells, onboarding |
 | 13 | `app-shell` | 3 | AS1 to AS8 | none (feature specs plug into it) |
 | 14 | `app-map-insights` | 3 | AM1 to AM6, IN1 to IN6 | app-shell, web-and-area-pages, power-log |
-| 15 | `ux-redesign` | 4 | UX1 to UX9 | app-map-insights, web-and-area-pages, demo-mode |
+| 15 | `ux-redesign` | 4 | UX1 to UX9 (UX8 replaced by MD4) | app-map-insights, web-and-area-pages, demo-mode |
+| 16 | `material-redesign` | 4 | MD1 to MD8 | ux-redesign, onboarding, demo-mode |
 
 Bugfix Specs (`bugfix-YYYYMMDD-<slug>`) are added by the daily field run and by hand.
 
@@ -29,6 +30,7 @@ Bugfix Specs (`bugfix-YYYYMMDD-<slug>`) are added by the daily field run and by 
 
 | Amendment | Made by | Applies to |
 |---|---|---|
+| Material 3 tokens, the new mark, the app in the browser replaces the `/app` replica, first run asks location, Home is the map with a sheet, bar is Insights, Home, Settings | `material-redesign` (ADR 0048 to 0050) | `ux-redesign` R1, R2, R3, R7, R8, R9; `onboarding` first run; `demo-mode` web player |
 | Route events by res-7 parent ("area actor") | `area-cells` | `event-ingest` requirements R7, design overview |
 | `DetectionPort` also carries `ARMED` and `DISARMED` | `detection-engine` | `event-ingest` design 9, task 5 |
 | `LABEL` event type | `alerts-and-light-alarm` | `sensor-android` design, `event-ingest` wire schema |

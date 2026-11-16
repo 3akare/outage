@@ -49,8 +49,8 @@ describe('W6 simulated separation', () => {
   it('W6_simulated_separation: /app/simulate carries the banner in the HTML, never reads the index or the replay, and the API is labelled', async () => {
     const page = await text('/app/simulate');
     expect(page.res.status).toBe(200);
-    expect(page.body).toContain('<div class="sim-banner" role="note">Simulated, not live data</div>');
-    expect(page.body).toContain('<title>Simulated, not live data');
+    expect(page.body).toMatch(/<div class="sim-banner" role="note">.*Simulation · simulated data, not live<\/div>/);
+    expect(page.body).toContain('<title>Simulation: the Outage app in your browser');
     expect(page.body).toContain('Simulate a blackout');
     expect(page.counts.index).toBe(0);
     expect(page.counts.replay).toBe(0);
@@ -88,7 +88,7 @@ describe('W6 simulated separation', () => {
       const { body, counts } = await text(p);
       expect(counts.replay, p).toBe(0);
       expect(body, p).not.toContain(SENTINEL);
-      expect(body, p).not.toContain('Simulated, not live data');
+      expect(body, p).not.toContain('simulated data, not live');
     }
   });
 });
@@ -100,12 +100,12 @@ describe('Simulation page', () => {
     expect(res.headers.get('Location')).toBe('/app/simulate');
   });
 
-  it('one sentence, one button, the dock, and an external same-origin script', async () => {
+  it('the app with its navigation bar, one simulate button, and an external same-origin script', async () => {
     const res = await handleWeb(get('/app/simulate'), setup(REPLAY).d);
     const body = await res.text();
-    expect(body).toContain('Watch ten simulated phones lose power together');
-    expect(body.match(/<button/g)?.length).toBe(1);
-    expect(body).toContain('<nav class="dock"');
+    expect(body).toContain('This is the Outage Android app running in your browser.');
+    expect(body.match(/id="go"/g)?.length).toBe(1);
+    expect(body).toContain('<nav class="navbar"');
     expect(body).toContain('<script src="/simulate.js" defer>');
     expect(new TextEncoder().encode(body).length).toBeLessThan(30 * 1024);
   });
@@ -114,7 +114,7 @@ describe('Simulation page', () => {
     const { body } = await text('/simulate.js');
     expect(body).toContain('/api/v1/public/judge/replay');
     expect(body).not.toContain('/api/map.json');
-    for (const label of ['Power on', 'Possible power cut', 'Power cut', 'Power is back']) expect(body).toContain(label);
+    for (const label of ['Power is on', 'Power may be out', 'Power is out', 'Power is back']) expect(body).toContain(label);
     expect(body).toContain('Simulate again');
   });
 

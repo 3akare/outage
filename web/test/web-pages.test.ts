@@ -125,7 +125,7 @@ describe('W1 page without script', () => {
     const out = renderHomePage({ site: SITE, areas: [], views: [], nowMs: NOW }).body;
     expect(out).toContain('href="/app/simulate"');
     expect(out).toContain('Install Outage');
-    expect(out).not.toContain('<svg');
+    expect(out).not.toContain('<svg class="map"'); // no map without areas; the brand mark is the only picture
   });
 
   it('W1_page_without_script: unknown slug page lists areas and the install button', () => {
