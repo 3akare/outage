@@ -128,6 +128,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsSource.kt` | Where Insights gets its outage timeline (demo or real) |
 | `apps/android/app/src/main/kotlin/app/outage/insights/PromiseText.kt` | Plain sentence comparing logged hours with the tariff promise |
 | `apps/android/app/src/main/kotlin/app/outage/log/BandConfig.kt` | Reads and validates `bands.json` |
+| `apps/android/app/src/main/kotlin/app/outage/log/AreaOutageSync.kt` | Fetches the spot's public outages, caches them, stores them as log inputs |
 | `apps/android/app/src/main/kotlin/app/outage/log/BandStrings.kt` | String keys for the supply-promise copy |
 | `apps/android/app/src/main/kotlin/app/outage/log/LogInput.kt` | Power Log raw inputs and their stored JSON payload |
 | `apps/android/app/src/main/kotlin/app/outage/log/LogStore.kt` | Power Log database `outage_log.db` with migrations (ADR 0037) |

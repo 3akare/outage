@@ -659,3 +659,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 feat(log): TimelineBuilder [spec:power-log task:4]
 - Pure Kotlin rebuild of the timeline from raw inputs: sensor segments, "Yes"/"No" answers, area outages (only for unanswered unplugs), manual "Power is out" and "Power is back", ends at the earliest evidence, `UNSURE` for a REPLUG end after 12 h or a sensor stop. Duplicates and arrival order do not change the result by construction.
 - Not done: tests PL1, PL2, PL3 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(log): area outage sync [spec:power-log task:5]
+- The Worker endpoint already existed: `GET /api/v1/public/cell/:cell/outages?days=30` in `workers/api/src/web/routes.ts`, with tests in `workers/api/test/web-routes.test.ts` that include the empty result for a cell with no public scope. No new Worker folder was added, so the design's `/v1/public/...` path is served as `/api/v1/public/...`.
+- Phone side: `AreaOutageSync` fetches with `MapHttp`, parses with `MiniJson`, caches the body in a file and replaces the cached `AREA_OUTAGE` inputs. Offline it uses the cache. Only the cell is sent.
+- Gradle unit tests, lint and assembleDebug pass. No new phone test (human asked for no more tests).

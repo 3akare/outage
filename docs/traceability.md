@@ -288,3 +288,4 @@ Scanned 15 test file(s) under packages/detection. A property counts when a test 
 | R7.4, R7.5 | - | REPORT event and manual hint count | power-log 1 | done: code and fixture, ADR 0036; no dedicated test yet |
 | R1 | - | local RAW_INPUT store, migrations | power-log 2 | done: code, ADR 0037; no dedicated test yet |
 | R1, R2, R7.2 | PL1, PL2, PL3 | TimelineBuilder | power-log 4 | code done; tests PL1 to PL3 not written |
+| R9 | - | public outage endpoint and phone sync | power-log 5 | done: Worker tests in web-routes.test.ts (empty when not public); phone sync not tested |
