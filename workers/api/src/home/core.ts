@@ -213,7 +213,8 @@ export class HomeCore {
     if (!pair || pair.viewerInstall !== viewerInstall) return null;
     const row = this.stations.get(pair.stationInstall)?.row;
     const seed: StationEvent[] = row && row.state !== 'UNKNOWN' ? [{ type: row.state === 'ON' ? 'REPLUG' : 'UNPLUG', timeMs: row.sinceMs as number }] : [];
-    const v = homeState(seed, row?.lastSeenMs ?? null, nowMs);
+    // A station never heard from ages into OFFLINE 30 minutes after pairing (review issue 3). `lastSeenMs` stays null: nothing was heard.
+    const v = homeState(seed, row?.lastSeenMs ?? pair.createdMs, nowMs);
     return { ...v, lastSeenMs: row?.lastSeenMs ?? null, stationName: pair.stationName, asOfMs: nowMs };
   }
 

@@ -715,3 +715,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 fix(detection): golden test without node types [spec:detection-engine task:18]
 - `test/golden.test.ts` now loads fixtures with `import.meta.glob` (`vite/client` reference) instead of `node:fs`, `node:path` and `import.meta.dirname`, so `npm run typecheck` passes without `@types/node` (no new dependency, `src` stays I/O-free).
 - Ran on the human's order: typecheck, biome on the file, Gradle assembleDebug. Not run: npm test, full lint, spec-lint, architecture test, Android unit tests and lint. The fixtures folder is empty, so the glob path is unexercised. Open: run the full suite once the human allows it.
+
+## 2026-11-16 fix(home-watch): review v1 follow-up [spec:home-watch]
+- Viewer delete keeps pair ids on disk until the server delete succeeds (`OutageApp.kt`). `HomeCore.view` falls back to the pair's `createdMs` so a never-heard station becomes OFFLINE. Issues 2 (forward once), 4 and 5 accepted and recorded in ADR 0036.
+- Built on the human's order: no tests added or run. Only typecheck was run (see commit report).

@@ -34,3 +34,11 @@ This ADR also records one deviation from `home-watch` design sections 6 to 8: th
 - A shard actor is now busier than an offer table (heartbeat every 10 minutes per station). Stations are few.
 - `observe` is best effort. A failed call loses one heartbeat, and the next batch repairs the state because events carry their own times.
 - A Worker isolate cache can show a removed pair for up to 10 seconds.
+
+## Review follow-up (2026-11-16, review v1)
+
+- **Delete ids (issue 1, fixed):** the viewer's pair ids are written to a separate preferences file before the pair book is cleared and removed only after the server delete succeeds. A retry after a restart sends them.
+- **Forwarding once (issue 2, partly fixed):** forwarding is still registered at claim time only. Re-registering on ingest needs the area actor to look up pairs per install on every batch, which costs a shard call per ingest on the free tier. Instead a never-heard station now ages into OFFLINE (issue 3), so the viewer is told. The station can pair again to fix a wrong cell. The station cell on an offer is stored data (H3 cell only) and goes with the offer on claim or expiry.
+- **Never heard (issue 3, fixed):** `HomeCore.view` uses the pair's `createdMs` as the last-seen floor. `lastSeenMs` in the response stays null.
+- **Push retries (issue 4, accepted):** pending retries are memory only and a newer change replaces them. ON and OFF pushes expire after 10 minutes anyway, so the loss is bounded.
+- **Removed pair cache (issue 5, accepted):** the 10 s view cache is per isolate, so another isolate can serve a removed pair for up to 10 s. The view carries only state and times.

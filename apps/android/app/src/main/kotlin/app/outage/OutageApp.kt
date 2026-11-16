@@ -96,7 +96,12 @@ class OutageApp : Application() {
                 val id = credentials.installId()
                 val token = credentials.token()
                 if (id == null || token == null) true
-                else api.delete(id, token, credentials.cells(), deletedPairIds).also { ok -> if (ok) credentials.clear() }
+                else api.delete(id, token, credentials.cells(), pendingDeletePairIds()).also { ok ->
+                    if (ok) {
+                        credentials.clear()
+                        pendingDeleteIds().edit().clear().apply()
+                    }
+                }
             }
         }
     }
@@ -113,8 +118,10 @@ class OutageApp : Application() {
         }, null)
     }
 
-    @Volatile
-    private var deletedPairIds: List<String> = emptyList()
+    /** Pair ids kept on disk until the server delete succeeds, so a retry after a restart still cleans the station shards (review issue 1). */
+    private fun pendingDeleteIds() = getSharedPreferences("home_watch_pending_delete", MODE_PRIVATE)
+
+    private fun pendingDeletePairIds(): List<String> = pendingDeleteIds().getStringSet("ids", emptySet()).orEmpty().toList()
 
     /**
      * Home Watch (home-watch task 8): viewer screen in Settings > Home Watch, station screen in Settings > Station mode,
@@ -144,8 +151,12 @@ class OutageApp : Application() {
             FeatureRegistry.HOME_WATCH,
             R.string.settings_home_watch,
             { HomeWatchScreen(vm(), onBack = { graph.goBack() }, onOpenStation = { graph.openFeature(FeatureRegistry.STATION) }) },
-            // The phone side runs before the server call (app-shell R5), so keep the ids in memory for it.
-            { deletedPairIds = model.pairIdsForDelete(); book.clear() },
+            // The phone side runs before the server call (app-shell R5), so keep the ids on disk until the server call succeeds.
+            {
+                val ids = model.pairIdsForDelete().toSet() + pendingDeletePairIds()
+                pendingDeleteIds().edit().putStringSet("ids", ids).commit()
+                book.clear()
+            },
         )
         graph.features.register(FeatureRegistry.STATION, R.string.settings_station, { StationPairScreen(vm(), onBack = { graph.goBack() }) }, null)
         graph.features.register(FeatureRegistry.HOME_CARD, R.string.settings_home_watch, {
