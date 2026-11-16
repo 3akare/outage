@@ -24,9 +24,8 @@ import {
   renderJudgeServiceWorker,
 } from './ui/simulate/replay.ts';
 import { redirectToApp, renderAppCss } from './ui/app/app.ts';
-import { FONT_PATH, fontResponse, renderFavicon } from './site/brand.ts';
-import { renderGlobeJs } from './ui/globe/globe.ts';
-import { renderSimulateJs, renderSimulatePage, SIMULATE_PATH } from './ui/simulate/simulate.ts';
+import { renderFavicon } from './site/brand.ts';
+import { renderDemoCityJson, renderSimulatePage, SIMULATE_PATH } from './ui/simulate/simulate.ts';
 import { renderLanding } from './landing/landing.ts';
 import { buildMapJson, cityFrom } from './api/map/map-json.ts';
 import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './site/status.ts';
@@ -83,12 +82,12 @@ const ROUTES: Route[] = [
   { pattern: /^\/$/, render: (_m, _u, d) => renderLanding(d.site) },
   { pattern: /^\/app\.css$/, render: () => renderAppCss() },
   { pattern: /^\/favicon\.(?:svg|ico)$/, render: () => renderFavicon() },
-  { pattern: /^\/globe\.js$/, render: () => renderGlobeJs() },
+  // The simulated city (real Lagos areas, made-up power and history) for the app in the browser (ADR 0053).
+  { pattern: /^\/demo-city\.json$/, render: () => renderDemoCityJson() },
   // The old real-data web app folded into the app in the browser (ADR 0049).
   { pattern: /^\/app(?:\/(?:insights|settings))?$/, render: () => redirectToApp() },
   // The simulation page is static. It fetches the replay JSON itself and never reads the public index (W6).
   { pattern: /^\/app\/simulate$/, render: (_m, _u, d) => renderSimulatePage(d.site) },
-  { pattern: /^\/simulate\.js$/, render: () => renderSimulateJs() },
   {
     pattern: /^\/areas$/,
     render: async (_m, _u, d) =>
@@ -183,7 +182,6 @@ export const isWebPath = (pathname: string): boolean => !pathname.startsWith('/v
 export async function handleWeb(req: Request, deps: WebDeps): Promise<Response> {
   if (req.method !== 'GET' && req.method !== 'HEAD') return methodNotAllowed(); // R11.3
   const url = new URL(req.url);
-  if (url.pathname === FONT_PATH) return fontResponse();
   for (const r of ROUTES) {
     const m = r.pattern.exec(url.pathname);
     if (m) return deps.cache.get(req, () => r.render(m, url, deps));

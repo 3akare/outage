@@ -1,7 +1,7 @@
 // The Outage app in the browser (ADR 0053). Simulated data only: the city file (/demo-city.json) and the replay of one
 // blackout built by the real detection engine (/api/v1/public/judge/replay). No storage, no cookies, no tracking.
 // The map is MapLibre over OpenFreeMap (map.js); Insights are computed in data.js and drawn in charts.js.
-import { bindTips, dailyBars, fmtDay, fmtLong, heatLegend, heatmap, miniBars, ranked, weeklyLine } from './charts.js';
+import { bindTips, dailyBars, fmtLong, heatLegend, heatmap, miniBars, ranked, weeklyLine } from './charts.js';
 import { dailyHours, duration, heat, hourLabel, outagesIn, ranking, summary, weekly, worstHours } from './data.js';
 import { cellCentre, createMap, LAGOS } from './map.js';
 
@@ -56,7 +56,7 @@ const SPOT_LL = cellCentre(CELL[SPOT]);
 /* ---- Map ---- */
 const M = createMap($('map'), city, { center: [8, 12], zoom: 1.6 });
 let spotSet = false;
-let filter = new Set();
+const filter = new Set();
 
 function padding() {
   if (wide()) return { left: $('panel').getBoundingClientRect().right + 24, top: 80, right: 24, bottom: 24 };

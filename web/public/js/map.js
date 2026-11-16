@@ -1,7 +1,7 @@
 // The street map with the power layer on top (ADR 0053). MapLibre GL JS (BSD-3-Clause), served from this origin, draws
 // OpenFreeMap's "Liberty" street map (OpenStreetMap data, no key). Over it, every block of the simulated city is a
 // see-through hexagon coloured by its power state, laid under the street and place names so they stay readable.
-// Zoomed out, the map is a globe; zoomed in, a flat street map. https://maplibre.org/maplibre-gl-js/docs/
+// Zoomed out, the map is a globe; zoomed in, a flat street map.
 import { AttributionControl, Map as MapLibre } from '/vendor/maplibre-gl/maplibre-gl.mjs';
 
 export const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';

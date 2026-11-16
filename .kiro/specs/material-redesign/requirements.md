@@ -42,11 +42,11 @@ Outage is one Android app and one website. The human asked for three things: one
 3. THE spot card SHALL show the state in words and colour, the age of the data, the sensor state and the tariff band when one is chosen.
 4. THE bottom bar SHALL be Insights, Home, Settings, in that order, and the app SHALL open on Home.
 
-### R6 The globe (ADR 0051)
-1. THE Home map on the phone and on the web SHALL be a globe of the real Earth that turns by itself, follows a drag and zooms with a pinch.
-2. THE globe SHALL fly down to the user's spot after first run and SHALL draw the power blocks on the sphere at street level.
-3. THE land SHALL come from public-domain data in `core/shared/geo`, with no tile server, key or request to another origin.
-4. THE phone and the web SHALL use the same maths and the same data files.
+### R6 The street map and Insights (ADR 0053; replaces the globe of ADR 0051)
+1. THE Home map on the phone and on the web SHALL be a real street map (MapLibre over OpenFreeMap's OpenStreetMap tiles) that pans and zooms like Google Maps, with OpenStreetMap credited on screen.
+2. THE power blocks SHALL be drawn as see-through H3 hexagons coloured by state, under the street and place names, and a tap on one SHALL open its area.
+3. THE map pages SHALL reach no other origin than `tiles.openfreemap.org`; every other page keeps the same-origin rule (R5.5).
+4. INSIGHTS SHALL show hours of power per day against the tariff band, when outages happen (weekday by hour), the areas compared over 7 and 30 days, and the outage history with the longest outage, the weekly trend and the typical time until power returns, from the same simulated history on the phone and the web.
 
 ### R5 Website
 1. THE landing page SHALL offer the app in the browser and SHALL show a Google Play or Aptoide button only when its link is configured, and always a GitHub download.

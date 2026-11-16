@@ -825,3 +825,11 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Demo city: 10 real areas (catalog plus Lekki from OpenStreetMap) as 174 real H3 resolution-8 blocks, one generator for web and Android. Yaba to Lekki is 11.3 km.
 - Android: Midnight colours on the Material roles, square shapes, Mona Sans (wide light cut for headings). Compiles; screens not seen on a device.
 
+
+## 2026-11-16 feat(redesign): Google-Maps-style app on MapLibre and OpenFreeMap, wordmark icon, Insights charts [spec:material-redesign tasks:13-14]
+- Asked for by the human: "Nuke the entire website and app UI… I basically want Google Maps with translucent hex grids… useful graphs and insights… use a real map package." Choices made by the human: MapLibre + OpenFreeMap, wordmark icon, all four Insights groups, landing plus the app in the browser. ADR 0053.
+- Web: MapLibre GL JS 6.16.0 vendored at build into `web/public/vendor/`, page scripts in `web/public/js/` (`map.js`, `data.js`, `charts.js`, `app.js`, `landing.js`), new `/app.css`, `/demo-city.json` route, CSP widened only on map pages. Globe, Mona Sans, `core/shared/geo` and `tools/geo` removed.
+- Data: six weeks of simulated outages and a made-up tariff band per area in `demo-city.json` and `DemoCity.kt`.
+- Android: MapLibre Native 13.7.1 (`OutageMap.kt`, `HexGeoJson.kt`), light theme, Insights from `AreaHistory.kt`; globe removed.
+- Tests: ML1 to ML4; web 337, root 173; the visual check (phone and desktop, full blackout, Light Alarm, offline reload, 44 px targets) passes.
+- Not done: Android screens on a device (task 7).

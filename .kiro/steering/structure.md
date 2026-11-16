@@ -13,17 +13,16 @@ web/                   One Cloudflare Worker: the API and the whole website
 web/api                What the phone and the pages call: ingest, area, alerts, home, pairing, registry, telemetry, public-index, map
 web/landing            Landing page at /
 web/ui/app             The shared stylesheet (/app.css); /app redirects to the app in the browser
-web/ui/globe           The rotating globe (/globe.js), the same maths as the phone
+web/public             Static files: js/ (map, Insights maths and charts, app), vendor/ (MapLibre, copied at build)
 web/ui/simulate        The Android app in the browser at /app/simulate (simulated city, clearly labelled)
 web/areas              Public area pages and the area catalog
 web/site               Helpers every page shares
 core/detection         Pure TypeScript engine, no I/O (Worker and simulator only)
-core/shared            Types, event schema, H3 helpers, oem-guide.json, design tokens, globe geography (geo/), contract fixtures
+core/shared            Types, event schema, H3 helpers, oem-guide.json, design tokens, contract fixtures
 tools/sim              Simulator and replay generator
 tools/field            Daily field-test report generator
 tools/tokens           Design token generator (web and Android)
 tools/icon             The mark and the shared icon set, written for Android and the web
-tools/geo              Rebuilds the globe's land dots from Natural Earth (public domain)
 powers/grid-sensing    Kiro Power (Agent Plugin): charging-sensor, blackout-detection, oem-battery-guide skills
 docs/                  kiro-log.md, adr/, field/, traceability.md
 .kiro/                 steering, specs, hooks, skills, agents, settings

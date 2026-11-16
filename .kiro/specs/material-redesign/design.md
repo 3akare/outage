@@ -74,10 +74,10 @@ erDiagram
 | MD6 | Store buttons appear only for configured links, and unsafe links are dropped. | Vitest `web-app.test.ts` |
 | MD7 | No page loads from another origin or has an inline style attribute; the app in the browser stays under 150 KB. | Vitest `web-app.test.ts`, `web-kit.test.ts` |
 | MD8 | `/app`, `/app/insights` and `/app/settings` redirect to `/app/simulate`. | Vitest `web-app.test.ts` |
-| GL1 | The point under the globe's camera is drawn at the centre; the far side is hidden; north is up, east is right. | JUnit `GlobeMathTest` |
-| GL2 | A flight starts and ends on its cameras and takes the short way round. | JUnit `GlobeMathTest` |
-| GL3 | A tap hits the block it is in; a drag never tips over the pole. | JUnit `GlobeMathTest` |
-| GL4 | Land dots fade out at street level, and the phone and the web read the same geo files. | JUnit `GlobeMathTest`, Vitest `web-app.test.ts` |
+| ML1 | The hex layer's GeoJSON has one closed polygon per block, in longitude, latitude order, with the block's state. | JUnit `HexGeoJsonTest`, Vitest `web-app.test.ts` |
+| ML2 | Map pages may reach only `tiles.openfreemap.org`; other pages stay same-origin; the page scripts name no other origin. | Vitest `web-app.test.ts` |
+| ML3 | The Insights sums agree with their parts: 30 days ending yesterday with weekdays kept, hours between 0 and 24, cuts past midnight split, summary equal to its parts, ranking ordered. | Vitest `web-insights.test.ts`, JUnit `AreaHistoryTest` |
+| ML4 | The simulated history is current, inside its six weeks, never overlapping, and the same on the phone. | node:test `demo-city.test.mjs` |
 
 ## 6. Testing strategy
 

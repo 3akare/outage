@@ -1,5 +1,6 @@
 // W6 (web-and-area-pages task 10): the Judge page and its API always say "Simulated replay", real routes never read the
 // replay, and /judge never reads the public index (R6.2, R6.8, R1.3, R6.3, R6.7, R6.9).
+import appJs from '../public/js/app.js?raw';
 import replayFile from '@outage/shared/fixtures/replay.json' with { type: 'json' };
 import { describe, expect, it } from 'vitest';
 import { PageCache } from '../site/cache.ts';
@@ -49,9 +50,8 @@ describe('W6 simulated separation', () => {
   it('W6_simulated_separation: /app/simulate carries the banner in the HTML, never reads the index or the replay, and the API is labelled', async () => {
     const page = await text('/app/simulate');
     expect(page.res.status).toBe(200);
-    expect(page.body).toMatch(/<div class="sim-banner" role="note">.*Simulation: simulated data, not live<\/div>/);
+    expect(page.body).toMatch(/<div class="sim-banner" role="note">.*Simulation: simulated data, not live\./);
     expect(page.body).toContain('<title>Simulation: the Outage app in your browser');
-    expect(page.body).toContain('Simulate a blackout');
     expect(page.counts.index).toBe(0);
     expect(page.counts.replay).toBe(0);
     const api = await text('/api/v1/public/judge/replay');
@@ -104,18 +104,18 @@ describe('Simulation page', () => {
     const res = await handleWeb(get('/app/simulate'), setup(REPLAY).d);
     const body = await res.text();
     expect(body).toContain('This is the Outage Android app running in your browser.');
-    expect(body.match(/id="go"/g)?.length).toBe(1);
-    expect(body).toContain('<nav class="navbar"');
-    expect(body).toContain('<script src="/simulate.js" defer>');
+    expect(body).toContain('<nav class="rail"');
+    expect(body).toContain('<script type="module" src="/js/app.js">');
     expect(new TextEncoder().encode(body).length).toBeLessThan(30 * 1024);
   });
 
   it('the script reads only the replay endpoint and has plain labels for every step', async () => {
-    const { body } = await text('/simulate.js');
+    const body = appJs;
     expect(body).toContain('/api/v1/public/judge/replay');
     expect(body).not.toContain('/api/map.json');
     for (const label of ['Power is on', 'Power may be out', 'Power is out', 'Power is back']) expect(body).toContain(label);
     expect(body).toContain('Simulate again');
+    expect(body.match(/id="go"/g)?.length).toBe(1);
   });
 
   it('the sitemap lists the simulation and not /judge', async () => {

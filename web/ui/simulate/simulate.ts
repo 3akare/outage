@@ -64,7 +64,7 @@ export function appScreen(): string {
     `<span class="search-ico">${icon('search')}</span>` +
     '<ul class="suggest" id="suggest" role="listbox" hidden></ul></form>' +
     `<div class="chips" role="group" aria-label="Show on the map">${CHIPS.map(
-      (c) => `<button type="button" class="chip" data-filter="${c.state}" aria-pressed="false"><i class="dot" data-state="${c.state}"></i>${c.label}</button>`,
+      (c) => `<button type="button" class="chip" data-filter="${c.state}" aria-pressed="false"><span class="chip-in"><i class="dot" data-state="${c.state}"></i>${c.label}</span></button>`,
     ).join('')}</div></div>`;
   const areas = city.areas
     .map((a) => `<li><button type="button" class="row" data-area="${a.slug}"><i class="dot" data-state="NORMAL"></i><span class="txt"><b>${e(a.name)}</b><span>Band ${a.band}</span></span></button></li>`)
@@ -101,8 +101,8 @@ export function renderSimulatePage(site: Site): Rendered {
   const apk = e(site.apkUrl ? (safeHref(site.apkUrl) ?? '/install') : '/install');
   const icons = JSON.stringify(Object.fromEntries([...SCRIPT_ICONS.map((n) => [n, icon(n)]), ['logo', LOGO_SVG]])).replace(/</g, '\\u003c');
   const body =
-    `<div class="sim-banner" role="note">${icon('info')}<span>${SIM_BANNER_TEXT}: simulated data, not live.</span> <span class="hide-s">${SIM_SENTENCE}</span>` +
-    `<a href="${apk}">Get the Android app</a><a href="/">About Outage</a></div>` +
+    `<div class="sim-banner" role="note">${icon('info')}<p>${SIM_BANNER_TEXT}: simulated data, not live. <span class="hide-s">${SIM_SENTENCE}</span></p>` +
+    `<ul><li><a href="${apk}">Get the Android app</a></li><li><a href="/">About Outage</a></li></ul></div>` +
     appScreen() +
     `<script type="application/json" id="icons" nonce="__OUTAGE_NONCE__">${icons}</script>` +
     '<noscript><p class="noscript">The app in the browser needs JavaScript. The area list above still shows every simulated area.</p></noscript>' +

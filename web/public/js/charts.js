@@ -60,7 +60,7 @@ export function dailyBars(days, promise, band, width) {
     }
   });
   out += `<line x1="${left}" x2="${width - right}" y1="${y(promise)}" y2="${y(promise)}" stroke="${INK}" stroke-width="1.5" stroke-dasharray="5 4"/>`;
-  out += `<text class="ax strong" x="${width - right}" y="${y(promise) - 6}" text-anchor="end" paint-order="stroke" stroke="#fff" stroke-width="4">Band ${esc(band)} promise, ${promise} h</text>`;
+  out += `<text class="ax strong" x="${left + 6}" y="${y(promise) - 6}" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="4">Band ${esc(band)} promise, ${promise} h</text>`;
   return svg(width, h, `Hours of power each day for ${days.length} days. Band ${band} promises ${promise} hours.`, out);
 }
 

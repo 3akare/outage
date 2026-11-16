@@ -1,4 +1,4 @@
-// Landing page, the app in the browser and the shared stylesheet (ADR 0027, ADR 0048, ADR 0049). UX1, UX2, UX4, UX9.
+// Landing page, the app in the browser and the shared stylesheet (ADR 0027, ADR 0049, ADR 0053). UX1, UX2, UX4, UX9.
 import { describe, expect, it } from 'vitest';
 import { PageCache } from '../site/cache.ts';
 import type { Site } from '../site/layout.ts';
@@ -8,6 +8,12 @@ import { NAV_ORDER } from '../ui/simulate/simulate.ts';
 import { stores } from '../landing/landing.ts';
 import { AREAS, NOW, SITE } from './web-helpers.ts';
 import city from '@outage/shared/fixtures/demo-city.json' with { type: 'json' };
+import appJs from '../public/js/app.js?raw';
+import chartsJs from '../public/js/charts.js?raw';
+import dataJs from '../public/js/data.js?raw';
+import landingJs from '../public/js/landing.js?raw';
+import mapJs from '../public/js/map.js?raw';
+import { TILE_ORIGIN } from '../site/headers.ts';
 import { latLngToCell } from 'h3-js';
 
 function deps(site: Site = SITE): WebDeps {
@@ -24,20 +30,26 @@ const page = async (path: string, site?: Site) => {
 };
 // Nothing is loaded from another origin: no src, no stylesheet, no form action, no script import. Plain links out are fine.
 const LOADS_ELSEWHERE = /(?:src|action)="https?:\/\/|<link[^>]+href="https?:\/\/(?!outage\.test\/)|(?:fetch|import)\(['"]https?:/;
+// The page scripts are static files (public/js), served by Workers Static Assets.
+const FILES: Record<string, string> = { 'app.js': appJs, 'map.js': mapJs, 'data.js': dataJs, 'charts.js': chartsJs, 'landing.js': landingJs };
+const client = (f: string) => FILES[f];
+const CLIENT = Object.keys(FILES);
 
 describe('landing /', () => {
   it('UX9: the pitch, the app in the browser, the GitHub download, and no hardware-sensor claim', async () => {
     const { res, body } = await page('/');
     expect(res.status).toBe(200);
-    expect(body).toContain('<h1 id="hero-h">Your phone charger is a power-grid sensor.</h1>');
+    expect(body).toContain('<h1 id="hero-h">See where the power is out in Lagos.</h1>');
+    expect(body).toContain('power-grid sensor');
     expect(body).toContain('href="/app/simulate"');
     expect(body).toContain('Try the app in your browser');
     expect(body).toContain('GitHub');
     expect(body).not.toMatch(/undercount|100 ?%/i);
     expect(body).not.toMatch(/judge/i);
-    // One script only: the globe in the hero (ADR 0051).
-    expect([...body.matchAll(/<script[^>]*>/g)].map((m) => m[0])).toEqual(['<script src="/globe.js" defer>']);
-    expect(body).toContain('data-globe="hero"');
+    // One script only: the live street map and chart (ADR 0053).
+    expect([...body.matchAll(/<script[^>]*>/g)].map((m) => m[0])).toEqual(['<script type="module" src="/js/landing.js">']);
+    expect(body).toContain('id="heromap"');
+    expect(body).toContain('OpenStreetMap contributors');
   });
 
   it('store buttons appear only for the links that are configured', async () => {
@@ -56,22 +68,24 @@ describe('the app in the browser /app/simulate', () => {
     const { res, body } = await page('/app/simulate');
     expect(res.status).toBe(200);
     expect(NAV_ORDER).toEqual(['Insights', 'Home', 'Settings']);
-    const nav = /<nav class="navbar"[^>]*>(.*?)<\/nav>/.exec(body)?.[1] ?? '';
+    const nav = /<nav class="rail"[^>]*>(.*?)<\/nav>/.exec(body)?.[1] ?? '';
     expect([...nav.matchAll(/data-tab="(\w+)"/g)].map((m) => m[1])).toEqual(['insights', 'home', 'settings']);
     expect(nav).toMatch(/data-tab="home" aria-current="page"/);
   });
 
-  it('draws the simulated city on the globe, with the spot, and says it is simulated', async () => {
+  it('ADR 0053: a real street map with the simulated city on it, and it says it is simulated', async () => {
     const { body } = await page('/app/simulate');
     expect(body).toContain('class="sim-banner"');
-    expect(body).toContain('<canvas id="globe"');
-    // The globe engine loads before the app script.
-    expect(body.indexOf('src="/globe.js"')).toBeLessThan(body.indexOf('src="/simulate.js"'));
-    const js = (await page('/simulate.js')).body;
-    const cells = JSON.parse(/var CELLS=(\[.*?\]),AREA=/.exec(js)?.[1] ?? '[]') as { id: string; ring: number[][] }[];
-    expect(cells.length).toBe(city.cells.length);
-    expect(cells.every((c) => c.id.startsWith('sim-') && c.ring.length === 6)).toBe(true);
-    expect(js).toContain(`var SPOT='${city.spot}'`);
+    expect(body).toContain('Simulation: simulated data, not live.');
+    expect(body).toContain('<div class="map" id="map"');
+    expect(body).toContain('<script type="module" src="/js/app.js">');
+    expect(body).toContain('href="/vendor/maplibre-gl/maplibre-gl.css"');
+    expect(client('map.js')).toContain("from '/vendor/maplibre-gl/maplibre-gl.mjs'");
+    expect(client('map.js')).toContain(`${TILE_ORIGIN}/styles/liberty`);
+    const served = JSON.parse((await page('/demo-city.json')).body) as typeof city;
+    expect(served.cells.length).toBe(city.cells.length);
+    expect(served.cells.every((c) => c.id.startsWith('sim-') && c.ring.length === 6)).toBe(true);
+    expect(served.spot).toBe(city.spot);
   });
 
   it('ADR 0052: the simulated city puts real Lagos areas at their real places', () => {
@@ -92,14 +106,6 @@ describe('the app in the browser /app/simulate', () => {
     }
   });
 
-  it('serves the globe with the land dots and no request elsewhere', async () => {
-    const { res, body } = await page('/globe.js');
-    expect(res.headers.get('content-type')).toContain('javascript');
-    expect(body).toContain('window.OutageGlobe=Globe');
-    expect(body.length).toBeGreaterThan(40_000); // the Natural Earth dot grid is inlined
-    expect(body).not.toMatch(/fetch\(|https?:\/\//);
-  });
-
   it('the old web-app addresses send people to the app in the browser', async () => {
     for (const p of ['/app', '/app/insights', '/app/settings']) {
       const { res } = await page(p);
@@ -110,46 +116,53 @@ describe('the app in the browser /app/simulate', () => {
 });
 
 describe('shared assets', () => {
-  it('serves the stylesheet (Hallmark stamp, Midnight tokens), the font and the favicon from the same origin', async () => {
+  it('serves the stylesheet (light tokens) and the favicon from the same origin, and no font', async () => {
     const css = await page('/app.css');
     expect(css.res.headers.get('content-type')).toContain('text/css');
-    expect(css.body.split('\n')[0]).toMatch(/^\/\* Hallmark · /); // the Hallmark stamp opens the stylesheet
-    expect(css.body).toContain('--c-paper:');
+    expect(css.body).toContain('--c-paper:#ffffff');
     expect(css.body).toContain('--map-confirmed:');
-    const font = await handleWeb(new Request('https://outage.test/fonts/mona-sans.woff2'), deps());
-    expect(font.headers.get('content-type')).toBe('font/woff2');
-    expect(new Uint8Array(await font.arrayBuffer()).slice(0, 4)).toEqual(new Uint8Array([0x77, 0x4f, 0x46, 0x32])); // "wOF2"
+    expect(css.body).not.toMatch(/@font-face|url\(/);
     const icon = await page('/favicon.svg');
     expect(icon.res.headers.get('content-type')).toContain('image/svg+xml');
     expect(icon.body).toContain('<svg');
   });
 
-  it('UX4: no page or asset loads anything from another origin', async () => {
-    for (const p of ['/', '/app/simulate', '/simulate.js', '/globe.js', '/app.css', '/install', '/privacy']) {
+  it('UX4: pages load nothing from another origin; scripts reach only the map tiles', async () => {
+    for (const p of ['/', '/app/simulate', '/app.css', '/install', '/privacy']) {
       const { body } = await page(p);
       expect(body, p).not.toMatch(LOADS_ELSEWHERE);
     }
-  });
-
-  it('CSP allows same-origin scripts and styles, and nothing else', async () => {
-    const { res } = await page('/app/simulate');
-    const csp = res.headers.get('content-security-policy') ?? '';
-    expect(csp).toContain("default-src 'none'");
-    expect(csp).toMatch(/script-src 'nonce-[^']+' 'self'(;|$)/);
-    expect(csp).toMatch(/style-src 'nonce-[^']+' 'self'(;|$)/);
-    expect(csp).not.toMatch(/https?:|unsafe-/);
-  });
-
-  it('no inline style attributes, so the CSP never has to allow them', async () => {
-    for (const p of ['/', '/app/simulate', '/simulate.js', '/globe.js']) {
-      const { body } = await page(p);
-      expect(body, p).not.toMatch(/\sstyle="/);
+    for (const f of CLIENT) {
+      const origins = [...client(f).matchAll(/https?:\/\/[a-z0-9.-]+/g)].map((m) => m[0]);
+      expect(origins.every((o) => o === TILE_ORIGIN), f).toBe(true);
     }
   });
 
-  it('the app in the browser stays under 200 KB with the globe, its script and stylesheet', async () => {
+  it('CSP: same-origin scripts and styles; only map pages may reach OpenFreeMap', async () => {
+    for (const p of ['/app/simulate', '/']) {
+      const csp = (await page(p)).res.headers.get('content-security-policy') ?? '';
+      expect(csp).toContain("default-src 'none'");
+      expect(csp).toMatch(/script-src 'nonce-[^']+' 'self'(;|$)/);
+      expect(csp).toMatch(/style-src 'nonce-[^']+' 'self'(;|$)/);
+      expect(csp).toContain(`connect-src 'self' ${TILE_ORIGIN}`);
+      expect(csp.replace(TILE_ORIGIN, '')).not.toMatch(/https?:|unsafe-/);
+    }
+    const plain = (await page('/privacy')).res.headers.get('content-security-policy') ?? '';
+    expect(plain).not.toContain(TILE_ORIGIN);
+  });
+
+  it('no inline style attributes, so the CSP never has to allow them', async () => {
+    for (const p of ['/', '/app/simulate']) {
+      const { body } = await page(p);
+      expect(body, p).not.toMatch(/\sstyle="/);
+    }
+    for (const f of CLIENT) expect(client(f), f).not.toMatch(/\sstyle="/);
+  });
+
+  it('the app in the browser stays under 200 KB without MapLibre: page, city, scripts and stylesheet', async () => {
     let bytes = 0;
-    for (const p of ['/app/simulate', '/simulate.js', '/globe.js', '/app.css']) bytes += new TextEncoder().encode((await page(p)).body).length;
+    for (const p of ['/app/simulate', '/demo-city.json', '/app.css']) bytes += new TextEncoder().encode((await page(p)).body).length;
+    for (const f of CLIENT) bytes += client(f).length;
     expect(bytes).toBeLessThan(200 * 1024);
   });
 });

@@ -54,7 +54,12 @@ graph LR
 - [x] 12. Hallmark (installed from `Nutlope/hallmark`), theme Midnight, Mona Sans, landing and app in the browser rebuilt, Android theme (ADR 0052).
   - Depends on: 8
 
+- [x] 13. Google-Maps-style rebuild of the web (ADR 0053): wordmark icon, light tokens, system font, six weeks of simulated history, MapLibre GL JS over OpenFreeMap with the hex layer, search, chips, panel or sheet, Insights charts, new landing; globe, Mona Sans and geo data removed; tests ML1 to ML4.
+  - Depends on: 11, 12
+- [x] 14. Android on MapLibre Native 13.7.1 (ADR 0053): `OutageMap`, `HexGeoJson`, light theme, Insights from `AreaHistory`, globe removed; tests ML1 and ML3.
+  - Depends on: 13
+
 ## Wave 5: checks
 
 - [ ] 7. Device screenshots and a TalkBack pass of first run, Home, Insights and Settings (needs a phone or emulator; the Kiro IDE pass).
-  - Depends on: 6, 10
+  - Depends on: 6, 14

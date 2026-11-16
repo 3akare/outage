@@ -210,6 +210,7 @@ export function renderPrivacyPage(input: { site: Site }): Rendered {
     '<main><h1>Privacy</h1><h2>What Outage collects</h2><ul class="list"><li>One anonymous install ID per install.</li>' +
     '<li>When the phone starts and stops charging, with the time.</li>' +
     '<li>A small area code for the place you set (an H3 cell about 0.7 km across), and optionally the start of your postcode.</li></ul>' +
+    '<h2>The street map</h2><p>The map on the landing page and in the app in the browser is drawn from OpenFreeMap (tiles.openfreemap.org), which serves OpenStreetMap data. Your browser asks it for map pictures of the area you look at, so it sees your IP address, as any website does. Outage sends it nothing else. The Android app does the same for its map.</p>' +
     '<h2>What Outage never collects</h2><ul class="list"><li>Your exact location. The phone reads it once to pick the area code, then discards it.</li>' +
     '<li>Who you are: no name, no contact details, no advertising ID.</li><li>Microphone or motion sensor data.</li></ul>' +
     '<h2>What is public</h2><ul class="list"><li>The power status of an area, only when 3 or more phones are there.</li>' +

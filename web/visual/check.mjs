@@ -13,7 +13,7 @@ mkdirSync(SHOTS, { recursive: true });
 const pages = [
   { path: '/', name: 'landing', expect: ['Your phone charger is a', 'Try the app in your browser', 'GitHub'] },
   { path: '/areas', name: 'areas', expect: ['Install Outage'] },
-  { path: '/app/simulate', name: 'simulate', expect: ['simulated data, not live', 'Your charger is a power sensor', 'Use my location'], app: true },
+  { path: '/app/simulate', name: 'simulate', expect: ['simulated data, not live', 'See the power around you', 'Use my location'], app: true },
   // No area is listed until a person fills in `checkedBy` in the catalog (R10.3), so /area/yaba is the 404 page for now.
   { path: '/area/yaba', name: 'area-yaba', expect: ['Install Outage'], status: [200, 404] },
   { path: '/c/88589c9861fffff', name: 'cell', expect: ['Install Outage'] },
@@ -54,6 +54,8 @@ function measure() {
     const inText = el.tagName === 'A' && !el.classList.contains('btn') && el.closest('p, li') !== null;
     // Inline links inside a sentence are exempt (WCAG 2.5.8 inline exception); everything else must be 44 px.
     if (inText) continue;
+    // MapLibre's own attribution control (third-party, compact by design) is not ours to resize.
+    if (el.closest('.maplibregl-ctrl')) continue;
     if (r.height < 44 || r.width < 44) {
       smallTargets.push(`${el.tagName.toLowerCase()} "${el.textContent.trim().slice(0, 20)}" ${Math.round(r.width)}x${Math.round(r.height)}`);
     }
@@ -110,14 +112,14 @@ try {
     await pg.click('#useloc');
     await pg.click('.scrim button[data-a="1"]');
     await pg.waitForTimeout(600);
-    await pg.waitForTimeout(2600); // the fly-in from the globe to the spot
-    const globe = await pg.evaluate(() => {
-      const c = document.getElementById('globe');
-      return { engine: typeof window.OutageGlobe === 'function', w: c?.width ?? 0, h: c?.height ?? 0 };
+    await pg.waitForTimeout(3400); // the fly-in to the spot
+    const map = await pg.evaluate(() => {
+      const c = document.querySelector('#map canvas.maplibregl-canvas');
+      return { w: c?.width ?? 0, h: c?.height ?? 0 };
     });
-    if (!globe.engine || globe.w < 100 || globe.h < 100) fail(where, `globe not drawn: ${JSON.stringify(globe)}`);
-    else ok(where, `globe drawn ${globe.w}x${globe.h}, flew to the spot`);
-    const bar = await pg.locator('nav.navbar button').allInnerTexts();
+    if (map.w < 100 || map.h < 100) fail(where, `street map not drawn: ${JSON.stringify(map)}`);
+    else ok(where, `MapLibre street map drawn ${map.w}x${map.h}, flew to the spot`);
+    const bar = await pg.locator('nav.rail button').allInnerTexts();
     if (bar.map((s) => s.trim()).join(',') !== 'Insights,Home,Settings') fail(where, `bar is ${bar.join(',')}`);
     else ok(where, 'bar is Insights, Home, Settings');
     await pg.screenshot({ path: `${SHOTS}/simulate-home${tag}.png` });
@@ -127,7 +129,7 @@ try {
       try {
         await pg.waitForSelector(`#spotcard[data-state=${state}]`, { timeout: 20000 });
         await pg.waitForTimeout(300);
-        const c = await pg.innerText('#spotsub');
+        const c = await pg.innerText('#spotcard .sub');
         if (!/\d+ of \d+ phones/.test(c)) fail(where, `no count in ${state}: ${c}`);
         await pg.screenshot({ path: `${SHOTS}/simulate-${name}${tag}.png` });
         ok(where, `${state}: ${c}`);
@@ -146,7 +148,7 @@ try {
     await pg.waitForFunction(() => document.getElementById('go').textContent === 'Simulate again', null, { timeout: 20000 });
     await pg.screenshot({ path: `${SHOTS}/simulate-restored${tag}.png` });
     for (const tab of ['insights', 'settings']) {
-      await pg.click(`nav.navbar button[data-tab="${tab}"]`);
+      await pg.click(`nav.rail button[data-tab="${tab}"]`);
       await pg.waitForTimeout(200);
       await pg.screenshot({ path: `${SHOTS}/simulate-${tab}${tag}.png` });
     }
@@ -167,7 +169,8 @@ try {
 
   if (consoleErrors.length) fail('all', `console errors: ${consoleErrors.join(' | ')}`);
   else ok('all', 'no console errors');
-  const foreign = [...origins].filter((o) => o !== new URL(BASE).origin && !o.startsWith('data:'));
+  // The one other origin allowed: OpenFreeMap's street-map tiles (ADR 0053).
+  const foreign = [...origins].filter((o) => o !== new URL(BASE).origin && o !== 'https://tiles.openfreemap.org' && !/^(data|blob):/.test(o));
   if (foreign.length) fail('all', `requests to other origins: ${foreign.join(', ')}`);
   else ok('all', `only same-origin requests (${[...origins].join(', ')})`);
 
@@ -198,7 +201,8 @@ try {
       for (const k of await caches.keys()) for (const r of await (await caches.open(k)).keys()) out.push(new URL(r.url).pathname);
       return out.sort();
     });
-    const allowed = ['/app/simulate', '/simulate.js', '/globe.js', '/app.css', '/favicon.svg', '/api/v1/public/judge/replay'];
+    const allowed = ['/app/simulate', '/js/app.js', '/js/map.js', '/js/data.js', '/js/charts.js', '/app.css', '/favicon.svg', '/demo-city.json',
+      '/vendor/maplibre-gl/maplibre-gl.mjs', '/vendor/maplibre-gl/maplibre-gl-worker.mjs', '/vendor/maplibre-gl/maplibre-gl.css', '/api/v1/public/judge/replay'];
     if (cached.every((p) => allowed.includes(p))) ok('cache', `only simulation files cached (${cached.join(', ')})`);
     else fail('cache', `unexpected cache entries: ${cached.join(', ')}`);
   }
@@ -209,7 +213,7 @@ try {
   const p2 = await noJs.newPage();
   await p2.goto(`${BASE}/app/simulate`, { waitUntil: 'load' });
   const t2 = await p2.innerText('body');
-  const missing = ['simulated data, not live', 'This is the Outage Android app running in your browser', 'Power is on'].filter((x) => !t2.includes(x));
+  const missing = ['simulated data, not live', 'This is the Outage Android app running in your browser', 'Yaba'].filter((x) => !t2.includes(x));
   if (missing.length) fail('/app/simulate scripts off', `missing ${missing.join(', ')}`);
   else ok('/app/simulate scripts off', 'banner, guide and app are readable');
   await noJs.close();

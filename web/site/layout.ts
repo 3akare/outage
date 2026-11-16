@@ -39,7 +39,7 @@ export function layout(input: LayoutInput): string {
     `${FAVICON_LINK}<link rel="stylesheet" href="/app.css"></head><body>` +
     `<header class="site-top"><div class="container">${brandLink('/')}<nav aria-label="Site"><a class="link" href="/areas">Areas</a><a class="btn primary" href="/app/simulate">Try it</a></nav></div></header>` +
     `<div class="site container">${input.body}</div>` +
-    '<footer class="site-foot"><div class="container"><a class="link" href="/">Home</a><a class="link" href="/app/simulate">Try the app</a><a class="link" href="/install">Install</a><a class="link" href="/privacy">Privacy</a></div></footer>' +
+    '<footer class="site-foot"><div class="container"><ul><li><a href="/">Home</a></li><li><a href="/app/simulate">Try the app</a></li><li><a href="/install">Install</a></li><li><a href="/privacy">Privacy</a></li></ul></div></footer>' +
     (input.script ? `<script nonce="${NONCE_PLACEHOLDER}">${input.script}</script>` : '') +
     '</body></html>'
   );
