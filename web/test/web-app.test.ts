@@ -33,7 +33,9 @@ describe('landing /', () => {
     expect(body).toContain('GitHub');
     expect(body).not.toMatch(/undercount|100 ?%/i);
     expect(body).not.toMatch(/judge/i);
-    expect(body).not.toContain('<script');
+    // One script only: the globe in the hero (ADR 0051).
+    expect([...body.matchAll(/<script[^>]*>/g)].map((m) => m[0])).toEqual(['<script src="/globe.js" defer>']);
+    expect(body).toContain('data-globe="hero"');
   });
 
   it('store buttons appear only for the links that are configured', async () => {
@@ -57,13 +59,25 @@ describe('the app in the browser /app/simulate', () => {
     expect(nav).toMatch(/data-tab="home" aria-current="page"/);
   });
 
-  it('draws the simulated city with the spot, and says it is simulated', async () => {
+  it('draws the simulated city on the globe, with the spot, and says it is simulated', async () => {
     const { body } = await page('/app/simulate');
     expect(body).toContain('class="sim-banner"');
-    const ids = [...body.matchAll(/<path class="hx[^"]*" data-id="([^"]+)"/g)].map((m) => m[1]);
-    expect(ids.length).toBe(21);
-    expect(ids.every((id) => id.startsWith('sim-'))).toBe(true);
-    expect(body).toContain('class="hx spot" data-id="sim-0,0"');
+    expect(body).toContain('<canvas id="globe"');
+    // The globe engine loads before the app script.
+    expect(body.indexOf('src="/globe.js"')).toBeLessThan(body.indexOf('src="/simulate.js"'));
+    const js = (await page('/simulate.js')).body;
+    const cells = JSON.parse(/var CELLS=(\[.*?\]),AREA=/.exec(js)?.[1] ?? '[]') as { id: string; ring: number[][] }[];
+    expect(cells.length).toBe(21);
+    expect(cells.every((c) => c.id.startsWith('sim-') && c.ring.length === 6)).toBe(true);
+    expect(js).toContain("var SPOT='sim-0,0'");
+  });
+
+  it('serves the globe with the land dots and no request elsewhere', async () => {
+    const { res, body } = await page('/globe.js');
+    expect(res.headers.get('content-type')).toContain('javascript');
+    expect(body).toContain('window.OutageGlobe=Globe');
+    expect(body.length).toBeGreaterThan(40_000); // the Natural Earth dot grid is inlined
+    expect(body).not.toMatch(/fetch\(|https?:\/\//);
   });
 
   it('the old web-app addresses send people to the app in the browser', async () => {
@@ -79,15 +93,15 @@ describe('shared assets', () => {
   it('serves the stylesheet with the Material 3 tokens and the favicon from the same origin', async () => {
     const css = await page('/app.css');
     expect(css.res.headers.get('content-type')).toContain('text/css');
-    expect(css.body).toContain('--md-sys-color-primary:');
-    expect(css.body).toContain('--md-map-confirmed:');
+    expect(css.body).toContain('--c-primary:');
+    expect(css.body).toContain('--map-confirmed:');
     const icon = await page('/favicon.svg');
     expect(icon.res.headers.get('content-type')).toContain('image/svg+xml');
     expect(icon.body).toContain('<svg');
   });
 
   it('UX4: no page or asset loads anything from another origin', async () => {
-    for (const p of ['/', '/app/simulate', '/simulate.js', '/app.css', '/install', '/privacy']) {
+    for (const p of ['/', '/app/simulate', '/simulate.js', '/globe.js', '/app.css', '/install', '/privacy']) {
       const { body } = await page(p);
       expect(body, p).not.toMatch(LOADS_ELSEWHERE);
     }
@@ -103,15 +117,15 @@ describe('shared assets', () => {
   });
 
   it('no inline style attributes, so the CSP never has to allow them', async () => {
-    for (const p of ['/', '/app/simulate', '/simulate.js']) {
+    for (const p of ['/', '/app/simulate', '/simulate.js', '/globe.js']) {
       const { body } = await page(p);
       expect(body, p).not.toMatch(/\sstyle="/);
     }
   });
 
-  it('the app in the browser stays under 150 KB with its script and stylesheet', async () => {
+  it('the app in the browser stays under 200 KB with the globe, its script and stylesheet', async () => {
     let bytes = 0;
-    for (const p of ['/app/simulate', '/simulate.js', '/app.css']) bytes += new TextEncoder().encode((await page(p)).body).length;
-    expect(bytes).toBeLessThan(150 * 1024);
+    for (const p of ['/app/simulate', '/simulate.js', '/globe.js', '/app.css']) bytes += new TextEncoder().encode((await page(p)).body).length;
+    expect(bytes).toBeLessThan(200 * 1024);
   });
 });

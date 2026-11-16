@@ -15,14 +15,15 @@ android/
 web/          One Cloudflare Worker. The phone and the browser both talk to it.
   api/        The API and the Durable Objects (ingest, areas, alerts, Home Watch, telemetry)
   landing/    Landing page at /
-  ui/app/       The Material 3 stylesheet every page shares
+  ui/app/       The stylesheet every page shares
+  ui/globe/     The rotating globe
   ui/simulate/  The Android app in your browser at /app/simulate, on a simulated city
   areas/      Public pages such as "Is there power in Yaba right now?"
   site/       Helpers every page shares
 core/
   detection/  The engine that decides "this is a blackout". Pure TypeScript, no I/O.
   shared/     The wire format between phone and server, test fixtures, design tokens
-tools/        sim (builds the replay), field (daily field report), tokens (design tokens), icon (the mark and icons)
+tools/        sim (builds the replay), field (daily field report), tokens (design tokens), icon (the mark and icons), geo (globe data)
 powers/       A Kiro Power that packages the reusable skills
 docs/         Decisions (adr/), build log, status, traceability
 .kiro/        Kiro steering, specs, hooks, skills and agents
@@ -46,7 +47,8 @@ Each folder has its own `README.md` with the detail: `android/outage/README.md`,
 | Words in the Android app | `android/outage/app/src/main/res/values/strings.xml` (Pidgin in `values-pcm/`) |
 | The landing page | `web/landing/landing.ts` |
 | The app in the browser | `web/ui/simulate/simulate.ts`; its blackout comes from `tools/sim` |
-| Website styles | `web/ui/app/design.ts` (Material 3 token names) |
+| Website styles | `web/ui/app/design.ts` |
+| The globe | `web/ui/globe/globe.ts` and `android/outage/app/src/main/kotlin/app/outage/ui/Globe.kt` (same maths, `map/GlobeMath.kt`); data in `core/shared/geo/` |
 | Which URL goes where | `web/routes.ts` |
 | An API the phone calls | `web/api/ingest/handlers.ts` |
 | The wire format | `core/shared/src/ingest.ts`, then `android/outage/app/src/main/kotlin/app/outage/net/Wire.kt` |

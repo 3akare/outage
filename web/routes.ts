@@ -25,6 +25,7 @@ import {
 } from './ui/simulate/replay.ts';
 import { redirectToApp, renderAppCss } from './ui/app/app.ts';
 import { renderFavicon } from './site/brand.ts';
+import { renderGlobeJs } from './ui/globe/globe.ts';
 import { renderSimulateJs, renderSimulatePage, SIMULATE_PATH } from './ui/simulate/simulate.ts';
 import { renderLanding } from './landing/landing.ts';
 import { buildMapJson, cityFrom } from './api/map/map-json.ts';
@@ -82,6 +83,7 @@ const ROUTES: Route[] = [
   { pattern: /^\/$/, render: (_m, _u, d) => renderLanding(d.site) },
   { pattern: /^\/app\.css$/, render: () => renderAppCss() },
   { pattern: /^\/favicon\.(?:svg|ico)$/, render: () => renderFavicon() },
+  { pattern: /^\/globe\.js$/, render: () => renderGlobeJs() },
   // The old real-data web app folded into the app in the browser (ADR 0049).
   { pattern: /^\/app(?:\/(?:insights|settings))?$/, render: () => redirectToApp() },
   // The simulation page is static. It fetches the replay JSON itself and never reads the public index (W6).

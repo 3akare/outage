@@ -809,3 +809,12 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Not done: Android screenshots (no emulator in the cloud session; task 7). Bands per area on the map need area-to-band data; the user's own band shows on the spot card.
 - Shaped by: steering `product.md`, `privacy.md`, `copy.md`; skill `material-3`; ADR 0037 (coarse location), ADR 0022 (no basemap).
 
+## 2026-11-24 feat(globe): a real rotating globe, one dark design, a new mark; Material skill removed [spec:material-redesign tasks:8-10]
+- Asked for by the human after rejecting the Material 3 look: "use an actual globe that rotates", "remove the Material skill", "the logo is hideous". ADR 0051.
+- Removed the `material-3` skill (`.agents/`, its links in `.claude/skills` and `.kiro/skills`, `skills-lock.json`) and its mentions. Steering now says not to reinstall it.
+- Globe: orthographic projection on a canvas, the same maths on the web (`web/ui/globe/globe.ts`, `/globe.js`) and Android (`map/GlobeMath.kt`, `ui/Globe.kt`). Land is 8,107 dots from Natural Earth 1:50m (public domain) in `core/shared/geo/land-dots.json`, plus the Lagos coast; `tools/geo/build.mjs` rebuilds them. It turns by itself, drags, pinches, flies down to the spot; blocks keep their state patterns; a beacon marks the city from far away.
+- Design: one dark palette in `tokens.json` (no light mode), glass panels over the globe, space background on the web, first run over the turning globe on both platforms. CSS names `--c-*`, `--map-*`.
+- Mark: white power ring with a yellow bolt stem on navy, flat. Four directions were drawn; D was chosen.
+- Tests: GL1 to GL4 (`GlobeMathTest`), web tests for `/globe.js` and the simulated blocks, token and icon tests updated. `npm test`, lint, typecheck, spec-lint, the visual check (phone and desktop, the whole blackout, offline reload) and Android tests, lint and assembleDebug pass.
+- Not done: Android screens on a device (task 7, no emulator in the cloud session).
+

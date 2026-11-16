@@ -14,6 +14,10 @@ graph LR
     T2 --> T6[6 Android theme, first run, Home, Settings]
     T3 --> T6
     T6 --> T7[7 device screenshots]
+    T2 --> T8[8 night palette and mark]
+    T8 --> T9[9 web globe]
+    T8 --> T10[10 Android globe]
+    T10 --> T7
 ```
 
 ## Wave 1: decisions
@@ -36,7 +40,16 @@ graph LR
 - [x] 6. Android `Theme.kt` and `LocalStatusColors`, full-screen map with sheet, first run with location, bar order, grouped Settings, tests MD3 (JUnit) and MD4.
   - Depends on: 2, 3
 
-## Wave 4: checks
+## Wave 4: the globe and the night design (ADR 0051)
 
-- [ ] 7. Device screenshots and a TalkBack pass of first run, Home, Insights and Settings in light and dark (needs a phone or emulator; the Kiro IDE pass).
-  - Depends on: 6
+- [x] 8. Remove the `material-3` skill; one dark palette in `tokens.json`; mark redrawn (white ring, yellow bolt, navy).
+  - Depends on: 2, 3
+- [x] 9. Web globe `/globe.js` from Natural Earth dots, the app in the browser and the landing hero on it, tests updated.
+  - Depends on: 8
+- [x] 10. Android globe (`GlobeMath.kt`, `Globe.kt`), Home and first run on it, dark-only theme, tests GL1 to GL4.
+  - Depends on: 8
+
+## Wave 5: checks
+
+- [ ] 7. Device screenshots and a TalkBack pass of first run, Home, Insights and Settings (needs a phone or emulator; the Kiro IDE pass).
+  - Depends on: 6, 10

@@ -20,7 +20,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -135,12 +140,18 @@ fun FirstRunScreen(finish: () -> Boolean, locate: suspend () -> SpotOutcome, onD
     val askLocation = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (!granted) next(SpotOutcome.Denied) else scope.launch { next(locate()) }
     }
+    // The Earth turns behind the welcome, as on the web (ADR 0051).
+    val ctx = LocalContext.current
+    val globe = remember { GlobeData.load(ctx) }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+    GlobeView(globe, emptyList(), emptyMap(), null, null, emptyList(), null, topInset = 0.dp, bottomInset = maxHeight * 0.5f, summary = "", onTap = {})
+    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to Color.Transparent, 0.34f to Color(0x59030508), 0.58f to Color(0xF0030508))))
+    // At least the screen's height, so the text sits at the bottom under the globe; it scrolls when the text is large.
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).heightIn(min = maxHeight).padding(horizontal = 24.dp, vertical = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Bottom),
     ) {
-        Image(painterResource(R.drawable.ic_mark), contentDescription = null, modifier = Modifier.size(88.dp))
-        Text(stringResource(R.string.first_run_title), style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(top = 16.dp))
+        Text(stringResource(R.string.first_run_title), style = MaterialTheme.typography.headlineMedium)
         Text(stringResource(R.string.first_run_body), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), shape = MaterialTheme.shapes.large) {
             Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -151,7 +162,6 @@ fun FirstRunScreen(finish: () -> Boolean, locate: suspend () -> SpotOutcome, onD
                 }
             }
         }
-        Spacer(Modifier.height(8.dp))
         if (busy) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 3.dp)
@@ -178,5 +188,6 @@ fun FirstRunScreen(finish: () -> Boolean, locate: suspend () -> SpotOutcome, onD
                 Text(stringResource(R.string.demo_try))
             }
         }
+    }
     }
 }

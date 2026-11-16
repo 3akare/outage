@@ -1,6 +1,6 @@
 # Requirements: material-redesign
 
-Status: APPROVED by the human on 2026-11-24 ("Yes to all that", then the design-system and icon request). Decisions: ADR 0048, 0049, 0050. Amends `ux-redesign` (see its status line).
+Status: APPROVED by the human on 2026-11-24 ("Yes to all that", then the design-system and icon request). Decisions: ADR 0048, 0049, 0050. Revised by ADR 0051 after the human rejected the first look: R4.1 is now a rotating globe, R1.3 is one dark palette (no light mode), the Material 3 skill is removed, and the mark is redrawn. Amends `ux-redesign` (see its status line).
 
 ## Introduction
 
@@ -41,6 +41,12 @@ Outage is one Android app and one website. The human asked for three things: one
 2. A sheet SHALL show the spot card when collapsed and the feed when pulled up.
 3. THE spot card SHALL show the state in words and colour, the age of the data, the sensor state and the tariff band when one is chosen.
 4. THE bottom bar SHALL be Insights, Home, Settings, in that order, and the app SHALL open on Home.
+
+### R6 The globe (ADR 0051)
+1. THE Home map on the phone and on the web SHALL be a globe of the real Earth that turns by itself, follows a drag and zooms with a pinch.
+2. THE globe SHALL fly down to the user's spot after first run and SHALL draw the power blocks on the sphere at street level.
+3. THE land SHALL come from public-domain data in `core/shared/geo`, with no tile server, key or request to another origin.
+4. THE phone and the web SHALL use the same maths and the same data files.
 
 ### R5 Website
 1. THE landing page SHALL offer the app in the browser and SHALL show a Google Play or Aptoide button only when its link is configured, and always a GitHub download.

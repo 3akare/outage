@@ -10,7 +10,7 @@ Decided in `docs/adr/0012-native-kotlin-android-app.md`.
 - **Backend:** Cloudflare Worker plus Durable Objects (one per active area). The same Worker serves the read-only web page.
 - **Push:** Firebase Cloud Messaging, sent from the Worker over HTTP v1.
 - **Geo:** H3, resolution 8. The phone computes its own cell (Kotlin, `com.uber:h3`, needs approval); the Worker and tools use `h3-js`.
-- **Design system:** Material 3 on both platforms from `core/shared/design/tokens.json` (`node tools/tokens/build.mjs`); icons and the mark from `tools/icon/build.mjs` (ADR 0048). Compose Material 3 on the phone; CSS custom properties with Material token names on the web, no web component library.
+- **Design:** one dark palette from `core/shared/design/tokens.json` (`node tools/tokens/build.mjs`); icons and the mark from `tools/icon/build.mjs`; the map is a rotating globe drawn on a canvas from `core/shared/geo` on both platforms (ADR 0051). No map library, tile server or web component library. Do not reinstall the Material 3 skill.
 - **Tests:** Kotlin unit tests with JUnit 4 on the JVM. TypeScript tests with Vitest plus fast-check. Property tests are mandatory for detection.
 - **Lint:** Android Lint for Kotlin, Biome for TypeScript and `.mjs`.
 - **Language:** Kotlin on the phone. TypeScript (strict) on the Worker, engine and tools. Dependency-free Node ESM for hook and skill scripts.

@@ -6,7 +6,6 @@ export type SimCell = { id: string; q: number; r: number; area: string; state: S
 export type SimArea = { slug: string; name: string; centre: string };
 
 export const SPOT_ID = 'sim-0,0';
-export const HEX_SIZE = 46;
 
 const AREA_OF: Record<string, readonly [number, number][]> = {
   yaba: [[0, 0], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1], [1, -1], [-1, -1]],
@@ -33,30 +32,39 @@ export const CELLS: readonly SimCell[] = Object.entries(AREA_OF).flatMap(([area,
   list.map(([q, r]) => ({ id: `sim-${q},${r}`, q, r, area, state: START[`${q},${r}`] ?? 'NORMAL' })),
 );
 
-/** Centre of an axial (pointy-top) hex in SVG units. North is up. */
-export function centre(q: number, r: number, s = HEX_SIZE): [number, number] {
-  return [s * Math.sqrt(3) * (q + r / 2), s * 1.5 * r];
+// Geography, the same as the phone's DemoAreaMap: blocks sized like H3 resolution 8 (edge about 0.46 km) around Yaba.
+const LAT0 = 6.5158;
+const LNG0 = 3.3711;
+const EDGE_KM = 0.46;
+const KM_PER_DEG = 111.32;
+
+/** Centre of an axial (pointy-top) block as [latitude, longitude]. North is up. */
+export function centreLatLng(q: number, r: number): [number, number] {
+  const xKm = EDGE_KM * Math.sqrt(3) * (q + r / 2);
+  const yKm = -EDGE_KM * 1.5 * r;
+  return [LAT0 + yKm / KM_PER_DEG, LNG0 + xKm / (KM_PER_DEG * Math.cos((LAT0 * Math.PI) / 180))];
 }
 
-export function hexPath(q: number, r: number, s = HEX_SIZE, inset = 0): string {
-  const [cx, cy] = centre(q, r, s);
-  const k = s - inset;
-  const pts = [0, 1, 2, 3, 4, 5].map((i) => {
+/** The six corners of a block as [latitude, longitude], rounded to about a metre. */
+export function ringLatLng(q: number, r: number): [number, number][] {
+  const xKm = EDGE_KM * Math.sqrt(3) * (q + r / 2);
+  const yKm = -EDGE_KM * 1.5 * r;
+  const kLng = KM_PER_DEG * Math.cos((LAT0 * Math.PI) / 180);
+  return [0, 1, 2, 3, 4, 5].map((i) => {
     const a = (Math.PI / 180) * (60 * i - 30);
-    return `${i ? 'L' : 'M'}${(cx + k * Math.cos(a)).toFixed(1)} ${(cy + k * Math.sin(a)).toFixed(1)}`;
+    return [+(LAT0 + (yKm + EDGE_KM * Math.sin(a)) / KM_PER_DEG).toFixed(5), +(LNG0 + (xKm + EDGE_KM * Math.cos(a)) / kLng).toFixed(5)];
   });
-  return `${pts.join('')}Z`;
 }
 
-/** Empty blocks around the city, drawn faintly so the map reads as part of a larger place. Decoration only. */
-export function backdrop(): string {
+/** Empty blocks around the city, drawn faintly at street level so the map reads as part of a larger place. */
+export function backdropRings(radius = 6): [number, number][][] {
   const used = new Set(CELLS.map((c) => `${c.q},${c.r}`));
-  const out: string[] = [];
-  for (let q = -6; q <= 6; q++) {
-    for (let r = -6; r <= 6; r++) {
-      if (Math.abs(q + r) > 6 || used.has(`${q},${r}`)) continue;
-      out.push(hexPath(q, r));
+  const out: [number, number][][] = [];
+  for (let q = -radius; q <= radius; q++) {
+    for (let r = -radius; r <= radius; r++) {
+      if (Math.abs(q + r) > radius || used.has(`${q},${r}`)) continue;
+      out.push(ringLatLng(q, r));
     }
   }
-  return `<path class="bgx" d="${out.join('')}"/>`;
+  return out;
 }

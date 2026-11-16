@@ -1,7 +1,6 @@
 package app.outage.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,12 +51,11 @@ fun DemoBanner(text: String) {
 /** State colours from the design tokens (ADR 0028), the same as the map and the web player. */
 @Composable
 fun stateColor(state: String): Color {
-    val dark = isSystemInDarkTheme()
     return when (state) {
-        "POSSIBLE", "SPOT_ONLY" -> if (dark) Tokens.Dark.possible else Tokens.Light.possible
-        "CONFIRMED" -> if (dark) Tokens.Dark.confirmed else Tokens.Light.confirmed
-        "RESTORED" -> if (dark) Tokens.Dark.restored else Tokens.Light.restored
-        else -> if (dark) Tokens.Dark.normal else Tokens.Light.normal
+        "POSSIBLE", "SPOT_ONLY" -> Tokens.Colors.possible
+        "CONFIRMED" -> Tokens.Colors.confirmed
+        "RESTORED" -> Tokens.Colors.restored
+        else -> Tokens.Colors.normal
     }
 }
 

@@ -21,7 +21,8 @@ One Worker, one deploy. `worker.ts` is the entry: it routes `/v1/*` to `api/inge
 | `api/public-index/` | `PublicIndex` Durable Object: the public scope views that the website reads (`public-view.ts` is the shape) |
 | `api/map/` | `/api/map.json` (`map-json.ts`): real data for the web app and the phone map |
 | `landing/` | `/` landing page |
-| `ui/app/` | `/app.css`, the one Material 3 stylesheet for every page (`design.ts`, tokens in `tokens.gen.ts`); `/app`, `/app/insights`, `/app/settings` redirect to `/app/simulate` (ADR 0049) |
+| `ui/globe/` | `/globe.js`, the rotating globe with the Natural Earth land dots inlined (ADR 0051) |
+| `ui/app/` | `/app.css`, the one stylesheet for every page (`design.ts`, tokens in `tokens.gen.ts`); `/app`, `/app/insights`, `/app/settings` redirect to `/app/simulate` (ADR 0049) |
 | `ui/simulate/` | `/app/simulate`, the Android app in the browser on a simulated city (`simulate.ts`, `demo-map.ts`); `replay.ts` serves `/api/v1/public/judge/replay`, `/judge-sw.js` and the `/judge` redirect |
 | `areas/` | `/areas`, `/area/<slug>`, `/c/<cell>`, `/install`, `/privacy`, the 404 page (`pages.ts`) and their SVG map (`map-svg.ts`) |
 | `areas/catalog/` | The list of named Lagos areas and its generator |

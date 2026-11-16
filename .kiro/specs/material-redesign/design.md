@@ -1,6 +1,6 @@
 # Design: material-redesign
 
-Status: APPROVED by the human on 2026-11-24. Based on `requirements.md`. Tasks in `tasks.md`. Decisions: ADR 0048, 0049, 0050.
+Status: APPROVED by the human on 2026-11-24. Revised the same day by ADR 0051: the map is a rotating globe, one dark palette, a new mark, no Material skill. Based on `requirements.md`. Tasks in `tasks.md`. Decisions: ADR 0048, 0049, 0050.
 
 ## 1. Overview
 
@@ -74,6 +74,10 @@ erDiagram
 | MD6 | Store buttons appear only for configured links, and unsafe links are dropped. | Vitest `web-app.test.ts` |
 | MD7 | No page loads from another origin or has an inline style attribute; the app in the browser stays under 150 KB. | Vitest `web-app.test.ts`, `web-kit.test.ts` |
 | MD8 | `/app`, `/app/insights` and `/app/settings` redirect to `/app/simulate`. | Vitest `web-app.test.ts` |
+| GL1 | The point under the globe's camera is drawn at the centre; the far side is hidden; north is up, east is right. | JUnit `GlobeMathTest` |
+| GL2 | A flight starts and ends on its cameras and takes the short way round. | JUnit `GlobeMathTest` |
+| GL3 | A tap hits the block it is in; a drag never tips over the pole. | JUnit `GlobeMathTest` |
+| GL4 | Land dots fade out at street level, and the phone and the web read the same geo files. | JUnit `GlobeMathTest`, Vitest `web-app.test.ts` |
 
 ## 6. Testing strategy
 

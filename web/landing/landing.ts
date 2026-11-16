@@ -1,13 +1,14 @@
 // Landing page at / (ADR 0027, ADR 0049). Static: no data, no script. It says what Outage is, offers the app in the
 // browser (/app/simulate) for anyone without an Android phone, and the downloads: Google Play and Aptoide when their
-// links are configured, and the APK from GitHub. The hero picture is the app's own Home screen, drawn by the same code
-// as the simulation. Does not repeat any hardware-sensor claim (UX9).
+// links are configured, and the APK from GitHub. The hero is the globe. Does not repeat any hardware-sensor claim (UX9).
+// ADR 0051: the hero is the real globe (/globe.js), turning, with a beacon over Lagos; the page has no other script.
 import { brandLink, FAVICON_LINK } from '../site/brand.ts';
 import { escapeHtml as e, safeHref } from '../site/escape.ts';
 import { html, type Rendered } from '../site/headers.ts';
 import { type IconName, icon } from '../site/icons.ts';
 import type { Site } from '../site/layout.ts';
-import { appScreen, SIMULATE_PATH } from '../ui/simulate/simulate.ts';
+import { SIMULATE_PATH } from '../ui/simulate/simulate.ts';
+import { GLOBE_JS_PATH } from '../ui/globe/globe.ts';
 
 export const SIMULATE_HREF = SIMULATE_PATH;
 export const REPO_URL = 'https://github.com/3akare/outage';
@@ -51,7 +52,7 @@ export function renderLanding(site: Site): Rendered {
     '<p class="lead">When the power goes, every charging phone nearby stops charging at the same moment. Outage sees that, confirms the blackout, and tells you when the lights come back. Nobody has to report anything.</p>' +
     `<div class="cta"><a class="btn lg" href="${SIMULATE_HREF}">${icon('play')}Try the app in your browser</a></div>` +
     `<div class="get"><p class="label-l muted">Get it on your Android phone</p>${storeButtons(site)}</div></div>` +
-    `<div class="hero-art" aria-hidden="true"><div class="phone"><div class="screen" inert>${appScreen({ live: false })}</div></div></div></section>`;
+    '<div class="hero-art"><canvas data-globe="hero" role="img" aria-label="A globe turning, with a beacon over Lagos"></canvas></div></section>';
   const how =
     '<section class="section" id="how"><h2>How it works</h2><p class="muted">No hardware to buy and no forms to fill. The phone you already charge does the work.</p><div class="grid three">' +
     '<div class="feat"><span class="step-n">1</span><h3>Plug in your phone</h3><p>Outage notices when charging stops. One tap to start, then it runs on its own.</p></div>' +
@@ -78,6 +79,6 @@ export function renderLanding(site: Site): Rendered {
     '<title>Outage: your phone charger is a power-grid sensor</title>' +
     '<meta name="description" content="Phones that are charging stop together when the power goes. Outage confirms blackouts area by area and tells you when power is back.">' +
     `<link rel="canonical" href="${e(site.origin)}/">${FAVICON_LINK}` +
-    `<link rel="stylesheet" href="/app.css"></head><body>${top}<main class="land">${hero}${how}${features}${tryIt}${privacy}</main><div class="land">${foot}</div></body></html>`;
+    `<link rel="stylesheet" href="/app.css"></head><body class="space">${top}<main class="land">${hero}${how}${features}${tryIt}${privacy}</main><div class="land">${foot}</div><script src="${GLOBE_JS_PATH}" defer></script></body></html>`;
   return html(page, 3600);
 }

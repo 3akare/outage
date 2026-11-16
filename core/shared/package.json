@@ -6,7 +6,8 @@
     ".": "./src/index.ts",
     "./engine": "./src/engine.ts",
     "./fixtures/*": "./fixtures/*",
-    "./design/*": "./design/*"
+    "./design/*": "./design/*",
+    "./geo/*": "./geo/*"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

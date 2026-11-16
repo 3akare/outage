@@ -77,7 +77,7 @@ export function renderJudgeReplayJson(replay: ReplayData | null): Rendered {
 // Service worker (R6.7, ADR 0016 revised in ADR 0029): keeps the simulation page, its script, the stylesheet, the icon and
 // the replay JSON so a refresh works with no network. It handles only those five GET paths, so it never touches a real page or real data.
 // Worker scope and fetch events: https://developer.mozilla.org/docs/Web/API/Service_Worker_API
-const SW = `var K='sim-v3',P=['/app/simulate','/simulate.js','/app.css','/favicon.svg','${JUDGE_API_PATH}'];
+const SW = `var K='sim-v4',P=['/app/simulate','/simulate.js','/globe.js','/app.css','/favicon.svg','${JUDGE_API_PATH}'];
 self.addEventListener('install',function(e){e.waitUntil(caches.open(K).then(function(c){return c.addAll(P);}).then(function(){return self.skipWaiting();}));});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(ks){return Promise.all(ks.filter(function(k){return k!==K;}).map(function(k){return caches.delete(k);}));}).then(function(){return self.clients.claim();}));});
 self.addEventListener('fetch',function(e){var u=new URL(e.request.url);

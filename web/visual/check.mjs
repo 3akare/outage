@@ -110,9 +110,13 @@ try {
     await pg.click('#useloc');
     await pg.click('.scrim button[data-a="1"]');
     await pg.waitForTimeout(600);
-    const hexes = await pg.locator('#map .hx').count();
-    if (hexes !== 21) fail(where, `${hexes} blocks drawn, want 21`);
-    else ok(where, '21 blocks drawn, spot set');
+    await pg.waitForTimeout(2600); // the fly-in from the globe to the spot
+    const globe = await pg.evaluate(() => {
+      const c = document.getElementById('globe');
+      return { engine: typeof window.OutageGlobe === 'function', w: c?.width ?? 0, h: c?.height ?? 0 };
+    });
+    if (!globe.engine || globe.w < 100 || globe.h < 100) fail(where, `globe not drawn: ${JSON.stringify(globe)}`);
+    else ok(where, `globe drawn ${globe.w}x${globe.h}, flew to the spot`);
     const bar = await pg.locator('nav.navbar button').allInnerTexts();
     if (bar.map((s) => s.trim()).join(',') !== 'Insights,Home,Settings') fail(where, `bar is ${bar.join(',')}`);
     else ok(where, 'bar is Insights, Home, Settings');
@@ -194,7 +198,7 @@ try {
       for (const k of await caches.keys()) for (const r of await (await caches.open(k)).keys()) out.push(new URL(r.url).pathname);
       return out.sort();
     });
-    const allowed = ['/app/simulate', '/simulate.js', '/app.css', '/favicon.svg', '/api/v1/public/judge/replay'];
+    const allowed = ['/app/simulate', '/simulate.js', '/globe.js', '/app.css', '/favicon.svg', '/api/v1/public/judge/replay'];
     if (cached.every((p) => allowed.includes(p))) ok('cache', `only simulation files cached (${cached.join(', ')})`);
     else fail('cache', `unexpected cache entries: ${cached.join(', ')}`);
   }

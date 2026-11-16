@@ -327,4 +327,8 @@ Scanned 15 test file(s) under core/detection. A property counts when a test titl
 | R5.4 | MD8 | old `/app` addresses redirect | 5 | done: `web/test/web-app.test.ts` |
 | R1 to R5 | - | spec, ADRs 0048 to 0050, steering | 1 | done (docs) |
 | R3, R4 | - | device screenshots and TalkBack | 7 | not done: needs a phone or emulator |
-
+| R6.1 | GL1 | projection: centre, far side, north up | 10 | done: `GlobeMathTest` |
+| R6.2 | GL2 | flights | 9, 10 | done: `GlobeMathTest` |
+| R6.1 | GL3 | taps and drags | 10 | done: `GlobeMathTest` |
+| R6.3, R6.4 | GL4 | dots fade; shared data | 9, 10 | done: `GlobeMathTest` (JUnit), `web/test/web-app.test.ts`; screens on a device wait for task 7 |
+| R1, R2 | - | night palette, new mark, Material skill removed | 8 | done: `tokens.test.mjs`, `icon.test.mjs` |

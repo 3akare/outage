@@ -44,6 +44,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import app.outage.map.LatLng
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -166,10 +168,10 @@ private fun CenterMessage(titleRes: Int, bodyRes: Int?) {
 private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?) {
     val map = load.map
     val states = remember(map, nowMs) { map.cells.associate { it.id to CellStates.effective(it, nowMs) } }
-    val grid = remember(map) { HexGrid.build(map) }
     var listView by rememberSaveable { mutableStateOf(false) }
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     var followedSlug by remember { mutableStateOf(followed?.read()) }
+    var target by remember { mutableStateOf<GlobeTarget?>(null) }
 
     val areaStates = remember(map, states) {
         map.areas.map { a -> a to a.cellIds.mapNotNull { states[it] } }
@@ -183,7 +185,36 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
         if (listView) {
             Box(Modifier.fillMaxSize().statusBarsPadding().padding(top = 128.dp, bottom = inset)) { AreaList(map, areaStates, states, nowMs) }
         } else {
-            HexMapView(grid, map, states, load.spotCellId, selectedId, onTap = { selectedId = it }, summary = stringResource(R.string.map_summary, total, out, possible))
+            val ctx = LocalContext.current
+            val globe = remember { GlobeData.load(ctx) }
+            val spot = load.spotCellId?.let { map.cell(it) }
+            val spotLL = spot?.let { c -> LatLng(c.ring.sumOf { it.lat } / c.ring.size, c.ring.sumOf { it.lng } / c.ring.size) }
+            // Land on the spot once the map is in, like "my location" in a maps app; without a spot, over the city.
+            LaunchedEffect(spotLL) {
+                delay(600)
+                target = spotLL?.let { GlobeTarget(it.lat, it.lng, 6.5, target?.key?.plus(1) ?: 1) }
+                    ?: map.cells.firstOrNull()?.let { c -> GlobeTarget(c.ring[0].lat, c.ring[0].lng, 12.0, target?.key?.plus(1) ?: 1) }
+            }
+            val labels = remember(map) {
+                map.areas.mapNotNull { a ->
+                    map.cell(a.centreCell)?.let { c -> Triple(a.name, LatLng(c.ring.sumOf { it.lat } / c.ring.size, c.ring.sumOf { it.lng } / c.ring.size), c.id == load.spotCellId) }
+                }
+            }
+            Box(Modifier.fillMaxSize()) {
+                GlobeView(
+                    globe, map.cells, states, load.spotCellId, selectedId, labels, target,
+                    topInset = 128.dp + with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }, bottomInset = inset,
+                    summary = stringResource(R.string.map_summary, total, out, possible),
+                    onTap = { selectedId = it },
+                )
+                Column(Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = inset + 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    MapButton(R.drawable.ic_add, R.string.map_zoom_in) { target = target?.let { it.copy(km = (it.km ?: 6.5) / 2, key = it.key + 1) } }
+                    MapButton(R.drawable.ic_remove, R.string.map_zoom_out) { target = target?.let { it.copy(km = (it.km ?: 6.5) * 2.5, key = it.key + 1) } }
+                    MapButton(R.drawable.ic_recenter, R.string.map_recentre) {
+                        spotLL?.let { target = GlobeTarget(it.lat, it.lng, 6.5, (target?.key ?: 0) + 1) }
+                    }
+                }
+            }
         }
         Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             // The floating search-style bar of a maps app: the mark, where this is, and how it is doing.
@@ -246,18 +277,6 @@ fun SimulatedChip() {
     }
 }
 
-private fun homeTransform(grid: HexGrid, spotId: String?, vp: MapViewport, topPx: Double, bottomPx: Double): MapTransform {
-    val spot = spotId?.let { grid.shape(it) } ?: return MapTransform.fitTo(vp).panBy(0.0, (topPx - bottomPx) / 2, vp)
-    // About 6 hex widths across the narrow side: the spot and two rings of neighbours (R1.3). Then the spot moves to the
-    // middle of the band between the top bar and the Home sheet, like "my location" in a maps app.
-    return MapTransform.focusOn(spot.centre, spot.bounds.width * 6.0, vp).panBy(0.0, (topPx - bottomPx) / 2, vp)
-}
-
-private fun lerp(a: MapTransform, b: MapTransform, f: Float): MapTransform {
-    val s = a.scale * (b.scale / a.scale).pow(f.toDouble())
-    return MapTransform(s, a.offsetX + (b.offsetX - a.offsetX) * f, a.offsetY + (b.offsetY - a.offsetY) * f)
-}
-
 private fun hexPath(cx: Float, cy: Float, r: Float): Path = Path().apply {
     for (i in 0 until 6) {
         val a = Math.toRadians(60.0 * i - 30.0)
@@ -266,131 +285,6 @@ private fun hexPath(cx: Float, cy: Float, r: Float): Path = Path().apply {
         if (i == 0) moveTo(x, y) else lineTo(x, y)
     }
     close()
-}
-
-@Composable
-private fun HexMapView(
-    grid: HexGrid,
-    map: AreaMap,
-    states: Map<String, CellState>,
-    spotId: String?,
-    selectedId: String?,
-    onTap: (String?) -> Unit,
-    summary: String,
-) {
-    val density = LocalDensity.current
-    val dp = density.density
-    var size by remember { mutableStateOf(IntSize.Zero) }
-    val bounds = grid.bounds ?: return
-    val vp = remember(grid, size) { MapViewport(bounds, size.width.toDouble(), size.height.toDouble(), padding = 28.0 * dp) }
-    val inset = LocalMapBottomInset.current
-    val topPx = with(density) { (WindowInsets.statusBars.getTop(this) + 128.dp.roundToPx()).toDouble() }
-    val bottomPx = with(density) { inset.toPx().toDouble() }
-    val home = remember(vp, spotId, bottomPx) { homeTransform(grid, spotId, vp, topPx, bottomPx) }
-    val colors = LocalStatusColors.current.map
-    var transform by remember(size, map.city) { mutableStateOf<MapTransform?>(null) }
-    val current = transform ?: home
-    val paths = remember(grid) {
-        grid.shapes.associate { s ->
-            s.cell.id to Path().apply {
-                s.points.forEachIndexed { i, p -> if (i == 0) moveTo((p.x * U).toFloat(), (p.y * U).toFloat()) else lineTo((p.x * U).toFloat(), (p.y * U).toFloat()) }
-                close()
-            }
-        }
-    }
-    val scope = rememberCoroutineScope()
-    val anim = remember { Animatable(0f) }
-    val job = remember { arrayOfNulls<Job>(1) }
-    fun animateTo(target: MapTransform) {
-        val from = transform ?: home
-        job[0]?.cancel()
-        job[0] = scope.launch {
-            anim.snapTo(0f)
-            anim.animateTo(1f, tween(380)) { transform = lerp(from, target, value) }
-        }
-    }
-    val tap by rememberUpdatedState(onTap)
-    val measurer = rememberTextMeasurer()
-    val pulse = rememberInfiniteTransition().animateFloat(
-        0f, 1f, infiniteRepeatable(tween(1900, easing = LinearOutSlowInEasing), RepeatMode.Restart),
-    )
-    val labelOrder = remember(map) { map.areas.sortedByDescending { it.cellIds.size } }
-
-    Box(Modifier.fillMaxSize().background(colors.ground)) {
-        Canvas(
-            Modifier.fillMaxSize().onSizeChanged { size = it }.semantics { contentDescription = summary }
-                .pointerInput(vp) {
-                    detectTransformGestures { centroid, pan, zoom, _ ->
-                        job[0]?.cancel()
-                        val t = transform ?: home
-                        transform = t.zoomAbout(centroid.x.toDouble(), centroid.y.toDouble(), zoom.toDouble(), vp).panBy(pan.x.toDouble(), pan.y.toDouble(), vp)
-                    }
-                }
-                .pointerInput(vp, grid) {
-                    detectTapGestures(
-                        onDoubleTap = { o -> animateTo((transform ?: home).zoomAbout(o.x.toDouble(), o.y.toDouble(), 2.0, vp)) },
-                        onTap = { o -> tap(grid.hitTest((transform ?: home).toWorld(o.x.toDouble(), o.y.toDouble()))?.id) },
-                    )
-                },
-        ) {
-            if (size == IntSize.Zero) return@Canvas
-            val t = current
-            val s = (t.scale / U).toFloat()
-            val px = dp / s // one dp in path units
-            val visible = grid.visible(t.visibleWorld(vp))
-            withTransform({
-                translate(t.offsetX.toFloat(), t.offsetY.toFloat())
-                scale(s, s, Offset.Zero)
-            }) {
-                for (shape in visible) {
-                    val path = paths[shape.cell.id] ?: continue
-                    val b = shape.bounds
-                    val detail = b.width * t.scale > 18 * dp
-                    paintCell(states[shape.cell.id] ?: shape.cell.state, path, (b.minX * U).toFloat(), (b.minY * U).toFloat(), (b.maxX * U).toFloat(), (b.maxY * U).toFloat(), px, colors, detail)
-                }
-                // Outage pulse: a ring that grows and fades on every confirmed hex.
-                val p = pulse.value
-                for (shape in visible) {
-                    if (states[shape.cell.id] != CellState.CONFIRMED) continue
-                    val path = paths[shape.cell.id] ?: continue
-                    drawPath(path, colors.confirmed.copy(alpha = (1f - p) * 0.6f), style = Stroke((2f + 9f * p) * px))
-                }
-                for (shape in visible) {
-                    val path = paths[shape.cell.id] ?: continue
-                    if (shape.cell.id == spotId) {
-                        drawPath(path, colors.label, style = Stroke(3.2f * px))
-                        // "You are here": a dot with a soft halo at the centre of the spot cell, as in a maps app.
-                        val c = Offset((shape.centre.x * U).toFloat(), (shape.centre.y * U).toFloat())
-                        drawCircle(colors.spot.copy(alpha = 0.18f), 20f * px, c)
-                        drawCircle(Color.White, 9f * px, c)
-                        drawCircle(colors.spot, 6.5f * px, c)
-                    }
-                    if (shape.cell.id == selectedId) {
-                        drawPath(path, colors.label, style = Stroke(2.4f * px, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f * px, 4f * px))))
-                    }
-                }
-            }
-            // Area names in screen space, dropped when they would overlap (design section 4).
-            val style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = colors.label)
-            val placed = labelOrder.mapNotNull { a ->
-                val c = grid.shape(a.centreCell)?.centre ?: return@mapNotNull null
-                val sp = t.toScreen(c)
-                val layout = measurer.measure(a.name, style)
-                LabelBox(a.slug, sp.x, sp.y, layout.size.width + 14.0 * dp, layout.size.height + 6.0 * dp) to layout
-            }
-            val kept = LabelPlacer.place(placed.map { it.first }, size.width.toDouble(), size.height.toDouble(), 4.0 * dp).map { it.key }.toSet()
-            for ((box, layout) in placed) {
-                if (box.key !in kept) continue
-                drawRoundRect(colors.labelHalo.copy(alpha = 0.88f), Offset((box.x - box.w / 2).toFloat(), (box.y - box.h / 2).toFloat()), Size(box.w.toFloat(), box.h.toFloat()), CornerRadius(box.h.toFloat() / 2))
-                drawText(layout, colors.label, Offset((box.x - layout.size.width / 2).toFloat(), (box.y - layout.size.height / 2).toFloat()))
-            }
-        }
-        Column(Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = inset + 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            MapButton(R.drawable.ic_add, R.string.map_zoom_in) { animateTo(current.zoomAbout(size.width / 2.0, size.height / 2.0, 1.8, vp)) }
-            MapButton(R.drawable.ic_remove, R.string.map_zoom_out) { animateTo(current.zoomAbout(size.width / 2.0, size.height / 2.0, 1 / 1.8, vp)) }
-            MapButton(R.drawable.ic_recenter, R.string.map_recentre) { animateTo(home) }
-        }
-    }
 }
 
 @Composable
