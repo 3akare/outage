@@ -4,7 +4,7 @@ Read by the session-context hook. Keep the four labelled lines below on one line
 
 Current milestone: 3 Sensor build (feasibility gate waived by the human 2026-11-23, ADR 0013) and 2 Detection, in parallel
 Gate: waived (ADR 0013). Residual risk: Tecno and Infinix untested, armed time to be watched in the field report
-Next: build the receiver-primary sensor (sensor-android and station-mode tasks, ADR 0032): shared types, pure core, outbox, foreground service, job backup. Still open for the human: Cloudflare and Firebase accounts, the Kiro IDE pass (detection-engine task 15).
+Next: sensor built (sensor-android 1-11, station-mode 2-7, event-ingest 10; ADR 0033). Left: station-mode task 1 (`source` on the wire, needs a Worker deploy), sensor-android task 12 and station-mode task 8 (README and checklist docs), event-ingest task 11, a device smoke test. Still open for the human: Cloudflare and Firebase accounts, the Kiro IDE pass (detection-engine task 15).
 Active specs: sensor-android and station-mode (receiver primary, job backup, ADR 0032), app-map-insights (next: task 1 Worker /api/map.json, then task 12 emulator pass). feasibility-probe is closed by waiver.
 
 Redesign (2026-11-22): spec `ux-redesign` and ADRs 0026 to 0028 written. Web becomes landing `/`, replica `/app`, simulation `/app/simulate`; app dock becomes Home, Insights, Settings with a one-step first run. Next: tokens (task 2), then web shell and landing (task 3).

@@ -49,7 +49,7 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 
 ## Wave 6 (needs 6, 9)
 
-- [ ] 10. Wire the Uploader in `apps/android` to the real transport and the Sensor package (after `sensor-android` task 9 exists). Registration flow on first start.
+- [x] 10. Wire the Uploader in `apps/android` to the real transport and the Sensor package (after `sensor-android` task 9 exists). Registration flow on first start.
   - Depends on: 6, 9 and `sensor-android` task 9
   - Requirements: R2.1, R9
 

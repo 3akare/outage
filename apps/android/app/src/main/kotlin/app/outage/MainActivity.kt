@@ -15,7 +15,8 @@ import app.outage.ui.ShellViewModel
 
 /**
  * The only Activity. https://developer.android.com/develop/ui/compose/setup
- * Starts no sensor, service or upload (R1.4). The first-run screen asks for notifications on its one button (ADR 0026).
+ * The first-run screen asks for notifications on its one button (ADR 0026). Once set up, each resume makes sure the
+ * sensor runs: a visible app may start the foreground service, a background start may not (ADR 0032).
  */
 class MainActivity : ComponentActivity() {
     private lateinit var shell: ShellViewModel
@@ -34,6 +35,12 @@ class MainActivity : ComponentActivity() {
                 Shell(graph, shell)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val graph = (application as OutageApp).graph
+        if (!graph.onboardingNeeded()) graph.sensorStarter()
     }
 
     /** A notification tap while the app is open (R1.3). Needs launchMode singleTop in the manifest. */

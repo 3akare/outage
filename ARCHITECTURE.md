@@ -140,6 +140,9 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/map/MapModel.kt` | Pure map model: areas, cells, states |
 | `apps/android/app/src/main/kotlin/app/outage/net/Outbox.kt` | One queued event in the shape the uploader needs |
 | `apps/android/app/src/main/kotlin/app/outage/net/ServerDelete.kt` | Server half of delete-my-data |
+| `apps/android/app/src/main/kotlin/app/outage/net/HttpApi.kt` | Real HTTP calls to the Worker: register, events, delete |
+| `apps/android/app/src/main/kotlin/app/outage/net/SensorOutbox.kt` | The uploader's outbox over the sensor; adds the cell |
+| `apps/android/app/src/main/kotlin/app/outage/net/UploadDriver.kt` | Runs the uploader in the background; stores the install ID and token |
 | `apps/android/app/src/main/kotlin/app/outage/net/Uploader.kt` | Sends queued events in order, with retry and backoff |
 | `apps/android/app/src/main/kotlin/app/outage/net/Wire.kt` | Ingest wire types (mirror of `packages/shared/src/ingest.ts`) |
 | `apps/android/app/src/main/kotlin/app/outage/net/WireJson.kt` | JSON for the wire types, no extra library |
@@ -150,7 +153,17 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/onboarding/OnboardingRecord.kt` | What onboarding saves on the phone |
 | `apps/android/app/src/main/kotlin/app/outage/onboarding/OnboardingStep.kt` | Onboarding steps in order |
 | `apps/android/app/src/main/kotlin/app/outage/onboarding/PrefsOnboardingStore.kt` | Onboarding record in SharedPreferences (cell only, never coordinates) |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/AndroidSensor.kt` | Android side of the sensor: plug facts, backup job, clock, the one sensor per process |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/BootReceiver.kt` | Restarts the sensor after a reboot or an app update |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/ChargingJobService.kt` | Backup driver: the charging job |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/EventStore.kt` | Outbox interface, stored events and the in-memory store |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/SensorController.kt` | The sensor engine the app and both drivers call |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/SensorModel.kt` | Plug, confidence, event types and the stop decision table (pure) |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/SensorService.kt` | Primary driver: foreground service with power receivers and heartbeat |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorState.kt` | Why the sensor is or is not armed |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/SensorStateMachine.kt` | The sensor state machine (pure) |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/SqliteEventStore.kt` | The outbox on SQLite |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/Telemetry.kt` | Armed time, charging time and gaps from the event log (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/shell/Connectivity.kt` | Whether the phone has a working network |
 | `apps/android/app/src/main/kotlin/app/outage/shell/DeleteRegistry.kt` | Delete-my-data: every feature registers its phone-side delete |
 | `apps/android/app/src/main/kotlin/app/outage/shell/HomeUiState.kt` | Everything Home shows, as data |
@@ -194,11 +207,14 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/test/kotlin/app/outage/map/MapContractTest.kt` | The app reads the same map fixture as the Worker |
 | `apps/android/app/src/test/kotlin/app/outage/map/MapSourceTest.kt` | Map source, cell styles and label placement |
 | `apps/android/app/src/test/kotlin/app/outage/map/MapTest.kt` | Map geometry properties (AM1 to AM4) |
+| `apps/android/app/src/test/kotlin/app/outage/net/IngestApiTest.kt` | Real transport and sensor outbox against a fake HTTP layer |
 | `apps/android/app/src/test/kotlin/app/outage/net/UploaderTest.kt` | Upload order and acknowledgement (I7) |
 | `apps/android/app/src/test/kotlin/app/outage/net/WireContractTest.kt` | The app reads the same ingest fixtures as the Worker |
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OemGuideTest.kt` | OEM guide rules (O4, O5) |
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt` | Onboarding state machine (O1, O3, O7, O8) |
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingTestSupport.kt` | In-memory onboarding store for tests |
+| `apps/android/app/src/test/kotlin/app/outage/sensor/SensorControllerTest.kt` | Sensor engine against fake adapters (S7, R2, R10, R11, R12) |
+| `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt` | Decision table and state machine (S1 to S8, T1 to T7) |
 | `apps/android/app/src/test/kotlin/app/outage/shell/DeleteRegistryTest.kt` | Delete-my-data registry (AS6) |
 | `apps/android/app/src/test/kotlin/app/outage/shell/HomeReducerTest.kt` | Home state reduction (AS5) |
 | `apps/android/app/src/test/kotlin/app/outage/shell/RoutingTest.kt` | Routes and back stack (AS1 to AS3) |
@@ -363,6 +379,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `packages/shared/src/h3.ts` | H3 helpers |
 | `packages/shared/src/map.ts` | `/api/map.json` types |
 | `packages/shared/src/pairing.ts` | Home Watch code alphabet, shard and request shapes |
+| `packages/shared/src/sensor.ts` | Sensor event, telemetry and diagnostics types |
 | `packages/shared/src/device-day.ts` | Field telemetry device-day schema |
 | `packages/shared/src/field-dump.ts` | Shape of the admin field endpoint's answer |
 | `packages/shared/src/field-metrics.ts` | Field metrics and gate evaluation |
@@ -371,6 +388,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `packages/shared/fixtures/ingest/` | Contract fixtures for each event type, request and response (read by Vitest and JUnit) |
 | `packages/shared/fixtures/map/map.json` | Contract fixture for `/api/map.json` |
 | `packages/shared/fixtures/replay.json` | Simulated replay played by `/app/simulate` (built by `tools/sim`) |
+| `packages/shared/fixtures/sensor/sensor-events.json` | Sensor event fixture read by TypeScript and Kotlin tests |
 | `packages/shared/fixtures/telemetry/` | Device-day fixtures: valid, station and invalid |
 | `packages/shared/test/arbs.ts` | fast-check arbitraries |
 | `packages/shared/test/runs.ts` | fast-check run count |
@@ -381,6 +399,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `packages/shared/test/h3.test.ts` | H3 validation |
 | `packages/shared/test/ingest.test.ts` | Ingest validator |
 | `packages/shared/test/pairing.test.ts` | Pairing shapes |
+| `packages/shared/test/sensor.test.ts` | Sensor event shape |
 | `packages/shared/test/scaffold.test.ts` | Schema version |
 
 ### `tools/` build-time tools
@@ -639,5 +658,5 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `docs/probe/2026-11-15-samsung-b.md` | Probe result: Samsung phone, second run (probe v0.0.2) |
 | `docs/probe/2026-11-15-samsung-b.json` | Raw numbers behind the second Samsung result |
 | `docs/wip/detection-engine-notes.md` | Working notes for the detection engine |
-| `docs/adr/` | Architecture decision records 0001 to 0032, one decision each (context, decision, alternatives, consequences) |
+| `docs/adr/` | Architecture decision records 0001 to 0033, one decision each (context, decision, alternatives, consequences) |
 | `docs/visual/` | Website screenshots written by `workers/api/visual/check.mjs` (390 x 844 and `-desktop` 1280 x 800) |

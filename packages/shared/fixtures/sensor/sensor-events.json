@@ -1,0 +1,6 @@
+[
+  {"seq":1,"type":"ARMED","elapsedMs":600000,"timeQuality":"OK","confidence":"HIGH","stopReason":null,"batteryPct":64,"plugType":"AC","schedulingDelayMs":null,"reason":null,"source":"RECEIVER"},
+  {"seq":2,"type":"UNPLUG","elapsedMs":300000,"timeQuality":"OK","confidence":"HIGH","stopReason":null,"batteryPct":100,"plugType":"NONE","schedulingDelayMs":null,"reason":null,"source":"RECEIVER"},
+  {"seq":3,"type":"REPLUG","elapsedMs":1000,"timeQuality":"OK","confidence":"HIGH","stopReason":null,"batteryPct":99,"plugType":"AC","schedulingDelayMs":0,"reason":null,"source":"RECEIVER"},
+  {"seq":4,"type":"DISARMED","elapsedMs":500,"timeQuality":"LOST","confidence":"LOW","stopReason":"TIMEOUT","batteryPct":80,"plugType":"AC","schedulingDelayMs":null,"reason":"REBOOT","source":"JOB"}
+]

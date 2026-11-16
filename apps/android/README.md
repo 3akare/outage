@@ -18,7 +18,9 @@ On a normal machine (JDK 17, Android SDK 36): `cd apps/android && ./gradlew :app
 |---|---|
 | `app.outage.shell` | Pure Kotlin, no Android imports: `Route`, `Router`, `Routes`, `HomeReducer`, `StatusStyle`, `DeleteRegistry`. Plus the SharedPreferences stores and `ShellGraph`. |
 | `app.outage.ui` | Compose screens, theme, `FeatureRegistry`, view models. No literal user text: all text is in `res/values/strings.xml`. |
-| `app.outage.sensor`, `alarm`, `log`, `net` | Small state types and interfaces the shell reads. Features fill them. |
+| `app.outage.sensor` | The charging sensor (ADR 0032, ADR 0033): pure state machine and decision table, SQLite outbox, `SensorService` (foreground receiver, primary), `ChargingJobService` (backup), `BootReceiver`. Starts after first run and on app resume. |
+| `app.outage.net` | Uploader, the real HTTP transport to `BuildConfig.API_BASE` (register, events, delete) and the sensor outbox adapter that adds the cell. |
+| `app.outage.alarm`, `log` | Small state types and interfaces the shell reads. Features fill them. |
 
 ## How a feature plugs in
 

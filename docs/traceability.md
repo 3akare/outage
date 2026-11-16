@@ -4,16 +4,25 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 
 ## sensor-android
 
+Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/` (`SensorCoreTest.kt`, `SensorControllerTest.kt`). Decisions in ADR 0032 and ADR 0033.
+
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R2.1 | S1 | `S1_records_before_reschedule` | TBD | planned |
-| R3.1, R3.3, R3.4 | S2 | `S2_unplug_requires_unplugged_facts` | TBD | planned |
-| R3.2 | S3 | `S3_full_battery_is_not_unplug` | TBD | planned |
-| R4.1, R4.4 | S4 | `S4_replug_pairs_with_unplug` | TBD | planned |
-| R5.1, R3.3 | S5 | `S5_other_stops_reschedule` | TBD | planned |
-| R6.2, R6.4 | S6 | `S6_non_detection_plugs_silent` | TBD | planned |
-| R9.1 | S7 | `S7_seq_monotonic_across_restarts` | TBD | planned |
-| R7 | S8 | `S8_confidence_rules` | TBD | planned |
+| R2.1, R4 | S1 | `S1_outage_and_restore_give_unplug_then_replug` | 4 | passing |
+| R3.1, R3.3, R6 | S2 | `S2_plug_classification` | 3 | passing |
+| R3.2, R3 | S3 | `S3_decision_table_every_row` | 3 | passing |
+| R4.1, R4.4 | S4 | `S4_job_replug_carries_scheduling_delay` | 4 | passing |
+| R5.1, R3.3, R11.2 | S5 | `S5_timeout_is_a_gap_without_receiver_and_silent_with_it`, `S5_user_stop_disarms_and_goes_idle` | 4 | passing |
+| R7 | S6 | `S6_low_confidence_only_without_stop_reason` | 3 | passing |
+| R9.1 | S7 | `S7_seq_strictly_increasing_across_restart_and_ack` | 5 | passing |
+| R5.3, R5.4 | S8 | `S8_recovery_after_reboot_and_process_death`, `R5_4_reboot_recovery_records_gap` | 8 | passing |
+| R2.3 | - | `R2_3_write_failure_is_counted_and_job_still_rescheduled` | 9 | passing |
+| R9.4, R9.5 | - | `R9_4_events_across_reboot_are_lost`, `R9_5_retention_drops_old_acked_events` | 5 | passing |
+| R10 | - | `R10_telemetry_armed_ratio_and_gaps`, `R10_no_charging_gives_null_ratio` | 6 | passing |
+| R4.3, R11 | - | `R4_3_replug_reaches_listener_in_process`, `R11_start_arms_schedules_job_and_starts_receiver` | 9 | passing |
+| R8.4, R10.4 | - | `R8_blocked_receiver_is_reported` | 10 | passing |
+| R12 | - | `R12_delete_all_data_erases_everything`, `R12_manifest_privacy_check` | 11 | passing |
+| R9, R11 | - | `R9_contract_enum_names_match_shared_fixture`, `packages/shared/test/sensor.test.ts` | 2 | passing |
 
 ## event-ingest
 
@@ -30,18 +39,21 @@ Links requirement, property, test and task. Tasks are filled in when `tasks.md` 
 | R11 | I9 | `I9_write_behind_state` | 7 | test written (`workers/api/test/core.test.ts`) |
 | R7, R8, R12.1 | - | `workers/api/test/integration.test.ts` (Workers runtime) | 8 | test written |
 | R12, R13 | - | `workers/api/test/delete.test.ts` | 9 | test written |
+| R2, R9, R12 | I7 | `I1_register_parses_install_id_and_token`, `I7_events_ok_retry_and_auth_header`, `I7_sensor_outbox_adds_cell_and_waits_without_one`, `I7_uploader_drains_sensor_end_to_end`, `R12_delete_refuses_malformed_ids` (`apps/android/app/src/test/kotlin/app/outage/net/IngestApiTest.kt`) | 10 | passing |
 
 ## station-mode
 
+Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
+
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R4.2 | T1 | `T1_single_unplug_any_interleaving` | 2 | planned |
-| R3.2 | T2 | `T2_receiver_unplug_any_battery` | 2 | planned |
-| R3.6 | T3 | `T3_mismatch_emits_nothing` | 2 | planned |
-| R3.3, R4.3 | T4 | `T4_single_replug_per_drop` | 2 | planned |
-| R1.2, R4.5 | T5 (supports S7) | `T5_mode_changes_are_silent` | 2 | planned |
-| R5 | T6 | `T6_heartbeat_cadence` | 2 | planned |
-| R5.2 | T7 | `T7_heartbeat_vs_silence_limit` | 2 | planned |
+| R4.2 | T1 | `T1_T4_single_unplug_and_replug_any_interleaving` | 2 | passing |
+| R3.2 | T2 | `T2_receiver_unplug_any_battery` | 2 | passing |
+| R3.6 | T3 | `T3_mismatch_emits_nothing` | 2 | passing |
+| R3.3, R4.3 | T4 | `T1_T4_single_unplug_and_replug_any_interleaving` | 2 | passing |
+| R1.2, R4.5 | T5 (supports S7) | `T5_mode_changes_are_silent` | 2 | passing |
+| R5 | T6 | `T6_heartbeat_only_while_armed` | 2 | passing |
+| R5.2 | T7 | `T7_heartbeat_vs_silence_limit` | 2 | passing |
 
 ## detection-engine
 

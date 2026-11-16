@@ -225,4 +225,9 @@
     <string name="ins_empty_body">Outage logs power while your phone charges. Keep it plugged in at home and your pattern appears here.</string>
     <string name="ins_empty_battery">Check battery setup</string>
     <string name="ins_simulated_note">Sample data to show the charts. Your own log starts once your phone has watched for a day.</string>
+    <!-- Sensor foreground service (station-mode design section 7). Fixed strings, no variables. -->
+    <string name="sensor_channel">Power sensor</string>
+    <string name="sensor_notification_title">Outage station</string>
+    <string name="sensor_notification_body">Watching your power</string>
+    <string name="sensor_notification_stop">Stop station</string>
 </resources>

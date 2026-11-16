@@ -16,31 +16,31 @@ This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (tas
 
 ## Wave 2
 
-- [ ] 2. Extend `SensorStateMachine`: inputs `PowerDisconnected`, `PowerConnected`, `Heartbeat`; the `Full -> Dropped` and `Dropped` ignore rules; `Source` on drafts. Tests T1 to T7 (pure parts: T1 to T5, T6, T7 with a fake clock).
+- [x] 2. Extend `SensorStateMachine`: inputs `PowerDisconnected`, `PowerConnected`, `Heartbeat`; the `Full -> Dropped` and `Dropped` ignore rules; `Source` on drafts. Tests T1 to T7 (pure parts: T1 to T5, T6, T7 with a fake clock).
   - Depends on: 1, `sensor-android` task 4
   - Requirements: R3, R4, R5
 
 ## Wave 3
 
-- [ ] 3. `StationService`, `PowerReceiver`, notification channel and strings, `StationModeStore`, guarded receiver registration, `START_STICKY`, `onTimeout` handling, blocked-start handling.
+- [x] 3. `StationService`, `PowerReceiver`, notification channel and strings, `StationModeStore`, guarded receiver registration, `START_STICKY`, `onTimeout` handling, blocked-start handling.
   - Depends on: 2, `sensor-android` task 7
   - Requirements: R1, R2, R3, R6, R9
-- [ ] 4. Manifest entries in `apps/android` (service with `specialUse` and its property, permissions, receiver) and a manifest check script.
+- [x] 4. Manifest entries in `apps/android` (service with `specialUse` and its property, permissions, receiver) and a manifest check script.
   - Depends on: 2
   - Requirements: R2.1, R10.2
 
 ## Wave 4
 
-- [ ] 5. Boot restore and heartbeat scheduling: extend `BootReceiver`; run heartbeat inside the service while armed; reuse `Recovered` input.
+- [x] 5. Boot restore and heartbeat scheduling: extend `BootReceiver`; run heartbeat inside the service while armed; reuse `Recovered` input.
   - Depends on: 3
   - Requirements: R1.3, R5, R6.1
-- [ ] 6. `StationController` (`setStationMode`, `getStationState`), diagnostics `stationMode`, `NOTIFICATION_HIDDEN`, `FGS_START_BLOCKED`; JUnit 4 test with a fake service launcher.
+- [x] 6. `StationController` (`setStationMode`, `getStationState`), diagnostics `stationMode`, `NOTIFICATION_HIDDEN`, `FGS_START_BLOCKED`; JUnit 4 test with a fake service launcher.
   - Depends on: 3, 4, `sensor-android` task 9
   - Requirements: R1.5, R2.4, R8.1
 
 ## Wave 5
 
-- [ ] 7. Delete-my-data support for Station mode (stop service, clear flags) and the privacy manifest check in `verify-on-stop`.
+- [x] 7. Delete-my-data support for Station mode (stop service, clear flags) and the privacy manifest check in `verify-on-stop`.
   - Depends on: 5, 6, `sensor-android` task 11
   - Requirements: R10
 

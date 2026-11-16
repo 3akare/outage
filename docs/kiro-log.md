@@ -607,3 +607,11 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 docs: feasibility gate waived, receiver-primary sensor [spec:sensor-android task:0, spec:station-mode task:0]
 - The human waived the feasibility gate (no more probe runs, no Tecno or Infinix test). ADR 0013 now records the waiver, both Samsung runs' numbers and the residual risk. Feasibility-probe tasks 8 to 10 are closed by waiver. `docs/status.md` updated.
 - New ADR 0032: the foreground-service receiver is the primary sensor for everyone, the job is the backup. `sensor-android` and `station-mode` requirements, design and tasks carry an amendment note and a new order. Shared schema and privacy rules unchanged.
+
+## 2026-11-23 feat(sensor): receiver-primary sensor, job backup, real upload [spec:sensor-android tasks:1-11, spec:station-mode tasks:2-7, spec:event-ingest task:10] [ADR 0033]
+- Built on the human's order with no device test. `packages/shared/src/sensor.ts` adds `SensorEvent`, `SensorTelemetry`, `Diagnostics` and a strict check, with `fixtures/sensor/sensor-events.json` read by Vitest and JUnit.
+- Kotlin pure core in `apps/android/.../sensor/`: plug classification, the stop decision table, and one state machine fed by both drivers (receiver primary, job backup). Dedupe by state gives one UNPLUG and one REPLUG per drop for any interleaving (seeded loops, T1/T4). Telemetry and diagnostics come from the event log. Controller tests run against fake adapters.
+- Android: SQLite outbox with a persisted seq counter, `SensorService` (specialUse foreground service, power receivers, 10-min heartbeat, START_STICKY, onTimeout), `ChargingJobService` (record first, reschedule without OS back-off), `BootReceiver`, manifest entries. The sensor starts after first run and on app resume.
+- `net/HttpApi.kt`, `SensorOutbox.kt`, `UploadDriver.kt`: register on first upload, POST events to `BuildConfig.API_BASE`, server delete. `source` stays local until the wire schema adds it (ADR 0033).
+- 32 new JVM tests, all Android tests, lint and assembleDebug pass. Docs: ADR 0033, traceability, ARCHITECTURE.md.
+
