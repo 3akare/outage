@@ -636,6 +636,8 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `docs/probe/2026-11-14-emu-api35.md` | Probe result: Android 15 emulator |
 | `docs/probe/2026-11-15-samsung-a.md` | Probe result: Samsung phone |
 | `docs/probe/2026-11-15-samsung-a.json` | Raw numbers behind the Samsung result |
+| `docs/probe/2026-11-15-samsung-b.md` | Probe result: Samsung phone, second run (probe v0.0.2) |
+| `docs/probe/2026-11-15-samsung-b.json` | Raw numbers behind the second Samsung result |
 | `docs/wip/detection-engine-notes.md` | Working notes for the detection engine |
 | `docs/adr/` | Architecture decision records 0001 to 0031, one decision each (context, decision, alternatives, consequences) |
 | `docs/visual/` | Website screenshots written by `workers/api/visual/check.mjs` (390 x 844 and `-desktop` 1280 x 800) |
