@@ -291,7 +291,7 @@ const LANDING = `
 .mapcard .float{position:absolute;z-index:3;left:12px;top:12px;right:12px;display:flex;flex-wrap:wrap;gap:8px;pointer-events:none}
 .mapcard .pillbox{display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 16px;background:#fff;border-radius:20px;box-shadow:0 1px 4px rgba(0,0,0,.25);font-size:.875rem;font-weight:500}
 .mapcard .pillbox .wordmark{height:16px}
-.mapcard .legend{top:auto;bottom:12px;flex-direction:row;flex-wrap:wrap;display:flex}
+.mapcard .legend{top:12px;bottom:auto;left:auto;right:12px;flex-direction:row;flex-wrap:wrap;display:flex}
 .section{padding:56px 0}
 .section.alt{background:var(--c-paper-2)}
 .section h2{font-size:clamp(1.75rem,3.5vw,2.5rem);font-weight:400;line-height:1.15;letter-spacing:-.01em;max-width:24ch}
@@ -316,7 +316,7 @@ const LANDING = `
 .store small{font-size:.6875rem;color:#bdc1c6}
 .store b{font-weight:500;font-size:1rem}
 .get .muted{color:var(--c-muted);font-size:.875rem;margin-top:16px}
-@media (max-width:599px){.nav .links a:not(.btn){display:none}}
+@media (max-width:599px){.nav .links a:not(.btn){display:none}.mapcard .legend{top:64px;right:auto;left:12px}}
 @media (min-width:900px){
   .hero{padding:56px 0 32px}
   .hero .container{grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:center;gap:40px}
