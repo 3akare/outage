@@ -7,41 +7,41 @@ import androidx.compose.ui.unit.dp
 object Tokens {
     object Colors {
         val paper = Color(0xFFFFFFFF)
-        val paper2 = Color(0xFFF1F3F4)
-        val paper3 = Color(0xFFE8EAED)
-        val ink = Color(0xFF202124)
-        val ink2 = Color(0xFF3C4043)
-        val muted = Color(0xFF5F6368)
-        val rule = Color(0xFFDADCE0)
-        val rule2 = Color(0xFFBDC1C6)
+        val paper2 = Color(0xFFF7F7F8)
+        val paper3 = Color(0xFFEFF0F2)
+        val ink = Color(0xFF0B0D12)
+        val ink2 = Color(0xFF2D313A)
+        val muted = Color(0xFF6B7280)
+        val rule = Color(0xFFE7E8EC)
+        val rule2 = Color(0xFFD4D6DC)
         val accent = Color(0xFF1B6EF3)
-        val accent2 = Color(0xFFE8F0FE)
+        val accent2 = Color(0xFFEAF1FE)
         val accentInk = Color(0xFFFFFFFF)
         val focus = Color(0xFF1B6EF3)
-        val normal = Color(0xFF188038)
+        val normal = Color(0xFF16A34A)
         val onNormal = Color(0xFFFFFFFF)
-        val normalContainer = Color(0xFFE6F4EA)
-        val onNormalContainer = Color(0xFF0D652D)
-        val possible = Color(0xFFE37400)
+        val normalContainer = Color(0xFFE9F7EF)
+        val onNormalContainer = Color(0xFF0F6B33)
+        val possible = Color(0xFFD97706)
         val onPossible = Color(0xFFFFFFFF)
-        val possibleContainer = Color(0xFFFEF7E0)
-        val onPossibleContainer = Color(0xFF8A4B00)
-        val confirmed = Color(0xFFD93025)
+        val possibleContainer = Color(0xFFFEF6E7)
+        val onPossibleContainer = Color(0xFF8A4B05)
+        val confirmed = Color(0xFFE5484D)
         val onConfirmed = Color(0xFFFFFFFF)
-        val confirmedContainer = Color(0xFFFCE8E6)
-        val onConfirmedContainer = Color(0xFFA50E0E)
-        val restored = Color(0xFF00838F)
+        val confirmedContainer = Color(0xFFFDECEC)
+        val onConfirmedContainer = Color(0xFFA3262A)
+        val restored = Color(0xFF0E9FB0)
         val onRestored = Color(0xFFFFFFFF)
-        val restoredContainer = Color(0xFFE0F4F5)
-        val onRestoredContainer = Color(0xFF005B63)
+        val restoredContainer = Color(0xFFE5F6F8)
+        val onRestoredContainer = Color(0xFF0B5F69)
         val brand = Color(0xFF1B6EF3)
     }
 
     object Map {
-        val normal = Color(0xFF34A853)
-        val possible = Color(0xFFFBBC04)
-        val confirmed = Color(0xFFEA4335)
-        val restored = Color(0xFF12B5CB)
+        val normal = Color(0xFF22A559)
+        val possible = Color(0xFFF5A524)
+        val confirmed = Color(0xFFE5484D)
+        val restored = Color(0xFF0EA5B7)
         val nodata = Color(0xFF9AA0A6)
     }
 
@@ -56,6 +56,6 @@ object Tokens {
     val cornerS = 8.dp
     val cornerM = 12.dp
     val cornerL = 16.dp
-    val cornerXl = 28.dp
+    val cornerXl = 24.dp
     val cornerFull = 999.dp
 }

@@ -14,6 +14,8 @@ export type Rendered = {
   noindex?: boolean;
   /** The page shows the street map: its CSP lets MapLibre fetch tiles, glyphs and sprites from OpenFreeMap (ADR 0053). */
   map?: boolean;
+  /** The page has place search: its CSP also lets it reach OpenStreetMap's Nominatim (ADR 0054). */
+  search?: boolean;
   headers?: Record<string, string>;
 };
 
@@ -28,15 +30,22 @@ export function makeNonce(): string {
 
 /** The one other origin a page may reach: OpenFreeMap's street-map tiles, glyphs and sprites (map pages only, ADR 0053). */
 export const TILE_ORIGIN = 'https://tiles.openfreemap.org';
+/** Place search on the app in the browser: OpenStreetMap's Nominatim, queried only when the person presses Enter. */
+export const SEARCH_ORIGIN = 'https://nominatim.openstreetmap.org';
 
-export function contentSecurityPolicy(nonce: string, map = false): string {
+/** Inter (SIL OFL 1.1), served from this origin by Workers Static Assets. */
+export const FONT_PATH = '/fonts/inter-latin.woff2';
+export const FONT_LINK = `<link rel="preload" href="${FONT_PATH}" as="font" type="font/woff2" crossorigin>`;
+
+export function contentSecurityPolicy(nonce: string, map = false, search = false): string {
   return [
     "default-src 'none'",
     `script-src 'nonce-${nonce}' 'self'`,
     `style-src 'nonce-${nonce}' 'self'`,
     // MapLibre decodes sprite images into blob: URLs.
     map ? "img-src 'self' data: blob:" : "img-src 'self' data:",
-    map ? `connect-src 'self' ${TILE_ORIGIN}` : "connect-src 'self'",
+    map ? `connect-src 'self' ${TILE_ORIGIN}${search ? ` ${SEARCH_ORIGIN}` : ''}` : "connect-src 'self'",
+    "font-src 'self'", // Inter, served from this origin
     // MapLibre's tile worker (same origin, /vendor/) and the simulation's service worker (R6.7).
     "worker-src 'self'",
     "base-uri 'none'",
@@ -46,9 +55,9 @@ export function contentSecurityPolicy(nonce: string, map = false): string {
 }
 
 /** Headers every response carries. No cookie is ever set. */
-export function securityHeaders(nonce: string, map = false): Record<string, string> {
+export function securityHeaders(nonce: string, map = false, search = false): Record<string, string> {
   return {
-    'Content-Security-Policy': contentSecurityPolicy(nonce, map),
+    'Content-Security-Policy': contentSecurityPolicy(nonce, map, search),
     'Referrer-Policy': 'no-referrer',
     'X-Content-Type-Options': 'nosniff',
   };
@@ -62,7 +71,7 @@ export function cacheControl(ttlSeconds: number): string {
 export function finalize(rendered: Rendered, method = 'GET', nonce = makeNonce()): Response {
   const body = rendered.body.split(NONCE_PLACEHOLDER).join(nonce);
   const headers = new Headers({
-    ...securityHeaders(nonce, rendered.map === true),
+    ...securityHeaders(nonce, rendered.map === true, rendered.search === true),
     'Content-Type': rendered.contentType,
     'Cache-Control': cacheControl(rendered.ttlSeconds),
     ...(rendered.headers ?? {}),

@@ -1,4 +1,4 @@
-// Landing page, the app in the browser and the shared stylesheet (ADR 0027, ADR 0049, ADR 0053). UX1, UX2, UX4, UX9.
+// Landing page, the app in the browser and the shared stylesheet (ADR 0027, ADR 0049, ADR 0054). UX1, UX2, UX4, UX9.
 import { describe, expect, it } from 'vitest';
 import { PageCache } from '../site/cache.ts';
 import type { Site } from '../site/layout.ts';
@@ -13,7 +13,8 @@ import chartsJs from '../public/js/charts.js?raw';
 import dataJs from '../public/js/data.js?raw';
 import landingJs from '../public/js/landing.js?raw';
 import mapJs from '../public/js/map.js?raw';
-import { TILE_ORIGIN } from '../site/headers.ts';
+import simJs from '../public/js/sim.js?raw';
+import { SEARCH_ORIGIN, TILE_ORIGIN } from '../site/headers.ts';
 import { latLngToCell } from 'h3-js';
 
 function deps(site: Site = SITE): WebDeps {
@@ -31,7 +32,7 @@ const page = async (path: string, site?: Site) => {
 // Nothing is loaded from another origin: no src, no stylesheet, no form action, no script import. Plain links out are fine.
 const LOADS_ELSEWHERE = /(?:src|action)="https?:\/\/|<link[^>]+href="https?:\/\/(?!outage\.test\/)|(?:fetch|import)\(['"]https?:/;
 // The page scripts are static files (public/js), served by Workers Static Assets.
-const FILES: Record<string, string> = { 'app.js': appJs, 'map.js': mapJs, 'data.js': dataJs, 'charts.js': chartsJs, 'landing.js': landingJs };
+const FILES: Record<string, string> = { 'app.js': appJs, 'map.js': mapJs, 'data.js': dataJs, 'charts.js': chartsJs, 'landing.js': landingJs, 'sim.js': simJs };
 const client = (f: string) => FILES[f];
 const CLIENT = Object.keys(FILES);
 
@@ -39,8 +40,10 @@ describe('landing /', () => {
   it('UX9: the pitch, the app in the browser, the GitHub download, and no hardware-sensor claim', async () => {
     const { res, body } = await page('/');
     expect(res.status).toBe(200);
-    expect(body).toContain('<h1 id="hero-h">See where the power is out, block by block.</h1>');
+    expect(body).toContain('<h1 id="hero-h">Know the moment the power goes. And when it’s back.</h1>');
     expect(body).toContain('power-grid sensor');
+    // Outage is for anywhere: the page never frames it as one city's app (steering product.md).
+    expect(body).not.toMatch(/Lagos/);
     expect(body).toContain('href="/app/simulate"');
     expect(body).toContain('Try the app in your browser');
     expect(body).toContain('GitHub');
@@ -53,13 +56,19 @@ describe('landing /', () => {
   });
 
   it('store buttons appear only for the links that are configured', async () => {
+    // Without links, Play and Aptoide show as "Coming soon" badges that link nowhere; GitHub always links.
     const none = await page('/');
-    expect(none.body).not.toContain('Google Play');
-    expect(none.body).not.toContain('Aptoide');
-    const all = await page('/', { ...SITE, playUrl: 'https://play.google.com/store/apps/details?id=app.outage', aptoideUrl: 'https://outage.en.aptoide.com/app' });
-    expect(all.body).toContain('Google Play');
-    expect(all.body).toContain('Aptoide');
-    expect(stores({ ...SITE, playUrl: 'javascript:alert(1)' }).map((s) => s.label)).toEqual(['Download the APK from GitHub']);
+    expect(none.body).toContain('Get it on Google Play: coming soon');
+    expect(none.body).not.toContain('href="https://play.google.com');
+    expect(none.body).toMatch(/<a class="badge badge-github" href="[^"]+"/);
+    const play = 'https://play.google.com/store/apps/details?id=app.outage';
+    const all = await page('/', { ...SITE, playUrl: play, aptoideUrl: 'https://outage.en.aptoide.com/app' });
+    expect(all.body).toContain(`href="${play}"`);
+    expect(all.body).toContain('href="https://outage.en.aptoide.com/app"');
+    expect(all.body).not.toContain('coming soon');
+    // The Play badge is Google's own image, served from this origin.
+    expect(all.body).toContain('src="/badges/google-play.png"');
+    expect(stores({ ...SITE, playUrl: 'javascript:alert(1)' }).find((s) => s.id === 'play')?.href).toBeNull();
   });
 });
 
@@ -73,19 +82,20 @@ describe('the app in the browser /app/simulate', () => {
     expect(nav).toMatch(/data-tab="home" aria-current="page"/);
   });
 
-  it('ADR 0053: a real street map with the simulated city on it, and it says it is simulated', async () => {
+  it('ADR 0054: a real street map around your own location, quietly labelled simulated', async () => {
     const { body } = await page('/app/simulate');
     expect(body).toContain('class="sim-banner"');
     expect(body).toContain('Simulation: simulated data, not live.');
     expect(body).toContain('<div class="map" id="map"');
     expect(body).toContain('<script type="module" src="/js/app.js">');
     expect(body).toContain('href="/vendor/maplibre-gl/maplibre-gl.css"');
+    expect(body).not.toMatch(/Lagos/);
     expect(client('map.js')).toContain("from '/vendor/maplibre-gl/maplibre-gl.mjs'");
     expect(client('map.js')).toContain(`${TILE_ORIGIN}/styles/liberty`);
-    const served = JSON.parse((await page('/demo-city.json')).body) as typeof city;
-    expect(served.cells.length).toBe(city.cells.length);
-    expect(served.cells.every((c) => c.id.startsWith('sim-') && c.ring.length === 6)).toBe(true);
-    expect(served.spot).toBe(city.spot);
+    // Built around the browser's own location, with h3-js from this origin; other places only through search.
+    expect(client('app.js')).toContain('navigator.geolocation.getCurrentPosition');
+    expect(client('app.js')).toContain("from '/vendor/h3-js/h3-js.es.js'");
+    expect(client('app.js')).toContain(`${SEARCH_ORIGIN}/search?`);
   });
 
   it('ADR 0052: the simulated city puts real Lagos areas at their real places', () => {
@@ -116,12 +126,12 @@ describe('the app in the browser /app/simulate', () => {
 });
 
 describe('shared assets', () => {
-  it('serves the stylesheet (light tokens) and the favicon from the same origin, and no font', async () => {
+  it('serves the stylesheet (tokens, Inter from this origin) and the favicon', async () => {
     const css = await page('/app.css');
     expect(css.res.headers.get('content-type')).toContain('text/css');
     expect(css.body).toContain('--c-paper:#ffffff');
     expect(css.body).toContain('--map-confirmed:');
-    expect(css.body).not.toMatch(/@font-face|url\(/);
+    expect([...css.body.matchAll(/url\(([^)]*)\)/g)].map((m) => m[1])).toEqual(['/fonts/inter-latin.woff2']);
     const icon = await page('/favicon.svg');
     expect(icon.res.headers.get('content-type')).toContain('image/svg+xml');
     expect(icon.body).toContain('<svg');
@@ -133,8 +143,10 @@ describe('shared assets', () => {
       expect(body, p).not.toMatch(LOADS_ELSEWHERE);
     }
     for (const f of CLIENT) {
-      const origins = [...client(f).matchAll(/https?:\/\/[a-z0-9.-]+/g)].map((m) => m[0]);
-      expect(origins.every((o) => o === TILE_ORIGIN), f).toBe(true);
+      // Comment links (docs) aside, the code reaches only the tiles and, in the app, place search.
+      const code = client(f).replace(/\/\/ .*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+      const origins = [...code.matchAll(/https?:\/\/[a-z0-9.-]+/g)].map((m) => m[0]);
+      expect(origins.every((o) => o === TILE_ORIGIN || (f === 'app.js' && o === SEARCH_ORIGIN)), `${f}: ${origins}`).toBe(true);
     }
   });
 
@@ -145,7 +157,9 @@ describe('shared assets', () => {
       expect(csp).toMatch(/script-src 'nonce-[^']+' 'self'(;|$)/);
       expect(csp).toMatch(/style-src 'nonce-[^']+' 'self'(;|$)/);
       expect(csp).toContain(`connect-src 'self' ${TILE_ORIGIN}`);
-      expect(csp.replace(TILE_ORIGIN, '')).not.toMatch(/https?:|unsafe-/);
+      expect(csp.replace(TILE_ORIGIN, '').replace(SEARCH_ORIGIN, '')).not.toMatch(/https?:|unsafe-/);
+      // Only the app has place search.
+      expect(csp.includes(SEARCH_ORIGIN), p).toBe(p === '/app/simulate');
     }
     const plain = (await page('/privacy')).res.headers.get('content-security-policy') ?? '';
     expect(plain).not.toContain(TILE_ORIGIN);
@@ -161,7 +175,7 @@ describe('shared assets', () => {
 
   it('the app in the browser stays under 200 KB without MapLibre: page, city, scripts and stylesheet', async () => {
     let bytes = 0;
-    for (const p of ['/app/simulate', '/demo-city.json', '/app.css']) bytes += new TextEncoder().encode((await page(p)).body).length;
+    for (const p of ['/app/simulate', '/app.css']) bytes += new TextEncoder().encode((await page(p)).body).length;
     for (const f of CLIENT) bytes += client(f).length;
     expect(bytes).toBeLessThan(200 * 1024);
   });

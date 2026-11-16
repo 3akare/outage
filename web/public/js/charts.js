@@ -3,12 +3,11 @@
 // greys, thin marks with 4 px rounded data ends, recessive grid. Every mark carries data-tip for the hover card.
 import { duration, hourLabel } from './data.js';
 
-const INK = '#202124';
-const MUTED = '#5f6368';
-const GRID = '#e8eaed';
+const INK = '#0b0d12';
+const MUTED = '#6b7280';
+const GRID = '#eef0f3';
 const BLUE = '#1b6ef3';
-const BELOW = '#e37400';
-const OTHER = '#aecbfa';
+const BELOW = '#f59e0b';
 // Sequential red for "how often the power is off": light to dark, one hue. 0 is the neutral grey.
 export const HEAT = ['#f1f3f4', '#fce8e6', '#f7b5ae', '#ee7b70', '#d93025', '#a50e0e'];
 
@@ -22,11 +21,6 @@ const DAYS_LONG = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 
 function bar(x, y, w, h, r) {
   const rr = Math.min(r, w / 2, h);
   return `M${x},${y + h}V${y + rr}Q${x},${y} ${x + rr},${y}H${x + w - rr}Q${x + w},${y} ${x + w},${y + rr}V${y + h}Z`;
-}
-/** A horizontal bar with its right end rounded. */
-function hbar(x, y, w, h, r) {
-  const rr = Math.min(r, h / 2, w);
-  return `M${x},${y}H${x + w - rr}Q${x + w},${y} ${x + w},${y + rr}V${y + h - rr}Q${x + w},${y + h} ${x + w - rr},${y + h}H${x}Z`;
 }
 const svg = (w, h, label, body) =>
   `<svg class="chart" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}">${body}</svg>`;
@@ -52,16 +46,18 @@ export function dailyBars(days, promise, band, width) {
   }
   days.forEach((d, i) => {
     const x = left + i * step + (step - bw) / 2;
-    const below = d.hours < promise;
+    const below = promise !== null && d.hours < promise;
     const tip = `${fmtLong(d.date)}: ${d.hours} h of power${below ? `, ${Math.round((promise - d.hours) * 10) / 10} h short of the promise` : ''}`;
     out += `<path d="${bar(x, y(d.hours), bw, y(0) - y(d.hours), 4)}" fill="${below ? BELOW : BLUE}" data-tip="${esc(tip)}"/>`;
     if (i % 7 === days.length % 7 || i === days.length - 1) {
       if (i === days.length - 1 || days.length - 1 - i >= 4) out += text(x + bw / 2, h - 8, fmtDay(d.date), 'middle');
     }
   });
-  out += `<line x1="${left}" x2="${width - right}" y1="${y(promise)}" y2="${y(promise)}" stroke="${INK}" stroke-width="1.5" stroke-dasharray="5 4"/>`;
-  out += `<text class="ax strong" x="${left + 6}" y="${y(promise) - 6}" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="4">Band ${esc(band)} promise, ${promise} h</text>`;
-  return svg(width, h, `Hours of power each day for ${days.length} days. Band ${band} promises ${promise} hours.`, out);
+  if (promise !== null) {
+    out += `<line x1="${left}" x2="${width - right}" y1="${y(promise)}" y2="${y(promise)}" stroke="${INK}" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+    out += `<text class="ax strong" x="${left + 6}" y="${y(promise) - 6}" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="4">Band ${esc(band)} promise, ${promise} h</text>`;
+  }
+  return svg(width, h, `Hours of power each day for ${days.length} days.${promise !== null ? ` Band ${band} promises ${promise} hours.` : ''}`, out);
 }
 
 /** Weekday by hour: how often the power was off in that hour. */
@@ -88,29 +84,6 @@ export function heatmap(grid, width) {
 export function heatLegend() {
   const sw = (c) => `<svg width="18" height="12" aria-hidden="true"><rect width="18" height="12" rx="2" fill="${c}"/></svg>`;
   return `<div class="ramp" aria-hidden="true"><span>Never</span>${HEAT.map(sw).join('')}<span>Every time</span></div>`;
-}
-
-/** Areas ranked by hours of power a day; yours in blue, a tick for each area's promise. */
-export function ranked(rows, mine, width) {
-  const nameW = Math.min(132, width * 0.34);
-  const valueW = 64;
-  const rowH = 34;
-  const barH = 14;
-  const plotW = width - nameW - valueW;
-  const x = (v) => nameW + (v / 24) * plotW;
-  let out = '';
-  rows.forEach((r, i) => {
-    const y = i * rowH + 6;
-    const me = r.slug === mine;
-    out += `<text class="${me ? 'nm strong' : 'nm'}" x="0" y="${y + barH - 1}">${esc(r.name)}</text>`;
-    out += `<text class="ax" x="0" y="${y + barH + 13}">Band ${esc(r.band)} · ${r.outages} cuts</text>`;
-    out += `<rect x="${nameW}" y="${y}" width="${plotW}" height="${barH}" rx="4" fill="${GRID}"/>`;
-    const tip = `${r.name}: ${r.avgHours} h of power a day on average, ${r.outages} outages. Band ${r.band} promises ${r.promise} h.`;
-    out += `<path d="${hbar(nameW, y, x(r.avgHours) - nameW, barH, 4)}" fill="${me ? BLUE : OTHER}" data-tip="${esc(tip)}"/>`;
-    out += `<line x1="${x(r.promise)}" x2="${x(r.promise)}" y1="${y - 3}" y2="${y + barH + 3}" stroke="${INK}" stroke-width="2"/>`;
-    out += `<text class="${me ? 'val strong' : 'val'}" x="${width}" y="${y + barH - 1}" text-anchor="end">${r.avgHours} h</text>`;
-  });
-  return svg(width, rows.length * rowH + 8, 'Areas ranked by hours of power a day.', out);
 }
 
 /** Hours without power each week, as a line. */
@@ -149,10 +122,10 @@ export function miniBars(days, promise, width) {
   const step = width / days.length;
   const bw = step - 6;
   const y = (v) => 4 + (h - 22) * (1 - v / 24);
-  let out = `<line x1="0" x2="${width}" y1="${y(promise)}" y2="${y(promise)}" stroke="${INK}" stroke-dasharray="3 3"/>`;
+  let out = promise === null ? '' : `<line x1="0" x2="${width}" y1="${y(promise)}" y2="${y(promise)}" stroke="${INK}" stroke-dasharray="3 3"/>`;
   days.forEach((d, i) => {
     const x = i * step + 3;
-    const below = d.hours < promise;
+    const below = promise !== null && d.hours < promise;
     out += `<path d="${bar(x, y(d.hours), bw, y(0) - y(d.hours), 3)}" fill="${below ? BELOW : BLUE}" data-tip="${esc(`${fmtLong(d.date)}: ${d.hours} h of power`)}"/>`;
     out += text(x + bw / 2, h - 4, d.date.toLocaleDateString('en-GB', { weekday: 'narrow' }), 'middle');
   });

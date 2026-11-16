@@ -3,7 +3,6 @@ package app.outage.ui
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,12 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,22 +28,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.outage.R
 import app.outage.insights.AreaCut
 import app.outage.insights.AreaHistory
 import app.outage.insights.AreaInsights
-import app.outage.insights.AreaRank
 import app.outage.map.DemoCity
 import app.outage.ui.charts.BarChart
 import app.outage.ui.charts.Heatmap
@@ -60,19 +49,17 @@ import java.util.Locale
 import kotlin.math.ceil
 
 /**
- * Insights for the sample city (ADR 0053): how power behaves in one area over the last 30 days, and how the areas
- * compare. Every number comes from [AreaHistory] over [DemoCity]'s made-up history; this file only draws and words it.
- * The area picker starts on the spot's area. Everything here is labelled Simulated.
+ * Insights in demo mode (ADR 0053, ADR 0054): how power behaves in the user's own area over the last 30 days. Only
+ * their area: no other places and no comparison. Every number comes from [AreaHistory] over [DemoCity]'s made-up
+ * history; this file only draws and words it. Labelled Simulated.
  */
 @Composable
 fun AreaInsightsScreen(spotArea: String = DemoCity.cells.firstOrNull { it.id == DemoCity.SPOT }?.area ?: "yaba") {
     val today = remember { LocalDate.now(AreaHistory.ZONE) }
-    var slug by rememberSaveable { mutableStateOf(spotArea) }
-    val area = DemoCity.areas.firstOrNull { it.slug == slug } ?: DemoCity.areas.first()
+    val area = DemoCity.areas.firstOrNull { it.slug == spotArea } ?: DemoCity.areas.first()
     val r = remember(area, today) { AreaHistory.compute(area, today) }
-    val ranking = remember(today) { AreaHistory.ranking(DemoCity.areas, today) }
     val progress = remember { Animatable(0f) }
-    LaunchedEffect(slug) {
+    LaunchedEffect(area.slug) {
         progress.snapTo(0f)
         progress.animateTo(1f, tween(900))
     }
@@ -88,30 +75,10 @@ fun AreaInsightsScreen(spotArea: String = DemoCity.cells.firstOrNull { it.id == 
             }
             Text(stringResource(R.string.ins_area_sub, r.name), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        // Area picker: the spot's area first, then the rest, as chips you can scroll.
-        val pickerDesc = stringResource(R.string.ins_area_picker)
-        Row(
-            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp).semantics { contentDescription = pickerDesc },
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            val ordered = DemoCity.areas.sortedBy { if (it.slug == spotArea) 0 else 1 }
-            for (a in ordered) {
-                FilterChip(
-                    selected = a.slug == slug, onClick = { slug = a.slug }, label = { Text(a.name) },
-                    shape = RoundedCornerShape(8.dp), modifier = Modifier.heightIn(min = 40.dp),
-                    colors = FilterChipDefaults.filterChipColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    ),
-                )
-            }
-        }
         Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Kpis(r)
             DaysCard(r, progress.value)
             HeatCard(r, progress.value)
-            CompareCard(ranking, r.slug)
             WeeklyCard(r, progress.value)
             HistoryCard(r)
             Text(stringResource(R.string.ins_area_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -226,51 +193,6 @@ private fun HeatCard(r: AreaInsights, progress: Float) {
 }
 
 /** Every area ranked by hours of power a day, 7 or 30 days; the chosen area stands out. */
-@Composable
-private fun CompareCard(ranking: List<AreaRank>, current: String) {
-    val scheme = MaterialTheme.colorScheme
-    var month by rememberSaveable { mutableStateOf(false) }
-    val rows = if (month) ranking.sortedByDescending { it.month } else ranking
-    Panel {
-        Text(stringResource(R.string.ins_compare_title), style = MaterialTheme.typography.titleMedium)
-        Text(stringResource(R.string.ins_compare_hint), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            listOf(false to 7, true to 30).forEachIndexed { i, (m, days) ->
-                SegmentedButton(selected = month == m, onClick = { month = m }, shape = SegmentedButtonDefaults.itemShape(i, 2)) {
-                    Text(stringResource(R.string.ins_range_days, days))
-                }
-            }
-        }
-        val best = rows.firstOrNull()
-        val summary = best?.let { stringResource(R.string.ins_summary_compare, it.name, if (month) it.month else it.week) } ?: ""
-        Column(Modifier.semantics { contentDescription = summary }, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            for (row in rows) {
-                val hours = if (month) row.month else row.week
-                val cuts = if (month) row.monthCuts else row.weekCuts
-                val mine = row.slug == current
-                val bandHours = DemoCity.bands[row.band] ?: 0
-                val colour = if (hours >= bandHours) LocalStatusColors.current.normal.color else LocalStatusColors.current.possible.color
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            row.name, style = MaterialTheme.typography.bodyMedium, fontWeight = if (mine) FontWeight.Bold else FontWeight.Normal,
-                            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
-                        )
-                        Text(stringResource(R.string.ins_compare_row, hours, cuts), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-                    }
-                    Box(Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)).background(scheme.surfaceContainerHigh)) {
-                        Box(
-                            Modifier.fillMaxHeight().fillMaxWidth((hours / 24.0).toFloat().coerceIn(0f, 1f)).clip(RoundedCornerShape(5.dp))
-                                .background(if (mine) scheme.primary else colour),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-/** Hours without power in each 7-day block, oldest first. */
 @Composable
 private fun WeeklyCard(r: AreaInsights, progress: Float) {
     val scheme = MaterialTheme.colorScheme

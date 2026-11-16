@@ -26,7 +26,6 @@ tools/icon             The mark and the shared icon set, written for Android and
 powers/grid-sensing    Kiro Power (Agent Plugin): charging-sensor, blackout-detection, oem-battery-guide skills
 docs/                  kiro-log.md, adr/, field/, traceability.md
 .kiro/                 steering, specs, hooks, skills, agents, settings
-.agents/skills         Third-party skills installed with npx skills (hallmark), pinned in skills-lock.json
 .github/               CI workflows and their scripts
 ```
 

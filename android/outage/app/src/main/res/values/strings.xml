@@ -155,7 +155,6 @@
     <string name="map_search_hint">Search areas</string>
     <string name="map_search_none">No area by that name on this map</string>
     <string name="map_search_clear">Clear search</string>
-    <string name="ins_area_picker">Choose an area</string>
     <string name="map_city">%1$s</string>
     <string name="map_headline_out">%1$d of %2$d areas without power</string>
     <string name="map_headline_possible">%1$d of %2$d areas may be without power</string>
@@ -249,10 +248,6 @@
     <string name="ins_kpi_restore">Typical time until power returns</string>
     <string name="ins_kpi_without">Without power, 30 days</string>
     <string name="ins_band_line">Band %1$s promises at least %2$d h of power a day.</string>
-    <string name="ins_compare_title">Area comparison</string>
-    <string name="ins_compare_hint">Average hours of power a day, best first</string>
-    <string name="ins_compare_row">%1$.1f h · %2$d outages</string>
-    <string name="ins_summary_compare">Areas ranked by hours of power a day. %1$s is best with %2$.1f hours.</string>
     <string name="ins_weekly_title">Hours without power, week by week</string>
     <string name="ins_weekly_hint">Each point is 7 days, the last ending yesterday. Lower is better.</string>
     <string name="ins_summary_weekly">Line chart of hours without power in each of the last %1$d weeks. Latest week %2$.1f hours.</string>

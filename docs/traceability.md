@@ -330,6 +330,8 @@ Scanned 15 test file(s) under core/detection. A property counts when a test titl
 | R6.1, R6.2 | ML1 | hex GeoJSON per block | 13, 14 | done: `HexGeoJsonTest` (JUnit), `web/test/web-app.test.ts`; screens on a device wait for task 7 |
 | R6.3 | ML2 | only OpenFreeMap, only on map pages | 13 | done: `web/test/web-app.test.ts`, `web/visual/check.mjs` |
 | R6.4 | ML3 | Insights sums | 13, 14 | done: `web/test/web-insights.test.ts`, `AreaHistoryTest` (JUnit) |
+| R6.4 | ML5 | simulation around any block, bands only in Nigeria | 15 | done: `web/test/web-insights.test.ts` |
+| R6.1, R6.3 | ML6 | built from the browser's location; only tiles and search; no one-city copy | 15 | done: `web/test/web-app.test.ts`, `web/visual/check.mjs` |
 | R6.4 | ML4 | simulated history current and shared | 13 | done: `.kiro/scripts/test/demo-city.test.mjs` |
 | R1, R2 | - | night palette, new mark, Material skill removed | 8 | done: `tokens.test.mjs`, `icon.test.mjs` |
 | R4, R5 | - | real Lagos city, Hallmark Midnight, Mona Sans | 11, 12 | done: `demo-city.test.mjs`, `MapTest`, `web-app.test.ts` (real places, font, stamp); sloplint not run in the cloud session |

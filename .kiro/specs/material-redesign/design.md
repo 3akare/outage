@@ -77,6 +77,8 @@ erDiagram
 | ML1 | The hex layer's GeoJSON has one closed polygon per block, in longitude, latitude order, with the block's state. | JUnit `HexGeoJsonTest`, Vitest `web-app.test.ts` |
 | ML2 | Map pages may reach only `tiles.openfreemap.org`; other pages stay same-origin; the page scripts name no other origin. | Vitest `web-app.test.ts` |
 | ML3 | The Insights sums agree with their parts: 30 days ending yesterday with weekdays kept, hours between 0 and 24, cuts past midnight split, summary equal to its parts, ranking ordered. | Vitest `web-insights.test.ts`, JUnit `AreaHistoryTest` |
+| ML5 | The simulation around any block is deterministic, keeps the visitor's block and first ring on, never overlaps outages, averages near its mean, and gives a tariff promise only inside Nigeria. | Vitest `web-insights.test.ts` |
+| ML6 | The app in the browser builds everything from the browser's own location, reaches only the tiles and (on Enter) Nominatim, and never names one city in its copy. | Vitest `web-app.test.ts`, `web/visual/check.mjs` (location in Ibadan) |
 | ML4 | The simulated history is current, inside its six weeks, never overlapping, and the same on the phone. | node:test `demo-city.test.mjs` |
 
 ## 6. Testing strategy

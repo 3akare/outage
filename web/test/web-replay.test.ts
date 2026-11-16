@@ -103,7 +103,7 @@ describe('Simulation page', () => {
   it('the app with its navigation bar, one simulate button, and an external same-origin script', async () => {
     const res = await handleWeb(get('/app/simulate'), setup(REPLAY).d);
     const body = await res.text();
-    expect(body).toContain('This is the Outage Android app running in your browser.');
+    expect(body).toContain('This is the Outage Android app running in your browser');
     expect(body).toContain('<nav class="rail"');
     expect(body).toContain('<script type="module" src="/js/app.js">');
     expect(new TextEncoder().encode(body).length).toBeLessThan(30 * 1024);

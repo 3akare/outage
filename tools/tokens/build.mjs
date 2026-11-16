@@ -3,7 +3,7 @@
 //   core/shared/design/tokens.css   CSS custom properties (--c-*, --map-*, --t-*, --r-*, --s-*)
 //   web/ui/app/tokens.gen.ts        the same CSS as a string, for the Worker's stylesheet
 //   android/outage/.../ui/Tokens.kt Compose colours, map colours, spacing and shape
-// One source, so the website and the phone can never drift. One light palette (ADR 0053). Dependency-free.
+// One source, so the website and the phone can never drift. One light palette (ADR 0054). Dependency-free.
 // `node tools/tokens/build.mjs` writes; `--check` exits 1 when a file is stale.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -19,8 +19,8 @@ export const paths = {
 
 export const camel = (s) => s.replace(/-(\w)/g, (_, c) => c.toUpperCase());
 const argb = (hex) => `0xFF${hex.slice(1).toUpperCase()}`;
-// The system font: Roboto on Android and ChromeOS, San Francisco on Apple, Segoe UI on Windows. Nothing to download.
-const FONT = "Roboto,system-ui,-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif";
+// Inter (OFL), served by the website from its own origin; the system font as fallback. Android uses Roboto.
+const FONT = "Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif";
 
 export function render(t) {
   const vars = [

@@ -833,3 +833,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Android: MapLibre Native 13.7.1 (`OutageMap.kt`, `HexGeoJson.kt`), light theme, Insights from `AreaHistory.kt`; globe removed.
 - Tests: ML1 to ML4; web 337, root 173; the visual check (phone and desktop, full blackout, Light Alarm, offline reload, 44 px targets) passes.
 - Not done: Android screens on a device (task 7).
+
+## 2026-11-16 feat(redesign): premium design built around the visitor's own location [spec:material-redesign tasks:15]
+- Asked for by the human: insights about "my own location, my own area", other places only by search; no Lagos-only framing; premium website and app; store badges; a marketing page and a simulation page; delete trashy UI skills; fully responsive; plausible simulated data labelled quietly. ADR 0054.
+- Removed the Hallmark skill (`.agents/`, `skills-lock.json`) and its steering mentions.
+- Web: `sim.js` builds the visitor's block, six rings around it and six weeks of history from the browser's location (h3-js served from this origin); Insights for that area only; Nominatim search on Enter; Inter self-hosted; new stylesheet; new marketing page with Google's Play badge, GitHub and Aptoide badges ("Coming soon" until configured).
+- Android: demo Insights show only the spot's area (picker and comparison removed).
+- Tests: ML5, ML6; web 339, repo 174; visual check with a shared location in Ibadan passes on phone and desktop; Android build, unit tests and lint pass.

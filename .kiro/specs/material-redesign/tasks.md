@@ -59,6 +59,9 @@ graph LR
 - [x] 14. Android on MapLibre Native 13.7.1 (ADR 0053): `OutageMap`, `HexGeoJson`, light theme, Insights from `AreaHistory`, globe removed; tests ML1 and ML3.
   - Depends on: 13
 
+- [x] 15. Premium redesign around the visitor's location (ADR 0054): `sim.js` (block, neighbourhood, history from the browser's location), Insights for your area only, Nominatim search, Inter, glass panels, marketing page with store badges, Hallmark removed, Android demo Insights for the spot's area only; tests ML5, ML6.
+  - Depends on: 13, 14
+
 ## Wave 5: checks
 
 - [ ] 7. Device screenshots and a TalkBack pass of first run, Home, Insights and Settings (needs a phone or emulator; the Kiro IDE pass).

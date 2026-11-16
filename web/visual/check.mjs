@@ -11,7 +11,7 @@ const H = 844;
 mkdirSync(SHOTS, { recursive: true });
 
 const pages = [
-  { path: '/', name: 'landing', expect: ['Your phone charger is a', 'Try the app in your browser', 'GitHub'] },
+  { path: '/', name: 'landing', expect: ['Know the moment the power goes', 'Try the app in your browser', 'GitHub'] },
   { path: '/areas', name: 'areas', expect: ['Install Outage'] },
   { path: '/app/simulate', name: 'simulate', expect: ['simulated data, not live', 'See the power around you', 'Use my location'], app: true },
   // No area is listed until a person fills in `checkedBy` in the catalog (R10.3), so /area/yaba is the 404 page for now.
@@ -103,16 +103,24 @@ try {
 
   // The app in the browser: first run, the map, the whole blackout, the Light Alarm, the bar and its tabs.
   async function playApp(size, tag) {
-    const ctx = await browser.newContext({ viewport: { width: size.w, height: size.h }, deviceScaleFactor: 1 });
+    // The browser shares a location in Ibadan: the app must build everything around it (ADR 0054).
+    const ctx = await browser.newContext({
+      viewport: { width: size.w, height: size.h },
+      deviceScaleFactor: 1,
+      geolocation: { latitude: 7.3775, longitude: 3.947 },
+      permissions: ['geolocation'],
+    });
     const pg = await ctx.newPage();
     watch(pg);
     const where = `/app/simulate${tag}`;
     await pg.goto(`${BASE}/app/simulate`, { waitUntil: 'networkidle' });
     await pg.screenshot({ path: `${SHOTS}/simulate-welcome${tag}.png` });
     await pg.click('#useloc');
-    await pg.click('.scrim button[data-a="1"]');
-    await pg.waitForTimeout(600);
-    await pg.waitForTimeout(3400); // the fly-in to the spot
+    // The fly-in to your block, then the place name from the map's own labels once the map is idle.
+    await pg.waitForFunction(() => { const h = document.querySelector('.place-head h2'); return h && h.textContent !== '…'; }, null, { timeout: 30000 }).catch(() => {});
+    const name = await pg.innerText('.place-head h2');
+    if (!name || name === '…') fail(where, 'your area has no name');
+    else ok(where, `your area is named "${name}"`);
     const map = await pg.evaluate(() => {
       const c = document.querySelector('#map canvas.maplibregl-canvas');
       return { w: c?.width ?? 0, h: c?.height ?? 0 };
@@ -127,9 +135,9 @@ try {
     await pg.click('#go');
     for (const [state, name] of [['POSSIBLE', 'possible'], ['CONFIRMED', 'confirmed']]) {
       try {
-        await pg.waitForSelector(`#spotcard[data-state=${state}]`, { timeout: 20000 });
+        await pg.waitForSelector(`#statuscard[data-state=${state}]`, { timeout: 20000 });
         await pg.waitForTimeout(300);
-        const c = await pg.innerText('#spotcard .sub');
+        const c = await pg.innerText('#statuscard .status-sub');
         if (!/\d+ of \d+ phones/.test(c)) fail(where, `no count in ${state}: ${c}`);
         await pg.screenshot({ path: `${SHOTS}/simulate-${name}${tag}.png` });
         ok(where, `${state}: ${c}`);
@@ -201,7 +209,7 @@ try {
       for (const k of await caches.keys()) for (const r of await (await caches.open(k)).keys()) out.push(new URL(r.url).pathname);
       return out.sort();
     });
-    const allowed = ['/app/simulate', '/js/app.js', '/js/map.js', '/js/data.js', '/js/charts.js', '/app.css', '/favicon.svg', '/demo-city.json',
+    const allowed = ['/app/simulate', '/js/app.js', '/js/map.js', '/js/data.js', '/js/charts.js', '/js/sim.js', '/app.css', '/favicon.svg', '/fonts/inter-latin.woff2', '/vendor/h3-js/h3-js.es.js',
       '/vendor/maplibre-gl/maplibre-gl.mjs', '/vendor/maplibre-gl/maplibre-gl-worker.mjs', '/vendor/maplibre-gl/maplibre-gl.css', '/api/v1/public/judge/replay'];
     if (cached.every((p) => allowed.includes(p))) ok('cache', `only simulation files cached (${cached.join(', ')})`);
     else fail('cache', `unexpected cache entries: ${cached.join(', ')}`);
@@ -213,7 +221,7 @@ try {
   const p2 = await noJs.newPage();
   await p2.goto(`${BASE}/app/simulate`, { waitUntil: 'load' });
   const t2 = await p2.innerText('body');
-  const missing = ['simulated data, not live', 'This is the Outage Android app running in your browser', 'Yaba'].filter((x) => !t2.includes(x));
+  const missing = ['simulated data, not live', 'This is the Outage Android app running in your browser', 'Waiting for your location'].filter((x) => !t2.includes(x));
   if (missing.length) fail('/app/simulate scripts off', `missing ${missing.join(', ')}`);
   else ok('/app/simulate scripts off', 'banner, guide and app are readable');
   await noJs.close();

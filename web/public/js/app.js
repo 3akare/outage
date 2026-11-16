@@ -1,27 +1,24 @@
-// The Outage app in the browser (ADR 0053). Simulated data only: the city file (/demo-city.json) and the replay of one
-// blackout built by the real detection engine (/api/v1/public/judge/replay). No storage, no cookies, no tracking.
-// The map is MapLibre over OpenFreeMap (map.js); Insights are computed in data.js and drawn in charts.js.
-import { bindTips, dailyBars, fmtLong, heatLegend, heatmap, miniBars, ranked, weeklyLine } from './charts.js';
-import { dailyHours, duration, heat, hourLabel, outagesIn, ranking, summary, weekly, worstHours } from './data.js';
-import { cellCentre, createMap, LAGOS } from './map.js';
+// The Outage app in the browser (ADR 0054). It is about where you are: it asks the browser for your location once,
+// builds a simulated neighbourhood around your own block (sim.js) and shows your area's power, a simulated blackout
+// with the Light Alarm, and Insights for your area. Other places only through search (OpenStreetMap's Nominatim, on
+// Enter only, as its usage policy asks). Your position never leaves the browser. No storage, no cookies, no tracking.
+import { cellToBoundary, cellToLatLng, gridDisk, gridDistance, latLngToCell } from '/vendor/h3-js/h3-js.es.js';
+import { bindTips, dailyBars, fmtLong, heatLegend, heatmap, miniBars, weeklyLine } from './charts.js';
+import { dailyHours, duration, heat, hourLabel, outagesIn, summary, weekly, worstHours } from './data.js';
+import { createMap } from './map.js';
+import { areaFor, BANDS, neighbourhood } from './sim.js';
 
+const h3 = { gridDisk, gridDistance };
 const $ = (id) => document.getElementById(id);
 const QA = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const ICON = JSON.parse($('icons')?.textContent ?? '{}');
-
-const WORDS = {
-  NORMAL: 'Power is on',
-  POSSIBLE: 'Power may be out',
-  CONFIRMED: 'Power is out',
-  RESTORED: 'Power is back',
-  NO_DATA: 'Not enough phones here yet',
-};
+const WORDS = { NORMAL: 'Power is on', POSSIBLE: 'Power may be out', CONFIRMED: 'Power is out', RESTORED: 'Power is back', NO_DATA: 'Not enough phones yet' };
 const SHORT = { NORMAL: 'On', POSSIBLE: 'Maybe', CONFIRMED: 'Out', RESTORED: 'Back', NO_DATA: 'No data' };
-const RANK = { CONFIRMED: 4, POSSIBLE: 3, RESTORED: 2, NORMAL: 1, NO_DATA: 0 };
 const TODAY = new Date();
 const app = $('app');
 const wide = () => window.matchMedia('(min-width: 900px)').matches;
+const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let toastT = 0;
 function toast(t) {
@@ -42,89 +39,110 @@ function notify(t, b) {
   notifT = setTimeout(() => {
     n.classList.remove('on');
     n.setAttribute('aria-hidden', 'true');
-  }, 5000);
+  }, 5200);
 }
 
-const city = await fetch('/demo-city.json').then((r) => r.json());
-const AREA_OF = Object.fromEntries(city.cells.map((c) => [c.id, c.area]));
-const AREAS = Object.fromEntries(city.areas.map((a) => [a.slug, a]));
-const CELL = Object.fromEntries(city.cells.map((c) => [c.id, c]));
-const SPOT = city.spot;
-const SPOT_AREA = AREA_OF[SPOT];
-const SPOT_LL = cellCentre(CELL[SPOT]);
+/* ---- Places: your own, and one you searched for ---- */
+const M = createMap($('map'), { center: [12, 12], zoom: 1.5 });
+let mine = null; // { lat, lng, cell, name, area, cells, states }
+let viewing = null; // the place on screen: mine, or a searched place
 
-/* ---- Map ---- */
-const M = createMap($('map'), city, { center: [8, 12], zoom: 1.6 });
-let spotSet = false;
-const filter = new Set();
-
+function buildPlace(lat, lng, name) {
+  const cell = latLngToCell(lat, lng, 8);
+  const states = neighbourhood(h3, cell, 6);
+  const cells = Object.keys(states).map((id) => ({ id, ring: cellToBoundary(id) }));
+  return { lat, lng, cell, name, area: areaFor(cell, lat, lng), cells, states, start: { ...states } };
+}
 function padding() {
-  if (wide()) return { left: $('panel').getBoundingClientRect().right + 24, top: 80, right: 24, bottom: 24 };
-  return { left: 24, right: 24, top: 120, bottom: Math.max(80, window.innerHeight - $('panel').getBoundingClientRect().top + 16) };
+  if (wide()) return { left: $('panel').getBoundingClientRect().right + 24, top: 96, right: 24, bottom: 24 };
+  return { left: 24, right: 24, top: 120, bottom: Math.max(96, window.innerHeight - $('panel').getBoundingClientRect().top + 16) };
 }
-const flyTo = (ll, zoom, ms = 1800) => M.flyTo(ll, zoom, ms, padding());
+function show(place, ms = 2600) {
+  viewing = place;
+  M.setCells(place.cells, place.states);
+  M.setSpot(place === mine ? [mine.lng, mine.lat] : null);
+  M.select(null);
+  const [la, ln] = cellToLatLng(place.cell);
+  M.flyTo([ln, la], 14.3, reduced() ? 0 : ms, padding());
+  renderHome();
+  if (!place.name) M.map.once('idle', () => nameIt(place));
+}
+function nameIt(place) {
+  const n = M.placeNear([place.lng, place.lat]);
+  place.name = n ?? (place === mine ? 'Your area' : 'This area');
+  if (viewing === place) renderHome();
+}
+
+/* ---- Search (Nominatim, on Enter only) ---- */
+const q = $('q');
+const sug = $('suggest');
+let searching = false;
+async function search() {
+  const text = q.value.trim();
+  if (text.length < 2 || searching) return;
+  searching = true;
+  sug.hidden = false;
+  sug.innerHTML = '<li class="none">Searching…</li>';
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url, { referrerPolicy: 'origin', headers: { accept: 'application/json' } });
+    const hits = res.ok ? await res.json() : [];
+    sug.innerHTML = hits.length
+      ? hits
+          .map(
+            (h, i) =>
+              `<li role="option" data-i="${i}"><span class="ico-tile">${ICON.place}</span><span class="txt"><b>${esc(h.name || h.display_name.split(',')[0])}</b><span>${esc(h.display_name)}</span></span></li>`,
+          )
+          .join('')
+      : `<li class="none">No place called “${esc(text)}”.</li>`;
+    for (const li of QA('[data-i]', sug))
+      li.onmousedown = (ev) => {
+        ev.preventDefault();
+        const h = hits[Number(li.getAttribute('data-i'))];
+        sug.hidden = true;
+        q.blur();
+        const place = buildPlace(Number(h.lat), Number(h.lon), h.name || h.display_name.split(',')[0]);
+        if (app.dataset.tab !== 'home') tab('home');
+        if (!mine) adopt(place);
+        else show(place);
+      };
+  } catch {
+    sug.innerHTML = '<li class="none">Search needs a connection.</li>';
+  }
+  searching = false;
+}
+$('searchform').onsubmit = (ev) => {
+  ev.preventDefault();
+  search();
+};
+q.addEventListener('input', () => {
+  $('clear').hidden = !q.value;
+  if (!q.value) sug.hidden = true;
+});
+q.addEventListener('blur', () => setTimeout(() => (sug.hidden = true), 150));
+$('clear').onclick = () => {
+  q.value = '';
+  $('clear').hidden = true;
+  sug.hidden = true;
+  if (mine && viewing !== mine) show(mine, 1600);
+};
+
+/* ---- Map buttons ---- */
 $('zin').onclick = () => M.map.zoomIn();
 $('zout').onclick = () => M.map.zoomOut();
 $('myloc').onclick = () => {
-  if (!spotSet) {
-    toast('Choose your spot first: tap a block in Yaba.');
-    flyTo(cellCentre(CELL[AREAS[SPOT_AREA].centre]), 13);
-    return;
-  }
-  flyTo(SPOT_LL, 14);
+  if (mine) {
+    if (viewing !== mine) {
+      q.value = '';
+      show(mine, 1600);
+    } else M.flyTo([mine.lng, mine.lat], 14.3, 900, padding());
+  } else locate();
 };
-function applyFilter() {
-  const f = filter.size ? ['in', ['get', 'state'], ['literal', [...filter]]] : null;
-  M.on('ready', () => {
-    M.map.setFilter('cells-fill', f);
-    M.map.setFilter('cells-line', f);
-  });
-}
-QA('.chips .chip').forEach((b) => {
-  b.onclick = () => {
-    const s = b.getAttribute('data-filter');
-    if (filter.has(s)) filter.delete(s);
-    else filter.add(s);
-    b.setAttribute('aria-pressed', String(filter.has(s)));
-    applyFilter();
-    if (current === null) renderHome();
-  };
-});
 
-/* ---- State of the city ---- */
-let state = M.states();
-function setStates(next) {
-  Object.assign(state, next);
-  M.setStates(next);
-  if (current === null) refreshHomeLive();
-  else if (current) renderArea(current);
-}
-function areaCounts(slug) {
-  const n = { NORMAL: 0, POSSIBLE: 0, CONFIRMED: 0, RESTORED: 0, NO_DATA: 0 };
-  for (const c of AREAS[slug].cells) n[state[c]] += 1;
-  return n;
-}
-function worst(slug) {
-  let w = 'NO_DATA';
-  for (const c of AREAS[slug].cells) if (RANK[state[c]] > RANK[w]) w = state[c];
-  return w;
-}
-function areaLine(slug) {
-  const n = areaCounts(slug);
-  const total = AREAS[slug].cells.length;
-  const parts = [];
-  if (n.CONFIRMED) parts.push(`${n.CONFIRMED} of ${total} blocks out`);
-  if (n.POSSIBLE) parts.push(`${n.POSSIBLE} maybe`);
-  if (n.RESTORED) parts.push(`${n.RESTORED} back`);
-  if (!parts.length) parts.push(n.NO_DATA === total ? 'No data yet' : `On in ${n.NORMAL} of ${total} blocks`);
-  return parts.join(' · ');
-}
-
-/* ---- Panel: home, an area, search ---- */
+/* ---- Panel: your area, or the place you searched ---- */
 const panel = $('panel');
 const body = $('panelbody');
-let current = null; // null = home, or an area slug
-let sheet = 'peek'; // phone only: peek | full
+let sheet = 'peek';
 function layoutSheet() {
   if (wide()) {
     panel.style.transform = '';
@@ -132,9 +150,9 @@ function layoutSheet() {
   }
   const full = panel.getBoundingClientRect().height;
   const first = body.querySelector('[data-peek]');
-  const peek = first ? Math.min(full, first.offsetTop + first.offsetHeight + 16) : 180;
+  const peek = first ? Math.min(full, first.offsetTop + first.offsetHeight + 20) : 200;
   panel.style.transform = sheet === 'full' ? 'translateY(0)' : `translateY(${Math.max(0, full - peek)}px)`;
-  $('mapctl').style.bottom = `${peek + 76}px`;
+  $('mapctl').style.bottom = `${peek + 84}px`;
   $('grab').setAttribute('aria-label', sheet === 'full' ? 'Show less' : 'Show more');
 }
 $('grab').onclick = () => {
@@ -157,167 +175,84 @@ document.addEventListener('pointerup', (ev) => {
 
 const track = (step) =>
   `<ol class="track" aria-hidden="true">${['On', 'Maybe', 'Out', 'Back'].map((t, i) => `<li class="${i <= step ? 'done' : ''}"><i></i>${t}</li>`).join('')}</ol>`;
-let spotView = { s: 'NORMAL', sub: '', step: 0 };
-function spotCard() {
-  if (!spotSet) {
-    return `<div class="card spot" data-peek data-state="NO_DATA"><p class="over">${ICON.place} Your spot</p><p class="big">Choose your spot</p><p class="sub">Tap your block on the map. Only the area is saved, never your position.</p><button type="button" class="btn primary" id="setspot">Use Yaba as my spot</button></div>`;
-  }
-  const a = AREAS[SPOT_AREA];
+let live = { s: 'NORMAL', sub: '', step: 0 };
+let whyLines = null;
+
+function counts(place) {
+  const n = { NORMAL: 0, POSSIBLE: 0, CONFIRMED: 0, RESTORED: 0, NO_DATA: 0 };
+  for (const id of Object.keys(place.states)) n[place.states[id]] += 1;
+  return n;
+}
+function aroundLine(place) {
+  const n = counts(place);
+  const bits = [];
+  if (n.CONFIRMED) bits.push(`<span><i class="dot" data-state="CONFIRMED"></i>${n.CONFIRMED} out</span>`);
+  if (n.POSSIBLE) bits.push(`<span><i class="dot" data-state="POSSIBLE"></i>${n.POSSIBLE} maybe</span>`);
+  if (n.RESTORED) bits.push(`<span><i class="dot" data-state="RESTORED"></i>${n.RESTORED} back</span>`);
+  bits.push(`<span><i class="dot" data-state="NORMAL"></i>${n.NORMAL} on</span>`);
+  return bits.join('');
+}
+
+function statusCard(place) {
+  const isMine = place === mine;
+  const s = isMine ? live.s : place.states[place.cell];
+  const sub = isMine ? live.sub : s === 'NORMAL' ? 'Phones here are charging' : WORDS[s];
   return (
-    `<div class="card spot" data-peek data-state="${spotView.s}" id="spotcard" aria-live="polite">` +
-    `<p class="over">${ICON.place} Your spot in ${esc(a.name)}<span class="tag">Simulated</span></p>` +
-    `<p class="big"><i class="dot" data-state="${spotView.s}"></i>${WORDS[spotView.s]}</p><p class="sub">${esc(spotView.sub)}</p>${track(spotView.step)}` +
-    `<div class="metas"><span class="meta">${ICON.bolt}Band ${a.band} · ${city.bands[a.band]} h promised</span><span class="meta">${ICON.alarm}Light Alarm on</span></div>` +
-    `<button type="button" class="btn primary" id="go"${R && !running ? '' : ' disabled'}>${running ? 'Simulating…' : 'Simulate a blackout'}</button></div>`
+    `<section class="status" data-peek data-state="${s}" id="statuscard" aria-live="polite">` +
+    `<div class="status-head"><span class="eyebrow-s">${isMine ? 'Your block' : 'This block'}</span><span class="tag">Simulated</span></div>` +
+    `<p class="status-word"><i class="dot lg" data-state="${s}"></i>${WORDS[s]}</p><p class="status-sub">${esc(sub)}</p>` +
+    (isMine ? track(live.step) : '') +
+    (isMine
+      ? `<div class="row-btns"><button type="button" class="btn primary" id="go"${R && !running ? '' : ' disabled'}>${running ? 'Simulating…' : 'Simulate a blackout'}</button>` +
+        (place.area.promise ? `<span class="chip-static">${ICON.bolt}Band ${place.area.band} · ${place.area.promise} h</span>` : '') +
+        '</div>'
+      : `<div class="row-btns"><button type="button" class="btn secondary" id="backmine">${ICON.arrow}Back to my area</button></div>`) +
+    '</section>'
   );
 }
-function areaRows() {
-  return city.areas
-    .filter((a) => !filter.size || a.cells.some((c) => filter.has(state[c])))
-    .map((a) => {
-      const w = worst(a.slug);
-      return `<li><button type="button" class="row" data-area="${a.slug}"><i class="dot" data-state="${w}"></i><span class="txt"><b>${esc(a.name)}${a.slug === SPOT_AREA && spotSet ? ' <small>Your spot</small>' : ''}</b><span>${WORDS[w]} · ${esc(areaLine(a.slug))}</span></span><span class="st" data-state="${w}">${SHORT[w]}</span></button></li>`;
-    })
-    .join('');
-}
-let whyLines = null;
+
 function renderHome() {
-  current = null;
-  M.select(null);
-  const s = summary(city, AREAS[SPOT_AREA], TODAY, 7);
-  const week = dailyHours(city, AREAS[SPOT_AREA], TODAY, 7);
+  if (!viewing) return;
+  const p = viewing;
+  const s7 = summary(p.area, TODAY, 7);
   body.innerHTML =
-    spotCard() +
-    `<div class="why card flat" id="why"${whyLines ? '' : ' hidden'}><p class="h">How sure is Outage?</p><ul id="whylist">${(whyLines ?? []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>` +
-    (spotSet
-      ? `<div class="card flat"><div class="row-head"><p class="h">Power at your spot this week</p><button type="button" class="link" data-goto="insights">Insights ${ICON.chevron}</button></div>` +
-        `<p class="kpi"><b>${s.avgHours} h</b> a day on average · ${s.daysBelow} of 7 days below the promise</p><div class="mini" data-mini="${SPOT_AREA}"></div></div>`
-      : '') +
-    `<h2 class="sec">Areas${filter.size ? ' matching the filter' : ''}</h2><ul class="rows" id="arealist">${areaRows() || '<li class="empty">No area has blocks in that state right now.</li>'}</ul>` +
-    '<p class="foot">Simulated city: real neighbourhoods at their real places, made-up power. Map © OpenStreetMap contributors, OpenFreeMap.</p>';
-  drawMini(week);
-  bindPanel();
+    `<header class="place-head"><p class="eyebrow-s">${p === mine ? 'Your area' : 'Viewing'}</p><h2>${esc(p.name ?? '…')}</h2></header>` +
+    statusCard(p) +
+    `<div class="why" id="why"${whyLines && p === mine ? '' : ' hidden'}><p class="h">How sure is Outage?</p><ul id="whylist">${(whyLines ?? []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>` +
+    `<section class="card"><div class="card-row"><p class="h">This week</p><button type="button" class="link" data-goto="insights">Insights ${ICON.chevron}</button></div>` +
+    `<div class="kpis"><div><b>${s7.avgHours} h</b><span>power a day</span></div><div><b>${s7.outages}</b><span>outages</span></div><div><b>${s7.outages ? duration(s7.medianMinutes) : '–'}</b><span>typical wait</span></div></div>` +
+    `<div class="mini" data-mini></div></section>` +
+    `<section class="card"><p class="h">Around ${p === mine ? 'you' : 'here'}</p><p class="around">${aroundLine(p)}</p><p class="fine">Blocks within about 2 km. Tap one on the map.</p></section>` +
+    '<p class="fine pad">Simulated data for a demo. Map © OpenStreetMap contributors, OpenFreeMap.</p>';
+  drawMini();
+  bind();
   layoutSheet();
 }
-function refreshHomeLive() {
-  const card = $('spotcard');
-  if (card) card.outerHTML = spotCard();
-  const list = $('arealist');
-  if (list) list.innerHTML = areaRows();
-  bindPanel();
-  layoutSheet();
+function drawMini() {
+  const el = body.querySelector('[data-mini]');
+  if (el && viewing) el.innerHTML = miniBars(dailyHours(viewing.area, TODAY, 7), viewing.area.promise, el.clientWidth || 300);
 }
-function drawMini(week) {
-  for (const el of QA('[data-mini]', body)) {
-    const a = AREAS[el.getAttribute('data-mini')];
-    el.innerHTML = miniBars(week ?? dailyHours(city, a, TODAY, 7), city.bands[a.band], el.clientWidth || 300);
-  }
-}
-function bindPanel() {
-  for (const b of QA('[data-area]', body)) b.onclick = () => openArea(b.getAttribute('data-area'));
+function bind() {
   for (const b of QA('[data-goto]', body)) b.onclick = () => tab(b.getAttribute('data-goto'));
   const go = $('go');
   if (go) go.onclick = start;
-  const set = $('setspot');
-  if (set) set.onclick = () => land(true);
-  const back = $('back');
-  if (back) back.onclick = () => renderHome();
-  const follow = $('follow');
-  if (follow)
-    follow.onclick = () => {
-      const on = follow.getAttribute('aria-pressed') !== 'true';
-      followed[current] = on;
-      follow.setAttribute('aria-pressed', String(on));
-      follow.innerHTML = on ? `${ICON.check}Following` : `${ICON.notifications}Follow`;
-      toast(on ? `You will get a notification when ${AREAS[current].name} loses or gets back power.` : 'Not following any more.');
+  const back = $('backmine');
+  if (back)
+    back.onclick = () => {
+      q.value = '';
+      $('clear').hidden = true;
+      show(mine, 1600);
     };
 }
-const followed = {};
-function openArea(slug, fly = true) {
-  current = slug;
-  renderArea(slug);
-  sheet = 'peek';
-  layoutSheet();
-  const a = AREAS[slug];
-  if (fly) flyTo([a.lng, a.lat], 13.2, 1200);
-}
-function renderArea(slug) {
-  const a = AREAS[slug];
-  const w = worst(slug);
-  const n = areaCounts(slug);
-  const s30 = summary(city, a, TODAY, 30);
-  body.innerHTML =
-    `<div class="area-head" data-peek><button type="button" class="icon-btn" id="back" aria-label="Back">${ICON.arrow}</button><div><h2>${esc(a.name)}</h2><p class="sub"><i class="dot" data-state="${w}"></i>${WORDS[w]} · ${esc(areaLine(slug))}</p></div></div>` +
-    `<div class="split4">${['CONFIRMED', 'POSSIBLE', 'RESTORED', 'NORMAL'].map((k) => `<div class="cnt" data-state="${k}"><b>${n[k]}</b><span>${SHORT[k]}</span></div>`).join('')}</div>` +
-    `<div class="btns"><button type="button" class="btn tonal" id="follow" aria-pressed="${followed[slug] ? 'true' : 'false'}">${followed[slug] ? `${ICON.check}Following` : `${ICON.notifications}Follow`}</button>` +
-    `<button type="button" class="btn outline" data-goto="insights" data-insights="${slug}">${ICON.chart}Insights</button></div>` +
-    `<div class="card flat"><p class="h">Hours of power, last 7 days</p><div class="mini" data-mini="${slug}"></div></div>` +
-    `<div class="card flat"><p class="h">Last 30 days</p><dl class="facts"><div><dt>Power a day</dt><dd>${s30.avgHours} h</dd></div><div><dt>Band ${a.band} promise</dt><dd>${s30.promise} h</dd></div>` +
-    `<div><dt>Outages</dt><dd>${s30.outages}</dd></div><div><dt>Typical wait for power</dt><dd>${duration(s30.medianMinutes)}</dd></div><div><dt>Longest outage</dt><dd>${duration(s30.longestMinutes)}</dd></div><div><dt>Days below promise</dt><dd>${s30.daysBelow} of 30</dd></div></dl></div>` +
-    `<p class="foot">Colours show once 3 or more phones in a block agree. The band is made up for the simulation.</p>`;
-  drawMini();
-  for (const b of QA('[data-insights]', body)) b.addEventListener('click', () => setInsightsArea(b.getAttribute('data-insights')));
-  bindPanel();
-  layoutSheet();
-}
 M.on('cell', (id) => {
-  if (!id) return;
-  if (!spotSet && AREA_OF[id] === SPOT_AREA) {
-    land(true);
-    return;
-  }
+  if (!id || !viewing) return;
   M.select(id);
-  if (current !== AREA_OF[id]) openArea(AREA_OF[id], false);
-  M.select(id);
+  const s = viewing.states[id];
+  const d = gridDistance(viewing.cell, id);
+  toast(`${WORDS[s]} in this block, ${d === 0 ? 'your own block' : `about ${(d * 0.9).toFixed(1)} km away`}.`);
 });
 
-/* ---- Search ---- */
-const q = $('q');
-const sug = $('suggest');
-function suggestions() {
-  const t = q.value.trim().toLowerCase();
-  $('clear').hidden = !t;
-  if (!t) {
-    sug.hidden = true;
-    q.setAttribute('aria-expanded', 'false');
-    return [];
-  }
-  const hits = city.areas.filter((a) => a.name.toLowerCase().includes(t) || a.slug.includes(t));
-  sug.innerHTML = hits.length
-    ? hits.map((a, i) => `<li role="option" id="sg${i}" data-area="${a.slug}"><i class="dot" data-state="${worst(a.slug)}"></i><b>${esc(a.name)}</b><span>${WORDS[worst(a.slug)]}</span></li>`).join('')
-    : `<li class="none">No area called “${esc(q.value.trim())}” in the simulated city.</li>`;
-  sug.hidden = false;
-  q.setAttribute('aria-expanded', 'true');
-  for (const li of QA('[data-area]', sug)) li.onmousedown = (ev) => {
-    ev.preventDefault();
-    pick(li.getAttribute('data-area'));
-  };
-  return hits;
-}
-function pick(slug) {
-  q.value = AREAS[slug].name;
-  sug.hidden = true;
-  $('clear').hidden = false;
-  q.blur();
-  if (app.dataset.tab !== 'home') tab('home');
-  openArea(slug);
-}
-q.addEventListener('input', suggestions);
-q.addEventListener('focus', suggestions);
-q.addEventListener('blur', () => setTimeout(() => (sug.hidden = true), 120));
-$('searchform').onsubmit = (ev) => {
-  ev.preventDefault();
-  const hits = suggestions();
-  if (hits.length) pick(hits[0].slug);
-};
-$('clear').onclick = () => {
-  q.value = '';
-  suggestions();
-  renderHome();
-  q.focus();
-};
-
-/* ---- Replay of one blackout at the spot ---- */
+/* ---- Replay of one blackout at your block ---- */
 let R = null;
 let frames = [];
 let first = 0;
@@ -326,7 +261,6 @@ let on = {};
 let timer = 0;
 let running = false;
 let last = 'NORMAL';
-const START = { ...state };
 const pct = (p) => (p < 0.0001 ? 'under 0.01%' : `${(p * 100).toFixed(p < 0.01 ? 2 : 1)}%`);
 const stOf = (f) => (WORDS[f.cells[0]?.state] ? f.cells[0].state : 'NORMAL');
 function applyEvents(f) {
@@ -336,13 +270,14 @@ function applyEvents(f) {
   }
 }
 const offCount = () => phones.filter((p) => !on[p.alias]).length;
-function setSpotArea(s) {
-  const next = { [SPOT]: s };
-  const near = s === 'POSSIBLE' ? 2 : city.spotNeighbours.length;
-  city.spotNeighbours.forEach((id, i) => {
-    next[id] = i < near ? s : s === 'POSSIBLE' ? 'NORMAL' : state[id];
+function setMine(s) {
+  const ring = gridDisk(mine.cell, 1).filter((c) => c !== mine.cell);
+  const next = { [mine.cell]: s };
+  ring.forEach((id, i) => {
+    next[id] = s === 'POSSIBLE' ? (i < 2 ? s : 'NORMAL') : s;
   });
-  setStates(next);
+  Object.assign(mine.states, next);
+  if (viewing === mine) M.setStates(next);
 }
 function why(x) {
   whyLines = [
@@ -350,25 +285,22 @@ function why(x) {
     `Usual rate: ${(x.lambdaPerSec * 3600).toFixed(1)} unplugs an hour. Chance this is luck: ${pct(x.p)}.`,
     ...(x.restore ? [`Power back: ${x.restore.replugs} phones charging again, ${x.restore.quorum} needed.`] : []),
   ];
-  const w = $('why');
-  if (w) {
-    w.hidden = false;
-    $('whylist').innerHTML = whyLines.map((t) => `<li>${esc(t)}</li>`).join('');
-  }
 }
-function show(f) {
+function frame(f) {
   const s = stOf(f);
   const o = offCount();
   const n = phones.length;
-  if (s === 'NORMAL') spotView = { s, step: 0, sub: o === 0 ? `${n} of ${n} phones nearby are charging` : `${o} of ${n} phones stopped charging. Not enough to call it a cut.` };
-  else if (s === 'POSSIBLE') spotView = { s, step: 1, sub: `${o} of ${n} phones stopped charging within seconds. Checking.` };
-  else if (s === 'CONFIRMED') spotView = { s, step: 2, sub: `${o} of ${n} phones lost power together. Too many to be luck.` };
-  else spotView = { s, step: 3, sub: `${n - o} of ${n} phones are charging again.` };
+  if (s === 'NORMAL') live = { s, step: 0, sub: o === 0 ? `${n} of ${n} phones nearby are charging` : `${o} of ${n} stopped charging. Not enough to call it a cut.` };
+  else if (s === 'POSSIBLE') live = { s, step: 1, sub: `${o} of ${n} phones stopped charging within seconds. Checking.` };
+  else if (s === 'CONFIRMED') live = { s, step: 2, sub: `${o} of ${n} phones lost power together. Too many to be luck.` };
+  else live = { s, step: 3, sub: `${n - o} of ${n} phones are charging again.` };
   if (f.explanation) why(f.explanation);
-  setSpotArea(s);
+  setMine(s);
+  if (viewing === mine) renderHome();
+  const name = mine.name ?? 'your area';
   if (s !== last) {
-    if (s === 'POSSIBLE') toast('Phones in Yaba stopped charging. Outage is checking.');
-    if (s === 'CONFIRMED') notify('Power cut in Yaba', 'Confirmed by phones at your spot. We will ring when it is back.');
+    if (s === 'POSSIBLE') toast(`Phones in ${name} stopped charging. Outage is checking.`);
+    if (s === 'CONFIRMED') notify(`Power cut in ${name}`, 'Confirmed by phones at your block. We will ring when it is back.');
     if (s === 'RESTORED') ring();
   }
   last = s;
@@ -380,13 +312,13 @@ const gap = (a, b) => {
 function run(i) {
   if (i >= frames.length) {
     running = false;
-    if (current === null) refreshHomeLive();
+    if (viewing === mine) renderHome();
     const go = $('go');
     if (go) go.textContent = 'Simulate again';
     return;
   }
   applyEvents(frames[i]);
-  show(frames[i]);
+  frame(frames[i]);
   if (i + 1 < frames.length) timer = setTimeout(() => run(i + 1), gap(frames[i], frames[i + 1]));
   else run(i + 1);
 }
@@ -395,19 +327,22 @@ function reset() {
   for (let i = 0; i < first; i++) applyEvents(frames[i]);
   last = 'NORMAL';
   whyLines = null;
-  spotView = { s: 'NORMAL', step: 0, sub: `${phones.length} of ${phones.length} phones nearby are charging` };
-  state = { ...START };
-  M.setStates(START);
+  live = { s: 'NORMAL', step: 0, sub: `${phones.length} of ${phones.length} phones nearby are charging` };
+  if (mine) {
+    Object.assign(mine.states, mine.start);
+    if (viewing === mine) M.setStates(mine.start);
+  }
 }
 function start() {
-  if (running || !R) return;
+  if (running || !R || !mine) return;
+  if (viewing !== mine) show(mine, 900);
   running = true;
   clearTimeout(timer);
   reset();
   renderHome();
   sheet = 'peek';
   layoutSheet();
-  flyTo(SPOT_LL, 14.2, 900);
+  M.flyTo([mine.lng, mine.lat], 14.8, 900, padding());
   timer = setTimeout(() => run(first), 1000);
 }
 function ready(d) {
@@ -415,15 +350,10 @@ function ready(d) {
   frames = d.frames;
   phones = d.phones;
   first = frames.findIndex((f) => ['POSSIBLE', 'CONFIRMED'].includes(stOf(f)));
-  if (first < 0) return fail();
+  if (first < 0) return;
   while (first > 0 && frames[first - 1].events.some((ev) => ev.type === 'UNPLUG')) first--;
   reset();
-  if (current === null) refreshHomeLive();
-}
-function fail() {
-  R = null;
-  spotView = { s: 'NO_DATA', step: -1, sub: "Can't load the simulation. Check your connection and reload." };
-  if (current === null) refreshHomeLive();
+  if (viewing === mine) renderHome();
 }
 
 /* ---- Light Alarm, as on the phone ---- */
@@ -432,13 +362,13 @@ function ring() {
   a.className = 'alarm';
   a.setAttribute('role', 'alertdialog');
   a.setAttribute('aria-label', 'Light Alarm');
-  a.innerHTML = `<div class="alarm-card"><div class="halo">${ICON.alarm}</div><h2>Power is back</h2><p>Power returned at your spot in Yaba.</p><p class="sub">On the phone this rings like an alarm clock, even on silent.</p><button type="button" class="btn primary">Stop alarm</button></div>`;
+  a.innerHTML = `<div class="alarm-card"><div class="halo">${ICON.alarm}</div><p class="alarm-time">${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p><h2>Power is back</h2><p>Power returned at your block in ${esc(mine.name ?? 'your area')}.</p><button type="button" class="btn light">Stop alarm</button></div>`;
   app.appendChild(a);
   const b = a.querySelector('button');
   b.focus();
   b.onclick = () => {
     a.remove();
-    toast('Light Alarm stopped. Power has been back for 1 min.');
+    toast('Light Alarm stopped.');
   };
 }
 
@@ -452,7 +382,7 @@ function tab(id) {
   $('insights').hidden = id !== 'insights';
   $('settings').hidden = id !== 'settings';
   if (id === 'insights') renderInsights();
-  if (id === 'settings' && !$('settings').innerHTML) renderSettings();
+  if (id === 'settings') renderSettings();
   if (id === 'home') {
     M.map.resize();
     layoutSheet();
@@ -460,84 +390,84 @@ function tab(id) {
 }
 for (const b of QA('.rail button')) b.onclick = () => tab(b.getAttribute('data-tab'));
 
-/* ---- Insights ---- */
-let insightsArea = SPOT_AREA;
-let rankDays = 7;
-function setInsightsArea(slug) {
-  insightsArea = slug;
-}
+/* ---- Insights: your area; a searched place only if you chose one ---- */
+let insightsOf = 'mine';
+let redraw = null;
+const tile = (value, label, sub, tone = '') =>
+  `<div class="tile"${tone ? ` data-tone="${tone}"` : ''}><span>${esc(label)}</span><b>${esc(value)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</div>`;
 function renderInsights() {
   const page = $('insights');
-  const a = AREAS[insightsArea];
-  const s = summary(city, a, TODAY, 30);
-  const days = dailyHours(city, a, TODAY, 30);
-  const grid = heat(city, a, TODAY, 28);
+  const place = insightsOf === 'viewing' && viewing && viewing !== mine ? viewing : mine;
+  if (!place) {
+    page.innerHTML = `<div class="page-in narrow"><div class="empty-state">${ICON.place}<h1>Insights are about your area</h1><p>Share your location or search for your town, and Insights show how power behaves there.</p><button type="button" class="btn primary" id="ilocate">Use my location</button></div></div>`;
+    $('ilocate').onclick = () => {
+      tab('home');
+      locate();
+    };
+    return;
+  }
+  const a = place.area;
+  const s = summary(a, TODAY, 30);
+  const days = dailyHours(a, TODAY, 30);
+  const grid = heat(a, TODAY, 28);
   const peak = worstHours(grid);
-  const weeks = weekly(city, a, TODAY, 5);
-  const cuts = outagesIn(city, a, TODAY, 30);
+  const weeks = weekly(a, TODAY, 5);
+  const cuts = outagesIn(a, TODAY, 30);
   const prev = weeks[weeks.length - 2]?.offHours ?? 0;
   const lastW = weeks[weeks.length - 1].offHours;
   const change = prev ? Math.round(((lastW - prev) / prev) * 100) : 0;
-  const yesterday = days[days.length - 1].date;
-  const opts = city.areas.map((x) => `<option value="${x.slug}"${x.slug === insightsArea ? ' selected' : ''}>${esc(x.name)}${x.slug === SPOT_AREA && spotSet ? ' (your spot)' : ''}</option>`).join('');
+  const switcher =
+    viewing && mine && viewing !== mine
+      ? `<div class="seg" role="group" aria-label="Place"><button type="button" data-of="mine" aria-pressed="${place === mine}">My area</button><button type="button" data-of="viewing" aria-pressed="${place !== mine}">${esc(viewing.name ?? 'Searched place')}</button></div>`
+      : '';
   page.innerHTML =
     '<div class="page-in">' +
-    `<header class="page-head"><div><h1>Insights</h1><p class="sub">Last 30 days, to ${fmtLong(yesterday)} · <span class="tag">Simulated</span></p></div>` +
-    `<label class="select"><span class="visually-hidden">Area</span>${ICON.place}<select id="iarea">${opts}</select></label></header>` +
+    `<header class="page-head"><div><p class="eyebrow-s">${place === mine ? 'Your area' : 'Viewing'}</p><h1>${esc(place.name ?? 'Your area')}</h1><p class="sub">Last 30 days, to ${fmtLong(days[days.length - 1].date)} <span class="tag">Simulated</span></p></div>${switcher}</header>` +
     '<div class="tiles">' +
-    tile(`${s.avgHours} h`, 'Power a day', `Band ${s.band} promises ${s.promise} h`, s.avgHours < s.promise ? 'below' : 'met') +
-    tile(`${s.daysBelow} of ${s.days}`, 'Days below the promise', s.daysBelow ? `${Math.round((s.daysBelow / s.days) * 100)}% of days` : 'Every day met it') +
-    tile(`${s.outages}`, 'Outages', `${s.offHours} h without power`) +
-    tile(duration(s.medianMinutes), 'Typical wait for power', 'Half of outages end sooner') +
-    tile(duration(s.longestMinutes), 'Longest outage', '') +
+    tile(`${s.avgHours} h`, 'Power a day', s.promise ? `Band ${s.band} promises ${s.promise} h` : `${Math.round((s.avgHours / 24) * 100)}% of the time`, s.promise ? (s.avgHours < s.promise ? 'below' : 'met') : '') +
+    (s.promise ? tile(`${s.daysBelow} of ${s.days}`, 'Days below the promise', `${Math.round((s.daysBelow / s.days) * 100)}% of days`) : tile(`${s.offHours} h`, 'Without power', 'in 30 days')) +
+    tile(`${s.outages}`, 'Outages', `${(s.outages / 30).toFixed(1)} a day`) +
+    tile(s.outages ? duration(s.medianMinutes) : '–', 'Typical wait', 'until power is back') +
+    tile(s.outages ? duration(s.longestMinutes) : '–', 'Longest outage', '') +
     '</div>' +
-    `<section class="card"><div class="card-head"><h2>Hours of power each day</h2><p class="sub">${s.daysBelow} of ${s.days} days below Band ${s.band}'s ${s.promise} h</p></div>` +
-    `<div class="legend-inline"><span><i class="sw blue"></i>Met the promise</span><span><i class="sw amber"></i>Below the promise</span><span><i class="sw dash"></i>Band ${s.band} promise</span></div>` +
+    `<section class="card"><div class="card-head"><h2>Hours of power each day</h2><p class="sub">${s.promise ? `${s.daysBelow} of ${s.days} days below Band ${s.band}'s ${s.promise} h` : `Average ${s.avgHours} h a day`}</p></div>` +
+    (s.promise
+      ? `<div class="legend-inline"><span><i class="sw blue"></i>Met the promise</span><span><i class="sw amber"></i>Below the promise</span><span><i class="sw dash"></i>Band ${s.band} promise</span></div>`
+      : '') +
     '<div class="plot" data-chart="daily"></div>' +
     `<details><summary>Show as a table</summary><table><thead><tr><th>Day</th><th>Hours of power</th></tr></thead><tbody>${days
       .slice()
       .reverse()
       .map((d) => `<tr><td>${fmtLong(d.date)}</td><td>${d.hours} h</td></tr>`)
       .join('')}</tbody></table></details></section>` +
-    `<section class="card"><div class="card-head"><h2>When the power goes</h2><p class="sub">Most often off ${hourLabel(peak.from)} to ${hourLabel(peak.to)}: on ${Math.round(peak.share * 100)}% of days. Last 4 weeks.</p></div>` +
-    `<div class="plot" data-chart="heat"></div>${heatLegend()}</section>` +
     '<div class="two">' +
-    `<section class="card"><div class="card-head row"><div><h2>Areas compared</h2><p class="sub">Hours of power a day, the black tick is each area's promise</p></div>` +
-    `<div class="seg" role="group" aria-label="Period"><button type="button" data-days="7" aria-pressed="${rankDays === 7}">7 days</button><button type="button" data-days="30" aria-pressed="${rankDays === 30}">30 days</button></div></div>` +
-    '<div class="plot" data-chart="rank"></div></section>' +
-    `<section class="card"><div class="card-head"><h2>Hours without power each week</h2><p class="sub">${change === 0 ? 'Same as the week before' : `${Math.abs(change)}% ${change < 0 ? 'less' : 'more'} than the week before`}</p></div>` +
-    '<div class="plot" data-chart="weekly"></div></section>' +
+    `<section class="card"><div class="card-head"><h2>When the power goes</h2><p class="sub">Most often off ${hourLabel(peak.from)} to ${hourLabel(peak.to)}, on ${Math.round(peak.share * 100)}% of days</p></div><div class="plot" data-chart="heat"></div>${heatLegend()}</section>` +
+    `<section class="card"><div class="card-head"><h2>Hours without power each week</h2><p class="sub">${change === 0 ? 'Same as the week before' : `${Math.abs(change)}% ${change < 0 ? 'less' : 'more'} than the week before`}</p></div><div class="plot" data-chart="weekly"></div></section>` +
     '</div>' +
-    `<section class="card"><div class="card-head"><h2>Outage history</h2><p class="sub">${cuts.length} outages in ${esc(a.name)} in the last 30 days, newest first</p></div>` +
+    `<section class="card"><div class="card-head"><h2>Outage history</h2><p class="sub">${cuts.length} outages in the last 30 days, newest first</p></div>` +
     `<table class="log"><thead><tr><th>Day</th><th>Went off</th><th>Came back</th><th>Length</th></tr></thead><tbody>${cuts
       .map((c, i) => {
         const end = new Date(c.start.getTime() + c.minutes * 60000);
         const t = (d) => d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' });
-        return `<tr${i >= 8 ? ' class="more" hidden' : ''}><td>${fmtLong(c.start)}</td><td>${t(c.start)}</td><td>${t(end)}${end.getDate() !== c.start.getDate() ? ' next day' : ''}</td><td><span class="len${c.minutes === s.longestMinutes ? ' longest' : ''}">${duration(c.minutes)}</span></td></tr>`;
+        return `<tr${i >= 8 ? ' class="more" hidden' : ''}><td>${fmtLong(c.start)}</td><td>${t(c.start)}</td><td>${t(end)}${end.getDate() !== c.start.getDate() ? ' (next day)' : ''}</td><td><span class="len${c.minutes === s.longestMinutes ? ' longest' : ''}">${duration(c.minutes)}</span></td></tr>`;
       })
       .join('')}</tbody></table>` +
-    (cuts.length > 8 ? `<button type="button" class="btn outline" id="moreLog">Show all ${cuts.length}</button>` : '') +
+    (cuts.length > 8 ? `<button type="button" class="btn secondary" id="moreLog">Show all ${cuts.length}</button>` : '') +
     '</section>' +
-    '<p class="foot">Simulated history for a simulated city. Tariff bands are NERC’s minimum hours a day; the band of each area is made up. On the phone these numbers come from your own phone’s record.</p>' +
+    `<p class="fine">Simulated history for a demo. On the phone, Insights come from your own phone's record of every cut at your block.${s.promise ? ' Tariff bands are NERC minimum hours of supply a day.' : ''}</p>` +
     '</div>';
   const draw = () => {
     const w = (k) => Math.max(260, page.querySelector(`[data-chart="${k}"]`).clientWidth);
     page.querySelector('[data-chart="daily"]').innerHTML = dailyBars(days, s.promise, s.band, w('daily'));
     page.querySelector('[data-chart="heat"]').innerHTML = heatmap(grid, w('heat'));
-    page.querySelector('[data-chart="rank"]').innerHTML = ranked(ranking(city, TODAY, rankDays), insightsArea, w('rank'));
     page.querySelector('[data-chart="weekly"]').innerHTML = weeklyLine(weeks, w('weekly'));
   };
   draw();
-  redrawInsights = draw;
-  $('iarea').onchange = (ev) => {
-    insightsArea = ev.target.value;
-    renderInsights();
-  };
-  for (const b of QA('.seg button', page))
+  redraw = draw;
+  for (const b of QA('[data-of]', page))
     b.onclick = () => {
-      rankDays = Number(b.getAttribute('data-days'));
-      for (const x of QA('.seg button', page)) x.setAttribute('aria-pressed', String(x === b));
-      page.querySelector('[data-chart="rank"]').innerHTML = ranked(ranking(city, TODAY, rankDays), insightsArea, page.querySelector('[data-chart="rank"]').clientWidth);
+      insightsOf = b.getAttribute('data-of');
+      renderInsights();
     };
   const more = $('moreLog');
   if (more)
@@ -546,84 +476,84 @@ function renderInsights() {
       more.remove();
     };
 }
-let redrawInsights = null;
-const tile = (value, label, sub, tone = '') =>
-  `<div class="tile"${tone ? ` data-tone="${tone}"` : ''}><b>${esc(value)}</b><span>${esc(label)}</span>${sub ? `<small>${esc(sub)}</small>` : ''}</div>`;
 bindTips($('insights'), $('tip'));
 bindTips(panel, $('tip'));
 
 /* ---- Settings ---- */
+const prefs = { alarm: true, freezer: true, diagnostics: false };
 function renderSettings() {
-  const a = AREAS[SPOT_AREA];
-  const row = (ic, t, s, sw) =>
-    `<li><button type="button" class="row" data-t="${esc(t)}"${sw === undefined ? '' : ` role="switch" aria-checked="${sw}"`}><span class="lead">${ICON[ic]}</span><span class="txt"><b>${t}</b>${s ? `<span>${s}</span>` : ''}</span>${sw === undefined ? ICON.chevron : '<span class="switch"></span>'}</button></li>`;
+  const row = (ic, t, s, key) =>
+    `<li><button type="button" class="row" data-t="${esc(t)}"${key ? ` data-key="${key}" role="switch" aria-checked="${prefs[key]}"` : ''}><span class="lead">${ICON[ic]}</span><span class="txt"><b>${t}</b>${s ? `<span>${s}</span>` : ''}</span>${key ? '<span class="switch"></span>' : ICON.chevron}</button></li>`;
+  const band = mine?.area.band;
   $('settings').innerHTML =
-    '<div class="page-in narrow"><header class="page-head"><div><h1>Settings</h1><p class="sub"><span class="tag">Simulated</span></p></div></header>' +
-    `<h2 class="sec">Your power</h2><ul class="rows card">${row('place', 'Your spot', spotSet ? a.name : 'Not set')}${row('bolt', 'Tariff band', `Band ${a.band}, ${city.bands[a.band]} hours a day`)}${row('alarm', 'Light Alarm', 'Ring when power comes back', true)}${row('freezer', 'Freezer Guard', 'Warn after 4 h without power', true)}${row('phone', 'Home Watch', 'Watch a spare phone at home')}</ul>` +
-    `<h2 class="sec">This phone</h2><ul class="rows card">${row('battery', 'Keep Outage running', 'Battery steps for your phone')}${row('notifications', 'Notifications', 'Allowed')}${row('chart', 'Share anonymous diagnostics', 'Helps fix missed outages', false)}${row('language', 'Language', 'English')}</ul>` +
-    `<h2 class="sec">About</h2><ul class="rows card">${row('shield', 'About and privacy', 'No account. Only a map cell, never your position.')}${row('delete', 'Delete my data', 'From this phone and the server')}</ul>` +
-    '<p class="foot">Outage 1.0, simulated. Map data © OpenStreetMap contributors, tiles by OpenFreeMap.</p></div>';
+    '<div class="page-in narrow"><header class="page-head"><div><h1>Settings</h1></div></header>' +
+    `<h2 class="group">Your power</h2><ul class="list">${row('place', 'Your area', mine?.name ?? 'Not set')}${band ? row('bolt', 'Tariff band', `Band ${band}, ${BANDS[band]} hours a day`) : ''}${row('alarm', 'Light Alarm', 'Ring when power comes back', 'alarm')}${row('freezer', 'Freezer Guard', 'Warn after 4 h without power', 'freezer')}${row('phone', 'Home Watch', 'Watch a spare phone at home')}</ul>` +
+    `<h2 class="group">This phone</h2><ul class="list">${row('battery', 'Keep Outage running', 'Battery settings for your phone')}${row('notifications', 'Notifications', 'Allowed')}${row('chart', 'Share anonymous diagnostics', 'Helps fix missed outages', 'diagnostics')}${row('language', 'Language', 'English')}</ul>` +
+    `<h2 class="group">About</h2><ul class="list">${row('shield', 'Privacy', 'No account. Only your block is saved, never your position.')}${row('delete', 'Delete my data', 'From this phone and the server')}</ul>` +
+    '<p class="fine">Outage 1.0 · demo with simulated data. Map © OpenStreetMap contributors, OpenFreeMap.</p></div>';
   for (const b of QA('.row', $('settings')))
     b.onclick = () => {
-      const t = b.getAttribute('data-t');
-      if (b.hasAttribute('aria-checked')) {
-        const v = b.getAttribute('aria-checked') !== 'true';
-        b.setAttribute('aria-checked', String(v));
-        toast(`${t} ${v ? 'on' : 'off'}.`);
+      const key = b.getAttribute('data-key');
+      if (key) {
+        prefs[key] = !prefs[key];
+        b.setAttribute('aria-checked', String(prefs[key]));
         return;
       }
-      toast(t === 'Delete my data' ? 'Simulation: there is nothing to delete.' : `On the phone this opens ${t}.`);
+      const t = b.getAttribute('data-t');
+      toast(t === 'Delete my data' ? 'Nothing to delete: the demo keeps nothing.' : `On the phone this opens ${t}.`);
     };
 }
 
-/* ---- First run, as on a new phone ---- */
+/* ---- First run: your location ---- */
+function adopt(place) {
+  mine = place;
+  app.classList.remove('intro');
+  show(mine, reduced() ? 0 : 3200);
+  if (R) reset();
+}
+function locate() {
+  const btn = $('useloc');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Finding you…';
+  }
+  if (!('geolocation' in navigator)) return noLocation();
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      $('welcome')?.remove();
+      adopt(buildPlace(pos.coords.latitude, pos.coords.longitude, null));
+    },
+    noLocation,
+    { enableHighAccuracy: false, timeout: 12000, maximumAge: 600000 },
+  );
+}
+function noLocation() {
+  $('welcome')?.remove();
+  app.classList.remove('intro');
+  toast('Location not shared. Search for your town or area.');
+  q.focus();
+}
 function welcome() {
   const w = document.createElement('div');
   w.className = 'scrim';
+  w.id = 'welcome';
   w.innerHTML =
-    '<div class="dialog welcome" role="dialog" aria-modal="true" aria-labelledby="wt">' +
-    `<div class="wm">${ICON.logo}</div><h2 id="wt">See the power around you</h2>` +
-    '<p>Outage notices when your phone stops charging because the power went out, checks with phones nearby, and tells you when the lights are back.</p>' +
-    `<div class="note">${ICON.place}<p>Your position is used once to pick your block on the map, then dropped. Only the block is saved.</p></div>` +
-    '<div class="acts"><button type="button" class="btn primary" id="useloc">Use my location</button><button type="button" class="btn text" id="notnow">Not now</button></div></div>';
+    '<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="wt">' +
+    `<div class="dialog-icon">${ICON.myLocation}</div><h2 id="wt">See the power around you</h2>` +
+    '<p>Outage shows your own block and the area around it. Your browser asks for your location once; it stays in your browser and is never sent to us.</p>' +
+    '<div class="acts"><button type="button" class="btn primary lg" id="useloc">Use my location</button><button type="button" class="btn ghost lg" id="searchinstead">Search for a place instead</button></div>' +
+    '<p class="fine">Demo with simulated data around wherever you are.</p></div>';
   app.appendChild(w);
   $('useloc').focus();
-  $('useloc').onclick = () => {
-    w.innerHTML =
-      '<div class="dialog perm" role="dialog" aria-modal="true" aria-labelledby="pt">' +
-      `${ICON.place}<p id="pt" class="h">Allow Outage to access this device’s approximate location?</p>` +
-      '<div class="stack"><button type="button" class="btn tonal" data-a="1">While using the app</button><button type="button" class="btn tonal" data-a="1">Only this time</button><button type="button" class="btn tonal" data-a="0">Don’t allow</button></div>' +
-      '<p class="sub">Simulation: your real location is never read.</p></div>';
-    QA('button', w)[0].focus();
-    for (const b of QA('button', w))
-      b.onclick = () => {
-        w.remove();
-        land(b.getAttribute('data-a') === '1');
-      };
-  };
-  $('notnow').onclick = () => {
+  $('useloc').onclick = locate;
+  $('searchinstead').onclick = () => {
     w.remove();
-    land(false);
+    app.classList.remove('intro');
+    q.focus();
   };
-}
-function land(loc) {
-  spotSet = loc;
-  app.classList.remove('intro');
-  if (loc) {
-    M.setSpot(SPOT_LL);
-    renderHome();
-    flyTo(SPOT_LL, 14, 3200);
-    toast('Your spot is set to Yaba. Only the block is stored.');
-  } else {
-    M.setSpot(null);
-    renderHome();
-    flyTo(LAGOS, 10.4, 3000);
-  }
-  if ($('settings').innerHTML) renderSettings();
 }
 
 /* ---- Start ---- */
-renderHome();
 app.classList.add('intro');
 welcome();
 let rz = 0;
@@ -631,15 +561,12 @@ window.addEventListener('resize', () => {
   clearTimeout(rz);
   rz = setTimeout(() => {
     layoutSheet();
-    if (app.dataset.tab === 'insights' && redrawInsights) redrawInsights();
+    if (app.dataset.tab === 'insights' && redraw) redraw();
     if (app.dataset.tab === 'home') drawMini();
   }, 120);
 });
 fetch('/api/v1/public/judge/replay', { headers: { accept: 'application/json' } })
-  .then((r) => {
-    if (!r.ok) throw new Error(String(r.status));
-    return r.json();
-  })
-  .then(ready)
-  .catch(fail);
+  .then((r) => (r.ok ? r.json() : null))
+  .then((d) => d && ready(d))
+  .catch(() => {});
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/judge-sw.js').catch(() => {});

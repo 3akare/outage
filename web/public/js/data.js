@@ -1,7 +1,8 @@
-// The simulated city's history, worked into what Insights shows (ADR 0053). Pure functions, no DOM: Vitest checks them
-// (web/test/web-insights.test.ts) and the Android app does the same sums in Kotlin. The history is six weeks of made-up
-// outages per area, day 0 a Monday (tools/sim/scripts/build-demo-city.mjs). It is laid onto the calendar so that its last
-// day falls on yesterday's weekday: a Monday in the data is always shown as a Monday.
+// A place's power history, worked into what Insights shows (ADR 0053, ADR 0054). Pure functions, no DOM: Vitest checks
+// them (web/test/web-insights.test.ts) and the Android app does the same sums in Kotlin. An area is
+// { outages: [day, start minute, minutes][], promise: hours a day or null }: six weeks, day 0 a Monday (sim.js). The
+// history is laid onto the calendar so that its last day falls on yesterday's weekday: a Monday stays a Monday.
+import { HISTORY_WEEKS } from './sim.js';
 
 export const DAY_MIN = 1440;
 
@@ -12,9 +13,9 @@ const startOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.
 const addDays = (date, n) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + n);
 
 /** The history's day index that stands for yesterday, and the date of any index. */
-export function calendar(city, today) {
+export function calendar(today) {
   const yesterday = addDays(startOfDay(today), -1);
-  const last = (city.historyWeeks - 1) * 7 + weekday(yesterday);
+  const last = (HISTORY_WEEKS - 1) * 7 + weekday(yesterday);
   return { last, yesterday, dateOf: (i) => addDays(yesterday, i - last) };
 }
 
@@ -36,20 +37,20 @@ export function offByDay(area, days) {
   return off;
 }
 
-const daysOf = (city) => city.historyWeeks * 7;
+const DAYS = HISTORY_WEEKS * 7;
 
 /** Hours of power for each of the last n days, oldest first, ending yesterday. */
-export function dailyHours(city, area, today, n = 30) {
-  const { last, dateOf } = calendar(city, today);
-  const off = offByDay(area, daysOf(city));
+export function dailyHours(area, today, n = 30) {
+  const { last, dateOf } = calendar(today);
+  const off = offByDay(area, DAYS);
   const out = [];
   for (let i = last - n + 1; i <= last; i++) out.push({ date: dateOf(i), hours: Math.round((24 - off[i] / 60) * 10) / 10 });
   return out;
 }
 
 /** Outages that started in the last n days, newest first, with their start as a date. */
-export function outagesIn(city, area, today, n = 30) {
-  const { last, dateOf } = calendar(city, today);
+export function outagesIn(area, today, n = 30) {
+  const { last, dateOf } = calendar(today);
   return area.outages
     .filter(([d]) => d > last - n && d <= last)
     .map(([d, s, m]) => {
@@ -67,16 +68,16 @@ export function median(values) {
 }
 
 /** The numbers at the top of Insights for one area over the last n days. */
-export function summary(city, area, today, n = 30) {
-  const days = dailyHours(city, area, today, n);
-  const cuts = outagesIn(city, area, today, n);
-  const promise = city.bands[area.band];
+export function summary(area, today, n = 30) {
+  const days = dailyHours(area, today, n);
+  const cuts = outagesIn(area, today, n);
+  const promise = area.promise ?? null;
   const avg = days.reduce((s, d) => s + d.hours, 0) / days.length;
   return {
-    band: area.band,
+    band: area.band ?? null,
     promise,
     avgHours: Math.round(avg * 10) / 10,
-    daysBelow: days.filter((d) => d.hours < promise).length,
+    daysBelow: promise === null ? 0 : days.filter((d) => d.hours < promise).length,
     days: days.length,
     outages: cuts.length,
     medianMinutes: Math.round(median(cuts.map((c) => c.minutes))),
@@ -89,8 +90,8 @@ export function summary(city, area, today, n = 30) {
  * When outages happen: for each weekday (Monday first) and hour, the share of those days in the last n days on which
  * the power was off at some point in that hour. 0 to 1.
  */
-export function heat(city, area, today, n = 28) {
-  const { last } = calendar(city, today);
+export function heat(area, today, n = 28) {
+  const { last } = calendar(today);
   const first = last - n + 1;
   const offHours = new Map(); // day index -> Set of hours off
   const mark = (day, hour) => {
@@ -129,20 +130,10 @@ export function worstHours(grid, width = 3) {
   return { from: at, to: (at + width) % 24, share: best / width };
 }
 
-/** Every area ranked by average hours of power a day over the last n days, most first. */
-export function ranking(city, today, n) {
-  return city.areas
-    .map((a) => {
-      const s = summary(city, a, today, n);
-      return { slug: a.slug, name: a.name, band: a.band, promise: s.promise, avgHours: s.avgHours, outages: s.outages };
-    })
-    .sort((a, b) => b.avgHours - a.avgHours || a.name.localeCompare(b.name));
-}
-
 /** Hours without power in each of the last `weeks` 7-day spans, oldest first, ending yesterday. */
-export function weekly(city, area, today, weeks = 5) {
-  const { last, dateOf } = calendar(city, today);
-  const off = offByDay(area, daysOf(city));
+export function weekly(area, today, weeks = 5) {
+  const { last, dateOf } = calendar(today);
+  const off = offByDay(area, DAYS);
   const out = [];
   for (let w = weeks - 1; w >= 0; w--) {
     const end = last - w * 7;

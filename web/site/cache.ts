@@ -90,6 +90,7 @@ export class PageCache {
               ttlSeconds: ttl,
               noindex: res.headers.get('X-Robots-Tag') === 'noindex',
               map: res.headers.get('X-Outage-Map') === '1',
+              search: res.headers.get('X-Outage-Search') === '1',
             },
           };
         }
@@ -120,6 +121,7 @@ export class PageCache {
               'X-Outage-Ttl': String(rendered.ttlSeconds),
               ...(rendered.noindex ? { 'X-Robots-Tag': 'noindex' } : {}),
               ...(rendered.map ? { 'X-Outage-Map': '1' } : {}),
+              ...(rendered.search ? { 'X-Outage-Search': '1' } : {}),
             },
           }),
         );
