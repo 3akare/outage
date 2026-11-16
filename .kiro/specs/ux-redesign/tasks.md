@@ -21,7 +21,7 @@ graph LR
 
 - [x] 1. Spec, ADRs 0026 to 0028, steering update.
   - Requirements: R1 to R10
-- [ ] 2. `tokens.json`, `tools/tokens/build.mjs`, generated `tokens.css` and Kotlin colours, test UX3.
+- [x] 2. `tokens.json`, `tools/tokens/build.mjs`, generated `tokens.css` and Kotlin colours, test UX3.
   - Depends on: 1
   - Requirements: R9
 
