@@ -31,7 +31,7 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 - [ ] 4. Kotlin adapters in `apps/android` (packages `alarm`, `sensor`): `PromptNotifier`, `NotificationActionReceiver`, SQLite `WakeStore`, `ChannelSetup`, `LightAlarm` (audio, notification, optional full-screen intent, wake lock, telemetry), wiring into `ChargingJobService` and `StationService`. Tests L3, L11 (JUnit 4). Device checks recorded in `docs/probe-checklist.md`.
   - Depends on: 3, `sensor-android` 7, `station-mode` 3
   - Requirements: R1, R2, R3, R4, R9.3
-- [ ] 7. FCM HTTP v1 client with injectable `fetch`: access token from the `FCM_SERVICE_ACCOUNT` secret (Web Crypto), one message per request, error mapping (`UNREGISTERED`, `QUOTA_EXCEEDED`, `UNAVAILABLE`), back-off, deferral across invocations. Test L8.
+- [x] 7. FCM HTTP v1 client with injectable `fetch`: access token from the `FCM_SERVICE_ACCOUNT` secret (Web Crypto), one message per request, error mapping (`UNREGISTERED`, `QUOTA_EXCEEDED`, `UNAVAILABLE`), back-off, deferral across invocations. Test L8.
   - Depends on: 6
   - Requirements: R8, R11
 

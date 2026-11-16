@@ -607,3 +607,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 feat(alerts): PushPlanner and quiet window [spec:alerts-and-light-alarm task:6]
 - `workers/api/src/alerts/`: `quiet.ts` (window test, minutes of day plus UTC offset), `strings.ts` (English push text, wide-area wording for COARSE), `planner.ts` (pure `plan`: drops decisions older than 10 minutes and non-public cells, skips kinds not followed and already sent or queued, picks `alerts` or `alerts-quiet`, checks the 4 KiB limit). Messages carry no token.
 - Tests L5, L6, L12 in `workers/api/test/alerts-planner.test.ts`. LABEL (task 1) was already in main, so no shared type change was needed.
+
+## 2026-11-23 feat(alerts): FCM v1 client and send loop [spec:alerts-and-light-alarm task:7]
+- `workers/api/src/alerts/fcm.ts`: `FcmClient` with injected `fetch`. Builds an RS256 JWT through Web Crypto from the `FCM_SERVICE_ACCOUNT` secret, exchanges it at the Google OAuth endpoint, caches the access token until a minute before expiry, refreshes once after a 401. One message per request with high priority, 600 s ttl and the channel id. Maps UNREGISTERED, QUOTA_EXCEEDED (Retry-After honoured), UNAVAILABLE/INTERNAL/failed request to retry, anything else to drop. Missing or malformed secret gives a drop, never an error that holds the value.
+- `workers/api/src/alerts/sender.ts`: `runSends` sends at most 40 messages per invocation, drops messages older than 10 minutes, removes a subscription on UNREGISTERED, and on a retryable error backs off (1 min doubling, cap 1 h) and holds the rest of the batch.
+- Test L8 in `workers/api/test/alerts-fcm.test.ts` (JWT signature verified with a key generated at run time).
+- Docs checked: FCM error codes, FCM v1 message fields, Google service-account OAuth, Cloudflare Web Crypto. URLs are in the file header comment.

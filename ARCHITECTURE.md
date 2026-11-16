@@ -242,6 +242,8 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/src/area/pushes.ts` | One push per cell and outage episode |
 | `workers/api/src/alerts/quiet.ts` | Quiet-window test for push channels |
 | `workers/api/src/alerts/strings.ts` | English push texts |
+| `workers/api/src/alerts/fcm.ts` | FCM HTTP v1 client with service-account token |
+| `workers/api/src/alerts/sender.ts` | Push send loop with batching and back-off |
 | `workers/api/src/alerts/planner.ts` | Plans push messages for followers |
 | `workers/api/src/area/view.ts` | Builds the public view field by field from a whitelist |
 | `workers/api/src/area/field.ts` | Field-test records (outages and misses) from the reducer |
@@ -293,6 +295,8 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/test/area-model.test.ts` | Area model and outbox |
 | `workers/api/test/area-neighbors.test.ts` | Neighbour notices (A6) |
 | `workers/api/test/area-reducer.test.ts` | Reducer properties (A9, A11, A12) |
+| `workers/api/test/alerts-helpers.ts` | Shared builders for the alerts tests |
+| `workers/api/test/alerts-fcm.test.ts` | Test L8 for the FCM client and send loop |
 | `workers/api/test/alerts-planner.test.ts` | Tests L5, L6, L12 for the push planner |
 | `workers/api/test/area-scenarios.test.ts` | End-to-end area scenarios |
 | `workers/api/test/area-scope.test.ts` | Scope selection (A1 to A3) |

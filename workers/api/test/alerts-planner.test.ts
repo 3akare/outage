@@ -3,31 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { FCM_MAX_BYTES, messageBytes, type AreaPush, plan, sentKey, type Subscription } from '../src/alerts/planner.ts';
 import { quietContains } from '../src/alerts/quiet.ts';
 import { allPushTexts } from '../src/alerts/strings.ts';
+import { push, sub } from './alerts-helpers.ts';
 import { CELL, ID, NOW, SIBLINGS } from './helpers.ts';
 
 const RUNS = Number(process.env.FC_NUM_RUNS ?? 100);
 const IDS = ['kg4yq7mxwb2ndpr3tfhj5vcsaz', 'aaaaaaaaaaaaaaaaaaaaaaaaaa', 'bbbbbbbbbbbbbbbbbbbbbbbbbb', 'cccccccccccccccccccccccccc'];
-const TOKEN = 'x'.repeat(40); // built at run time, not a real token
-
-export const sub = (over: Partial<Subscription> = {}): Subscription => ({
-  installId: ID,
-  cell: CELL,
-  fcmToken: TOKEN,
-  kinds: ['CONFIRMED', 'RESTORED'],
-  quietStartMin: null,
-  quietEndMin: null,
-  tzOffsetMin: 0,
-  createdMs: NOW,
-  ...over,
-});
-export const push = (over: Partial<AreaPush> = {}): AreaPush => ({
-  cell: CELL,
-  episodeId: `${CELL}|1`,
-  kind: 'CONFIRMED',
-  decisionTimeMs: NOW,
-  precision: 'CELL',
-  ...over,
-});
 const none = { has: () => false };
 
 describe('L5_quiet_window', () => {
