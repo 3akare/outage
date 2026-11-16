@@ -59,7 +59,8 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
 
     Scaffold(
         bottomBar = {
-            if (current != Route.Onboarding) {
+            // No dock before first run is done, also while Judge mode is open on top of it (demo-mode R1.2).
+            if (Route.Onboarding !in stack) {
                 val selected = stack.lastOrNull { r -> tabs.any { it.route == r } } ?: Route.Home
                 NavigationBar {
                     tabs.forEach { tab ->
@@ -85,7 +86,10 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
         Box(Modifier.fillMaxSize().padding(padding)) {
             val back: () -> Unit = { shell.back() }
             when (current) {
-                Route.Onboarding -> FirstRunScreen(onOk = { if (graph.completeFirstRun(System.currentTimeMillis())) shell.onboardingDone() })
+                Route.Onboarding -> FirstRunScreen(
+                    onOk = { if (graph.completeFirstRun(System.currentTimeMillis())) shell.onboardingDone() },
+                    onTryJudge = { shell.go(Route.Feature(FeatureRegistry.JUDGE)) },
+                )
                 Route.Home -> HomeScreen(
                     home, homeScroll,
                     onOpenAlarm = { shell.go(Route.Feature(FeatureRegistry.ALARM)) },

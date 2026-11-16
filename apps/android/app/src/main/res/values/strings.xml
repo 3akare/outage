@@ -316,8 +316,6 @@
     <string name="demo_prompt_yes">Yes, wake me when it\'s back</string>
     <string name="demo_prompt_no">No</string>
     <string name="demo_alarm_text">Demo: power is back (simulated)</string>
-    <string name="demo_alarm_channel">Judge mode demo alarm</string>
-    <string name="demo_alarm_rang">Demo alarm rang.</string>
     <string name="demo_how_1">When the grid fails, every phone charging in the area stops charging in the same second.</string>
     <string name="demo_how_2">One phone unplugged is normal. Many phones within a few seconds is not chance.</string>
     <string name="demo_how_3">Outage counts the phones, compares with the usual rate and shows the math. Here the math was done by the real engine when the app was built.</string>

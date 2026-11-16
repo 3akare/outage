@@ -116,7 +116,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/gradlew.bat` | Gradle wrapper script (Windows) |
 | `apps/android/gradle/wrapper/gradle-wrapper.jar` | Gradle wrapper binary |
 | `apps/android/gradle/wrapper/gradle-wrapper.properties` | Gradle version the wrapper downloads |
-| `apps/android/app/build.gradle.kts` | App module: SDK levels, Compose, the `API_BASE` build field, the task that copies `oem-guide.json` into assets, dependencies |
+| `apps/android/app/build.gradle.kts` | App module: SDK levels, Compose, the `API_BASE` build field, the tasks that copy `oem-guide.json` and `replay.json` into assets, dependencies |
 | `apps/android/app/src/main/AndroidManifest.xml` | Activity, application class and permissions |
 | `apps/android/app/src/main/assets/bands.json` | Tariff bands and their promised hours (power log, ADR 0020) |
 | `apps/android/app/src/main/kotlin/app/outage/MainActivity.kt` | The only Activity; hosts the Compose UI |
@@ -125,6 +125,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/alarm/StringPackCheck.kt` | Checks a string pack has every alarm string |
 | `apps/android/app/src/main/kotlin/app/outage/demo/ReplayFile.kt` | Judge mode: the replay file model and its loader, which refuses anything not labelled simulated |
 | `apps/android/app/src/main/kotlin/app/outage/demo/ReplayPlayer.kt` | Judge mode recorded replay: play, pause, restart, speed, gaps squeezed like the web player |
+| `apps/android/app/src/main/kotlin/app/outage/demo/JudgeFlow.kt` | Judge mode page, charger, demo prompt and demo alarm logic (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/demo/DemoSession.kt` | Judge mode "Unplug your own phone": plays the unplug track on an injected clock, no engine |
 | `apps/android/app/src/main/kotlin/app/outage/home/HomeWatch.kt` | Home Watch on the phone: viewer API shapes, card wording, pairing calls (no state is derived on the phone) |
 | `apps/android/app/src/main/kotlin/app/outage/home/HomeWatchModel.kt` | Home Watch screen logic: claim, offer, refresh with cache, station pair list, remove |
@@ -189,6 +190,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/ui/Fmt.kt` | Time and duration text |
 | `apps/android/app/src/main/kotlin/app/outage/ui/HomeScreen.kt` | Home tab: map and feed |
 | `apps/android/app/src/main/kotlin/app/outage/ui/DemoReplayScreen.kt` | Judge mode replay screen and the shared demo parts: banner, step tracker, phone dots, explanation card |
+| `apps/android/app/src/main/kotlin/app/outage/ui/DemoScreens.kt` | Judge mode: `DemoViewModel`, Judge home, Unplug your phone with the demo prompt and alarm, How it works |
 | `apps/android/app/src/main/kotlin/app/outage/ui/HomeWatchScreens.kt` | Home Watch: viewer screen, station pairing screen, Home card, `HomeWatchViewModel` |
 | `apps/android/app/src/main/kotlin/app/outage/ui/HomeViewModel.kt` | Builds `HomeUiState` from the status sources |
 | `apps/android/app/src/main/kotlin/app/outage/ui/InsightsScreen.kt` | Insights tab: charts of your own power |
@@ -214,6 +216,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt` | Alarm strings exist in every pack |
 | `apps/android/app/src/test/kotlin/app/outage/demo/DemoSessionTest.kt` | Judge mode session on the committed replay file (DM1, DM5, R4) |
 | `apps/android/app/src/test/kotlin/app/outage/demo/ReplayPlayerTest.kt` | Replay player controls and the app copy of `replay.json` (R3, DM7) |
+| `apps/android/app/src/test/kotlin/app/outage/demo/JudgeFlowTest.kt` | Judge mode screen logic: real and simulated unplug, prompt, alarm, leave (R1, R4) |
 | `apps/android/app/src/test/kotlin/app/outage/demo/DemoArchitectureTest.kt` | The demo package imports nothing that can write real data (DM3) |
 | `apps/android/app/src/test/kotlin/app/outage/home/HomeWatchTest.kt` | Home Watch screen logic against the shared home fixture (R1, R4, H5, H8) |
 | `apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt` | Insights numbers (IN1 to IN6) |
@@ -703,5 +706,5 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `docs/probe/2026-11-15-samsung-b.md` | Probe result: Samsung phone, second run (probe v0.0.2) |
 | `docs/probe/2026-11-15-samsung-b.json` | Raw numbers behind the second Samsung result |
 | `docs/wip/detection-engine-notes.md` | Working notes for the detection engine |
-| `docs/adr/` | Architecture decision records 0001 to 0037, one decision each (context, decision, alternatives, consequences) |
+| `docs/adr/` | Architecture decision records 0001 to 0038, one decision each (context, decision, alternatives, consequences) |
 | `docs/visual/` | Website screenshots written by `workers/api/visual/check.mjs` (390 x 844 and `-desktop` 1280 x 800) |

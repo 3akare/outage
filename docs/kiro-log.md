@@ -697,3 +697,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `DemoReplayScreen` shows the banner "Simulated replay", how the outage was recorded (synthetic for now), the step tracker, one dot per simulated neighbor, the count, the "Your spot only" legend and the engine's numbers from the file.
 - `app/build.gradle.kts` copies `packages/shared/fixtures/replay.json` into generated assets (`CopyReplay`), the same file the Worker imports, so there is one copy in git. DM7 app side checks both paths and the built asset's hash.
 - Tests: `ReplayPlayerTest` (4).
+
+## 2026-11-23 feat(demo): Judge mode screens [spec:demo-mode task:6] [ADR 0038]
+- Built on the human's order; only the task's own checks ran (Gradle testDebugUnitTest, lint, assembleDebug). No device run (task 7 stays open).
+- `JudgeFlow` (pure) and `ui/DemoScreens.kt` (`DemoViewModel`, `JudgeScreen`): Judge home with Watch a recorded outage, Unplug my phone, How it works and Leave; the Unplug page with the plug observer, "Plug in your charger first", "Unplug your charger", the demo prompt, the explanation from the file, labelled simulate buttons and the demo alarm. A banner on every page. Leaving discards the session; `DemoFlag` is set while open.
+- Entry: "Try Judge mode" on the first-run screen (no consent needed, dock hidden) and a Settings row. One shell route `feature:judge` (ADR 0038).
+- The demo alarm is a stand-in (default alarm sound for 5 s and on-screen "Demo" text) until the Light Alarm path from `alerts-and-light-alarm` is merged (ADR 0038).
+- Tests: `JudgeFlowTest` (5).

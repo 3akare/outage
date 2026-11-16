@@ -187,6 +187,7 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 | R4.5, R4.7, R4.8 | - | `R4_5_confirmed_shows_within_5_seconds_of_the_unplug_then_restored_after_the_replug`, `R4_7_an_early_replug_shows_every_unplug_frame_first`, `R4_8_demo_alarm_is_due_once_after_restored_only_if_the_judge_said_yes` | 4 | passing (`DemoSessionTest.kt`) |
 | R6 | DM6 | `DM6_sanitizer` | 2 | test written (`tools/sim/test/sanitize.test.ts`) |
 | R7 | DM7 | `DM7_replay_in_sync_the_app_asset_is_the_file_the_worker_serves` (app side), `W5_replay_matches_engine` (build side) | 5 | passing (`apps/android/app/src/test/kotlin/app/outage/demo/ReplayPlayerTest.kt`, `tools/sim/test/replay.test.ts`) |
+| R1.1, R1.2, R1.4, R4.1, R4.2, R4.8, R4.9, R5.4 | - | `R4_1_R4_2_a_real_unplug_on_the_unplug_page_starts_the_track_and_opens_the_demo_prompt`, `R4_9_simulate_buttons_do_the_same_labelled_simulated_and_no_alarm_without_yes`, `R1_4_R5_4_leaving_discards_everything_and_back_goes_to_judge_home_first`, `design_9_a_missing_replay_file_shows_the_error_and_offers_no_simulate_button`, `R2_1_every_page_state_carries_a_simulated_label` | 6 | passing (`apps/android/app/src/test/kotlin/app/outage/demo/JudgeFlowTest.kt`); time to Confirmed on 3 phones is task 7 (device, left for the human) |
 | R3.3 to R3.5 | - | `R3_4_R3_5_play_reaches_every_state_including_your_spot_only`, `R3_3_pause_restart_and_speed`, `R3_a_run_at_1x_takes_about_15_seconds_like_the_web_player` | 5 | passing (`ReplayPlayerTest.kt`) |
 
 ## field-telemetry

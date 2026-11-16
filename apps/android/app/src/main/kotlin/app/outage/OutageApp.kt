@@ -22,7 +22,10 @@ import app.outage.sensor.Sensor
 import app.outage.shell.PrefsFollowedArea
 import app.outage.shell.ShellGraph
 import app.outage.ui.BatterySetupScreen
+import app.outage.ui.DemoViewModel
 import app.outage.ui.FeatureRegistry
+import app.outage.ui.JudgeScreen
+import app.outage.ui.loadReplayAsset
 import app.outage.ui.HomeWatchCard
 import app.outage.ui.HomeWatchScreen
 import app.outage.ui.HomeWatchViewModel
@@ -45,6 +48,7 @@ class OutageApp : Application() {
         registerMapAndInsights()
         registerSensor()
         registerHomeWatch()
+        registerJudgeMode()
         // A server delete that failed earlier is retried here, off the main thread (R5.3). After registerSensor,
         // which registers the server half.
         if (graph.store.pendingServerDelete) Thread { graph.deletes.retryPending() }.start()
@@ -98,6 +102,17 @@ class OutageApp : Application() {
     }
 
     /** Set by [registerHomeWatch]; the server delete lists its pair ids (home-watch R7.4). */
+    /**
+     * Judge mode (demo-mode task 6): reads only the bundled replay asset, writes nothing, so it has no delete function.
+     * Opens from the first screen and from Settings.
+     */
+    private fun registerJudgeMode() {
+        graph.features.register(FeatureRegistry.JUDGE, R.string.demo_home_title, {
+            val vm: DemoViewModel = viewModel(factory = viewModelFactory { initializer { DemoViewModel({ loadReplayAsset(this@OutageApp) }) } })
+            JudgeScreen(vm, onLeave = { graph.goBack() })
+        }, null)
+    }
+
     @Volatile
     private var deletedPairIds: List<String> = emptyList()
 

@@ -41,6 +41,7 @@ object SettingsItems {
         Item("followed_area", R.string.settings_followed_area),
         Item("language", R.string.settings_language),
         Item("diagnostics", R.string.settings_diagnostics),
+        Item("judge", R.string.demo_try),
     )
 
     fun titleFor(key: String): Int? = (all.firstOrNull { it.key == key })?.titleRes
