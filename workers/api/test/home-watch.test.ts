@@ -459,3 +459,36 @@ describe('H8_delete_removes_pairs (state parts, R7.3, R7.4)', () => {
     expect(shard.store.stations.size).toBe(0);
   });
 });
+
+describe('Station pair list and the no-push token (ADR 0037)', () => {
+  it('H8_delete_removes_pairs: the station lists its pairs (ids and times only) and can remove a dead viewer', async () => {
+    const w = makeWorld(ROOMY);
+    const pairId = await pair(w);
+    const list = async () => handleRequest(await post('/v1/pair/list', { installId: ID }, await tokenFor(ID)), w.deps);
+    const res = await list();
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { pairs: { pairId: string; createdMs: number }[] };
+    expect(body.pairs).toEqual([{ pairId, createdMs: NOW }]);
+    expect(JSON.stringify(body)).not.toContain(VIEWER);
+    const rm = await handleRequest(await post('/v1/pair/remove', { installId: ID, pairId }, await tokenFor(ID)), w.deps);
+    expect(rm.status).toBe(200);
+    expect(((await (await list()).json()) as { pairs: unknown[] }).pairs).toEqual([]);
+  });
+
+  it('a pair list request needs the install token and an exact body', async () => {
+    const w = makeWorld(ROOMY);
+    expect((await handleRequest(await post('/v1/pair/list', { installId: ID }, await tokenFor(VIEWER)), w.deps)).status).toBe(401);
+    expect((await handleRequest(await post('/v1/pair/list', { installId: ID, x: 1 }, await tokenFor(ID)), w.deps)).status).toBe(400);
+  });
+
+  it('H6_push_once_per_change: a viewer that paired with the no-push token is never sent to and never marked dead', async () => {
+    const w = makeWorld(ROOMY);
+    const pairId = await pair(w, VIEWER, { fcmToken: 'none' });
+    await station(w, [{ seq: 1, type: 'ARMED' }]);
+    w.now = NOW + 5 * MIN;
+    await station(w, [{ seq: 2, type: 'UNPLUG' }]);
+    expect(w.sender.sent).toHaveLength(0);
+    expect(w.shard(pairId.slice(0, 2)).store.pairs.get(pairId)?.pushFailedMs).toBeNull();
+    expect(((await (await view(w, pairId)).json()) as { status: string }).status).toBe('OFF');
+  });
+});

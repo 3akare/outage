@@ -122,6 +122,19 @@ export interface RemovePairRequest {
   installId: string;
   pairId: string;
 }
+/** `POST /v1/pair/list`: the station's own pairs, so it can remove a dead viewer (ADR 0009 review, ADR 0037). */
+export interface ListPairsRequest {
+  installId: string;
+}
+export interface ListPairsResponse {
+  /** Pair id and creation time only: no viewer install, token or name. */
+  pairs: { pairId: string; createdMs: number }[];
+}
+/**
+ * The push token a viewer sends while the app has no Firebase Messaging (ADR 0037). The pair works and the viewer polls;
+ * the Worker never sends to it and never counts it as a dead token.
+ */
+export const NO_PUSH_TOKEN = 'none';
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -161,6 +174,11 @@ export function parseClaimRequest(raw: unknown): Parsed<ClaimRequest> {
     value.stationName = raw.stationName;
   }
   return { ok: true, value };
+}
+
+export function parseListPairsRequest(raw: unknown): Parsed<ListPairsRequest> {
+  if (!isRecord(raw) || !hasExactKeys(raw, ['installId']) || !isInstallId(raw.installId)) return { ok: false };
+  return { ok: true, value: { installId: raw.installId } };
 }
 
 export function parseRemovePairRequest(raw: unknown): Parsed<RemovePairRequest> {

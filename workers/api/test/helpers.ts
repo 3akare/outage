@@ -313,6 +313,9 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
         if (removed && pair) s.home.dropIfUnpaired(pair.stationInstall);
         return removed;
       },
+      async stationPairs(shard, installId) {
+        return world.shard(shard).store.pairsOfStation(installId).map((p) => ({ pairId: p.pairId, createdMs: p.createdMs }));
+      },
       async deleteInstall(shard, installId) {
         if (world.failShards.has(shard)) throw new Error('shard down');
         const s = world.shard(shard);

@@ -68,6 +68,7 @@ function makeDeps(env: Env): Deps {
       claim: (shard, input) => env.PAIRING.get(env.PAIRING.idFromName(shard)).claim(input),
       removePair: (shard, pairId, installId) => env.PAIRING.get(env.PAIRING.idFromName(shard)).removePair(pairId, installId),
       deleteInstall: (shard, installId) => env.PAIRING.get(env.PAIRING.idFromName(shard)).deleteInstall(installId),
+      stationPairs: (shard, installId) => env.PAIRING.get(env.PAIRING.idFromName(shard)).stationPairs(installId),
       home: async (shard, pairId, viewerInstall, nowMs) => {
         const hit = homeCache.get(pairId, viewerInstall, nowMs);
         if (hit) return hit;

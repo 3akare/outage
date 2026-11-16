@@ -38,7 +38,7 @@ Depends on `station-mode` (tasks 2, 5), `event-ingest` (tasks 4, 5), `area-cells
 - [x] 7. Viewer API `GET /v1/home/:pairId` with auth, cached by 10 s per pair, response shape, cleanup of dead tokens.
   - Depends on: 5, 6
   - Requirements: R4, R7
-- [ ] 8. App Compose screens and `ViewModel`s (Jetpack Compose, approved 2026-11-14): pair from station, enter code on viewer, home card, station name, state wording, offline age, remove pair, SIM-data hint. Optional QR if approved.
+- [x] 8. App Compose screens and `ViewModel`s (Jetpack Compose, approved 2026-11-14): pair from station, enter code on viewer, home card, station name, state wording, offline age, remove pair, SIM-data hint. Optional QR if approved.
   - Note (ADR 0009 review): the station UI must list every pair with a remove action. A dead viewer keeps its seat in the 5-viewer cap until the station removes it, and station-side remove is the fallback when a viewer loses its pair list.
   - Depends on: 7, `station-mode` 6
   - Requirements: R1, R4, R9

@@ -10,6 +10,7 @@ import {
   type DeviceDay,
   type FieldDump,
   type HomeResponse,
+  type ListPairsResponse,
   isPairId,
   generateCode,
   generatePairId,
@@ -25,6 +26,7 @@ import {
   parseFollowRequest,
   parseUnfollowRequest,
   parseOfferRequest,
+  parseListPairsRequest,
   parseRemovePairRequest,
   type RegisterResponse,
   type RejectCode,
@@ -55,6 +57,8 @@ export interface PairingGateway {
   createOffer(shard: string, input: OfferInput): Promise<OfferResult>;
   claim(shard: string, input: ClaimInput): Promise<ClaimResult>;
   removePair(shard: string, pairId: string, installId: string): Promise<boolean>;
+  /** The pairs where this install is the station (ADR 0037). */
+  stationPairs(shard: string, stationInstall: string): Promise<ListPairsResponse['pairs']>;
   deleteInstall(shard: string, installId: string): Promise<number>;
   /** The viewer's view of a station, from the shard the pair id names. Null for an unknown pair or another viewer. Cached 10 s. */
   home(shard: string, pairId: string, viewerInstall: string, nowMs: number): Promise<HomeResponse | null>;
@@ -377,6 +381,19 @@ async function pairRemove(req: Request, deps: Deps): Promise<Response> {
   return removed ? json(200, { removed: true }) : NOT_FOUND(); // someone else's pair looks the same as no pair
 }
 
+/** The station lists its own pairs to remove a dead viewer (ADR 0009 review, ADR 0037). Ids and times only. */
+async function pairList(req: Request, deps: Deps): Promise<Response> {
+  const body = await readJson(req, deps);
+  if (!body.ok) return body.res;
+  const parsed = parseListPairsRequest(body.value);
+  if (!parsed.ok) return fail(400, 'malformed');
+  const { installId } = parsed.value;
+  if (!(await authorized(req, installId, deps, true))) return fail(401, 'unauthorized');
+  const shard = shardFromHash(await hashInstallId(installId));
+  const out: ListPairsResponse = { pairs: await deps.pairing.stationPairs(shard, installId) };
+  return json(200, out);
+}
+
 // ---- POST /v1/telemetry ----------------------------------------------------------------------------------------
 
 async function telemetry(req: Request, deps: Deps): Promise<Response> {
@@ -488,6 +505,7 @@ const ROUTES: Record<string, { method: string; needsSecret: boolean; handler: (r
   '/v1/pair/offer': { method: 'POST', needsSecret: true, handler: pairOffer },
   '/v1/pair/claim': { method: 'POST', needsSecret: true, handler: pairClaim },
   '/v1/pair/remove': { method: 'POST', needsSecret: true, handler: pairRemove },
+  '/v1/pair/list': { method: 'POST', needsSecret: true, handler: pairList },
   '/v1/telemetry': { method: 'POST', needsSecret: true, handler: telemetry },
   '/v1/follow': { method: 'POST', needsSecret: true, handler: follow },
   '/v1/unfollow': { method: 'POST', needsSecret: true, handler: unfollow },

@@ -123,6 +123,9 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/OutageApp.kt` | Application class: builds the shell graph and chooses real or demo map and insights sources |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmState.kt` | Light Alarm state shown on Home |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/StringPackCheck.kt` | Checks a string pack has every alarm string |
+| `apps/android/app/src/main/kotlin/app/outage/home/HomeWatch.kt` | Home Watch on the phone: viewer API shapes, card wording, pairing calls (no state is derived on the phone) |
+| `apps/android/app/src/main/kotlin/app/outage/home/HomeWatchModel.kt` | Home Watch screen logic: claim, offer, refresh with cache, station pair list, remove |
+| `apps/android/app/src/main/kotlin/app/outage/home/HomeWatchAndroid.kt` | Home Watch pair list in SharedPreferences and the HTTP client |
 | `apps/android/app/src/main/kotlin/app/outage/insights/DemoOutages.kt` | About 60 days of labelled sample outages for demo mode |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsCalc.kt` | Pure numbers for Insights: hours of power, heatmap, trend, promise check |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsSource.kt` | Where Insights gets its outage timeline (demo or real) |
@@ -181,6 +184,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/ui/FeatureRegistry.kt` | Where features plug their screens into the shell |
 | `apps/android/app/src/main/kotlin/app/outage/ui/Fmt.kt` | Time and duration text |
 | `apps/android/app/src/main/kotlin/app/outage/ui/HomeScreen.kt` | Home tab: map and feed |
+| `apps/android/app/src/main/kotlin/app/outage/ui/HomeWatchScreens.kt` | Home Watch: viewer screen, station pairing screen, Home card, `HomeWatchViewModel` |
 | `apps/android/app/src/main/kotlin/app/outage/ui/HomeViewModel.kt` | Builds `HomeUiState` from the status sources |
 | `apps/android/app/src/main/kotlin/app/outage/ui/InsightsScreen.kt` | Insights tab: charts of your own power |
 | `apps/android/app/src/main/kotlin/app/outage/ui/MapPalette.kt` | Map colours (same as the web map) |
@@ -203,6 +207,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/res/values/themes.xml` | Light app theme |
 | `apps/android/app/src/main/res/values-night/themes.xml` | Dark app theme |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt` | Alarm strings exist in every pack |
+| `apps/android/app/src/test/kotlin/app/outage/home/HomeWatchTest.kt` | Home Watch screen logic against the shared home fixture (R1, R4, H5, H8) |
 | `apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt` | Insights numbers (IN1 to IN6) |
 | `apps/android/app/src/test/kotlin/app/outage/log/BandConfigTest.kt` | Shipped band config is valid and sourced |
 | `apps/android/app/src/test/kotlin/app/outage/map/MapContractTest.kt` | The app reads the same map fixture as the Worker |
@@ -687,5 +692,5 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `docs/probe/2026-11-15-samsung-b.md` | Probe result: Samsung phone, second run (probe v0.0.2) |
 | `docs/probe/2026-11-15-samsung-b.json` | Raw numbers behind the second Samsung result |
 | `docs/wip/detection-engine-notes.md` | Working notes for the detection engine |
-| `docs/adr/` | Architecture decision records 0001 to 0036, one decision each (context, decision, alternatives, consequences) |
+| `docs/adr/` | Architecture decision records 0001 to 0037, one decision each (context, decision, alternatives, consequences) |
 | `docs/visual/` | Website screenshots written by `workers/api/visual/check.mjs` (390 x 844 and `-desktop` 1280 x 800) |

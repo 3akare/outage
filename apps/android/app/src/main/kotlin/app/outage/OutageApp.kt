@@ -1,6 +1,14 @@
 package app.outage
 
 import android.app.Application
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import app.outage.home.HomeApi
+import app.outage.home.HomeCredentials
+import app.outage.home.HomeWatchModel
+import app.outage.home.PrefsPairBook
+import app.outage.home.UrlConnectionHomeHttp
 import app.outage.insights.InsightsSources
 import app.outage.log.BandConfig
 import app.outage.map.AreaMapSources
@@ -15,6 +23,10 @@ import app.outage.shell.PrefsFollowedArea
 import app.outage.shell.ShellGraph
 import app.outage.ui.BatterySetupScreen
 import app.outage.ui.FeatureRegistry
+import app.outage.ui.HomeWatchCard
+import app.outage.ui.HomeWatchScreen
+import app.outage.ui.HomeWatchViewModel
+import app.outage.ui.StationPairScreen
 import app.outage.ui.SensorToggleScreen
 import app.outage.ui.InsightsScreen
 import app.outage.ui.MapScreen
@@ -32,6 +44,7 @@ class OutageApp : Application() {
         graph = ShellGraph(this)
         registerMapAndInsights()
         registerSensor()
+        registerHomeWatch()
         // A server delete that failed earlier is retried here, off the main thread (R5.3). After registerSensor,
         // which registers the server half.
         if (graph.store.pendingServerDelete) Thread { graph.deletes.retryPending() }.start()
@@ -79,9 +92,50 @@ class OutageApp : Application() {
                 val id = credentials.installId()
                 val token = credentials.token()
                 if (id == null || token == null) true
-                else api.delete(id, token, credentials.cells()).also { ok -> if (ok) credentials.clear() }
+                else api.delete(id, token, credentials.cells(), deletedPairIds).also { ok -> if (ok) credentials.clear() }
             }
         }
+    }
+
+    /** Set by [registerHomeWatch]; the server delete lists its pair ids (home-watch R7.4). */
+    @Volatile
+    private var deletedPairIds: List<String> = emptyList()
+
+    /**
+     * Home Watch (home-watch task 8): viewer screen in Settings > Home Watch, station screen in Settings > Station mode,
+     * and a card on Home. Pairing needs the Worker; without an address the screens say so (ADR 0024).
+     */
+    private fun registerHomeWatch() {
+        val credentials = PrefsCredentials(this)
+        val book = PrefsPairBook(this)
+        val api = BuildConfig.API_BASE.takeIf { it.isNotBlank() }?.let { HomeApi(it, UrlConnectionHomeHttp) }
+        val model = HomeWatchModel(
+            api = api,
+            credentials = object : HomeCredentials {
+                override fun installId() = credentials.installId()
+                override fun token() = credentials.token()
+            },
+            book = book,
+            cell = { graph.onboarding.load()?.cell },
+            nowMs = System::currentTimeMillis,
+            tzOffsetMin = { java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 60_000 },
+        )
+        val vm: @androidx.compose.runtime.Composable () -> HomeWatchViewModel = {
+            viewModel(
+                factory = viewModelFactory { initializer { HomeWatchViewModel(model) } },
+            )
+        }
+        graph.features.register(
+            FeatureRegistry.HOME_WATCH,
+            R.string.settings_home_watch,
+            { HomeWatchScreen(vm(), onBack = { graph.goBack() }, onOpenStation = { graph.openFeature(FeatureRegistry.STATION) }) },
+            // The phone side runs before the server call (app-shell R5), so keep the ids in memory for it.
+            { deletedPairIds = model.pairIdsForDelete(); book.clear() },
+        )
+        graph.features.register(FeatureRegistry.STATION, R.string.settings_station, { StationPairScreen(vm(), onBack = { graph.goBack() }) }, null)
+        graph.features.register(FeatureRegistry.HOME_CARD, R.string.settings_home_watch, {
+            HomeWatchCard(vm(), onOpen = { graph.openFeature(FeatureRegistry.HOME_WATCH) })
+        }, null)
     }
 
     /**

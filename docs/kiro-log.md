@@ -667,3 +667,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Tests: `home-watch.test.ts` (H6, H7 as properties, viewer API, H8 state parts), `home-sql.test.ts` (real SQLite), shared tests for the response shape and the offer cell.
 - Known gaps: a station that moves to another res-7 parent is not forwarded until it pairs again; `since` after pairing is the first heartbeat heard. Compose screens (task 8) still need `cell` in the offer request.
 
+
+## 2026-11-23 feat(home): app screens and ViewModels [spec:home-watch task:8] [ADR 0037]
+- Built on the human's order; only the task's own checks ran (Gradle testDebugUnitTest, lint, assembleDebug; Vitest for the Worker files touched; typecheck). No device test.
+- App: `app/outage/home/` (`HomeApi`, `HomeView`, `HomeWording`, `HomeWatchModel`, `PrefsPairBook`) and `ui/HomeWatchScreens.kt` (viewer screen, station pairing screen, Home card, `HomeWatchViewModel`). Code entry only, no QR. Wording "Home: power on since 2:14 p.m.", "Station offline" with "Last known: ...", age shown on a stale cache.
+- Worker: `POST /v1/pair/list` for the station's pair list (ids and creation times) and the no-push token `none`, skipped by the home push planner, until Firebase Messaging exists (ADR 0037).
+- Delete-my-data on a viewer now sends its pair ids.
+- Tests: `HomeWatchTest` (12, reads `packages/shared/fixtures/home/home-response.json`), three new cases in `workers/api/test/home-watch.test.ts`.

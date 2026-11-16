@@ -142,6 +142,7 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 | R5, R8.3 | H6 | `H6_push_once_per_change` | 6 | passing (`workers/api/test/home-watch.test.ts`, `home-sql.test.ts`) |
 | R6, R8.1, R8.2 | H7 | `H7_alarm_multiplexer` | 5 | passing (`workers/api/test/home-watch.test.ts`) |
 | R4, R7.5 | viewer API | `viewer API GET /v1/home/:pairId` | 7 | passing (`workers/api/test/home-watch.test.ts`, shape in `packages/shared/test/home.test.ts`) |
+| R1.1, R1.4, R1.8 to R1.10, R4, R7.6, R9 | app screens | `R1_4_claim_sends_the_normalized_code_and_no_push_token_and_stores_the_name_locally`, `R4_2_fixture_states_map_to_the_spec_wording`, `R4_4_a_failed_refresh_keeps_the_cached_state_and_marks_it_stale`, `R1_9_station_lists_every_pair_and_removes_a_dead_viewer`, `H5_R1_5_every_failed_claim_gives_the_same_answer`, `H8_R7_4_delete_lists_the_viewer_pair_ids` | 8 | passing (`apps/android/app/src/test/kotlin/app/outage/home/HomeWatchTest.kt`; station list and no-push token: `workers/api/test/home-watch.test.ts`) |
 | R1.10, R7.4 | H8 (pair part) | `H8_delete_removes_pairs`, `R1.10 remove a pair` | 4 | passing (`workers/api/test/pairing.test.ts`; state parts: `H8_delete_removes_pairs (state parts, R7.3, R7.4)` in `workers/api/test/home-watch.test.ts`) |
 
 ## onboarding

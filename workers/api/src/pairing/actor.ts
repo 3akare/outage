@@ -42,6 +42,11 @@ export class PairingActor extends DurableObject<Env> {
     return removed;
   }
 
+  /** `POST /v1/pair/list` (ADR 0037): the station's pairs, ids and creation times only. */
+  async stationPairs(stationInstall: string): Promise<{ pairId: string; createdMs: number }[]> {
+    return this.store.pairsOfStation(stationInstall).map((p) => ({ pairId: p.pairId, createdMs: p.createdMs }));
+  }
+
   async deleteInstall(installId: string): Promise<number> {
     const n = this.core.deleteInstall(installId);
     this.home.forget(installId);
