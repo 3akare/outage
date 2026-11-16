@@ -1,4 +1,4 @@
-# ADR 0032: Where subscriptions live and how pushes are sent
+# ADR 0035: Where subscriptions live and how pushes are sent
 
 Status: ACCEPTED (2026-11-23), under the blanket approval (decide, record, proceed). Builds on ADR 0008.
 

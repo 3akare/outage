@@ -8,6 +8,8 @@ The Sensor is the `sensor` package of the native Kotlin app (`apps/android`, ADR
 
 The Sensor does not decide whether an outage happened. It reports facts and its confidence in them.
 
+> **Amended 2026-11-23 (ADR 0032).** The Job driver is the backup sensor. The primary sensor is the foreground-service receiver (see `station-mode`), for every user. Requirements below about arming and unplug detection apply to both drivers. An unplug seen by both is recorded once.
+
 ## Glossary
 
 - **Sensor**: the `sensor` package of `apps/android`.

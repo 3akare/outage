@@ -618,6 +618,27 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `packages/shared/src/follow.ts`: strict `parseFollowRequest` and `parseUnfollowRequest` (no extra fields, token pattern, window 0..1439 or both null, offset within 14 h).
 - `workers/api/src/alerts/`: `store.ts` (SQLite `subscription`, `push_queue`, `push_sent`), `core.ts` (follow, unfollow, `onPushes`, delete, prune), `hook.ts` (public precision per pushed cell, so pushes only go for cells with a public status). `AreaActor` gained `follow`, `unfollow`, the push hook in `send()`, queue dispatch (40 per invocation), the queue time in its alarm, and deletion in `deleteInstall`.
 - `workers/api/src/ingest/handlers.ts`: `POST /v1/follow` and `/v1/unfollow` with install token, revocation check and a per-install limit. `FCM_SERVICE_ACCOUNT` added to `Env`.
-- `.github/workflows/deploy-worker.yml` pushes `FCM_SERVICE_ACCOUNT` as a Wrangler secret when the GitHub secret is set (piped, not printed); `docs/deploy.md` explains it. ADR 0032 records the storage and sending decisions.
+- `.github/workflows/deploy-worker.yml` pushes `FCM_SERVICE_ACCOUNT` as a Wrangler secret when the GitHub secret is set (piped, not printed); `docs/deploy.md` explains it. ADR 0035 records the storage and sending decisions.
 - Test L7 in `alerts-server.test.ts` (UNREGISTERED removal, delete-my-data, one row per install and cell, endpoints) and `alerts-sql.test.ts` (the real SQL text on SQLite).
 - Note: `npm test` showed a different `post-deploy-check` node test failing on each run in this sandbox when run with the whole suite; they pass alone and on main. The TypeScript suites all pass.
+## 2026-11-23 docs: feasibility gate waived, receiver-primary sensor [spec:sensor-android task:0, spec:station-mode task:0]
+- The human waived the feasibility gate (no more probe runs, no Tecno or Infinix test). ADR 0013 now records the waiver, both Samsung runs' numbers and the residual risk. Feasibility-probe tasks 8 to 10 are closed by waiver. `docs/status.md` updated.
+- New ADR 0032: the foreground-service receiver is the primary sensor for everyone, the job is the backup. `sensor-android` and `station-mode` requirements, design and tasks carry an amendment note and a new order. Shared schema and privacy rules unchanged.
+
+## 2026-11-23 feat(sensor): receiver-primary sensor, job backup, real upload [spec:sensor-android tasks:1-11, spec:station-mode tasks:2-7, spec:event-ingest task:10] [ADR 0033]
+- Built on the human's order with no device test. `packages/shared/src/sensor.ts` adds `SensorEvent`, `SensorTelemetry`, `Diagnostics` and a strict check, with `fixtures/sensor/sensor-events.json` read by Vitest and JUnit.
+- Kotlin pure core in `apps/android/.../sensor/`: plug classification, the stop decision table, and one state machine fed by both drivers (receiver primary, job backup). Dedupe by state gives one UNPLUG and one REPLUG per drop for any interleaving (seeded loops, T1/T4). Telemetry and diagnostics come from the event log. Controller tests run against fake adapters.
+- Android: SQLite outbox with a persisted seq counter, `SensorService` (specialUse foreground service, power receivers, 10-min heartbeat, START_STICKY, onTimeout), `ChargingJobService` (record first, reschedule without OS back-off), `BootReceiver`, manifest entries. The sensor starts after first run and on app resume.
+- `net/HttpApi.kt`, `SensorOutbox.kt`, `UploadDriver.kt`: register on first upload, POST events to `BuildConfig.API_BASE`, server delete. `source` stays local until the wire schema adds it (ADR 0033).
+- 32 new JVM tests, all Android tests, lint and assembleDebug pass. Docs: ADR 0033, traceability, ARCHITECTURE.md.
+
+
+## FEAT-003 onboarding, battery and sensor switch (sensor-android task 12, station-mode task 8, event-ingest task 11)
+- First run already started the sensor (afa2008). Added Settings "Power sensor" switch and "Battery setup" screen (oem-guide.json steps plus the exemption prompt), `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`.
+- Docs: android and Worker READMEs, probe-checklist Station section, ARCHITECTURE.md. Station-mode task 1 deferred in ADR 0034. Load run needs a person.
+- Only `assembleDebug` was run, by instruction.
+
+## fix(sensor): string pack and agent resource limits [spec:sensor-android task:12]
+- `StringPackTest` AS7 (app-shell R7) failed on the battery step line `Text("${i + 1}. $s")`. Moved to string resource `battery_step_item`.
+- `agents.test.mjs` limit (85,000 characters of file:// resources) failed for `sensor-engineer`. Dropped ADR 0001 and sensor-android `tasks.md` from its resources. No test changed.
+- Full checks now exit 0: Gradle testDebugUnitTest, lint and assembleDebug; npm test, lint and typecheck; spec-lint; architecture test. This replaces the "only assembleDebug" note above.

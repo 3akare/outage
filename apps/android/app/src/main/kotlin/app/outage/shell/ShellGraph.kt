@@ -5,15 +5,27 @@ import app.outage.onboarding.OnboardingFacts
 import app.outage.onboarding.OnboardingFlow
 import app.outage.onboarding.OnboardingStore
 import app.outage.onboarding.PrefsOnboardingStore
+import app.outage.sensor.SensorState
 import app.outage.ui.FeatureRegistry
 
-/** The shell's long-lived objects, built once in [app.outage.OutageApp]. No sensor, service or upload starts here (R1.4). */
+/**
+ * The shell's long-lived objects, built once in [app.outage.OutageApp]. Nothing starts here (R1.4); the sensor starts
+ * after first run and when the app is shown (ADR 0032), through [sensorStarter].
+ */
 class ShellGraph(context: Context) {
     val store: ShellStore = PrefsShellStore(context)
     val areaCache = PrefsAreaCache(context)
     val connectivity: Connectivity = AndroidConnectivity(context)
+
+    /** Set by the sensor feature. Called after first run and on each app resume once set up. */
+    var sensorStarter: () -> Unit = {}
+
+    /** Set by the sensor feature; Home shows it (app-shell R2.1). */
+    var sensorState: () -> SensorState? = { null }
+
     val sources: StatusSources = object : StatusSources by NoStatusSources {
         override fun areaStatus(): AreaStatus? = areaCache.read()
+        override fun sensorState(): SensorState? = this@ShellGraph.sensorState()
     }
     val onboarding: OnboardingStore = PrefsOnboardingStore(context)
     val deletes = DeleteRegistry(store).also {
@@ -30,7 +42,10 @@ class ShellGraph(context: Context) {
     fun completeFirstRun(nowMs: Long): Boolean {
         val flow = OnboardingFlow.open(onboarding, OnboardingFacts(notificationsOk = true, fullScreenOk = true, batteryExempt = false))
         val ok = flow.firstRun(OnboardingFlow.CONSENT_VERSION, nowMs)
-        if (ok) store.onboardingDone = true
+        if (ok) {
+            store.onboardingDone = true
+            sensorStarter()
+        }
         return ok
     }
 }

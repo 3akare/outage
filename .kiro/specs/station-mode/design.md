@@ -2,6 +2,8 @@
 
 Status: APPROVED by delegation on 2026-11-14. Based on `requirements.md`. Tasks in `tasks.md`.
 
+> **Amended 2026-11-23 (ADR 0032).** The receiver driver is primary for every user and the job is the backup. Read "Station mode" as "the foreground-service receiver driver". It starts after first run, not only when the user picks "Make this a station".
+
 ## 1. Overview
 
 Station mode adds a second driver to the `SensorStateMachine` defined in `sensor-android`. The state machine stays pure Kotlin. The new driver feeds it two new inputs, `PowerDisconnected` and `PowerConnected`.

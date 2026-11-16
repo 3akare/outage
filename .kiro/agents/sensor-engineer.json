@@ -22,10 +22,8 @@
     "file://apps/android/AGENTS.md",
     "file://.kiro/specs/sensor-android/requirements.md",
     "file://.kiro/specs/sensor-android/design.md",
-    "file://.kiro/specs/sensor-android/tasks.md",
     "file://.kiro/specs/station-mode/requirements.md",
     "file://.kiro/specs/station-mode/design.md",
-    "file://docs/adr/0001-sensor-job-timeout.md",
     "skill://.kiro/skills/oem-battery-guide/SKILL.md"
   ],
   "permissions": {

@@ -6,12 +6,20 @@ import app.outage.log.BandConfig
 import app.outage.map.AreaMapSources
 import app.outage.map.FileMapCache
 import app.outage.map.MapHttp
+import app.outage.net.IngestApi
+import app.outage.net.PrefsCredentials
+import app.outage.net.UploadDriver
+import app.outage.net.UrlConnectionPost
+import app.outage.sensor.Sensor
 import app.outage.shell.PrefsFollowedArea
 import app.outage.shell.ShellGraph
+import app.outage.ui.BatterySetupScreen
 import app.outage.ui.FeatureRegistry
+import app.outage.ui.SensorToggleScreen
 import app.outage.ui.InsightsScreen
 import app.outage.ui.MapScreen
 import java.io.File
+import java.util.concurrent.Executors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -22,11 +30,58 @@ class OutageApp : Application() {
     override fun onCreate() {
         super.onCreate()
         graph = ShellGraph(this)
-        // A server delete that failed earlier is retried here, off the main thread (R5.3).
-        if (graph.store.pendingServerDelete) Thread { graph.deletes.retryPending() }.start()
         registerMapAndInsights()
+        registerSensor()
+        // A server delete that failed earlier is retried here, off the main thread (R5.3). After registerSensor,
+        // which registers the server half.
+        if (graph.store.pendingServerDelete) Thread { graph.deletes.retryPending() }.start()
         // Feature packages register their screens and delete functions on `graph.features` and
         // `graph.deletes` here, as they are built. Nothing else starts at app start (R1.4).
+    }
+
+    /**
+     * Sensor and upload (sensor-android, station-mode, event-ingest task 10). The sensor itself is built lazily on first
+     * use, off the main thread. Upload runs only with a Worker address (ADR 0024) and only once a cell is chosen.
+     */
+    private fun registerSensor() {
+        val credentials = PrefsCredentials(this)
+        val onboarding = graph.onboarding
+        val io = Executors.newSingleThreadExecutor()
+        var upload: UploadDriver? = null
+        val prefs = getSharedPreferences("sensor_switch", MODE_PRIVATE)
+        graph.sensorStarter = {
+            if (prefs.getBoolean("on", true)) io.execute {
+                val sensor = Sensor.get(this)
+                sensor.start()
+                if (upload == null && BuildConfig.API_BASE.isNotBlank()) {
+                    upload = UploadDriver(IngestApi(BuildConfig.API_BASE, UrlConnectionPost), credentials, sensor) { onboarding.load()?.cell }
+                        .also { it.start() }
+                }
+            }
+        }
+        graph.features.register("battery", R.string.settings_battery, { BatterySetupScreen() }, null)
+        graph.features.register(
+            "sensor",
+            R.string.settings_sensor,
+            {
+                SensorToggleScreen({ prefs.getBoolean("on", true) }) { on ->
+                    prefs.edit().putBoolean("on", on).apply()
+                    if (on) graph.sensorStarter() else io.execute { Sensor.peek()?.stop() }
+                }
+            },
+            null,
+        )
+        graph.sensorState = { Sensor.peek()?.state() }
+        graph.deletes.register("sensor") { Sensor.get(this).deleteAllData() }
+        if (BuildConfig.API_BASE.isNotBlank()) {
+            val api = IngestApi(BuildConfig.API_BASE, UrlConnectionPost)
+            graph.deletes.registerServer {
+                val id = credentials.installId()
+                val token = credentials.token()
+                if (id == null || token == null) true
+                else api.delete(id, token, credentials.cells()).also { ok -> if (ok) credentials.clear() }
+            }
+        }
     }
 
     /**

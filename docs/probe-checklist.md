@@ -239,3 +239,13 @@ Not part of the probe. Do this once on a real phone with the debug build of `app
 4. Open Settings. Every row must be readable and tappable. Tap `Delete my data`, read the question, tap `Cancel`.
 5. Turn on dark mode. Repeat step 3. Each status must still show an icon and a text label.
 6. Record the phone, font size and result on the log sheet (section 6). Any clipped text is a bug: note which screen.
+
+## Station section (station-mode R6)
+
+Spare phone, left plugged in. Check each on the real phone, write the result in the log sheet:
+
+1. Leave it charging past 100%. Unplug it: one UNPLUG event within seconds. Replug: one REPLUG.
+2. Screen off, no touching for 2 hours (Doze). The ongoing notification stays and a heartbeat lands about every 10 minutes while armed.
+3. Apply the maker's battery steps in Settings, Battery setup. Repeat step 2 overnight.
+4. Reboot the phone. After boot the sensor re-arms without opening the app, and the gap is recorded.
+5. Switch Power sensor off in Settings. Nothing is recorded or uploaded until it is switched on.

@@ -10,3 +10,4 @@ export * from './pairing.ts';
 export * from './follow.ts';
 export * from './field-dump.ts';
 export * from './map.ts';
+export * from './sensor.ts';

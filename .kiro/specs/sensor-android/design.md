@@ -4,6 +4,8 @@ Status: APPROVED by delegation on 2026-11-14. Based on `requirements.md`. Tasks 
 
 ## 1. Overview
 
+> **Amended 2026-11-23 (ADR 0032, gate waived in ADR 0013).** The foreground-service receiver is the primary sensor for every user. The job described below is the backup. Where this document says the Job's stop is the signal, read it as the backup path. The receiver inputs and `source` come from the station-mode design and are now part of the sensor itself.
+
 The Sensor treats the Job's stop as the signal. A JobScheduler job with `setRequiresCharging(true)` runs while the phone charges. When charging stops, Android calls `onStopJob`. When charging resumes, Android calls `onStartJob`. The Sensor turns those two callbacks into events.
 
 Three concerns are kept apart so each is testable:
