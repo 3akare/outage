@@ -17,18 +17,24 @@ class SensorOutbox(private val sensor: SensorController, private val cell: () ->
     override fun ack(upToSeq: Long) = sensor.ackEvents(upToSeq)
 
     companion object {
-        fun toPending(e: SensorEvent, cell: String) = PendingEvent(
-            seq = e.seq,
-            type = e.type.name,
-            recordedElapsedMs = e.recordedElapsedMs,
-            cell = cell,
-            confidence = e.confidence.name,
-            timeQuality = e.timeQuality.name,
-            stopReason = e.stopReason,
-            reason = e.reason,
-            schedulingDelayMs = e.schedulingDelayMs,
-            batteryPct = e.batteryPct,
-            plugType = e.plugType.name,
-        )
+        /** A LABEL carries only the base fields plus `refSeq` and `answer`; the strict schema rejects the rest (ingest.ts). */
+        fun toPending(e: SensorEvent, cell: String): PendingEvent {
+            val label = e.type == app.outage.sensor.EventType.LABEL
+            return PendingEvent(
+                seq = e.seq,
+                type = e.type.name,
+                recordedElapsedMs = e.recordedElapsedMs,
+                cell = cell,
+                confidence = e.confidence.name,
+                timeQuality = e.timeQuality.name,
+                stopReason = if (label) null else e.stopReason,
+                reason = if (label) null else e.reason,
+                schedulingDelayMs = if (label) null else e.schedulingDelayMs,
+                batteryPct = if (label) null else e.batteryPct,
+                plugType = if (label) null else e.plugType.name,
+                refSeq = e.refSeq,
+                answer = e.answer,
+            )
+        }
     }
 }

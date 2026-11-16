@@ -6,7 +6,22 @@ import app.outage.log.BandConfig
 import app.outage.map.AreaMapSources
 import app.outage.map.FileMapCache
 import app.outage.map.MapHttp
+import android.content.Intent
+import android.provider.Settings
+import androidx.compose.runtime.Composable
+import app.outage.map.DemoAreaMap
+import app.outage.map.MapResult
 import app.outage.net.IngestApi
+import app.outage.net.PushHost
+import app.outage.onboarding.OnboardingFacts
+import app.outage.onboarding.OnboardingFlow
+import app.outage.onboarding.SpotChoice
+import app.outage.ui.AlarmSettingsScreen
+import app.outage.ui.FollowSection
+import app.outage.ui.PermissionsScreen
+import app.outage.ui.SelfTestScreen
+import app.outage.ui.SpotScreen
+import app.outage.ui.SpotState
 import app.outage.net.PrefsCredentials
 import app.outage.net.UploadDriver
 import app.outage.net.UrlConnectionPost
@@ -30,8 +45,10 @@ class OutageApp : Application() {
     override fun onCreate() {
         super.onCreate()
         graph = ShellGraph(this)
+        app.outage.alarm.ChannelSetup.ensure(this)
         registerMapAndInsights()
         registerSensor()
+        registerAlarmAndSpot()
         // A server delete that failed earlier is retried here, off the main thread (R5.3). After registerSensor,
         // which registers the server half.
         if (graph.store.pendingServerDelete) Thread { graph.deletes.retryPending() }.start()
@@ -73,6 +90,7 @@ class OutageApp : Application() {
         )
         graph.sensorState = { Sensor.peek()?.state() }
         graph.deletes.register("sensor") { Sensor.get(this).deleteAllData() }
+        graph.deletes.register("alarm") { app.outage.alarm.AlarmHost.get(this).deleteAll() }
         if (BuildConfig.API_BASE.isNotBlank()) {
             val api = IngestApi(BuildConfig.API_BASE, UrlConnectionPost)
             graph.deletes.registerServer {
@@ -82,6 +100,51 @@ class OutageApp : Application() {
                 else api.delete(id, token, credentials.cells()).also { ok -> if (ok) credentials.clear() }
             }
         }
+    }
+
+    /**
+     * Light Alarm settings, notification permission, spot, follow and charger test screens (alerts-and-light-alarm task 8,
+     * onboarding tasks 5 to 7). Each is opened from Settings or a Home card. Push is off without Firebase config (ADR 0036).
+     */
+    private fun registerAlarmAndSpot() {
+        val credentials = PrefsCredentials(this)
+        val push = PushHost.get(this)
+        val mapCache = FileMapCache(File(filesDir, "map"))
+        val mapSource = AreaMapSources.choose(BuildConfig.API_BASE, mapCache) { url -> withContext(Dispatchers.IO) { MapHttp.get(url) } }
+        val openBatteryList = {
+            startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
+        val alarmScreen: @Composable () -> Unit = { AlarmSettingsScreen({ credentials.installId() != null }, openBatteryList) }
+        graph.features.register("alarm_settings", R.string.settings_alarm, alarmScreen, null)
+        graph.features.register(FeatureRegistry.ALARM, R.string.alarm_title, alarmScreen, null)
+        graph.features.register("notifications", R.string.settings_notifications, { PermissionsScreen() }, null)
+        graph.features.register("self_test", R.string.settings_self_test, { SelfTestScreen() }, null)
+        graph.features.register(
+            "followed_area",
+            R.string.settings_followed_area,
+            {
+                SpotScreen(
+                    loadMap = { (mapSource.load(DemoAreaMap.CITY, System.currentTimeMillis()) as? MapResult.Loaded)?.load?.map },
+                    current = {
+                        val r = graph.onboarding.load()
+                        SpotState(r?.cell, r?.areaName, r?.postcodePrefix)
+                    },
+                    save = { choice, postcode -> saveSpot(push, choice, postcode) },
+                    below = { spot -> FollowSection(spot) },
+                )
+            },
+            null,
+        )
+        graph.deletes.register("follow") { push.deleteLocal() }
+    }
+
+    /** Stores the cell only (O2). A follow on the old cell moves to the new one. */
+    private fun saveSpot(push: PushHost, choice: SpotChoice, postcode: String?): Boolean {
+        val flow = OnboardingFlow.open(graph.onboarding, OnboardingFacts(notificationsOk = true, fullScreenOk = true, batteryExempt = false))
+        if (!flow.changeSpot(choice.cell, choice.areaName, postcode)) return false
+        val old = push.store.read()
+        if (old != null && old.cell != choice.cell) push.follow(old.copy(cell = choice.cell)) { }
+        return true
     }
 
     /**

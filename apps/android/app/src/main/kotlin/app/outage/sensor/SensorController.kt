@@ -34,6 +34,8 @@ data class Diagnostics(
     val broadcastMismatches: Int,
     val writeFailures: Int,
     val recentGaps: List<Gap>,
+    /** onboarding R8.7: the last self-test, kept on the phone. */
+    val selfTest: SelfTestResult? = null,
 )
 
 /** The facade the app calls (sensor-android design section 8, R11). */
@@ -47,6 +49,16 @@ interface SensorController {
     fun getDiagnostics(): Diagnostics
     fun addListener(listener: (SensorEvent) -> Unit): AutoCloseable
     fun deleteAllData()
+
+    /** onboarding R8.2: while a self-test runs, nothing is emitted, prompted or rung. */
+    fun beginSelfTest()
+    fun endSelfTest(): SelfTestResult
+
+    /** The foreground receiver reports a plug change (self-test screen only). */
+    fun plugChanged(plug: Plug)
+
+    /** alerts-and-light-alarm R2.5: queues a LABEL for the UNPLUG `refSeq`. Returns the label's seq, or null if the write failed. */
+    fun queueLabel(refSeq: Long, answer: String): Long?
 }
 
 /**
@@ -62,6 +74,7 @@ class DefaultSensorController(
     private val listeners = mutableListOf<(SensorEvent) -> Unit>()
     @Volatile var receiverActive = false
         private set
+    private var selfTest: SelfTestRun? = null
 
     // ---- inputs from the drivers ----
 
@@ -70,6 +83,15 @@ class DefaultSensorController(
         val now = clock.elapsedMs()
         val boot = clock.bootCount()
         val facts = platform.facts()
+        selfTest?.let { run ->
+            if (input != Input.UserStopped && input !is Input.Recovered) {
+                // O6: record only. The job still reschedules itself, so the sensor is not lost after the test.
+                run.record(input, facts, now)
+                if (input is Input.JobStopped) runCatching { platform.scheduleJob() }
+                return
+            }
+            selfTest = null
+        }
         if (input is Input.JobStopped) bump("stop:" + (StopReasons.name(input.stopReason) ?: "UNAVAILABLE"))
         val out = SensorStateMachine.step(loadState(), input, facts, now, receiverActive)
         if (out.broadcastMismatch) bump(KEY_MISMATCH)
@@ -186,6 +208,7 @@ class DefaultSensorController(
             broadcastMismatches = store.getState(KEY_MISMATCH)?.toIntOrNull() ?: 0,
             writeFailures = store.getState(KEY_WRITE_FAILURES)?.toIntOrNull() ?: 0,
             recentGaps = getTelemetry(RETENTION_MS).gaps.takeLast(10),
+            selfTest = SelfTestResult.decode(store.getState(KEY_SELF_TEST)),
         )
     }
 
@@ -200,7 +223,53 @@ class DefaultSensorController(
         runCatching { platform.cancelJob() }
         runCatching { platform.stopReceiver() }
         receiverActive = false
+        selfTest = null
         store.clearAll()
+    }
+
+    @Synchronized
+    override fun beginSelfTest() {
+        selfTest = SelfTestRun(sensorArmed = loadState().phase == Phase.ARMED)
+    }
+
+    @Synchronized
+    override fun endSelfTest(): SelfTestResult {
+        val run = selfTest ?: return SelfTestResult.decode(store.getState(KEY_SELF_TEST)) ?: SelfTestResult(false, false, false, null)
+        selfTest = null
+        val result = run.result()
+        store.putState(KEY_SELF_TEST, result.encode())
+        // Bring the machine back in line with the plug without emitting anything (the test inputs never reached it).
+        val s = loadState()
+        if (s.phase != Phase.IDLE) {
+            val plugged = platform.facts().plug.detection
+            val phase = when {
+                plugged && (s.phase == Phase.NOT_CHARGING || s.phase == Phase.GAP || s.phase == Phase.DROPPED) -> Phase.ARMED
+                !plugged && (s.phase == Phase.ARMED || s.phase == Phase.FULL) -> Phase.NOT_CHARGING
+                else -> s.phase
+            }
+            saveState(MachineState(phase), clock.bootCount(), clock.elapsedMs())
+        }
+        return result
+    }
+
+    @Synchronized
+    override fun plugChanged(plug: Plug) {
+        selfTest?.plugChanged(plug, clock.elapsedMs())
+    }
+
+    @Synchronized
+    override fun queueLabel(refSeq: Long, answer: String): Long? {
+        val now = clock.elapsedMs()
+        val draft = EventDraft(
+            type = EventType.LABEL, recordedElapsedMs = now, confidence = Confidence.HIGH, batteryPct = 0,
+            plug = Plug.NONE, source = Source.RECEIVER, refSeq = refSeq, answer = answer,
+        )
+        return try {
+            store.append(draft, clock.bootCount())
+        } catch (e: Exception) {
+            bump(KEY_WRITE_FAILURES)
+            null
+        }
     }
 
     // ---- state rows ----
@@ -231,6 +300,7 @@ class DefaultSensorController(
         const val KEY_WRITE_FAILURES = "write_failures"
         const val KEY_BLOCKED = "receiver_blocked_reason"
         const val KEY_INSTALL_ID = "install_id"
+        const val KEY_SELF_TEST = "self_test_results"
         private val STOP_KEYS = (0..15).mapNotNull { StopReasons.name(it) } + "UNAVAILABLE"
     }
 }

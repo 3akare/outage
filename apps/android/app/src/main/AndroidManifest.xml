@@ -15,6 +15,15 @@
     <!-- Normal permission. Lets the battery setup screen show the one-tap exemption prompt. -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Light Alarm (alerts-and-light-alarm). Normal permissions, no prompt. WAKE_LOCK keeps the CPU on for the ring (at most
+         120 s); VIBRATE shakes the phone; USE_FULL_SCREEN_INTENT lets the alarm open over the lock screen where the system
+         allows it (Android 14 limits it, so the app checks canUseFullScreenIntent first).
+         https://developer.android.com/reference/android/Manifest.permission#USE_FULL_SCREEN_INTENT -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- Onboarding spot (R3.2): coarse only, asked once in context when the user taps "Use my location once". Never fine location. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
@@ -47,6 +56,20 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Power-cut sensor: listens for the charger being plugged in or out so the app can tell the user when grid power goes off and comes back." />
+        </service>
+
+        <!-- Explicit and not exported: only this app's own notification actions reach it (Android 14 rule). -->
+        <receiver
+            android:name=".alarm.NotificationActionReceiver"
+            android:exported="false" />
+
+        <!-- Token refresh for follow pushes (ADR 0036). https://firebase.google.com/docs/cloud-messaging/android/client -->
+        <service
+            android:name=".net.OutageMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
         </service>
 
         <receiver
