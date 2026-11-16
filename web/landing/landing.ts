@@ -52,10 +52,10 @@ export function renderLanding(site: Site): Rendered {
     .join('');
   const hero =
     '<section class="hero" aria-labelledby="hero-h"><div class="container"><div>' +
-    '<h1 id="hero-h">See where the power is out in Lagos.</h1>' +
+    '<h1 id="hero-h">See where the power is out, block by block.</h1>' +
     '<p class="lead">Your phone charger is a power-grid sensor. When the grid fails, every charging phone nearby stops at once, and Outage colours that block on the map.</p>' +
     `<div class="actions"><a class="btn primary lg" href="${SIMULATE_HREF}">Try the app in your browser</a><a class="btn outline lg" href="#get">Get it for Android</a></div></div>` +
-    '<figure class="mapcard" aria-label="Street map of Lagos with simulated power blocks">' +
+    '<figure class="mapcard" aria-label="Street map with simulated power blocks">' +
     `<div class="map" id="heromap"></div><div class="float"><span class="pillbox">${LOGO_SVG}<span class="tag">Simulated</span></span></div>` +
     `<div class="legend" aria-hidden="true">${legend}</div></figure></div></section>`;
   const how =
@@ -73,7 +73,7 @@ export function renderLanding(site: Site): Rendered {
     '<h2 id="ins-h">Know when the power goes</h2>' +
     '<p class="lead">Outage keeps a record of every cut at your spot and checks it against what your tariff band promises.</p>' +
     '<div class="preview"><div class="card"><h3>Hours of power each day in Yaba</h3><p class="sub" id="herostat">Simulated, last 30 days.</p><div class="plot" id="herochart"></div></div>' +
-    '<div class="card"><h3>Also in Insights</h3><ul class="list sub"><li>When outages happen, by weekday and hour</li><li>How your area compares with the rest of Lagos</li><li>Every outage, how long it lasted, and how long power usually takes to come back</li></ul>' +
+    '<div class="card"><h3>Also in Insights</h3><ul class="list sub"><li>When outages happen, by weekday and hour</li><li>How your area compares with the areas around it</li><li>Every outage, how long it lasted, and how long power usually takes to come back</li></ul>' +
     `<p><a class="btn tonal" href="${SIMULATE_HREF}">Open Insights in the app</a></p></div></div></div></section>`;
   const get =
     '<section class="section get" id="get" aria-labelledby="get-h"><div class="container">' +
@@ -82,7 +82,7 @@ export function renderLanding(site: Site): Rendered {
     `<div class="stores">${stores(site)
       .map((s) => `<a class="store" href="${e(s.href)}" aria-label="${s.label}">${icon(s.icon)}<span><small>${s.over}</small><b>${s.label.replace(/^(Get it on |Download the APK from )/, '')}</b></span></a>`)
       .join('')}</div>` +
-    `<p class="muted">No Android phone? <a href="${SIMULATE_HREF}">Try the app in your browser</a> on a simulated Lagos.</p>` +
+    `<p class="muted">No Android phone? <a href="${SIMULATE_HREF}">Try the app in your browser</a> on a simulated city.</p>` +
     '</div></section>';
   const foot =
     `<footer class="site-foot"><div class="container">${brandLink('/')}` +

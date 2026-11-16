@@ -15,7 +15,7 @@ Single-player value comes first. The map is the bonus. Every feature must be use
 - The app: install, answer "Use my location" or "Not now", land on a full-screen hex map centred on your spot, with a sheet for your spot and feed and a bar of Insights, Home (middle), Settings (ADR 0050).
 - One look everywhere: Hallmark's theme Midnight with Mona Sans from one token file, a real rotating globe as the map, and the Outage mark (ADR 0051, ADR 0052). Use the Hallmark skill (`.agents/skills/hallmark`) for any UI work and keep its Floor. The Material 3 skill was removed at the human's request; do not reinstall it.
 - The simulated city is real Lagos geography: real areas at their real places as real H3 blocks; only the power states are made up (ADR 0052).
-- Open worldwide. Lagos is the proving ground and demo city.
+- Open worldwide: Outage is for anywhere the power is unreliable (Nigeria first, then Ghana or any other country). Lagos is only the demo city. Product copy never frames Outage as a Lagos or Nigeria app: no "in Lagos" in headlines, search boxes or descriptions; name a place only for the simulated data itself. The landing map opens on the whole globe.
 - Budget: zero. Free tiers only.
 
 ## Hooks that work from one charging phone

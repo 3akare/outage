@@ -194,7 +194,7 @@ function renderHome() {
         `<p class="kpi"><b>${s.avgHours} h</b> a day on average · ${s.daysBelow} of 7 days below the promise</p><div class="mini" data-mini="${SPOT_AREA}"></div></div>`
       : '') +
     `<h2 class="sec">Areas${filter.size ? ' matching the filter' : ''}</h2><ul class="rows" id="arealist">${areaRows() || '<li class="empty">No area has blocks in that state right now.</li>'}</ul>` +
-    '<p class="foot">Simulated city: real Lagos areas at their real places, made-up power. Map © OpenStreetMap contributors, OpenFreeMap.</p>';
+    '<p class="foot">Simulated city: real neighbourhoods at their real places, made-up power. Map © OpenStreetMap contributors, OpenFreeMap.</p>';
   drawMini(week);
   bindPanel();
   layoutSheet();

@@ -10,7 +10,14 @@ const script = fileURLToPath(new URL('../../../.github/scripts/post-deploy-check
 
 function run(mode) {
   let n = 0;
-  const server = http.createServer((_req, res) => {
+  let base = '';
+  const server = http.createServer((req, res) => {
+    // /app and /judge are 301s to /app/simulate (ADR 0049); 'brokenRedirect' serves /app as a page instead.
+    if ((req.url === '/app' || req.url === '/judge') && mode !== 'brokenRedirect') {
+      res.writeHead(301, { location: `${base}/app/simulate`, 'cache-control': 'no-store' });
+      res.end();
+      return;
+    }
     const nonce = mode === 'repeat' ? 'fixed' : `n${n++}`;
     const body = {
       ok: `<script nonce="${nonce}">1</script><style nonce="${nonce}">a{}</style><link rel="stylesheet" href="/app.css"><script src="/app.js" defer></script>`,
@@ -22,6 +29,7 @@ function run(mode) {
       external: '<script src="https://x.test/a.js"></script>',
       protocolRelative: '<script src="//x.test/a.js"></script>',
       repeat: '<script src="/app.js"></script>',
+      brokenRedirect: '<script src="/app.js"></script>',
     }[mode];
     res.writeHead(200, {
       'cache-control': 'public, max-age=1, s-maxage=1',
@@ -32,7 +40,8 @@ function run(mode) {
   });
   return new Promise((resolve) => {
     server.listen(0, () => {
-      execFile(script, { env: { ...process.env, URL: `http://localhost:${server.address().port}` } }, (err) => {
+      base = `http://localhost:${server.address().port}`;
+      execFile(script, { env: { ...process.env, URL: base } }, (err) => {
         server.close();
         resolve(err ? err.code : 0);
       });
@@ -41,6 +50,6 @@ function run(mode) {
 }
 
 for (const mode of ['ok', 'sameOriginOnly']) test(`post-deploy check passes: ${mode}`, async () => assert.equal(await run(mode), 0));
-for (const mode of ['inlineNoNonce', 'styleNoNonce', 'wrongNonce', 'placeholder', 'external', 'protocolRelative', 'repeat']) {
+for (const mode of ['inlineNoNonce', 'styleNoNonce', 'wrongNonce', 'placeholder', 'external', 'protocolRelative', 'repeat', 'brokenRedirect']) {
   test(`post-deploy check fails: ${mode}`, async () => assert.notEqual(await run(mode), 0));
 }

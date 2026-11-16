@@ -43,7 +43,7 @@ export const CHIPS = [
   { state: 'NORMAL', label: 'Power on' },
 ] as const;
 
-/** The simulated city as JSON for the page's script: real Lagos areas, made-up states and history (ADR 0053). */
+/** The simulated city as JSON for the page's script: real areas at their real places, made-up states and history (ADR 0053). */
 export const renderDemoCityJson = (): Rendered => json(city, TTL_SECONDS);
 
 // Icons the script builds rows with, inlined so it loads nothing more.
@@ -58,8 +58,8 @@ export function appScreen(): string {
   const search =
     '<div class="topbar"><form class="search" role="search" id="searchform">' +
     `<span class="search-brand">${LOGO_SVG}</span>` +
-    '<label class="visually-hidden" for="q">Search areas in Lagos</label>' +
-    '<input id="q" type="search" placeholder="Search Lagos areas" autocomplete="off" spellcheck="false" aria-controls="suggest" aria-expanded="false">' +
+    '<label class="visually-hidden" for="q">Search areas</label>' +
+    '<input id="q" type="search" placeholder="Search areas" autocomplete="off" spellcheck="false" aria-controls="suggest" aria-expanded="false">' +
     `<button type="button" class="icon-btn" id="clear" aria-label="Clear search" hidden>${icon('close')}</button>` +
     `<span class="search-ico">${icon('search')}</span>` +
     '<ul class="suggest" id="suggest" role="listbox" hidden></ul></form>' +
@@ -83,7 +83,7 @@ export function appScreen(): string {
   return (
     '<div class="app" id="app" data-tab="home">' +
     rail +
-    '<div class="map" id="map" role="region" aria-label="Map of Lagos with every block coloured by power. The list in the panel has the same information."></div>' +
+    '<div class="map" id="map" role="region" aria-label="Map with every block coloured by power. The list in the panel has the same information."></div>' +
     search +
     legend +
     controls +
@@ -111,7 +111,7 @@ export function renderSimulatePage(site: Site): Rendered {
     '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
     `<title>${SIM_BANNER_TEXT}: the Outage app in your browser</title>` +
-    '<meta name="description" content="Try the Outage Android app in your browser: a street map of Lagos coloured by power, a simulated blackout, and charts of when the power goes. Not live data.">' +
+    '<meta name="description" content="Try the Outage Android app in your browser: a street map coloured by power, a simulated blackout, and charts of when the power goes. Not live data.">' +
     '<meta name="theme-color" content="#ffffff">' +
     `<link rel="canonical" href="${e(site.origin + SIMULATE_PATH)}">${FAVICON_LINK}` +
     `<link rel="modulepreload" href="/vendor/maplibre-gl/maplibre-gl.mjs"><link rel="stylesheet" href="${MAPLIBRE_CSS_PATH}">` +

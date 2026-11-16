@@ -39,7 +39,7 @@ describe('landing /', () => {
   it('UX9: the pitch, the app in the browser, the GitHub download, and no hardware-sensor claim', async () => {
     const { res, body } = await page('/');
     expect(res.status).toBe(200);
-    expect(body).toContain('<h1 id="hero-h">See where the power is out in Lagos.</h1>');
+    expect(body).toContain('<h1 id="hero-h">See where the power is out, block by block.</h1>');
     expect(body).toContain('power-grid sensor');
     expect(body).toContain('href="/app/simulate"');
     expect(body).toContain('Try the app in your browser');

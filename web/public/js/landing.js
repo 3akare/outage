@@ -7,8 +7,13 @@ const box = document.getElementById('heromap');
 const chart = document.getElementById('herochart');
 const city = await fetch('/demo-city.json').then((r) => r.json());
 if (box) {
-  const m = createMap(box, city, { center: [3.42, 6.5], zoom: 10.3, cooperative: true, globe: false });
-  m.on('ready', () => box.setAttribute('data-ready', '1'));
+  // Opens on the whole globe, then flies down to the simulated city: Outage is for anywhere the power is unreliable.
+  const m = createMap(box, city, { center: [10, 15], zoom: 1.4, cooperative: true });
+  m.on('ready', () => {
+    box.setAttribute('data-ready', '1');
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(() => m.flyTo([3.42, 6.5], 10.3, still ? 0 : 4500), still ? 0 : 1200);
+  });
 }
 if (chart) {
   const today = new Date();
