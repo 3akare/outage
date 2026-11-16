@@ -48,6 +48,10 @@ data class EventDraft(
     val stopReason: String? = null,
     val reason: String? = null,
     val schedulingDelayMs: Long? = null,
+    /** LABEL only (alerts-and-light-alarm R2.5): the sequence number of the UNPLUG the user answered about. */
+    val refSeq: Long? = null,
+    /** LABEL only: `YES` or `NO`. */
+    val answer: String? = null,
 )
 
 /** Disarm reasons. Short identifiers so they pass the ingest `SHORT_ID` rule. */

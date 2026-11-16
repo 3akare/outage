@@ -102,17 +102,19 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R1 | L1 | `L1_one_prompt_per_unplug` | 3 | planned |
-| R3.1, R3.2 | L2 | `L2_ring_iff_conditions` | 3 | planned |
-| R3.3, R3.5 | L3 | `L3_alarm_has_no_network` | 4 | planned |
-| R2 | L4 | `L4_first_answer_wins` | 3 | planned |
+| R1 | L1 | `L1_one_prompt_per_unplug` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt`) |
+| R3.1, R3.2 | L2 | `L2_ring_iff_conditions` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt`) |
+| R3.3, R3.5 | L3 | `L3_alarm_has_no_network` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmAdaptersTest.kt`) |
+| R2 | L4 | `L4_first_answer_wins` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt`) |
 | R7 | L5 | `L5_quiet_window` | 6 | done (`workers/api/test/alerts-planner.test.ts`) |
 | R6 | L6 | `L6_push_planning` | 6 | done (`workers/api/test/alerts-planner.test.ts`) |
 | R8.2, R10.2 | L7 | `L7_token_hygiene_and_delete` | 5 | done (`workers/api/test/alerts-server.test.ts`, `alerts-sql.test.ts`) |
 | R8.1, R8.3 | L8 | `L8_batching_and_retry` | 7 | done (`workers/api/test/alerts-fcm.test.ts`) |
-| R4.1, R4.2 | L9 | `L9_expiry_and_reboot` | 3 | planned |
-| R1.4, R3 | L10 | `L10_replay_equivalence` | 3 | planned |
-| R1.2, R9 | L11 | `L11_channel_config` | 4 | planned |
+| R4.1, R4.2 | L9 | `L9_expiry_and_reboot` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt`) |
+| R1.4, R3 | L10 | `L10_replay_equivalence` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt`) |
+| R1.2, R9 | L11 | `L11_channel_config` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmAdaptersTest.kt`) |
+| R5, R6.1, R6.2, R7, R9 | L13 | `FollowTest` (request shape against the shared schema, quiet window wrap) | 8 | test written (`apps/android/app/src/test/kotlin/app/outage/net/FollowTest.kt`) |
+| all | L14 | `simulated_outage_push_plan` | 9 | done (`tools/sim/test/push-plan.test.ts`) |
 | R6.6, R10.5 | L12 | `L12_string_pack` | 2, 6 | server texts tested in `workers/api/test/alerts-planner.test.ts`; Android test written (`apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt`) |
 
 ## power-log
@@ -153,13 +155,15 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
 | R1, R4.3 | O1 | `O1_flow_machine` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt`) |
-| R3.3, R12.2 | O2 | `O2_no_coordinates_stored` | 5 | planned |
+| R3.3, R12.2 | O2 | `O2_no_coordinates_stored` | 5 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/SpotAndChecksTest.kt`) |
 | R4.3, R5.3 | O3 | `O3_no_register_before_consent` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt`) |
 | R7.1 | O4 | `O4_maker_matching` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OemGuideTest.kt`) |
 | R7.3, R7.4 | O5 | `O5_guide_labels` | 4 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OemGuideTest.kt`) |
-| R8.2, R8.6 | O6 | `O6_self_test_isolated` | 2 | planned |
+| R8.2, R8.6 | O6 | `O6_self_test_isolated` | 2 | test written (`apps/android/app/src/test/kotlin/app/outage/sensor/SelfTestAndLabelTest.kt`) |
 | R1.5 | O7 | `O7_resume` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt`) |
 | R10 | O8 | `O8_reonboarding_skips` | 3 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt`) |
+| R6.5 | O9 | `alarmCheckListsEveryFactAndHidesRegisteredWhenTrue` | 6 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/SpotAndChecksTest.kt`) |
+| R3.2, R3.4, R3.8 | O10 | `firstResultWins`, `mockedPositionAsksForConfirmation` | 5 | test written (`apps/android/app/src/test/kotlin/app/outage/onboarding/SpotAndChecksTest.kt`) |
 
 ## web-and-area-pages
 

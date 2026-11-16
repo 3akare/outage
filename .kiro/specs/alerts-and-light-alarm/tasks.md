@@ -10,7 +10,7 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 
 ## Wave 1
 
-- [ ] 1. Amend shared types for `LABEL`: `sensor-android` EVENT table and `SensorEvent` type, `event-ingest` strict schema allow-list and tests (I8), shared fixtures, and the engine `Label` mapping in `area-cells` routing. Update tasks 2 and 5 of ingest where they list event types.
+- [x] 1. Amend shared types for `LABEL`: `sensor-android` EVENT table and `SensorEvent` type, `event-ingest` strict schema allow-list and tests (I8), shared fixtures, and the engine `Label` mapping in `area-cells` routing. Update tasks 2 and 5 of ingest where they list event types.
   - Depends on: `sensor-android` 2, `event-ingest` 2, `detection-engine` 1
   - Requirements: R2.5
 - [x] 2. String pack: English and optional Pidgin strings for the prompt, alarm, test, push texts, status list; a checker for missing keys. Test L12.
@@ -19,7 +19,7 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 
 ## Wave 2
 
-- [ ] 3. `AlarmPolicy` pure core, `WakeStore` interface with an in-memory fake, expiry and reboot handling. Tests L1, L2, L4, L9, L10.
+- [x] 3. `AlarmPolicy` pure core, `WakeStore` interface with an in-memory fake, expiry and reboot handling. Tests L1, L2, L4, L9, L10.
   - Depends on: 1, `sensor-android` 4
   - Requirements: R1, R2, R3.1, R3.2, R4
 - [x] 6. `PushPlanner` and the quiet-window function, string selection by precision, size check. Tests L5, L6, L12.
@@ -28,7 +28,7 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 
 ## Wave 3
 
-- [ ] 4. Kotlin adapters in `apps/android` (packages `alarm`, `sensor`): `PromptNotifier`, `NotificationActionReceiver`, SQLite `WakeStore`, `ChannelSetup`, `LightAlarm` (audio, notification, optional full-screen intent, wake lock, telemetry), wiring into `ChargingJobService` and `StationService`. Tests L3, L11 (JUnit 4). Device checks recorded in `docs/probe-checklist.md`.
+- [x] 4. Kotlin adapters in `apps/android` (packages `alarm`, `sensor`): `PromptNotifier`, `NotificationActionReceiver`, SQLite `WakeStore`, `ChannelSetup`, `LightAlarm` (audio, notification, optional full-screen intent, wake lock, telemetry), wiring into `ChargingJobService` and `StationService`. Tests L3, L11 (JUnit 4). Device checks recorded in `docs/probe-checklist.md`.
   - Depends on: 3, `sensor-android` 7, `station-mode` 3
   - Requirements: R1, R2, R3, R4, R9.3
 - [x] 7. FCM HTTP v1 client with injectable `fetch`: access token from the `FCM_SERVICE_ACCOUNT` secret (Web Crypto), one message per request, error mapping (`UNREGISTERED`, `QUOTA_EXCEEDED`, `UNAVAILABLE`), back-off, deferral across invocations. Test L8.
@@ -40,13 +40,13 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 - [x] 5. Subscriptions in the area actor: schema, follow and unfollow endpoints, strict validation, `PUSH_SENT` memory, deferred-send alarm, push hook from `area-cells` outputs, delete-my-data. Test L7.
   - Depends on: 7, `area-cells` 9, `event-ingest` 4
   - Requirements: R6, R8, R10
-- [ ] 8. Screens (Jetpack Compose, approved 2026-11-14) and `net` package: channel creation, permission flow, FCM token registration and refresh, follow and quiet-hours screens, Test Light Alarm, Alarm check list, in-app prompt for denied notifications, string pack wiring; JVM unit tests for the follow request against the contract fixtures.
+- [x] 8. Screens (Jetpack Compose, approved 2026-11-14) and `net` package: channel creation, permission flow, FCM token registration and refresh, follow and quiet-hours screens, Test Light Alarm, Alarm check list, in-app prompt for denied notifications, string pack wiring; JVM unit tests for the follow request against the contract fixtures.
   - Depends on: 4, 2, `event-ingest` 10
   - Requirements: R1.7, R5, R6.1, R6.2, R7, R9
 
 ## Wave 5
 
-- [ ] 9. Scenario test in `tools/sim`: simulated outage creates a planned push set for followers, marked simulated and never sent. Update `docs/traceability.md` (L1 to L12), `docs/probe-checklist.md`, `docs/kiro-log.md`.
+- [x] 9. Scenario test in `tools/sim`: simulated outage creates a planned push set for followers, marked simulated and never sent. Update `docs/traceability.md` (L1 to L12), `docs/probe-checklist.md`, `docs/kiro-log.md`.
   - Depends on: 5, 8, `detection-engine` 16
   - Requirements: all
 

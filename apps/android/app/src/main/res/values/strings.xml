@@ -52,7 +52,7 @@
     <string name="settings_battery">Battery setup</string>
     <string name="settings_station">Station mode</string>
     <string name="settings_home_watch">Home Watch</string>
-    <string name="settings_followed_area">Followed area</string>
+    <string name="settings_followed_area">Your spot and alerts</string>
     <string name="settings_language">Language</string>
     <string name="settings_diagnostics">Share anonymous diagnostics</string>
     <string name="settings_delete">Delete my data</string>
@@ -229,6 +229,88 @@
     <string name="ins_empty_body">Outage logs power while your phone charges. Keep it plugged in at home and your pattern appears here.</string>
     <string name="ins_empty_battery">Check battery setup</string>
     <string name="ins_simulated_note">Sample data to show the charts. Your own log starts once your phone has watched for a day.</string>
+    <!-- Screens for the alarm, follow, spot, permissions and self-test (alerts-and-light-alarm task 8, onboarding tasks 5 to 7) -->
+    <!-- Light Alarm settings and Alarm check -->
+    <string name="alarm_screen_intro">Light Alarm rings when power comes back at your spot, even at night. It works without internet.</string>
+    <string name="alarm_test_running">Test: ringing in a few seconds</string>
+    <string name="alarm_test_stop">Stop the test</string>
+    <string name="alarm_check_fix_notifications">Allow notifications</string>
+    <string name="alarm_check_fix_fullscreen">Open the lock screen setting</string>
+    <string name="alarm_check_fix_battery">Open battery setup</string>
+
+    <!-- Permissions in context (ADR 0030) -->
+    <string name="perm_title">Notifications and the lock screen</string>
+    <string name="perm_notifications_reason">Outage asks if power just went off, and tells you about your area. The Light Alarm still rings without this.</string>
+    <string name="perm_notifications_button">Allow notifications</string>
+    <string name="perm_notifications_denied">Without notifications you get no questions and no area alerts. The alarm still rings.</string>
+    <string name="perm_fullscreen_reason">On newer phones the alarm can open over the lock screen if you allow it.</string>
+    <string name="perm_fullscreen_button">Open the lock screen setting</string>
+    <string name="perm_open_settings">Open notification settings</string>
+
+    <!-- Follow and quiet hours -->
+    <string name="follow_title">Tell me about my area</string>
+    <string name="follow_switch">Alerts for my spot</string>
+    <string name="follow_kind_confirmed">When power goes off</string>
+    <string name="follow_kind_restored">When power comes back</string>
+    <string name="follow_quiet_switch">Quiet hours</string>
+    <string name="follow_quiet_hint">Inside this window alerts arrive without sound. The Light Alarm ignores it.</string>
+    <string name="follow_quiet_from">From %1$s</string>
+    <string name="follow_quiet_to">To %1$s</string>
+    <string name="follow_earlier">Earlier</string>
+    <string name="follow_later">Later</string>
+    <string name="follow_google_note">Alerts come through Google. Your phone sends Google and Outage a push address once you turn this on.</string>
+    <string name="follow_need_spot">Choose your spot first.</string>
+    <string name="follow_ok">Alerts are on for %1$s.</string>
+    <string name="follow_ok_saved">Saved.</string>
+    <string name="follow_no_push">Push is not set up on this build. The Light Alarm still works.</string>
+    <string name="follow_no_server">This is a demo build with no server, so there are no alerts.</string>
+    <string name="follow_not_registered">Not registered yet. Keep Outage open and charging for a minute, then try again.</string>
+    <string name="follow_retry">Could not reach the server. Try again later.</string>
+    <string name="follow_rejected">The server did not accept this. Try again later.</string>
+    <string name="follow_working">Working</string>
+
+    <!-- Spot -->
+    <string name="spot_title">Your spot</string>
+    <string name="spot_none">No spot chosen yet.</string>
+    <string name="spot_current">Your spot is in %1$s.</string>
+    <string name="spot_current_unnamed">Your spot is chosen.</string>
+    <string name="spot_use_location">Use my location once</string>
+    <string name="spot_pick_map">Pick on the map</string>
+    <string name="spot_locating">Finding your area</string>
+    <string name="spot_not_found">We could not find you in a mapped area. Pick on the map instead.</string>
+    <string name="spot_denied">Location was not allowed. Pick on the map instead.</string>
+    <string name="spot_privacy">Your position is used once to choose an area block, then dropped. Only the block is saved.</string>
+    <string name="spot_mocked_ask">Your phone says its position may be fake. Is %1$s your area?</string>
+    <string name="spot_confirm_yes">Yes, use it</string>
+    <string name="spot_confirm_no">No</string>
+    <string name="spot_pick_area">Pick your neighbourhood</string>
+    <string name="spot_pick_cell">Tap the block where your charger is</string>
+    <string name="spot_grid_desc">Map of blocks in %1$s. Tap one to choose it.</string>
+    <string name="spot_saved">Spot saved: %1$s</string>
+    <string name="spot_sample_note">This is the sample map, so your spot cannot be saved yet.</string>
+    <string name="spot_wide_area">Wide area: few phones here so far.</string>
+    <string name="spot_postcode">Postcode start (optional)</string>
+    <string name="spot_postcode_hint">Stays on this phone. Not used to find your block.</string>
+    <string name="spot_change">Change my spot</string>
+    <string name="spot_cancel">Cancel</string>
+
+    <!-- Self-test -->
+    <string name="selftest_title">Charger test</string>
+    <string name="selftest_intro">Check that Outage notices your charger. Nothing is sent and nothing is logged.</string>
+    <string name="selftest_start">Start the test</string>
+    <string name="selftest_step">Unplug your charger, wait a moment, then plug it back in. Tap Done after.</string>
+    <string name="selftest_done">Done</string>
+    <string name="selftest_again">Test again</string>
+    <string name="selftest_removal_ok">Charger removal seen</string>
+    <string name="selftest_removal_no">Charger removal not seen</string>
+    <string name="selftest_armed_ok">The sensor is watching</string>
+    <string name="selftest_armed_no">The sensor is not watching yet. Check battery setup.</string>
+    <string name="selftest_return_ok">Charger return seen</string>
+    <string name="selftest_return_no">Charger return not seen</string>
+    <string name="selftest_delay">Background check lagged by %1$d seconds.</string>
+    <string name="selftest_station">Have a spare phone at home? Turn on Station mode in Settings.</string>
+    <string name="settings_self_test">Charger test</string>
+    <string name="settings_spot">Your spot</string>
     <!-- Sensor foreground service (station-mode design section 7). Fixed strings, no variables. -->
     <string name="sensor_channel">Power sensor</string>
     <string name="sensor_notification_title">Outage station</string>

@@ -40,6 +40,7 @@ object SettingsItems {
         Item("home_watch", R.string.settings_home_watch),
         Item("followed_area", R.string.settings_followed_area),
         Item("language", R.string.settings_language),
+        Item("self_test", R.string.settings_self_test),
         Item("diagnostics", R.string.settings_diagnostics),
         Item("judge", R.string.demo_try),
     )

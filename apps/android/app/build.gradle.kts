@@ -5,6 +5,13 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// Push (ADR 0036): the google-services plugin turns the Firebase console config file (see docs/deploy.md for its exact
+// place in this folder) into Firebase resources. The file is never in git, so the plugin is applied only when it exists.
+// Without it the app builds and runs, push registration stays off and Light Alarm works fully offline.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 // The OEM battery guide has one copy in git: packages/shared/src/oem-guide.json (ADR 0012, onboarding R7.9).
 // This task copies it into generated assets at build time. Wiring: variant.sources.assets.addGeneratedSourceDirectory
 // https://developer.android.com/reference/tools/gradle-api/9.1/com/android/build/api/variant/SourceDirectories
@@ -109,6 +116,12 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
+
+    // Firebase Messaging for follow pushes (ADR 0036). The BoM pins the version. FCM is free on the Spark plan.
+    // https://firebase.google.com/docs/android/learn-more#bom (35.2.0 is the newest in
+    // https://dl.google.com/android/maven2/com/google/firebase/firebase-bom/maven-metadata.xml)
+    implementation(platform("com.google.firebase:firebase-bom:35.2.0"))
+    implementation("com.google.firebase:firebase-messaging")
 
     // JUnit 4 is approved by ADR 0012.
     testImplementation("junit:junit:4.13.2")

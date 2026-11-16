@@ -8,10 +8,10 @@ Depends on `sensor-android` (tasks 4, 7, 9), `event-ingest` (tasks 3, 4, 10), `a
 
 ## Wave 1
 
-- [ ] 1. Amend `sensor-android` for `beginSelfTest`, `endSelfTest`, the foreground `plugChanged` event, and `isIgnoringBatteryOptimizations`, plus diagnostics fields. Update R11 of that spec and the Kotlin interface.
+- [x] 1. Amend `sensor-android` for `beginSelfTest`, `endSelfTest`, the foreground `plugChanged` event, and `isIgnoringBatteryOptimizations`, plus diagnostics fields. Update R11 of that spec and the Kotlin interface.
   - Depends on: `sensor-android` 9
   - Requirements: R7.6, R8.2
-- [ ] 2. State machine support for `SELF_TEST` mode: record results, emit nothing, suppress prompt and alarm. Tests O6 (native side).
+- [x] 2. State machine support for `SELF_TEST` mode: record results, emit nothing, suppress prompt and alarm. Tests O6 (native side).
   - Depends on: `sensor-android` 4, `alerts-and-light-alarm` 3
   - Requirements: R8.2, R8.6
 - [x] 3. `OnboardingFlow` pure Kotlin machine, persisted record in `SharedPreferences`, resume, re-onboarding skips. Tests O1, O3, O7, O8.
@@ -23,16 +23,16 @@ Depends on `sensor-android` (tasks 4, 7, 9), `event-ingest` (tasks 3, 4, 10), `a
 - [x] 4. OEM guide file, schema validator and maker matching. Tests O4, O5. The file `packages/shared/src/oem-guide.json` and its validator (`.kiro/skills/oem-battery-guide/scripts/validate-guide.mjs`) already exist from the `oem-battery-guide` skill: a Gradle task copies it into the app assets, the app reads it, the matching rules are written in Kotlin with JUnit 4 tests, and the skill's validator stays the data check. Initial entries are sourced and marked unverified.
   - Depends on: 3
   - Requirements: R7.1 to R7.4, R7.9
-- [ ] 5. Spot (Kotlin): coarse location via `LocationManager`, first-result-wins within 8 seconds, cell only, mocked check, map pick with hex grid from the catalog. Tests O2.
+- [x] 5. Spot (Kotlin): coarse location via `LocationManager`, first-result-wins within 8 seconds, cell only, mocked check, map pick with hex grid from the catalog. Tests O2.
   - Depends on: 3, `area-cells` 2, `web-and-area-pages` 3
   - Requirements: R3, R12
-- [ ] 6. Permissions (Kotlin): notification permission, channel creation order, full-screen check, alarm volume check, Alarm check list data.
+- [x] 6. Permissions (Kotlin): notification permission, channel creation order, full-screen check, alarm volume check, Alarm check list data.
   - Depends on: 3, `alerts-and-light-alarm` 4
   - Requirements: R6
 
 ## Wave 3
 
-- [ ] 7. Compose screens, navigation and `OnboardingViewModel` for all steps, self-test screen with the three results, Station offer, Finish, copy strings, accessibility labels, per-step timing record.
+- [x] 7. Compose screens, navigation and `OnboardingViewModel` for all steps, self-test screen with the three results, Station offer, Finish, copy strings, accessibility labels, per-step timing record.
   - Depends on: 1, 2, 4, 5, 6, `station-mode` 6
   - Requirements: R1, R2, R7, R8, R9, R11
 
