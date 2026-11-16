@@ -36,6 +36,14 @@ object Tokens {
         val restoredContainer = Color(0xFFE5F5FB)
         val onRestoredContainer = Color(0xFF065E7B)
         val brand = Color(0xFF111113)
+        val tileBlue = Color(0xFF007AFF)
+        val tileGreen = Color(0xFF34C759)
+        val tileOrange = Color(0xFFFF9500)
+        val tileRed = Color(0xFFFF3B30)
+        val tileIndigo = Color(0xFF5856D6)
+        val tileTeal = Color(0xFF30B0C7)
+        val tileGrey = Color(0xFF8E8E93)
+        val tilePink = Color(0xFFFF2D55)
     }
 
     object Map {
