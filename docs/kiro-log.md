@@ -672,3 +672,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 feat(freezer): Freezer Guard [spec:power-log task:7]
 - Pure rules (`FreezerRules`: plan, alert once per interval, quiet hours, 1 to 24 h), settings in the log database, `FreezerGuard.sync()` over the rebuilt timeline, `AlarmManager` alarms on the monotonic clock (inexact by default, exact only when the user asks and `canScheduleExactAlarms()` allows), receiver and notification on their own channels, settings screen. ADR 0038 records `SCHEDULE_EXACT_ALARM` over `USE_EXACT_ALARM`. Device checks added to `docs/probe-checklist.md`.
 - Not done: test PL7 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(insights): real Power Log in Insights [spec:app-map-insights task:6]
+- `LogStoreTimeline` turns the rebuilt `OUT` intervals into Insights outages. `InsightsSources.choose(apiBase, band, timeline)`: with a Worker address the user always sees their own record or the empty state; a demo build shows the real record once it has data and the labelled demo before that. The demo now covers 12 weeks (84 days), so the 12-week trend has data. The chosen band (not a fixed Band A) feeds the promise check. ADR 0039.
+- One existing assertion changed with the spec: the demo test now expects 84 days instead of 60. No test added or deleted.

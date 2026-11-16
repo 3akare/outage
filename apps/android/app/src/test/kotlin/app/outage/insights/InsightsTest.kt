@@ -213,13 +213,13 @@ class InsightsTest {
     }
 
     @Test
-    fun demo_outages_are_deterministic_simulated_and_about_sixty_days() {
+    fun demo_outages_are_deterministic_simulated_and_twelve_weeks() {
         val a = DemoOutages.build(now, utc)
         val b = DemoOutages.build(now, utc)
         assertEquals(a, b)
         assertTrue(a.simulated)
         assertTrue(a.outages.isNotEmpty() && a.outages.all { it.simulated })
-        assertEquals(60L, (now - a.observedFromMs) / (24 * h) - 0L)
+        assertEquals(84L, (now - a.observedFromMs) / (24 * h) - 0L)
         assertTrue(a.outages.size in 40..140)
         assertTrue(a.outages.all { it.endMs != null && it.endMs!! > it.startMs && it.endMs!! <= now })
         assertFalse(a == DemoOutages.build(now, utc, seed = 1L))

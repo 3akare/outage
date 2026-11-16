@@ -32,14 +32,25 @@ interface PowerLogTimeline {
  * Real data only, never simulated (R5, R10). With no timeline yet this returns an empty input, so the screen shows
  * its empty state instead of invented outages.
  */
-class PowerLogInsightsSource(private val timeline: PowerLogTimeline, private val band: Band?) : InsightsSource {
+class PowerLogInsightsSource(private val timeline: PowerLogTimeline, private val bandProvider: () -> Band?) : InsightsSource {
+    constructor(timeline: PowerLogTimeline, band: Band?) : this(timeline, { band })
+
     override fun input(nowMs: Long, zone: ZoneId): InsightsInput =
         InsightsInput(timeline.outages(), timeline.observedFromMs(nowMs), simulated = false)
-    override fun band(): Band? = band
+    override fun band(): Band? = bandProvider()
 }
 
 object InsightsSources {
     /** Demo only while no Worker address is built in; with one set the user sees their own record or an empty state. */
     fun choose(apiBase: String, band: Band?): InsightsSource =
         if (apiBase.isBlank()) DemoInsightsSource(band) else PowerLogInsightsSource(PowerLogTimeline.None, band)
+
+    /**
+     * The real Power Log timeline (task 6). With a Worker address the user always sees their own record or an empty
+     * state. Without one (demo build) the real record shows once it has data, and until then the labelled demo (R5).
+     */
+    fun choose(apiBase: String, band: () -> Band?, timeline: PowerLogTimeline): InsightsSource {
+        val real = PowerLogInsightsSource(timeline, band)
+        return if (apiBase.isBlank()) RealOrDemoInsightsSource(real, DemoInsightsSource(band())) else real
+    }
 }

@@ -4,12 +4,12 @@ import java.time.ZoneId
 import java.util.Random
 
 /**
- * About 60 days of labelled sample outages for demo mode and judges (R5, demo-mode.md). Deterministic: the same seed and
+ * 12 weeks (84 days) of labelled sample outages for demo mode and judges (R5, demo-mode.md). Deterministic: the same seed and
  * the same `nowMs` give the same list. Outages cluster on weekday evenings so the heatmap has a visible pattern.
  * Every object is simulated; this is never written to the Power Log.
  */
 object DemoOutages {
-    const val DAYS = 60
+    const val DAYS = 84
     const val SEED = 20261115L
 
     fun build(nowMs: Long, zone: ZoneId, seed: Long = SEED): InsightsInput {

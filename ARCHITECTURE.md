@@ -129,6 +129,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/insights/DemoOutages.kt` | About 60 days of labelled sample outages for demo mode |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsCalc.kt` | Pure numbers for Insights: hours of power, heatmap, trend, promise check |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsSource.kt` | Where Insights gets its outage timeline (demo or real) |
+| `apps/android/app/src/main/kotlin/app/outage/insights/LogStoreTimeline.kt` | The real Power Log timeline for Insights, and the real-or-demo source for demo builds |
 | `apps/android/app/src/main/kotlin/app/outage/insights/PromiseText.kt` | Plain sentence comparing logged hours with the tariff promise |
 | `apps/android/app/src/main/kotlin/app/outage/log/BandConfig.kt` | Reads and validates `bands.json` |
 | `apps/android/app/src/main/kotlin/app/outage/log/AreaOutageSync.kt` | Fetches the spot's public outages, caches them, stores them as log inputs |
