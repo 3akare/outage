@@ -5,16 +5,17 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** material-redesign MD3 and MD4 (ADR 0050). Reads the Compose sources, like the string-pack test, so it needs no device. */
+/** material-redesign MD3 and MD4 (ADR 0050, ADR 0054). Reads the Compose sources, like the string-pack test, so it needs no device. */
 class MaterialShellTest {
     private fun ui(name: String) = Res.kotlinDir("ui/$name").readText()
 
     @Test
-    fun MD3_dock_is_insights_home_settings_and_the_app_opens_on_home() {
+    fun MD3_dock_is_now_map_insights_settings_and_the_app_opens_on_now() {
         val shell = ui("Shell.kt")
         val order = Regex("""Tab\(Route\.(\w+),""").findAll(shell).map { it.groupValues[1] }.toList()
-        assertEquals(listOf("Insights", "Home", "Settings"), order)
-        // The router still starts on Home after first run (Routes.start), whatever the bar order.
+        // Status first (ADR 0054): Now (the Home route) leads, the map is one tap away.
+        assertEquals(listOf("Home", "Map", "Insights", "Settings"), order)
+        // The router starts on Now (Route.Home) after first run (Routes.start).
         assertEquals(Route.Home, Routes.start(onboardingNeeded = false, link = null).current)
     }
 

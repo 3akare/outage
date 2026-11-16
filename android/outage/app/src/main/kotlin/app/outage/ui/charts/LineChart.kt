@@ -39,7 +39,7 @@ fun LineChart(
     modifier: Modifier = Modifier,
 ) {
     val measurer = rememberTextMeasurer()
-    val label = TextStyle(fontSize = 11.sp, color = textColor)
+    val label = TextStyle(fontFamily = app.outage.ui.Inter, fontSize = 12.sp, fontFeatureSettings = "tnum", color = textColor)
     Canvas(modifier.fillMaxWidth().height(170.dp).semantics { contentDescription = summary }) {
         val left = 34.dp.toPx()
         val top = 8.dp.toPx()
@@ -51,7 +51,7 @@ fun LineChart(
         fun x(i: Int) = left + w * i / (values.size - 1)
         fun y(v: Double) = top + h - h * (v / maxValue).toFloat().coerceIn(0f, 1f)
         for ((v, text) in yTicks) {
-            drawLine(gridColor, Offset(left, y(v)), Offset(size.width - right, y(v)), 1.dp.toPx())
+            drawLine(gridColor, Offset(left, y(v)), Offset(size.width - right, y(v)), 0.5.dp.toPx())
             drawText(measurer, text, Offset(0f, y(v) - 7.dp.toPx()), label)
         }
         // One path per run of non-null points.
@@ -90,9 +90,9 @@ fun LineChart(
                     lineTo(x(run.first()), top + h)
                     close()
                 }
-                drawPath(fill, Brush.verticalGradient(listOf(lineColor.copy(alpha = 0.30f), Color.Transparent), top, top + h))
+                drawPath(fill, Brush.verticalGradient(listOf(lineColor.copy(alpha = 0.16f), Color.Transparent), top, top + h))
             }
-            drawPath(part, lineColor, style = Stroke(3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawPath(part, lineColor, style = Stroke(2.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
             if (local >= 1f) run.forEach { i -> drawCircle(lineColor, 3.5.dp.toPx(), Offset(x(i), y(values[i]!!))) }
         }
         for ((i, text) in xLabels) {

@@ -168,13 +168,11 @@
     <string name="map_desc_no_data">Not enough phones here yet</string>
     <string name="map_hex_desc">%1$s, %2$s</string>
     <string name="map_hex_desc_since">%1$s, %2$s since %3$s</string>
-    <string name="map_legend">Legend</string>
     <string name="map_recentre">Centre on my spot</string>
     <string name="map_zoom_in">Zoom in</string>
     <string name="map_zoom_out">Zoom out</string>
     <string name="map_show_list">Show list</string>
     <string name="map_show_map">Show map</string>
-    <string name="map_close">Close</string>
     <string name="map_your_spot">Your spot</string>
     <string name="map_offline_banner">Offline. Last update %1$s</string>
     <string name="map_none">No phones reporting here yet</string>
@@ -512,4 +510,35 @@
         <item quantity="one">Power has been off for %1$d hour. Check your freezer.</item>
         <item quantity="other">Power has been off for %1$d hours. Check your freezer.</item>
     </plurals>
+    <!-- Outage Daylight (ADR 0054): the Now tab, status first. -->
+    <string name="nav_now">Now</string>
+    <string name="nav_map">Map</string>
+    <string name="now_your_spot">Your spot</string>
+    <string name="now_no_spot">No spot yet</string>
+    <string name="now_power_is">Power is</string>
+    <string name="now_word_normal">On</string>
+    <string name="now_word_spot_only">Maybe out</string>
+    <string name="now_word_possible">Maybe out</string>
+    <string name="now_word_confirmed">Out</string>
+    <string name="now_word_restored">Back</string>
+    <string name="now_word_unknown">Unknown</string>
+    <string name="now_note_normal">Phones near you are charging normally.</string>
+    <string name="now_note_spot_only">Only your phone stopped charging. It may be your socket, not the grid.</string>
+    <string name="now_note_possible">Some phones near you stopped charging at once. Checking.</string>
+    <string name="now_note_confirmed">Phones near you lost power together. We will tell you when it is back.</string>
+    <string name="now_note_restored">Phones near you are charging again.</string>
+    <string name="now_note_unknown">Choose your area to see its power here.</string>
+    <string name="now_step_on">On</string>
+    <string name="now_step_maybe">Maybe</string>
+    <string name="now_step_out">Out</string>
+    <string name="now_step_back">Back</string>
+    <string name="now_group_today">Today</string>
+    <string name="now_group_more">More</string>
+    <string name="now_hours_promise">%1$.1f h of %2$d h promised</string>
+    <string name="now_hours_value">%1$.1f h of power</string>
+    <string name="now_see_map">See the map</string>
+    <string name="now_see_map_body">Every area in Lagos, block by block</string>
+    <string name="now_sensor">This phone</string>
+    <string name="now_set_up">Set up</string>
+    <string name="settings_delete_footer">Removes this phone\'s data here and on the server.</string>
 </resources>

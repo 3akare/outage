@@ -32,7 +32,7 @@ fun Ring(
 ) {
     Box(modifier.size(diameter).semantics { contentDescription = summary }, contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(diameter)) {
-            val stroke = 12.dp.toPx()
+            val stroke = 14.dp.toPx()
             val inset = stroke / 2
             val arcSize = Size(size.width - stroke, size.height - stroke)
             drawArc(trackColor, 0f, 360f, false, Offset(inset, inset), arcSize, style = Stroke(stroke))

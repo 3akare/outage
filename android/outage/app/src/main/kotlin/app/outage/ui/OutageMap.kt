@@ -188,7 +188,7 @@ fun OutageMap(
                 s.addSource(GeoJsonSource(SRC_SPOT, HexGeoJson.point(null)))
                 val fill = FillLayer(LAYER_FILL, SRC_CELLS).withProperties(
                     PropertyFactory.fillColor(stateColour(colors)),
-                    PropertyFactory.fillOpacity(byZoom(9 to 0.55, 13 to 0.42, 16 to 0.3)),
+                    PropertyFactory.fillOpacity(byZoom(9 to 0.45, 13 to 0.35, 16 to 0.25)),
                 )
                 val line = LineLayer(LAYER_LINE, SRC_CELLS).withProperties(
                     PropertyFactory.lineColor(stateColour(colors)),
