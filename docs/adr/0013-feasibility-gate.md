@@ -1,6 +1,6 @@
 # ADR 0013: Feasibility gate (Milestone 1)
 
-Status: PROPOSED (2026-11-14). The gate amendment below is ACCEPTED by the human. The result is pending (feasibility-probe tasks 8 and 9); this ADR becomes ACCEPTED when the Result section is filled.
+Status: ACCEPTED (2026-11-23). The human waived the gate on 2026-11-23 (see Result). The gate amendment below was accepted on 2026-11-14.
 
 ## Context
 The brief's gate: armed at least 90% on one phone, plug-in to job-start p95 at most 60 s, and Tecno or Infinix works after the battery exemption. The kill criterion is armed below 50% on every phone. The human has one phone, a Samsung. No other testers are available, and grid power is not under the human's control, so a planned 12-hour charging run is not possible.
@@ -34,4 +34,13 @@ From run 43611121113 (`docs/probe/2026-11-14-emu-api35.md`, Android 15 emulator,
 If the Samsung shows the same 16-minute arming delay, a cut that comes soon after a plug-in is invisible to the job sensor. Station mode's receivers would then be the main sensor rather than the backup, which changes ADR 0001 and ADR 0004. That is a decision for the human, with options, in task 9.
 
 ## Result
-Pending. To be filled in task 9 from `docs/probe/summary.md`.
+**Gate waived by the human on 2026-11-23.** No more probe runs and no Tecno or Infinix test. The build goes ahead. This is a decision, not a pass: the 90% armed-time number was not met.
+
+Numbers from the two Samsung runs (`docs/probe/2026-11-15-samsung-b.md` and the earlier run 1):
+- **Job sensor, run 1:** armed 17.7% over 9.43 h of charging.
+- **Job sensor, run 2 (probe-v0.0.2, restart backoff fixed):** armed 73.6% over 8.28 h. The job saw 5 of 5 unplugs while armed, 0.3 to 6.5 s after the cut. But it started only 22 to 32 minutes after plug-in, and 0 of 19 plug-ins armed within 10 minutes.
+- **Receiver sensor (foreground service):** saw every plug change within about 1 s.
+
+Decision: the foreground-service receiver is the primary sensor for every user. The job is the backup. ADR 0032 records the spec changes.
+
+Residual risk, in plain words: Tecno and Infinix phones are untested, and no phone has run for a full 12 hours in one go. Their battery managers may kill the foreground service. The first field-test user on one of these phones must report armed time, and the daily field report will show it. `oem-guide.json` keeps `verified: []` for them. Nothing may claim these phones work.

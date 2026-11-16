@@ -55,3 +55,15 @@ The offer stores only an HMAC of the code (secret `INSTALL_TOKEN_SECRET`). Code 
 - `GET /v1/admin/field/:day` (`YYYY-MM-DD`): `Authorization: Bearer <FIELD_READ_TOKEN>`. Returns device-days with per-request aliases `D1`, `D2`, ... (sorted install IDs; the map is not stored), silent devices of the last 7 days, outage records that started on that UTC day, and misses. No install ID and no cell. `500 server_not_configured` when the secret is not set.
 - `TelemetryActor` (`src/telemetry/`): one SQLite Durable Object named `telemetry`. Tables `device_day`, `outage_record`, `miss_record`. The area actors send their `OUTAGE_RECORD` and `MISS` outputs here after each change (requeued on failure). Rows older than 90 days are pruned by a daily alarm. Delete-my-data (`POST /v1/delete`) also removes the install's `device_day` rows.
 - Secret: set the GitHub secret `FIELD_READ_TOKEN` and the deploy workflow pushes it (`docs/deploy.md`), or run `wrangler secret put FIELD_READ_TOKEN` in `workers/api`. Never committed.
+
+## Ingest and the install token (spec: event-ingest)
+
+`POST /v1/register` returns an install id and a signed token. `POST /v1/events` takes batches (strict schema in `packages/shared`), is idempotent per install and seq, and bounds event time by the phone's elapsed clock. `POST /v1/delete` removes everything tied to an install.
+
+One human step before the first deploy: set the token signing secret once.
+
+```
+npx wrangler secret put INSTALL_TOKEN_SECRET
+```
+
+The `deploy-worker` workflow also creates it once (ADR 0021). Free-tier usage from a local load run has not been recorded yet. It needs a person to run `workers/api/bench` against `wrangler dev`.

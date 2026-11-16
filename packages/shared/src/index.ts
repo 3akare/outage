@@ -9,3 +9,4 @@ export * from './field-outage.ts';
 export * from './pairing.ts';
 export * from './field-dump.ts';
 export * from './map.ts';
+export * from './sensor.ts';

@@ -10,6 +10,8 @@ A spare phone sits at 100% battery. The normal sensor treats a stop at 95% or mo
 
 This spec extends `sensor-android`. It adds a second driver for the same state machine and does not replace it.
 
+> **Amended 2026-11-23 (ADR 0032).** The receiver driver is now the primary sensor for every user, not a fallback for spare phones. R1 (enable) applies by default after first run. The spare-phone role for Home Watch stays here.
+
 ## Glossary
 
 - **Station mode**: a user-enabled mode with a foreground service.

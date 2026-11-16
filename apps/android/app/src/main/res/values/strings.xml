@@ -46,6 +46,9 @@
     <string name="settings_title">Settings</string>
     <string name="settings_alarm">Light Alarm settings</string>
     <string name="settings_notifications">Notifications</string>
+    <string name="settings_sensor">Power sensor</string>
+    <string name="sensor_toggle_label">Detect power cuts on this phone</string>
+    <string name="battery_allow_button">Allow Outage to run in the background</string>
     <string name="settings_battery">Battery setup</string>
     <string name="settings_station">Station mode</string>
     <string name="settings_home_watch">Home Watch</string>
@@ -86,6 +89,7 @@
 
     <!-- Onboarding: battery step label (R7.4) -->
     <string name="battery_general_steps">General steps. Names may differ on your phone.</string>
+    <string name="battery_step_item" translatable="false">%1$d. %2$s</string>
     <string name="battery_verified_steps">Checked on a %1$s phone.</string>
 
     <!-- Light Alarm and prompt (alerts-and-light-alarm, string pack L12) -->
@@ -225,4 +229,9 @@
     <string name="ins_empty_body">Outage logs power while your phone charges. Keep it plugged in at home and your pattern appears here.</string>
     <string name="ins_empty_battery">Check battery setup</string>
     <string name="ins_simulated_note">Sample data to show the charts. Your own log starts once your phone has watched for a day.</string>
+    <!-- Sensor foreground service (station-mode design section 7). Fixed strings, no variables. -->
+    <string name="sensor_channel">Power sensor</string>
+    <string name="sensor_notification_title">Outage station</string>
+    <string name="sensor_notification_body">Watching your power</string>
+    <string name="sensor_notification_stop">Stop station</string>
 </resources>

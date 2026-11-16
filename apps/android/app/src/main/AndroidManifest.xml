@@ -8,6 +8,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Runtime permission from API 33. https://developer.android.com/develop/ui/views/notifications/notification-permission -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Sensor (sensor-android, station-mode, ADR 0032). Normal permissions, no prompt. The persisted backup job and the
+         restart after reboot need RECEIVE_BOOT_COMPLETED; the receiver service is a specialUse foreground service.
+         https://developer.android.com/develop/background-work/services/fgs/service-types#special-use
+         No microphone, motion sensor or location permission, ever (privacy.md, R12). -->
+    <!-- Normal permission. Lets the battery setup screen show the one-tap exemption prompt. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:name=".OutageApp"
@@ -25,6 +34,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".sensor.ChargingJobService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <service
+            android:name=".sensor.SensorService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Power-cut sensor: listens for the charger being plugged in or out so the app can tell the user when grid power goes off and comes back." />
+        </service>
+
+        <receiver
+            android:name=".sensor.BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
