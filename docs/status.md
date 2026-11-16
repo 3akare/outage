@@ -2,10 +2,10 @@
 
 Read by the session-context hook. Keep the four labelled lines below on one line each.
 
-Current milestone: 1 Feasibility probe (waiting on the Samsung data) and 2 Detection, started in parallel
+Current milestone: 1 Feasibility probe (run 2 on probe-v0.0.2 analysed: backoff fixed, armed 73.6%, still below the 90% gate) and 2 Detection, in parallel
 Gate: armed time >= 90% on one phone, restore delay p95 <= 60 s, Tecno or Infinix works after battery exemption
-Next: the human reruns the probe with probe-v0.0.2 on the Samsung (and a Tecno or Infinix phone). Done by agents: field-telemetry 5 to 7, web-and-area-pages task 11, area-cells task 12, event-ingest 6, power-log 3 (tariff bands A, B, D and E unverified, see ADR 0020) and home-watch 2 and 4. Everything else waits on the probe rerun (sensor-android, station-mode, and the phone parts that depend on them), the human's Cloudflare and Firebase accounts, or the Kiro IDE pass (detection-engine task 15). ADR 0013 waits for the probe Result.
-Active specs: feasibility-probe, sensor-android (blocked on probe), app-map-insights (screens built on demo data; next: task 1 Worker /api/map.json, then task 12 emulator pass)
+Next: run 2 (samsung-b, probe-v0.0.2) analysed in docs/probe/2026-11-15-samsung-b.md; decision recorded (ADR 0001 + ADR 0004 addenda): the backoff fix lifted armed time to 73.6% but the job's ~22 to ~32-min arming delay keeps it below 90%, so receiver-driven arming becomes the primary sensor and the job is the backup. Open for the human: either rerun to reach 12 h for the formal gate verdict (ADR 0013 Result, task 9) or accept the receiver-primary direction; then sensor-android/station-mode need a follow-up task to make the receiver the primary arming path, and a future probe (needs a shared analyze-contract change) must measure a normal-mode static manifest receiver. Still open too: a Tecno or Infinix phone, the Cloudflare and Firebase accounts, the Kiro IDE pass (detection-engine task 15).
+Active specs: feasibility-probe (run 2 analysed; task 8 open, gate not met), sensor-android and station-mode (receiver-driven arming is now the primary sensor, job as backup, per ADR 0004 addendum), app-map-insights (screens built on demo data; next: task 1 Worker /api/map.json, then task 12 emulator pass)
 
 Redesign (2026-11-22): spec `ux-redesign` and ADRs 0026 to 0028 written. Web becomes landing `/`, replica `/app`, simulation `/app/simulate`; app dock becomes Home, Insights, Settings with a one-step first run. Next: tokens (task 2), then web shell and landing (task 3).
 
