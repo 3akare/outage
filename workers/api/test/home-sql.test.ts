@@ -1,5 +1,5 @@
 // Runs SqlPairStore and HomeCore against real SQLite (node:sqlite) through a thin SqlStorage shim, so the SQL text is checked
-// (same approach as alerts-sql.test.ts). Also checks that a shard made before ADR 0036 gets its two new columns.
+// (same approach as alerts-sql.test.ts). Also checks that a shard made before ADR 0044 gets its two new columns.
 import { describe, expect, it } from 'vitest';
 import { HomeCore } from '../src/home/core.ts';
 import { PairingCore } from '../src/pairing/core.ts';
@@ -35,7 +35,7 @@ function shim(db: Db = new DatabaseSync(':memory:')): SqlStorage {
 const VIEWER = 'bbbbbbbbbbbbbbbbbbbbbbbbbb';
 const MIN = 60_000;
 
-describe('Home Watch on real SQL (ADR 0036)', () => {
+describe('Home Watch on real SQL (ADR 0044)', () => {
   it('pairs, tracks, pushes, expires silence, answers the viewer and deletes', async () => {
     const store = new SqlPairStore(shim());
     const pairing = new PairingCore(store, { ...CONFIG, BUCKET_CAPACITY: 1000 });
@@ -96,7 +96,7 @@ describe('Home Watch on real SQL (ADR 0036)', () => {
     expect(store.pairsOfStation(ID)).toEqual([]);
   });
 
-  it('a shard created before ADR 0036 gains station_cell and push_failed_ms', () => {
+  it('a shard created before ADR 0044 gains station_cell and push_failed_ms', () => {
     const db = new DatabaseSync(':memory:');
     const old = shim(db);
     old.exec(`CREATE TABLE pair_offer (key TEXT PRIMARY KEY, code_hash TEXT NOT NULL, station_install TEXT NOT NULL,

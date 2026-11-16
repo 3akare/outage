@@ -104,19 +104,6 @@ private fun resultText(r: FollowResult): Int = when (r) {
 }
 
 @Composable
-private fun SwitchRow(labelRes: Int, checked: Boolean, onChange: (Boolean) -> Unit) {
-    val label = stringResource(labelRes)
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 48.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        Switch(checked = checked, onCheckedChange = onChange, modifier = Modifier.semantics { contentDescription = label })
-    }
-}
-
-@Composable
 private fun TimeRow(labelRes: Int, time: String, earlier: () -> Unit, later: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(labelRes, time), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))

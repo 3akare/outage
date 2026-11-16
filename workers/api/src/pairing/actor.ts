@@ -1,4 +1,4 @@
-// Pairing shard actor (home-watch, ADR 0009, ADR 0036): one Durable Object per two-symbol shard, holding the offers and pairs
+// Pairing shard actor (home-watch, ADR 0009, ADR 0044): one Durable Object per two-symbol shard, holding the offers and pairs
 // of the stations that map to it, and the Home Watch state of those stations. A thin shell over PairingCore and HomeCore.
 // Alarm API: https://developers.cloudflare.com/durable-objects/api/alarms/
 import { DurableObject } from 'cloudflare:workers';
@@ -42,7 +42,7 @@ export class PairingActor extends DurableObject<Env> {
     return removed;
   }
 
-  /** `POST /v1/pair/list` (ADR 0037): the station's pairs, ids and creation times only. */
+  /** `POST /v1/pair/list` (ADR 0045): the station's pairs, ids and creation times only. */
   async stationPairs(stationInstall: string): Promise<{ pairId: string; createdMs: number }[]> {
     return this.store.pairsOfStation(stationInstall).map((p) => ({ pairId: p.pairId, createdMs: p.createdMs }));
   }
@@ -54,7 +54,7 @@ export class PairingActor extends DurableObject<Env> {
     return n;
   }
 
-  /** The area actor of the station forwards its events here (ADR 0036). False tells it to stop forwarding. */
+  /** The area actor of the station forwards its events here (ADR 0044). False tells it to stop forwarding. */
   async observe(stationInstall: string, events: ForwardedEvent[], receiveMs: number): Promise<boolean> {
     const needed = await this.home.observe(stationInstall, events, receiveMs);
     await this.schedule();

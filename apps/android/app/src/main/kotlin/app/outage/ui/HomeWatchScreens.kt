@@ -72,7 +72,7 @@ class HomeWatchViewModel(private val model: HomeWatchModel) : ViewModel() {
     fun offerShown(): String? = model.offerShown()
 }
 
-/** Refresh on open and once a minute while shown (R4.3; no push yet, ADR 0037). */
+/** Refresh on open and once a minute while shown (R4.3; no push yet, ADR 0045). */
 @Composable
 private fun RefreshWhileShown(action: () -> Unit) {
     // https://developer.android.com/topic/libraries/architecture/coroutines#repeatOnLifecycle

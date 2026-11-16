@@ -142,6 +142,7 @@ class Uploader(
             plugType = e.plugType,
             refSeq = e.refSeq,
             answer = e.answer,
+            kind = e.kind,
         )
 
     /** Full-jitter exponential back-off (R9.4): a random wait in [0, min(cap, base * 2^(attempt-1))]. */

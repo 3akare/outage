@@ -96,7 +96,7 @@ export function decideClaim(offer: OfferLife | undefined, nowMs: number, codeMat
 export interface OfferRequest {
   installId: string;
   /**
-   * The station's res-8 cell (ADR 0036). Used once, at claim time, to tell the right area actor to forward this station's
+   * The station's res-8 cell (ADR 0044). Used once, at claim time, to tell the right area actor to forward this station's
    * events. Never returned to a viewer and never stored on a pair. Without it the pair works but the state stays unknown.
    */
   cell?: string;
@@ -122,7 +122,7 @@ export interface RemovePairRequest {
   installId: string;
   pairId: string;
 }
-/** `POST /v1/pair/list`: the station's own pairs, so it can remove a dead viewer (ADR 0009 review, ADR 0037). */
+/** `POST /v1/pair/list`: the station's own pairs, so it can remove a dead viewer (ADR 0009 review, ADR 0045). */
 export interface ListPairsRequest {
   installId: string;
 }
@@ -131,7 +131,7 @@ export interface ListPairsResponse {
   pairs: { pairId: string; createdMs: number }[];
 }
 /**
- * The push token a viewer sends while the app has no Firebase Messaging (ADR 0037). The pair works and the viewer polls;
+ * The push token a viewer sends while the app has no Firebase Messaging (ADR 0045). The pair works and the viewer polls;
  * the Worker never sends to it and never counts it as a dead token.
  */
 export const NO_PUSH_TOKEN = 'none';

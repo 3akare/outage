@@ -1,4 +1,4 @@
-// The viewer's answer is cached for 10 seconds per pair in the Worker isolate (home-watch task 7, ADR 0036). The key includes
+// The viewer's answer is cached for 10 seconds per pair in the Worker isolate (home-watch task 7, ADR 0044). The key includes
 // the viewer install, so one install can never be served another's entry. Memory only, bounded. Lenient after an isolate restart.
 import type { HomeResponse } from '@outage/shared';
 

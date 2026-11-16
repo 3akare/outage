@@ -1,4 +1,4 @@
-# ADR 0037: Home Watch app screens before Firebase Messaging, and the station pair list
+# ADR 0045: Home Watch app screens before Firebase Messaging, and the station pair list
 
 Status: ACCEPTED 2026-11-23, under the human's blanket approval (decide, record, proceed). No new stored data.
 

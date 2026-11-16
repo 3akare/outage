@@ -653,25 +653,25 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Worker: `AreaCore` treats it as proof of life only: seq window and last-seen, no armed change, nothing handed to the engine. `reason` travels to the area actor for this one value. Shared constant `HEARTBEAT_ON_BATTERY`, wire fixture `event-heartbeat-battery.json`, sensor fixture now has 5 events.
 - Station-mode R5.5 and T6 text amended. No `source` on the wire (still deferred, ADR 0034).
 
-## 2026-11-23 feat(home): HomeState and station event window [spec:home-watch task:3] [ADR 0036]
+## 2026-11-23 feat(home): HomeState and station event window [spec:home-watch task:3] [ADR 0044]
 - `packages/shared/src/home.ts`: `foldPower`, `homeState` (OFFLINE after 30 minutes of silence, with the last known state) and `mergeWindow` (power events only, deduplicated, at most 500, older ones folded into a seed event). Ties sort UNPLUG last; a repeated UNPLUG keeps the first since.
 - H1 to H4 in `packages/shared/test/home.test.ts` (fast-check): silence never gives OFF, any order, duplication and batching give one state, non-power events and heartbeats change nothing, extra area input changes nothing.
-- ADR 0036 records where the state lives (the pairing shard actor, not the area actor) and the stored-data additions for tasks 5 to 7.
+- ADR 0044 records where the state lives (the pairing shard actor, not the area actor) and the stored-data additions for tasks 5 to 7.
 
-## 2026-11-23 feat(home): station state in the shard, alarm multiplexer, home push, viewer API [spec:home-watch tasks:5,6,7] [ADR 0036]
+## 2026-11-23 feat(home): station state in the shard, alarm multiplexer, home push, viewer API [spec:home-watch tasks:5,6,7] [ADR 0044]
 - Built on the human's order; only the tasks' own tests, typecheck and lint were run. No device or field test.
 - `workers/api/src/home/`: `HomeCore` (state per paired station from `foldPower`, last-seen written at most every 10 minutes, silence to OFFLINE at 30 minutes, push retry, daily prune of sent memory and 7-day-dead tokens), `planner.ts` (texts "Home: power off since 2:14 p.m.", age rule, sent memory by pair, version and kind, quiet channel, OFFLINE normal priority), `wake.ts` (`planAlarm`: set only when the alarm would sit more than a minute late), `forward.ts` and `cache.ts`.
-- The state lives in the `PairingActor` of the station's shard, not the area actor (ADR 0036). The area actor keeps a watch list (install and shard, no cell) filled when a claim succeeds, and forwards a watched station's accepted events once per batch. The offer may carry the station cell (`POST /v1/pair/offer`), used once to find the area actor and never stored on a pair.
+- The state lives in the `PairingActor` of the station's shard, not the area actor (ADR 0044). The area actor keeps a watch list (install and shard, no cell) filled when a claim succeeds, and forwards a watched station's accepted events once per batch. The offer may carry the station cell (`POST /v1/pair/offer`), used once to find the area actor and never stored on a pair.
 - `GET /v1/home/:pairId` (token plus `X-Install-Id`, viewer only, one 404 for everything else, 10 s cache per pair and viewer). `FcmOutgoing` gained optional `priority`.
 - Schema: `pair_offer.station_cell`, `pair.push_failed_ms`, tables `station_state` and `pair_sent`, `home_watch` in the area actor. Older shards get the columns by `ALTER TABLE`.
 - Tests: `home-watch.test.ts` (H6, H7 as properties, viewer API, H8 state parts), `home-sql.test.ts` (real SQLite), shared tests for the response shape and the offer cell.
 - Known gaps: a station that moves to another res-7 parent is not forwarded until it pairs again; `since` after pairing is the first heartbeat heard. Compose screens (task 8) still need `cell` in the offer request.
 
 
-## 2026-11-23 feat(home): app screens and ViewModels [spec:home-watch task:8] [ADR 0037]
+## 2026-11-23 feat(home): app screens and ViewModels [spec:home-watch task:8] [ADR 0045]
 - Built on the human's order; only the task's own checks ran (Gradle testDebugUnitTest, lint, assembleDebug; Vitest for the Worker files touched; typecheck). No device test.
 - App: `app/outage/home/` (`HomeApi`, `HomeView`, `HomeWording`, `HomeWatchModel`, `PrefsPairBook`) and `ui/HomeWatchScreens.kt` (viewer screen, station pairing screen, Home card, `HomeWatchViewModel`). Code entry only, no QR. Wording "Home: power on since 2:14 p.m.", "Station offline" with "Last known: ...", age shown on a stale cache.
-- Worker: `POST /v1/pair/list` for the station's pair list (ids and creation times) and the no-push token `none`, skipped by the home push planner, until Firebase Messaging exists (ADR 0037).
+- Worker: `POST /v1/pair/list` for the station's pair list (ids and creation times) and the no-push token `none`, skipped by the home push planner, until Firebase Messaging exists (ADR 0045).
 - Delete-my-data on a viewer now sends its pair ids.
 - Tests: `HomeWatchTest` (12, reads `packages/shared/fixtures/home/home-response.json`), three new cases in `workers/api/test/home-watch.test.ts`.
 
@@ -679,7 +679,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `tools/sim/src/home-scenario.ts` builds a station's deliveries (heartbeats, a power cut with the router down, buffered upload at reconnect in any order) and reads the viewer's answer through the shared `homeState` and `mergeWindow`. Every event has `simulated: true`.
 - `tools/sim/test/home-scenario.test.ts`: silence shows ON then "Station offline" with last known ON, never OFF; after reconnect OFF since the real cut, or ON since the real return; a fast-check property over cut time, outage length, router delay and upload order.
 - `docs/probe-checklist.md` has a Home Watch section. Traceability lists H1 to H8 plus the scenario and the open latency row.
-- Task 9 stays unticked: the device push latency check is left for the human and needs Firebase Messaging in the app (ADR 0037). The human asked for no device testing now.
+- Task 9 stays unticked: the device push latency check is left for the human and needs Firebase Messaging in the app (ADR 0045). The human asked for no device testing now.
 
 ## 2026-11-23 feat(sensor): plug observer and demo flag [spec:demo-mode task:1]
 - `sensor-android` amended with R13 and a design note: `PlugObserver` (a code-registered `ACTION_BATTERY_CHANGED` receiver that reports only plug changes, no Job, no Outbox) and `DemoFlag` (in-process, suppresses the "Power just went?" prompt while a demo is open, cleared on leave or after 30 s in the background).
@@ -698,11 +698,11 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `app/build.gradle.kts` copies `packages/shared/fixtures/replay.json` into generated assets (`CopyReplay`), the same file the Worker imports, so there is one copy in git. DM7 app side checks both paths and the built asset's hash.
 - Tests: `ReplayPlayerTest` (4).
 
-## 2026-11-23 feat(demo): Judge mode screens [spec:demo-mode task:6] [ADR 0038]
+## 2026-11-23 feat(demo): Judge mode screens [spec:demo-mode task:6] [ADR 0046]
 - Built on the human's order; only the task's own checks ran (Gradle testDebugUnitTest, lint, assembleDebug). No device run (task 7 stays open).
 - `JudgeFlow` (pure) and `ui/DemoScreens.kt` (`DemoViewModel`, `JudgeScreen`): Judge home with Watch a recorded outage, Unplug my phone, How it works and Leave; the Unplug page with the plug observer, "Plug in your charger first", "Unplug your charger", the demo prompt, the explanation from the file, labelled simulate buttons and the demo alarm. A banner on every page. Leaving discards the session; `DemoFlag` is set while open.
-- Entry: "Try Judge mode" on the first-run screen (no consent needed, dock hidden) and a Settings row. One shell route `feature:judge` (ADR 0038).
-- The demo alarm is a stand-in (default alarm sound for 5 s and on-screen "Demo" text) until the Light Alarm path from `alerts-and-light-alarm` is merged (ADR 0038).
+- Entry: "Try Judge mode" on the first-run screen (no consent needed, dock hidden) and a Settings row. One shell route `feature:judge` (ADR 0046).
+- The demo alarm is a stand-in (default alarm sound for 5 s and on-screen "Demo" text) until the Light Alarm path from `alerts-and-light-alarm` is merged (ADR 0046).
 - Tests: `JudgeFlowTest` (5).
 
 ## 2026-11-23 feat(tokens): one token source for web and app [spec:ux-redesign task:2]
@@ -719,6 +719,53 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-16 fix(home-watch): review v1 follow-up [spec:home-watch]
 - Viewer delete keeps pair ids on disk until the server delete succeeds (`OutageApp.kt`). `HomeCore.view` falls back to the pair's `createdMs` so a never-heard station becomes OFFLINE. Issues 2 (forward once), 4 and 5 accepted and recorded in ADR 0036.
 - Built on the human's order: no tests added or run. Only typecheck was run (see commit report).
+
+## 2026-11-23 feat(log): REPORT events [spec:power-log task:1]
+- Added the `REPORT` wire event (kind `OUT`) to the shared types and strict validator, the Kotlin wire, a contract fixture, the ingest handoff and the area reducer. The reducer keeps reports for 10 minutes and feeds the distinct-install count to the manual hint (ADR 0042).
+- `npm test`, typecheck and lint were run before the commit; no new test was written for it (human asked for no more tests).
+
+## 2026-11-23 feat(log): local log storage [spec:power-log task:2]
+- Second SQLite database `outage_log.db` on `SQLiteOpenHelper` with a step-by-step migration function, `raw_input` and `setting` tables, and a memory twin (ADR 0043). Intervals and day stats are rebuilt, not stored.
+- Gradle unit tests, lint and assembleDebug pass. No new test (human asked for no more tests).
+
+## 2026-11-23 feat(log): TimelineBuilder [spec:power-log task:4]
+- Pure Kotlin rebuild of the timeline from raw inputs: sensor segments, "Yes"/"No" answers, area outages (only for unanswered unplugs), manual "Power is out" and "Power is back", ends at the earliest evidence, `UNSURE` for a REPLUG end after 12 h or a sensor stop. Duplicates and arrival order do not change the result by construction.
+- Not done: tests PL1, PL2, PL3 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(log): area outage sync [spec:power-log task:5]
+- The Worker endpoint already existed: `GET /api/v1/public/cell/:cell/outages?days=30` in `workers/api/src/web/routes.ts`, with tests in `workers/api/test/web-routes.test.ts` that include the empty result for a cell with no public scope. No new Worker folder was added, so the design's `/v1/public/...` path is served as `/api/v1/public/...`.
+- Phone side: `AreaOutageSync` fetches with `MapHttp`, parses with `MiniJson`, caches the body in a file and replaces the cached `AREA_OUTAGE` inputs. Offline it uses the cache. Only the cell is sent.
+- Gradle unit tests, lint and assembleDebug pass. No new phone test (human asked for no more tests).
+
+## 2026-11-23 feat(log): Stats [spec:power-log task:6]
+- Pure Kotlin daily stats (local midnight, 23 or 25 hour days handled), month list, Light Score (null below 7 qualifying days), promise comparison (null with no band) and its estimate text, which checks it never uses refund, compensation or claim.
+- Not done: tests PL4, PL5, PL6 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(freezer): Freezer Guard [spec:power-log task:7]
+- Pure rules (`FreezerRules`: plan, alert once per interval, quiet hours, 1 to 24 h), settings in the log database, `FreezerGuard.sync()` over the rebuilt timeline, `AlarmManager` alarms on the monotonic clock (inexact by default, exact only when the user asks and `canScheduleExactAlarms()` allows), receiver and notification on their own channels, settings screen. ADR 0038 records `SCHEDULE_EXACT_ALARM` over `USE_EXACT_ALARM`. Device checks added to `docs/probe-checklist.md`.
+- Not done: test PL7 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(insights): real Power Log in Insights [spec:app-map-insights task:6]
+- `LogStoreTimeline` turns the rebuilt `OUT` intervals into Insights outages. `InsightsSources.choose(apiBase, band, timeline)`: with a Worker address the user always sees their own record or the empty state; a demo build shows the real record once it has data and the labelled demo before that. The demo now covers 12 weeks (84 days), so the 12-week trend has data. The chosen band (not a fixed Band A) feeds the promise check. ADR 0039.
+- One existing assertion changed with the spec: the demo test now expects 84 days instead of 60. No test added or deleted.
+
+## 2026-11-23 feat(log): Power Log screen, taps and sensor wiring [spec:power-log task:8]
+- `PowerLogScreen` and `PowerLogViewModel`: power now, today, 30 days (bar chart), outage list with the open outage, month Light Score ring, band picker with the promise check worded as an estimate, "Power is out" (one per 10 minutes) and "Power is back", text share. `PowerLogService` and `PowerLogModel` hold the logic without Android types. Home has a card that opens it.
+- The sensor's events now reach the log (`Sensor.onCreated` hook plus a read of the pending Outbox), and "Power is out" queues a `REPORT` in the Outbox (`EventType.REPORT`, `recordReport()`). ADR 0039.
+- Not done: tests PL8, PL9 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(log): image share card [spec:power-log task:9]
+- Decided and recorded in ADR 0040: a Canvas bitmap drawn on the phone, written to the cache and shared through `FileProvider` and `ACTION_SEND` with the text as a fallback. The card takes `ShareFacts` only, which has no location, area, install ID or name.
+- Not done: test PL9 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(log): delete-my-data and traceability for the Power Log [spec:power-log task:10]
+- `power_log` delete function: clears the log database and its settings, cancels the Freezer Guard alarm, clears the cached area outages and the cached share picture. It runs with the other phone-side deletes in `DeleteRegistry`; the server half still goes through the existing `/v1/delete`, which also removes the install's `REPORT` events (ADR 0042).
+- `docs/traceability.md`: PL1 to PL9 rows say what is code-done and that the tests were not written, because the human asked for no more tests on 2026-11-23.
+
+## 2026-11-23 feat(field): phone telemetry aggregator and daily uploader [spec:field-telemetry task:4]
+- `DeviceDays.build` makes one `DeviceDay` for a local day from the sensor's events and diagnostics, in the exact shape of `packages/shared/fixtures/telemetry/device-day.json`. `TelemetryDriver` sends the previous day once, only with consent, a registered install and a Worker address. `IngestApi.postTelemetry` calls the existing `POST /v1/telemetry`. Consent is the interface `TelemetryConsent` over the preference `telemetry_prefs/share_diagnostics`; the Settings row "Share anonymous diagnostics" is wired to it. ADR 0041.
+- Note for the onboarding agent: call `PrefsTelemetryConsent(context).set(optIn)` from the diagnostics choice. Settings registers the feature `diagnostics`; if onboarding registers its own, keep one.
+- Not done: Kotlin tests F1 and F2 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
 
 ## 2026-11-23 feat(alarm): LABEL on the phone, AlarmPolicy, self-test mode [spec:alerts-and-light-alarm tasks:1,3, spec:onboarding tasks:1,2]
 - LABEL was already in the shared types, the strict ingest schema and the fixtures. The phone side was missing: `EventDraft`, `SensorEvent` and the SQLite event table (schema v2, `ref_seq`, `answer`) now carry `refSeq` and `answer`, `queueLabel` appends one, and `SensorOutbox` sends a LABEL with only the fields the strict schema allows.

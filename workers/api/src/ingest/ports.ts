@@ -23,7 +23,16 @@ export interface IngestedLabel {
   answer: 'YES' | 'NO';
 }
 
-export type IngestedItem = IngestedEvent | IngestedLabel;
+/** power-log R7.4: a "Power is out" tap. A hint source only (area-cells R8); it never reaches the engine as an event. */
+export interface IngestedReport {
+  installId: string;
+  seq: number;
+  type: 'REPORT';
+  cell: string;
+  eventTimeMs: number;
+}
+
+export type IngestedItem = IngestedEvent | IngestedLabel | IngestedReport;
 
 export interface DetectionPort {
   /** Called once per accepted, new events of one area actor (res-7 parent), in arrival order. Never for duplicates. */

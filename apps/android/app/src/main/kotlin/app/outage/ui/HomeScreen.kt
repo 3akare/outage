@@ -73,6 +73,12 @@ fun HomeContent(state: HomeUiState, scroll: ScrollState, onOpenAlarm: () -> Unit
         }
         SensorCard(state)
         state.todayPowerHours?.let { PowerTodayCard(it) }
+        Card(onClick = { onOpenSetup(FeatureRegistry.LOG) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+            Column(Modifier.padding(16.dp)) {
+                Text(stringResource(R.string.home_log_title), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.home_log_body), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
         state.alarm?.let { alarm ->
             Card(onClick = onOpenAlarm, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                 Column(Modifier.padding(16.dp)) {

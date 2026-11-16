@@ -35,7 +35,8 @@ graph LR
 - [x] 5. `AreaMapSource` with `NetAreaMapSource`, cache file, `DemoAreaMapSource`. Test AM6. Delete-my-data clears the cache.
   - Depends on: 2
   - Requirements: R4, R5, R11.4
-- [ ] 6. `InsightsSource` with `PowerLogInsightsSource` and `DemoInsightsSource` (12 weeks, simulated true). `PowerLogInsightsSource` exists but reads `PowerLogTimeline.None` (empty state) until the Power Log timeline is built; untick when that wires in.
+- [x] 6. `InsightsSource` with `PowerLogInsightsSource` and `DemoInsightsSource` (12 weeks, simulated true). `PowerLogInsightsSource` exists but reads `PowerLogTimeline.None` (empty state) until the Power Log timeline is built; untick when that wires in.
+  - Done 2026-11-23: `LogStoreTimeline` reads the real log (ADR 0039); a build with a Worker address always shows the user's own record, a demo build shows it once it has data and the labelled 12-week demo before that.
   - Depends on: 4
   - Requirements: R5, R10
 

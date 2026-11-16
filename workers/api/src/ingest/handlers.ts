@@ -49,7 +49,7 @@ import { hashInstallId, mintInstallId, mintToken, verifyToken } from './token.ts
 export interface AreaGateway {
   ingest(parent: string, input: AreaIngestInput): Promise<AreaResponse>;
   deleteInstall(parent: string, installId: string): Promise<number>;
-  /** Home Watch (ADR 0036): the station's parent area actor starts forwarding this install's events to its pairing shard. */
+  /** Home Watch (ADR 0044): the station's parent area actor starts forwarding this install's events to its pairing shard. */
   watchStation(parent: string, installId: string, shard: string): Promise<void>;
 }
 /** One call per pairing shard (home-watch, ADR 0009). The shard is chosen by the caller from the code, pair id or station install. */
@@ -57,7 +57,7 @@ export interface PairingGateway {
   createOffer(shard: string, input: OfferInput): Promise<OfferResult>;
   claim(shard: string, input: ClaimInput): Promise<ClaimResult>;
   removePair(shard: string, pairId: string, installId: string): Promise<boolean>;
-  /** The pairs where this install is the station (ADR 0037). */
+  /** The pairs where this install is the station (ADR 0045). */
   stationPairs(shard: string, stationInstall: string): Promise<ListPairsResponse['pairs']>;
   deleteInstall(shard: string, installId: string): Promise<number>;
   /** The viewer's view of a station, from the shard the pair id names. Null for an unknown pair or another viewer. Cached 10 s. */
@@ -204,6 +204,7 @@ function toAreaEvent(ev: WireEvent, receiveTimeMs: number): AreaEvent {
   };
   if (ev.type === 'LABEL') return { ...base, schedulingDelayMs: null, refSeq: ev.refSeq, answer: ev.answer };
   if (ev.type === 'DISARMED' && ev.reason === HEARTBEAT_ON_BATTERY) return { ...base, schedulingDelayMs: null, reason: ev.reason };
+  if (ev.type === 'REPORT') return { ...base, schedulingDelayMs: null };
   return { ...base, schedulingDelayMs: ev.schedulingDelayMs ?? null };
 }
 
@@ -357,7 +358,7 @@ async function pairClaim(req: Request, deps: Deps): Promise<Response> {
   if (res.status === 'limited') return fail(429, 'rate_limited', retryHeader(res.retryAfterMs));
   if (res.status === 'full') return fail(409, 'station_full');
   if (res.status === 'fail') return NOT_FOUND();
-  // Home Watch (ADR 0036): tell the station's area actor to forward its events. Best effort; the pair is already made.
+  // Home Watch (ADR 0044): tell the station's area actor to forward its events. Best effort; the pair is already made.
   if (res.stationCell) {
     try {
       await deps.area.watchStation(res7Parent(res.stationCell), res.stationInstall, shard);
@@ -381,7 +382,7 @@ async function pairRemove(req: Request, deps: Deps): Promise<Response> {
   return removed ? json(200, { removed: true }) : NOT_FOUND(); // someone else's pair looks the same as no pair
 }
 
-/** The station lists its own pairs to remove a dead viewer (ADR 0009 review, ADR 0037). Ids and times only. */
+/** The station lists its own pairs to remove a dead viewer (ADR 0009 review, ADR 0045). Ids and times only. */
 async function pairList(req: Request, deps: Deps): Promise<Response> {
   const body = await readJson(req, deps);
   if (!body.ok) return body.res;

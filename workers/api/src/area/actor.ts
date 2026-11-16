@@ -61,7 +61,7 @@ export class AreaActor extends DurableObject<Env> {
     return res;
   }
 
-  /** Home Watch (ADR 0036): remember that this install is a paired station, so its events are forwarded to its pairing shard. */
+  /** Home Watch (ADR 0044): remember that this install is a paired station, so its events are forwarded to its pairing shard. */
   async watchStation(installId: string, shard: string): Promise<void> {
     this.watch.add(installId, shard);
   }

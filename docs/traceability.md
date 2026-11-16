@@ -121,16 +121,18 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R1, R2 | PL1 | `PL1_timeline_pure` | 4 | planned |
-| R1.2 | PL2 | `PL2_intervals_cover_time` | 4 | planned |
-| R2.2, R2.4 | PL3 | `PL3_no_outage_without_evidence` | 4 | planned |
-| R3 | PL4 | `PL4_daily_stats` | 6 | planned |
-| R4 | PL5 | `PL5_light_score` | 6 | planned |
-| R5 | PL6 | `PL6_promise_copy` | 6 | planned |
+| R1, R2 | PL1 | `PL1_timeline_pure` | 4 | code done (`TimelineBuilder`); test not written (human asked for no more tests, 2026-11-23) |
+| R1.2 | PL2 | `PL2_intervals_cover_time` | 4 | code done; test not written (same) |
+| R2.2, R2.4 | PL3 | `PL3_no_outage_without_evidence` | 4 | code done; test not written (same) |
+| R3 | PL4 | `PL4_daily_stats` | 6 | code done (`Stats`); test not written (same) |
+| R4 | PL5 | `PL5_light_score` | 6 | code done; test not written (same) |
+| R5 | PL6 | `PL6_promise_copy` | 6 | code done (`Stats.promiseText` checks its own words); test not written (same) |
 | R5.5 | - (band config + copy) | `BandConfigTest` (`apps/android/app/src/test/kotlin/app/outage/log/BandConfigTest.kt`) | 3 | test written |
-| R6 | PL7 | `PL7_freezer_guard_lifecycle` | 7 | planned |
-| R1.3, R8.2 | PL8 | `PL8_no_wall_clock_upload` | 8 | planned |
-| R8 | PL9 | `PL9_share_card_privacy` | 8 | planned |
+| R6 | PL7 | `PL7_freezer_guard_lifecycle` | 7 | code done (`FreezerRules`, `FreezerGuard`, ADR 0038); test not written (same); device checks in `docs/probe-checklist.md` |
+| R1.3, R8.2 | PL8 | `PL8_no_wall_clock_upload` | 8 | code done: the log database is never uploaded and `REPORT` carries `kind` only (`SensorOutbox.toPending`); test not written (same) |
+| R8 | PL9 | `PL9_share_card_privacy` | 8, 9 | code done: `ShareFacts` has no location, area, install ID or name; text in `ShareCardText`, picture in `ShareCardImage` (ADR 0040); test not written (same) |
+| R1.6 | - | delete-my-data clears the log, settings, Freezer Guard alarm and cached share picture | 10 | done: `OutageApp.registerPowerLog` registers `power_log`; no dedicated test (same) |
+| R7, R10 | - | Power Log screen, taps, rate limit | 8 | done: `PowerLogScreen`, `LogRecorder` (ADR 0039); no dedicated test (same) |
 
 ## home-watch
 
@@ -147,7 +149,7 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 | R4, R7.5 | viewer API | `viewer API GET /v1/home/:pairId` | 7 | passing (`workers/api/test/home-watch.test.ts`, shape in `packages/shared/test/home.test.ts`) |
 | R1.1, R1.4, R1.8 to R1.10, R4, R7.6, R9 | app screens | `R1_4_claim_sends_the_normalized_code_and_no_push_token_and_stores_the_name_locally`, `R4_2_fixture_states_map_to_the_spec_wording`, `R4_4_a_failed_refresh_keeps_the_cached_state_and_marks_it_stale`, `R1_9_station_lists_every_pair_and_removes_a_dead_viewer`, `H5_R1_5_every_failed_claim_gives_the_same_answer`, `H8_R7_4_delete_lists_the_viewer_pair_ids` | 8 | passing (`apps/android/app/src/test/kotlin/app/outage/home/HomeWatchTest.kt`; station list and no-push token: `workers/api/test/home-watch.test.ts`) |
 | R2.4 to R2.7 | H1, H2 (scenario) | `H1_offline_never_off: power off with the router down ...`, `H2_state_order_independent: power back before the router ...`, `H1_offline_never_off and H2_state_order_independent: any cut, outage, router delay and upload order` | 9 | passing (`tools/sim/test/home-scenario.test.ts`) |
-| R5.1 | push latency on devices | `docs/probe-checklist.md` Home Watch step 6 | 9 | open: needs Firebase Messaging in the app (ADR 0037) and two phones; left for the human |
+| R5.1 | push latency on devices | `docs/probe-checklist.md` Home Watch step 6 | 9 | open: needs Firebase Messaging in the app (ADR 0045) and two phones; left for the human |
 | R1.10, R7.4 | H8 (pair part) | `H8_delete_removes_pairs`, `R1.10 remove a pair` | 4 | passing (`workers/api/test/pairing.test.ts`; state parts: `H8_delete_removes_pairs (state parts, R7.3, R7.4)` in `workers/api/test/home-watch.test.ts`) |
 
 ## onboarding
@@ -299,3 +301,14 @@ Scanned 15 test file(s) under packages/detection. A property counts when a test 
 | - | - | ADR 0032: receiver primary, job backup (sensor-android and station-mode amended) | sensor-android 1 to 12, station-mode 1 to 8 | docs done; code not started |
 
 | R17 | - | golden fixture replay | detection-engine 18 | harness done: `packages/detection/test/golden.test.ts`; no fixtures until the field test |
+| R7.4, R7.5 | - | REPORT event and manual hint count | power-log 1 | done: code and fixture, ADR 0042; no dedicated test yet |
+| R1 | - | local RAW_INPUT store, migrations | power-log 2 | done: code, ADR 0043; no dedicated test yet |
+| R1, R2, R7.2 | PL1, PL2, PL3 | TimelineBuilder | power-log 4 | code done; tests PL1 to PL3 not written |
+| R9 | - | public outage endpoint and phone sync | power-log 5 | done: Worker tests in web-routes.test.ts (empty when not public); phone sync not tested |
+| R3, R4, R5 | PL4, PL5, PL6 | Stats | power-log 6 | code done; tests PL4 to PL6 not written |
+| R6 | PL7 | Freezer Guard | power-log 7 | code done, ADR 0038; test PL7 not written |
+| R7, R10 | - | Power Log screen and sensor wiring | power-log 8 | code done, ADR 0039; tests PL8, PL9 not written |
+| R8 | PL9 | image share card | power-log 9 | code done, ADR 0040 |
+| R1.6 | - | delete-my-data for the log | power-log 10 | code done |
+| R5, R10 | IN | real Power Log in Insights, 12-week demo | app-map-insights 6 | done, ADR 0039; demo-days assertion updated to 84 |
+| R1, R2 | F1, F2 (client) | phone aggregator and daily uploader | field-telemetry 4 | code done, ADR 0041; Kotlin tests F1, F2 not written (human asked for no more tests); consent through `TelemetryConsent` |

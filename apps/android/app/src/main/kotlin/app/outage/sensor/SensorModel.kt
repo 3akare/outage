@@ -27,7 +27,8 @@ enum class Plug {
 
 enum class Confidence { HIGH, LOW }
 
-enum class EventType { ARMED, UNPLUG, BATTERY_FULL, REPLUG, DISARMED, LABEL }
+/** `REPORT` is the "Power is out" tap (power-log R7.4, ADR 0042); it is queued for upload and never changes the sensor state. */
+enum class EventType { ARMED, UNPLUG, BATTERY_FULL, REPLUG, DISARMED, LABEL, REPORT }
 
 /** station-mode R3.4: which driver saw the event. */
 enum class Source { RECEIVER, JOB }

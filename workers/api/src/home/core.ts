@@ -1,4 +1,4 @@
-// Home Watch core for one pairing shard (home-watch tasks 5, 6, 7; ADR 0036). Owns the stations whose pairs live in this
+// Home Watch core for one pairing shard (home-watch tasks 5, 6, 7; ADR 0044). Owns the stations whose pairs live in this
 // shard: their state, the event window, silence detection, the home push and the viewer's view. Synchronous store port, the
 // clock and the sender are inputs, so Vitest runs it with a memory store and a fake sender.
 import {
@@ -86,7 +86,7 @@ export class HomeCore {
     for (const row of this.store.listStations()) this.stations.set(row.stationInstall, this.fromRow(row));
   }
 
-  /** After a restart the window holds one seed event that stands for the stored state (ADR 0036). */
+  /** After a restart the window holds one seed event that stands for the stored state (ADR 0044). */
   private fromRow(row: StationRow): Tracked {
     const window: StationEvent[] = row.state === 'UNKNOWN' ? [] : [{ type: row.state === 'ON' ? 'REPLUG' : 'UNPLUG', timeMs: row.sinceMs as number }];
     return { row, window, writtenSeenMs: row.lastSeenMs, pending: null };
@@ -180,7 +180,7 @@ export class HomeCore {
   /** Plan from the current change and send directly (R5.1, no queue). Sent memory makes a retry the same plan again (H6). */
   private async send(t: Tracked, change: HomeChange, nowMs: number, tries = 0): Promise<void> {
     t.pending = null;
-    const pairs = this.store.pairsOfStation(change.stationInstall).filter((p) => p.pushFailedMs === null && p.fcmToken !== NO_PUSH_TOKEN); // ADR 0037
+    const pairs = this.store.pairsOfStation(change.stationInstall).filter((p) => p.pushFailedMs === null && p.fcmToken !== NO_PUSH_TOKEN); // ADR 0045
     const messages = planHome(change, pairs, nowMs, (pairId, version, kind) => this.store.hasSent(pairId, version, kind));
     if (messages.length === 0 || !this.sender) return;
     let retryAt: number | null = null;

@@ -41,7 +41,7 @@ One `PairingActor` (binding `PAIRING`, migration `v5`) per two-symbol shard. The
 
 | Route | Body | Answers |
 |---|---|---|
-| `POST /v1/pair/offer` | `{ installId, cell? }` (station; the res-8 `cell` lets its area actor forward its events, ADR 0036) | `200 { code, expiresAtMs }`, `409 station_full`, `429` |
+| `POST /v1/pair/offer` | `{ installId, cell? }` (station; the res-8 `cell` lets its area actor forward its events, ADR 0044) | `200 { code, expiresAtMs }`, `409 station_full`, `429` |
 | `POST /v1/pair/claim` | `{ installId, code, fcmToken, quietStartMin, quietEndMin, tzOffsetMin, stationName? }` (viewer) | `200 { pairId }`, `404 not_found` for every failed claim, `409 station_full`, `429` |
 | `POST /v1/pair/remove` | `{ installId, pairId }` (either side) | `200 { removed: true }`, `404 not_found` |
 | `GET /v1/home/:pairId` | `Authorization: Bearer <token>` and `X-Install-Id` (the pair's viewer; cached 10 s) | `200 { status, sinceMs, lastKnown, lastSeenMs, stationName, asOfMs }` (`status` is `ON`, `OFF`, `OFFLINE` or `UNKNOWN`), `401`, `404 not_found` for an unknown pair or another install |

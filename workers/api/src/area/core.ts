@@ -341,6 +341,9 @@ function toIngested(ev: AreaEvent): IngestedItem {
       answer: ev.answer ?? 'NO',
     };
   }
+  if (ev.type === 'REPORT') {
+    return { installId: ev.installId, seq: ev.seq, type: 'REPORT', cell: ev.cell, eventTimeMs: ev.eventTimeMs };
+  }
   return {
     installId: ev.installId,
     seq: ev.seq,

@@ -1,4 +1,4 @@
-# ADR 0036: Home Watch station state lives in the pairing shard actor
+# ADR 0044: Home Watch station state lives in the pairing shard actor
 
 Status: ACCEPTED 2026-11-23, under the human's blanket approval (decide, record, proceed). Stored-data change: see "Stored data".
 

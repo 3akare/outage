@@ -127,7 +127,7 @@ fun loadReplayAsset(context: Context): ReplayFile? = try {
 
 /**
  * The demo alarm: the phone's default alarm sound for 5 seconds, with the "Demo" text on screen (R4.8). A stand-in
- * for the Light Alarm sound path until it is merged (ADR 0038).
+ * for the Light Alarm sound path until it is merged (ADR 0046).
  * https://developer.android.com/reference/android/media/RingtoneManager#getRingtone(android.content.Context,%20android.net.Uri)
  */
 private fun ringDemoAlarm(context: Context) {

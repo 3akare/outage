@@ -1,4 +1,4 @@
-// Forwarding a watched station's events from its area actor to its pairing shard (ADR 0036). The area actor keeps a small
+// Forwarding a watched station's events from its area actor to its pairing shard (ADR 0044). The area actor keeps a small
 // list of installs to watch (install id and shard name, no cell). SQL API: https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/
 import type { AreaEvent, AreaResult } from '../area/core.ts';
 import type { ForwardedEvent } from './core.ts';

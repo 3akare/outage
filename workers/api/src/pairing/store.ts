@@ -35,19 +35,19 @@ export class SqlPairStore implements PairStore {
       pair_id TEXT PRIMARY KEY, station_install TEXT NOT NULL, viewer_install TEXT NOT NULL, fcm_token TEXT NOT NULL,
       quiet_start_min INTEGER NOT NULL, quiet_end_min INTEGER NOT NULL, tz_offset_min INTEGER NOT NULL,
       station_name TEXT, created_ms INTEGER NOT NULL, push_failed_ms INTEGER) WITHOUT ROWID`);
-    // Home Watch (ADR 0036): station state and sent memory, only for paired stations.
+    // Home Watch (ADR 0044): station state and sent memory, only for paired stations.
     sql.exec(`CREATE TABLE IF NOT EXISTS station_state (
       station_install TEXT PRIMARY KEY, state TEXT NOT NULL, since_ms INTEGER, state_version INTEGER NOT NULL,
       last_seen_ms INTEGER NOT NULL, offline INTEGER NOT NULL) WITHOUT ROWID`);
     sql.exec(`CREATE TABLE IF NOT EXISTS pair_sent (
       pair_id TEXT NOT NULL, state_version INTEGER NOT NULL, kind TEXT NOT NULL,
       PRIMARY KEY (pair_id, state_version, kind)) WITHOUT ROWID`);
-    // A shard created before ADR 0036 lacks the two new columns.
+    // A shard created before ADR 0044 lacks the two new columns.
     this.addColumn('pair_offer', 'station_cell', 'TEXT');
     this.addColumn('pair', 'push_failed_ms', 'INTEGER');
   }
 
-  /** Adds a column to a table made before ADR 0036. Fails harmlessly with "duplicate column" when it is already there. */
+  /** Adds a column to a table made before ADR 0044. Fails harmlessly with "duplicate column" when it is already there. */
   private addColumn(table: string, column: string, type: string): void {
     try {
       this.sql.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
@@ -157,7 +157,7 @@ export class SqlPairStore implements PairStore {
     );
   }
 
-  // ---- Home Watch (ADR 0036) ----------------------------------------------------------------------------------
+  // ---- Home Watch (ADR 0044) ----------------------------------------------------------------------------------
 
   listStations(): StationRow[] {
     return this.sql

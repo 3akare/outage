@@ -17,8 +17,17 @@ class SensorOutbox(private val sensor: SensorController, private val cell: () ->
     override fun ack(upToSeq: Long) = sensor.ackEvents(upToSeq)
 
     companion object {
-        /** A LABEL carries only the base fields plus `refSeq` and `answer`; the strict schema rejects the rest (ingest.ts). */
+        /**
+         * A REPORT carries only the base fields plus `kind`; a LABEL carries only the base fields plus `refSeq` and
+         * `answer`. The strict schema rejects the rest (ingest.ts).
+         */
         fun toPending(e: SensorEvent, cell: String): PendingEvent {
+            if (e.type == app.outage.sensor.EventType.REPORT) {
+                return PendingEvent(
+                    seq = e.seq, type = e.type.name, recordedElapsedMs = e.recordedElapsedMs, cell = cell,
+                    confidence = "HIGH", timeQuality = e.timeQuality.name, kind = "OUT",
+                )
+            }
             val label = e.type == app.outage.sensor.EventType.LABEL
             return PendingEvent(
                 seq = e.seq,

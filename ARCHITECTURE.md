@@ -130,6 +130,16 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/home/HomeWatch.kt` | Home Watch on the phone: viewer API shapes, card wording, pairing calls (no state is derived on the phone) |
 | `apps/android/app/src/main/kotlin/app/outage/home/HomeWatchModel.kt` | Home Watch screen logic: claim, offer, refresh with cache, station pair list, remove |
 | `apps/android/app/src/main/kotlin/app/outage/home/HomeWatchAndroid.kt` | Home Watch pair list in SharedPreferences and the HTTP client |
+| `apps/android/app/src/main/kotlin/app/outage/freezer/FreezerGuard.kt` | Freezer Guard settings, pure rules (plan, alert, quiet hours) and the scheduler over the timeline |
+| `apps/android/app/src/main/kotlin/app/outage/freezer/FreezerAndroid.kt` | AlarmManager alarms, the receiver and the notification for Freezer Guard |
+| `apps/android/app/src/main/kotlin/app/outage/ui/DiagnosticsScreen.kt` | Settings switch for the anonymous diagnostics upload |
+| `apps/android/app/src/main/kotlin/app/outage/ui/FreezerScreen.kt` | Freezer Guard settings screen |
+| `apps/android/app/src/main/kotlin/app/outage/ui/PowerLogScreen.kt` | Power Log screen: now, taps, today, 30 days, outages, Light Score, band, share |
+| `apps/android/app/src/main/kotlin/app/outage/ui/PowerLogViewModel.kt` | State and background work for the Power Log screen |
+| `apps/android/app/src/main/kotlin/app/outage/ui/ShareCardImage.kt` | The share card drawn as a picture with Canvas and shared through FileProvider |
+| `apps/android/app/src/main/kotlin/app/outage/ui/ShareCardText.kt` | The share card as text, and the facts both forms carry |
+| `apps/android/app/src/main/kotlin/app/outage/telemetry/DeviceDay.kt` | Builds the daily telemetry aggregate from the sensor's events (pure) |
+| `apps/android/app/src/main/kotlin/app/outage/telemetry/TelemetryUpload.kt` | Consent interface, its preference, and the daily uploader |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmCore.kt` | Glue from sensor events to AlarmPolicy and the effects interface |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmHost.kt` | One alarm layer per process: SQLite store, prompt, ring, label queue |
 | `apps/android/app/src/main/kotlin/app/outage/net/Follow.kt` | Follow and unfollow request bodies (match the shared strict schema), quiet window, `FollowApi` |
@@ -155,10 +165,19 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/insights/DemoOutages.kt` | About 60 days of labelled sample outages for demo mode |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsCalc.kt` | Pure numbers for Insights: hours of power, heatmap, trend, promise check |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsSource.kt` | Where Insights gets its outage timeline (demo or real) |
+| `apps/android/app/src/main/kotlin/app/outage/insights/LogStoreTimeline.kt` | The real Power Log timeline for Insights, and the real-or-demo source for demo builds |
 | `apps/android/app/src/main/kotlin/app/outage/insights/PromiseText.kt` | Plain sentence comparing logged hours with the tariff promise |
 | `apps/android/app/src/main/kotlin/app/outage/log/BandConfig.kt` | Reads and validates `bands.json` |
+| `apps/android/app/src/main/kotlin/app/outage/log/AreaOutageSync.kt` | Fetches the spot's public outages, caches them, stores them as log inputs |
 | `apps/android/app/src/main/kotlin/app/outage/log/BandStrings.kt` | String keys for the supply-promise copy |
+| `apps/android/app/src/main/kotlin/app/outage/log/LogInput.kt` | Power Log raw inputs and their stored JSON payload |
+| `apps/android/app/src/main/kotlin/app/outage/log/LogStore.kt` | Power Log database `outage_log.db` with migrations (ADR 0043) |
+| `apps/android/app/src/main/kotlin/app/outage/log/LogRecorder.kt` | Writes sensor events and taps into the log; rate limit for "Power is out" |
+| `apps/android/app/src/main/kotlin/app/outage/log/PowerLogModel.kt` | Pure view of the log for the screen, the share facts and the band choice |
+| `apps/android/app/src/main/kotlin/app/outage/log/PowerLogService.kt` | Load, area sync and taps for the Power Log screen, without Android types |
 | `apps/android/app/src/main/kotlin/app/outage/log/PowerLog.kt` | Feature keys for the Power Log |
+| `apps/android/app/src/main/kotlin/app/outage/log/Stats.kt` | Daily stats, Light Score and promise check from the timeline (pure) |
+| `apps/android/app/src/main/kotlin/app/outage/log/TimelineBuilder.kt` | Raw inputs to ON, OUT, OFF_CHARGER and UNKNOWN intervals (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/map/AreaMapParser.kt` | Strict reader for `/api/map.json` |
 | `apps/android/app/src/main/kotlin/app/outage/map/AreaMapSource.kt` | Loads the map: network, cache, or the labelled demo map |
 | `apps/android/app/src/main/kotlin/app/outage/map/CellStyle.kt` | Colour role and pattern per cell state; label placement without overlaps |
@@ -235,6 +254,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/res/raw/light_alarm_fallback.wav` | Bundled alarm sound used when the system alarm sound cannot be resolved |
 | `apps/android/app/src/main/res/values/strings.xml` | Every English UI string |
 | `apps/android/app/src/main/res/values-pcm/strings.xml` | Optional Nigerian Pidgin strings (fall back to English per key) |
+| `apps/android/app/src/main/res/xml/share_paths.xml` | FileProvider path for the share card picture (cache folder `share`) |
 | `apps/android/app/src/main/res/values/themes.xml` | Light app theme |
 | `apps/android/app/src/main/res/values-night/themes.xml` | Dark app theme |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt` | Alarm strings exist in every pack |
@@ -740,5 +760,5 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `docs/probe/2026-11-15-samsung-b.md` | Probe result: Samsung phone, second run (probe v0.0.2) |
 | `docs/probe/2026-11-15-samsung-b.json` | Raw numbers behind the second Samsung result |
 | `docs/wip/detection-engine-notes.md` | Working notes for the detection engine |
-| `docs/adr/` | Architecture decision records 0001 to 0037, one decision each (context, decision, alternatives, consequences) |
+| `docs/adr/` | Architecture decision records 0001 to 0046, one decision each (context, decision, alternatives, consequences) |
 | `docs/visual/` | Website screenshots written by `workers/api/visual/check.mjs` (390 x 844 and `-desktop` 1280 x 800) |

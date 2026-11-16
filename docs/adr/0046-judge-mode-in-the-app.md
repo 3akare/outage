@@ -1,4 +1,4 @@
-# ADR 0038: Judge mode in the Android app
+# ADR 0046: Judge mode in the Android app
 
 Status: ACCEPTED 2026-11-23, under the human's blanket approval (decide, record, proceed). No new stored data, no new dependency.
 

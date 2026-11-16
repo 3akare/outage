@@ -11,7 +11,7 @@ export interface OfferRow {
   stationInstall: string;
   expiresMs: number;
   attempts: number;
-  /** The station's res-8 cell, if it sent one (ADR 0036). Used once at claim time. Absent without a cell. */
+  /** The station's res-8 cell, if it sent one (ADR 0044). Used once at claim time. Absent without a cell. */
   stationCell?: string;
 }
 export interface PairRow {

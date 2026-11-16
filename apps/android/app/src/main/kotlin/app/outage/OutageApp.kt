@@ -9,7 +9,17 @@ import app.outage.home.HomeCredentials
 import app.outage.home.HomeWatchModel
 import app.outage.home.PrefsPairBook
 import app.outage.home.UrlConnectionHomeHttp
+import app.outage.freezer.AndroidFreezerAlarms
+import app.outage.freezer.FreezerGuard
 import app.outage.insights.InsightsSources
+import app.outage.insights.LogStoreTimeline
+import app.outage.log.AreaOutageSync
+import app.outage.log.BandChoice
+import app.outage.log.FileOutageCache
+import app.outage.log.LogRecorder
+import app.outage.log.LogStore
+import app.outage.log.LogStores
+import app.outage.log.PowerLogService
 import app.outage.log.BandConfig
 import app.outage.map.AreaMapSources
 import app.outage.map.FileMapCache
@@ -45,13 +55,22 @@ import app.outage.ui.HomeWatchCard
 import app.outage.ui.HomeWatchScreen
 import app.outage.ui.HomeWatchViewModel
 import app.outage.ui.StationPairScreen
+import app.outage.telemetry.PrefsTelemetryConsent
+import app.outage.telemetry.TelemetryDriver
+import app.outage.ui.DiagnosticsScreen
+import app.outage.ui.FreezerScreen
 import app.outage.ui.SensorToggleScreen
 import app.outage.ui.InsightsScreen
 import app.outage.ui.MapScreen
+import app.outage.ui.PowerLogScreen
+import app.outage.ui.PowerLogViewModel
+import app.outage.ui.ShareCardImage
 import java.io.File
 import java.util.concurrent.Executors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+private const val PENDING_BACKFILL = 500
 
 class OutageApp : Application() {
     lateinit var graph: ShellGraph
@@ -61,6 +80,7 @@ class OutageApp : Application() {
         super.onCreate()
         graph = ShellGraph(this)
         app.outage.alarm.ChannelSetup.ensure(this)
+        registerPowerLog()
         registerMapAndInsights()
         registerSensor()
         registerHomeWatch()
@@ -73,6 +93,60 @@ class OutageApp : Application() {
         // `graph.deletes` here, as they are built. Nothing else starts at app start (R1.4).
     }
 
+    private lateinit var logStore: LogStore
+    private lateinit var bandChoice: BandChoice
+
+    /**
+     * Power Log (spec power-log): the log database, sensor events into the log, Freezer Guard, the Power Log screen.
+     * Opens nothing at start except a background plan of the Freezer Guard alarm (alarms are lost at reboot).
+     */
+    private fun registerPowerLog() {
+        val alarms = AndroidFreezerAlarms(this)
+        logStore = LogStores.get(this)
+        val freezer = FreezerGuard(logStore, alarms)
+        val config = try {
+            BandConfig.parse(assets.open(BandConfig.ASSET_NAME).bufferedReader().use { it.readText() })
+        } catch (_: Exception) {
+            null
+        }
+        bandChoice = BandChoice(logStore, config)
+        val recorder = LogRecorder(
+            store = logStore,
+            onChange = { runCatching { freezer.sync() } },
+            onDetectionPlug = { Sensor.get(this).onDetectionPlug() },
+            queueReport = { Sensor.get(this).recordReport() != null },
+        )
+        // Every process that builds the sensor writes its events into the log (power-log R1). Events still waiting in the
+        // Outbox are read back first, so a gap while the process was dead is filled; duplicates are ignored by key.
+        Sensor.onCreated = { sensor ->
+            runCatching { recorder.onSensorEvents(sensor.getPendingEvents(PENDING_BACKFILL)) }
+            sensor.addListener(recorder::onSensorEvent)
+        }
+        val outageCache = FileOutageCache(File(filesDir, "outages"))
+        val sync = if (BuildConfig.API_BASE.isNotBlank()) AreaOutageSync(BuildConfig.API_BASE, logStore, outageCache) else null
+        val service = PowerLogService(logStore, recorder, bandChoice, sync, cell = { graph.onboarding.load()?.cell })
+
+        graph.features.register("freezer_guard", R.string.settings_freezer, { FreezerScreen(freezer, alarms::canScheduleExact) }, null)
+        graph.features.register(
+            FeatureRegistry.LOG,
+            R.string.log_title,
+            {
+                val vm: PowerLogViewModel = viewModel(factory = viewModelFactory { initializer { PowerLogViewModel(service) } })
+                PowerLogScreen(vm, shareImage = { v -> Thread { runCatching { ShareCardImage.share(applicationContext, v.share) } }.start() })
+            },
+            null,
+        )
+        // Delete-my-data (power-log R1.6): the log and its settings, the Freezer Guard alarm, the cached area outages and the
+        // cached share picture. Cancel the alarm after the clear, so a pending alert cannot find an outage to report.
+        graph.deletes.register("power_log") {
+            logStore.clear()
+            alarms.cancel()
+            outageCache.clear()
+            ShareCardImage.clear(this)
+        }
+        Thread { runCatching { freezer.sync() } }.start()
+    }
+
     /**
      * Sensor and upload (sensor-android, station-mode, event-ingest task 10). The sensor itself is built lazily on first
      * use, off the main thread. Upload runs only with a Worker address (ADR 0024) and only once a cell is chosen.
@@ -83,6 +157,9 @@ class OutageApp : Application() {
         val io = Executors.newSingleThreadExecutor()
         var upload: UploadDriver? = null
         val prefs = getSharedPreferences("sensor_switch", MODE_PRIVATE)
+        val consent = PrefsTelemetryConsent(this)
+        graph.features.register("diagnostics", R.string.settings_diagnostics, { DiagnosticsScreen(consent::enabled, consent::set) }, null)
+        graph.deletes.register("telemetry_consent") { consent.clear() }
         graph.sensorStarter = {
             if (prefs.getBoolean("on", true)) io.execute {
                 val sensor = Sensor.get(this)
@@ -90,6 +167,8 @@ class OutageApp : Application() {
                 if (upload == null && BuildConfig.API_BASE.isNotBlank()) {
                     upload = UploadDriver(IngestApi(BuildConfig.API_BASE, UrlConnectionPost), credentials, sensor) { onboarding.load()?.cell }
                         .also { it.start() }
+                    // Daily anonymous diagnostics, only with the user's opt-in (field-telemetry R1.1).
+                    TelemetryDriver(this, IngestApi(BuildConfig.API_BASE, UrlConnectionPost), credentials, sensor, consent).start()
                 }
             }
         }
@@ -239,12 +318,8 @@ class OutageApp : Application() {
         graph.deletes.register("map_cache") { cache.clear() }
         graph.deletes.register("followed_area") { followed.clear() }
 
-        val band = try {
-            BandConfig.parse(assets.open(BandConfig.ASSET_NAME).bufferedReader().use { it.readText() }).band("A")
-        } catch (_: Exception) {
-            null
-        }
-        val insights = InsightsSources.choose(BuildConfig.API_BASE, band)
+        // The real Power Log once it has data; the labelled demo only in a build without a Worker address (R5, R10).
+        val insights = InsightsSources.choose(BuildConfig.API_BASE, { bandChoice.chosen() }, LogStoreTimeline(logStore))
         graph.features.register(FeatureRegistry.INSIGHTS, R.string.nav_insights, { InsightsScreen(insights) }, null)
     }
 }

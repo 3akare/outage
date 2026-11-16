@@ -156,7 +156,7 @@ class HomeApi(private val base: String, private val http: HomeHttp) {
         return OfferOutcome.Ok(c, exp)
     }
 
-    /** No Firebase Messaging in the app yet, so the claim sends [NO_PUSH_TOKEN] and the viewer polls (ADR 0037). */
+    /** No Firebase Messaging in the app yet, so the claim sends [NO_PUSH_TOKEN] and the viewer polls (ADR 0045). */
     fun claim(installId: String, token: String, typed: String, tzOffsetMin: Int): ClaimOutcome {
         val code = normalize(typed)
         if (!INSTALL_ID.matches(installId)) return ClaimOutcome.Failed
@@ -180,7 +180,7 @@ class HomeApi(private val base: String, private val http: HomeHttp) {
         return code == 200 || code == 404
     }
 
-    /** The station's own pairs (ADR 0037): id and creation time. Null on any failure. */
+    /** The station's own pairs (ADR 0045): id and creation time. Null on any failure. */
     fun stationPairs(installId: String, token: String): List<Pair<String, Long>>? {
         if (!INSTALL_ID.matches(installId)) return null
         val (code, text) = http.call("POST", url("/v1/pair/list"), "{\"installId\":${Json.q(installId)}}", auth(token)) ?: return null

@@ -41,7 +41,7 @@ const view = async (w: World, pairId: string, viewer = VIEWER, headers: Record<s
   return handleRequest(new Request(`https://api.test/v1/home/${pairId}`, { method: 'GET', headers: h }), w.deps);
 };
 
-describe('Worker path: pairing starts forwarding (ADR 0036)', () => {
+describe('Worker path: pairing starts forwarding (ADR 0044)', () => {
   it('a claim with a station cell makes the station parent forward its events to the pair shard', async () => {
     const w = makeWorld(ROOMY);
     const pairId = await pair(w);
@@ -460,7 +460,7 @@ describe('H8_delete_removes_pairs (state parts, R7.3, R7.4)', () => {
   });
 });
 
-describe('Station pair list and the no-push token (ADR 0037)', () => {
+describe('Station pair list and the no-push token (ADR 0045)', () => {
   it('H8_delete_removes_pairs: the station lists its pairs (ids and times only) and can remove a dead viewer', async () => {
     const w = makeWorld(ROOMY);
     const pairId = await pair(w);
