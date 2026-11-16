@@ -48,6 +48,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.outage.R
+import androidx.compose.runtime.LaunchedEffect
+import app.outage.map.DemoAreaMap
+import app.outage.map.DemoCity
+import app.outage.map.HexGeoJson
 
 /** Material 3 top app bar with a back arrow, for screens pushed above a destination. The arrow is a 48 dp target (R6.4). */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,12 +144,21 @@ fun FirstRunScreen(finish: () -> Boolean, locate: suspend () -> SpotOutcome, onD
     val askLocation = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (!granted) next(SpotOutcome.Denied) else scope.launch { next(locate()) }
     }
-    // The Earth turns behind the welcome, as on the web (ADR 0051).
-    val ctx = LocalContext.current
-    val globe = remember { GlobeData.load(ctx) }
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-    GlobeView(globe, emptyList(), emptyMap(), null, null, emptyList(), null, topInset = 0.dp, bottomInset = maxHeight * 0.5f, summary = "", onTap = {})
-    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to Color.Transparent, 0.34f to Color(0x59030508), 0.58f to Color(0xF0030508))))
+    // The real street map of Lagos with the simulated blocks, behind the welcome (ADR 0053). It flies to Yaba when the
+    // person chooses "Use my location", like a maps app finding them; the saved spot comes from [locate], never from here.
+    val demo = remember { DemoAreaMap.build(System.currentTimeMillis()) }
+    val states = remember(demo) { demo.cells.associate { it.id to it.state } }
+    val camera = remember { OutageMapController() }
+    LaunchedEffect(Unit) { camera.flyTo(LAGOS, CITY_ZOOM - 0.4) }
+    LaunchedEffect(busy) {
+        if (busy) demo.cell(DemoCity.SPOT)?.let { camera.flyTo(HexGeoJson.centre(it), SPOT_ZOOM - 0.5, 2400) }
+    }
+    BoxWithConstraints(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+    OutageMap(
+        demo.cells, states, spotId = null, selectedId = null, controller = camera,
+        modifier = Modifier.fillMaxWidth().height(maxHeight * 0.5f), interactive = false,
+    )
+    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to Color.Transparent, 0.4f to Color.Transparent, 0.5f to MaterialTheme.colorScheme.surface)))
     // At least the screen's height, so the text sits at the bottom under the globe; it scrolls when the text is large.
     Column(
         modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).heightIn(min = maxHeight).padding(horizontal = 24.dp, vertical = 32.dp),
@@ -153,7 +166,7 @@ fun FirstRunScreen(finish: () -> Boolean, locate: suspend () -> SpotOutcome, onD
     ) {
         Text(stringResource(R.string.first_run_title), style = MaterialTheme.typography.headlineMedium)
         Text(stringResource(R.string.first_run_body), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), shape = MaterialTheme.shapes.large) {
+        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh), shape = MaterialTheme.shapes.large) {
             Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Image(painterResource(R.drawable.ic_status_person_pin), null, Modifier.size(24.dp), colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary))
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

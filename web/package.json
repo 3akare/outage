@@ -4,18 +4,20 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "vendor": "node scripts/vendor-maplibre.mjs",
     "test": "XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-/tmp/xdg-outage} WRANGLER_SEND_METRICS=false vitest --run",
     "bench": "node --no-warnings --experimental-transform-types bench/area-bench.mjs"
   },
   "dependencies": {
     "@outage/detection": "*",
-    "@outage/shared": "*"
+    "@outage/shared": "*",
+    "maplibre-gl": "6.16.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261114.1",
+    "fast-check": "^4.10.2",
     "typescript": "~6.0.3",
     "vitest": "^5.1.0",
-    "wrangler": "^4.162.0",
-    "fast-check": "^4.10.2"
+    "wrangler": "^4.162.0"
   }
 }

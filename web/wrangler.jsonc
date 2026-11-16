@@ -4,6 +4,10 @@
   "name": "outage-api",
   "main": "worker.ts",
   "compatibility_date": "2026-11-01",
+  // The website's scripts and styles, and MapLibre GL JS copied from node_modules by the build (ADR 0053). Served before
+  // the Worker runs: https://developers.cloudflare.com/workers/static-assets/
+  "assets": { "directory": "./public" },
+  "build": { "command": "node scripts/vendor-maplibre.mjs" },
   // Public, non-secret values (ADR 0024). APK_URL is the releases page until the release workflow fills in a direct APK link
   // with APK_VERSION, APK_SIZE_BYTES and APK_SHA256 (release-apk skill).
   "vars": {

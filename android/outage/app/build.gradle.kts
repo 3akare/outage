@@ -49,23 +49,6 @@ abstract class CopyReplay : DefaultTask() {
     }
 }
 
-// The globe's land dots and the Lagos coast (ADR 0051). One copy in git, core/shared/geo; the web inlines the same files.
-abstract class CopyGlobe : DefaultTask() {
-    @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val geo: DirectoryProperty
-
-    @get:OutputDirectory
-    abstract val outputDir: DirectoryProperty
-
-    @TaskAction
-    fun copy() {
-        val out = outputDir.get().asFile
-        out.mkdirs()
-        for (name in listOf("land-dots.json", "lagos-coast.json")) geo.get().file(name).asFile.copyTo(File(out, name), overwrite = true)
-    }
-}
-
 android {
     namespace = "app.outage"
     compileSdk = 36
@@ -113,10 +96,6 @@ androidComponents {
             replay.set(layout.projectDirectory.file("../../../core/shared/fixtures/replay.json"))
         }
         variant.sources.assets?.addGeneratedSourceDirectory(copyReplay, CopyReplay::outputDir)
-        val copyGlobe = tasks.register<CopyGlobe>("copyGlobe" + variant.name.replaceFirstChar { it.uppercase() }) {
-            geo.set(layout.projectDirectory.dir("../../../core/shared/geo"))
-        }
-        variant.sources.assets?.addGeneratedSourceDirectory(copyGlobe, CopyGlobe::outputDir)
     }
 }
 
@@ -143,6 +122,12 @@ dependencies {
     // https://dl.google.com/android/maven2/com/google/firebase/firebase-bom/maven-metadata.xml)
     implementation(platform("com.google.firebase:firebase-bom:35.2.0"))
     implementation("com.google.firebase:firebase-messaging")
+
+    // MapLibre Native for Android (ADR 0053): the street map under the hex grid, drawn from OpenFreeMap's vector tiles
+    // (no key, no account). 13.7.1 is the newest flat-map release in
+    // https://repo1.maven.org/maven2/org/maplibre/gl/android-sdk/maven-metadata.xml (globe builds are separate "-globe" lines).
+    // https://maplibre.org/maplibre-native/android/api/
+    implementation("org.maplibre.gl:android-sdk:13.7.1")
 
     // JUnit 4 is approved by ADR 0012.
     testImplementation("junit:junit:4.13.2")

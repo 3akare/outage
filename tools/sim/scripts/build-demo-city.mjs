@@ -44,6 +44,69 @@ const PLAN = {
   lekki: ['CONFIRMED', 'POSSIBLE', 2],
 };
 
+// Simulated power history (ADR 0053), for Insights: six weeks of outages per area, Monday first. The same every build.
+// Tariff bands are NERC's minimum hours of supply a day (A 20, B 16, C 12, D 8); which band each area is on is made up.
+export const BANDS = { A: 20, B: 16, C: 12, D: 8 };
+const AREA_BAND = { yaba: 'A', surulere: 'B', ikeja: 'A', maryland: 'B', 'victoria-island': 'A', ikoyi: 'A', ajah: 'C', ikorodu: 'D', festac: 'C', lekki: 'A' };
+// Hours of power a day each area gets on average: near its band for some, short of it for others.
+const MEAN_HOURS = { yaba: 18.4, surulere: 15.1, ikeja: 19.2, maryland: 16.4, 'victoria-island': 21.3, ikoyi: 21.8, ajah: 11.2, ikorodu: 8.6, festac: 12.9, lekki: 19.6 };
+export const HISTORY_WEEKS = 6;
+// When cuts start, by hour of day: most in the evening peak (6 p.m. to 11 p.m.), a second bump in the morning.
+const HOUR_WEIGHT = [2, 2, 1, 1, 1, 2, 4, 6, 6, 4, 3, 3, 3, 3, 3, 4, 5, 7, 10, 11, 10, 8, 5, 3];
+// Weekdays (Monday first) see more cuts than the weekend.
+const DAY_WEIGHT = [1.15, 1.1, 1.1, 1.15, 1.2, 0.75, 0.6];
+
+function prng(seed) {
+  // mulberry32: small, fast, deterministic. https://gist.github.com/tommyettinger/46a874533244883189143505d203312c
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const hash = (s) => [...s].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
+function pick(weights, r) {
+  const total = weights.reduce((a, b) => a + b, 0);
+  let x = r * total;
+  for (let i = 0; i < weights.length; i++) if ((x -= weights[i]) < 0) return i;
+  return weights.length - 1;
+}
+
+/** [day, start minute, minutes]: day 0 is a Monday, six weeks before the last day. Outages never overlap. */
+export function history(slug) {
+  const r = prng(hash(slug));
+  const out = [];
+  const days = HISTORY_WEEKS * 7;
+  for (let d = 0; d < days; d++) {
+    // Minutes without power today: the area's mean, scaled by weekday and a day-to-day swing, between 0 and 20 h.
+    const swing = 0.45 + r() * 1.1;
+    const target = Math.min(1140, Math.max(0, (24 - MEAN_HOURS[slug]) * 60 * DAY_WEIGHT[d % 7] * swing));
+    if (target < 20 || r() < 0.06) continue; // some days have no cut at all
+    const n = Math.max(1, Math.min(6, Math.round(target / (120 + r() * 140))));
+    const parts = Array.from({ length: n }, () => 0.4 + r());
+    const sum = parts.reduce((a, b) => a + b, 0);
+    const taken = [];
+    for (const p of parts) {
+      const minutes = Math.max(15, Math.round(((target * p) / sum) / 5) * 5);
+      const free = (start) => start + minutes <= 1440 + 120 && !taken.some(([s, e]) => start < e + 30 && start + minutes + 30 > s);
+      // Try the usual hours first; on a heavy day, take the first gap after a random hour.
+      let start = -1;
+      for (let tries = 0; tries < 12 && start < 0; tries++) {
+        const t = pick(HOUR_WEIGHT, r()) * 60 + Math.floor(r() * 12) * 5;
+        if (free(t)) start = t;
+      }
+      for (let t = Math.floor(r() * 288) * 5, k = 0; start < 0 && k < 288; k++, t = (t + 5) % 1440) if (free(t)) start = t;
+      if (start >= 0) taken.push([start, start + minutes]);
+    }
+    for (const [s, e] of taken.sort((a, b) => a[0] - b[0])) out.push([d, s, e - s]);
+  }
+  // A cut late on one day can run past midnight into the next: drop any next-day cut it would overlap.
+  return out.filter(([d, s], i) => !out.some(([d2, s2, m2], j) => j < i && d2 === d - 1 && s2 + m2 > 1440 + s - 30));
+}
+
 export function build() {
   const areas = [...catalog, ...EXTRA].map((a) => ({ slug: a.slug, name: a.name, lat: a.lat, lng: a.lng, source: a.source }));
   const taken = new Set();
@@ -64,7 +127,7 @@ export function build() {
       cells.push({ id: `sim-${h}`, area: a.slug, state, ring });
       ids.push(`sim-${h}`);
     }
-    outAreas.push({ ...a, centre: `sim-${centre}`, cells: ids });
+    outAreas.push({ ...a, centre: `sim-${centre}`, cells: ids, band: AREA_BAND[a.slug] ?? 'B', outages: history(a.slug) });
   }
   const spotArea = outAreas.find((a) => a.slug === SPOT_AREA);
   const spot = spotArea.centre;
@@ -73,6 +136,8 @@ export function build() {
     simulated: true,
     label: 'Simulated city: real Lagos areas at their real places, made-up power states',
     resolution: 8,
+    bands: BANDS,
+    historyWeeks: HISTORY_WEEKS,
     spot,
     spotNeighbours: neighbours,
     areas: outAreas,
@@ -82,22 +147,41 @@ export function build() {
 
 const kq = (s) => JSON.stringify(s);
 function kotlin(city) {
-  const areas = city.areas.map((a) => `        DemoCityArea(${kq(a.slug)}, ${kq(a.name)}, ${kq(a.centre)}),`).join('\n');
+  const areas = city.areas
+    .map(
+      (a) =>
+        `        DemoCityArea(${kq(a.slug)}, ${kq(a.name)}, ${kq(a.centre)}, ${a.lat}, ${a.lng}, ${kq(a.band)}, intArrayOf(${a.outages.flat().join(', ')})),`,
+    )
+    .join('\n');
   const cells = city.cells
     .map((c) => `        DemoCityCell(${kq(c.id)}, ${kq(c.area)}, CellState.${c.state}, doubleArrayOf(${c.ring.flat().join(', ')})),`)
     .join('\n');
   return `package app.outage.map
 
-// Generated by tools/sim/scripts/build-demo-city.mjs from the catalog (ADR 0052). Do not edit.
+// Generated by tools/sim/scripts/build-demo-city.mjs from the catalog (ADR 0052, ADR 0053). Do not edit.
 // Real Lagos areas at their real places as H3 resolution-8 blocks; the power states are made up.
 
-class DemoCityArea(val slug: String, val name: String, val centre: String)
+/**
+ * [outages] is day, start minute, minutes, flattened: day 0 is a Monday, ${city.historyWeeks} weeks back (simulated history,
+ * ADR 0053). [band] is the area's made-up tariff band; [lat] and [lng] are its real place (OpenStreetMap).
+ */
+class DemoCityArea(
+    val slug: String,
+    val name: String,
+    val centre: String,
+    val lat: Double,
+    val lng: Double,
+    val band: String,
+    val outages: IntArray,
+)
 
 /** [ring] is latitude, longitude pairs, flattened. */
 class DemoCityCell(val id: String, val area: String, val state: CellState, val ring: DoubleArray)
 
 object DemoCity {
     const val SPOT = ${kq(city.spot)}
+    const val HISTORY_WEEKS = ${city.historyWeeks}
+    val bands = mapOf(${Object.entries(city.bands).map(([k, v]) => `${kq(k)} to ${v}`).join(', ')})
     val spotNeighbours = listOf(${city.spotNeighbours.map(kq).join(', ')})
     val areas = listOf(
 ${areas}

@@ -152,6 +152,9 @@
     <string name="promise_met">You are at or above the promise.</string>
     <!-- Area map (app-map-insights R1 to R6) -->
     <string name="map_title">Power map</string>
+    <string name="map_search_hint">Search areas</string>
+    <string name="map_search_none">No area by that name on this map</string>
+    <string name="map_search_clear">Clear search</string>
     <string name="map_city">%1$s</string>
     <string name="map_headline_out">%1$d of %2$d areas without power</string>
     <string name="map_headline_possible">%1$d of %2$d areas may be without power</string>
@@ -237,6 +240,26 @@
     <string name="ins_empty_title">Your power log starts here</string>
     <string name="ins_empty_body">Outage logs power while your phone charges. Keep it plugged in at home and your pattern appears here.</string>
     <string name="ins_empty_battery">Check battery setup</string>
+    <string name="ins_area_sub">Power in %1$s over the last 30 days</string>
+    <string name="ins_area_note">Made-up history for the sample city, so you can see how Insights works. These are not real outages.</string>
+    <string name="ins_area_pick">Area</string>
+    <string name="ins_kpi_below">Days under Band %1$s</string>
+    <string name="ins_kpi_below_value">%1$d of %2$d</string>
+    <string name="ins_kpi_restore">Typical time until power returns</string>
+    <string name="ins_kpi_without">Without power, 30 days</string>
+    <string name="ins_band_line">Band %1$s promises at least %2$d h of power a day.</string>
+    <string name="ins_compare_title">Area comparison</string>
+    <string name="ins_compare_hint">Average hours of power a day, best first</string>
+    <string name="ins_compare_row">%1$.1f h · %2$d outages</string>
+    <string name="ins_summary_compare">Areas ranked by hours of power a day. %1$s is best with %2$.1f hours.</string>
+    <string name="ins_weekly_title">Hours without power, week by week</string>
+    <string name="ins_weekly_hint">Each point is 7 days, the last ending yesterday. Lower is better.</string>
+    <string name="ins_summary_weekly">Line chart of hours without power in each of the last %1$d weeks. Latest week %2$.1f hours.</string>
+    <string name="ins_history_title">Outage history</string>
+    <string name="ins_history_more">Show all %1$d</string>
+    <string name="ins_history_less">Show fewer</string>
+    <string name="ins_history_when">%1$s, %2$s</string>
+    <string name="ins_day_area">%1$s: %2$.1f h of power, %3$d outages</string>
     <string name="ins_simulated_note">Sample data to show the charts. Your own log starts once your phone has watched for a day.</string>
     <!-- Power Log screen (power-log R7, R8, R10; copy.md: plain words, "power") -->
     <string name="log_title">Power log</string>

@@ -1,0 +1,6 @@
+# Headers for the static files Workers Static Assets serves (ADR 0053): the app's scripts, styles and MapLibre.
+# https://developers.cloudflare.com/workers/static-assets/headers/
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Cache-Control: public, max-age=3600

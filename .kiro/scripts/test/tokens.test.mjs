@@ -12,7 +12,7 @@ const SETS = [
 
 test('MD1 generated files are current', () => {
   const out = render(tokens);
-  for (const k of ['css', 'ts', 'kt', 'font']) assert.equal(readFileSync(paths[k], 'utf8'), out[k], `${paths[k]} is stale`);
+  for (const k of ['css', 'ts', 'kt']) assert.equal(readFileSync(paths[k], 'utf8'), out[k], `${paths[k]} is stale`);
 });
 
 test('MD1 every colour appears in CSS and Kotlin', () => {
@@ -27,7 +27,7 @@ test('MD1 every colour appears in CSS and Kotlin', () => {
   }
 });
 
-test('MD1 every colour of the Midnight theme and the four power states exist', () => {
+test('MD1 every colour of the light theme and the four power states exist', () => {
   const roles = ['paper', 'paper-2', 'paper-3', 'ink', 'ink-2', 'muted', 'rule', 'rule-2', 'accent', 'accent-2', 'accent-ink', 'focus'];
   const containers = [];
   const status = ['normal', 'possible', 'confirmed', 'restored'].flatMap((s) => [s, `on-${s}`, `${s}-container`, `on-${s}-container`]);

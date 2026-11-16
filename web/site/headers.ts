@@ -12,6 +12,8 @@ export type Rendered = {
   body: string; // HTML bodies carry NONCE_PLACEHOLDER where a nonce belongs
   ttlSeconds: number; // 0 = not cacheable
   noindex?: boolean;
+  /** The page shows the street map: its CSP lets MapLibre fetch tiles, glyphs and sprites from OpenFreeMap (ADR 0053). */
+  map?: boolean;
   headers?: Record<string, string>;
 };
 
@@ -24,15 +26,19 @@ export function makeNonce(): string {
   return btoa(bin);
 }
 
-export function contentSecurityPolicy(nonce: string): string {
+/** The one other origin a page may reach: OpenFreeMap's street-map tiles, glyphs and sprites (map pages only, ADR 0053). */
+export const TILE_ORIGIN = 'https://tiles.openfreemap.org';
+
+export function contentSecurityPolicy(nonce: string, map = false): string {
   return [
     "default-src 'none'",
     `script-src 'nonce-${nonce}' 'self'`,
     `style-src 'nonce-${nonce}' 'self'`,
-    "img-src 'self' data:",
-    "font-src 'self'", // Mona Sans, served by this Worker (ADR 0052)
-    "connect-src 'self'",
-    "worker-src 'self'", // the Judge page's service worker (R6.7)
+    // MapLibre decodes sprite images into blob: URLs.
+    map ? "img-src 'self' data: blob:" : "img-src 'self' data:",
+    map ? `connect-src 'self' ${TILE_ORIGIN}` : "connect-src 'self'",
+    // MapLibre's tile worker (same origin, /vendor/) and the simulation's service worker (R6.7).
+    "worker-src 'self'",
     "base-uri 'none'",
     "form-action 'none'",
     "frame-ancestors 'none'",
@@ -40,9 +46,9 @@ export function contentSecurityPolicy(nonce: string): string {
 }
 
 /** Headers every response carries. No cookie is ever set. */
-export function securityHeaders(nonce: string): Record<string, string> {
+export function securityHeaders(nonce: string, map = false): Record<string, string> {
   return {
-    'Content-Security-Policy': contentSecurityPolicy(nonce),
+    'Content-Security-Policy': contentSecurityPolicy(nonce, map),
     'Referrer-Policy': 'no-referrer',
     'X-Content-Type-Options': 'nosniff',
   };
@@ -56,7 +62,7 @@ export function cacheControl(ttlSeconds: number): string {
 export function finalize(rendered: Rendered, method = 'GET', nonce = makeNonce()): Response {
   const body = rendered.body.split(NONCE_PLACEHOLDER).join(nonce);
   const headers = new Headers({
-    ...securityHeaders(nonce),
+    ...securityHeaders(nonce, rendered.map === true),
     'Content-Type': rendered.contentType,
     'Cache-Control': cacheControl(rendered.ttlSeconds),
     ...(rendered.headers ?? {}),

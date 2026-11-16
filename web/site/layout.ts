@@ -1,4 +1,4 @@
-// Page layout for the public area pages: the shared Material 3 stylesheet (/app.css, same origin) and at most one inline
+// Page layout for the public area pages: the shared stylesheet (/app.css, same origin) and at most one inline
 // script carrying the nonce placeholder (R1.5, R1.6). No external font, script, image or tracker. Readable with scripts off (R1.4).
 import { escapeHtml } from './escape.ts';
 import { NONCE_PLACEHOLDER } from './headers.ts';
@@ -37,7 +37,7 @@ export function layout(input: LayoutInput): string {
     `<link rel="canonical" href="${escapeHtml(canonical)}">` +
     (input.noindex ? '<meta name="robots" content="noindex">' : '') +
     `${FAVICON_LINK}<link rel="stylesheet" href="/app.css"></head><body>` +
-    `<header class="site-top"><div class="container">${brandLink('/')}<nav aria-label="Site"><a class="link" href="/areas">Areas</a><a class="btn btn--primary" href="/app/simulate">Try it</a></nav></div></header>` +
+    `<header class="site-top"><div class="container">${brandLink('/')}<nav aria-label="Site"><a class="link" href="/areas">Areas</a><a class="btn primary" href="/app/simulate">Try it</a></nav></div></header>` +
     `<div class="site container">${input.body}</div>` +
     '<footer class="site-foot"><div class="container"><a class="link" href="/">Home</a><a class="link" href="/app/simulate">Try the app</a><a class="link" href="/install">Install</a><a class="link" href="/privacy">Privacy</a></div></footer>' +
     (input.script ? `<script nonce="${NONCE_PLACEHOLDER}">${input.script}</script>` : '') +
