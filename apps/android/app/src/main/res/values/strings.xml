@@ -46,6 +46,9 @@
     <string name="settings_title">Settings</string>
     <string name="settings_alarm">Light Alarm settings</string>
     <string name="settings_notifications">Notifications</string>
+    <string name="settings_sensor">Power sensor</string>
+    <string name="sensor_toggle_label">Detect power cuts on this phone</string>
+    <string name="battery_allow_button">Allow Outage to run in the background</string>
     <string name="settings_battery">Battery setup</string>
     <string name="settings_station">Station mode</string>
     <string name="settings_home_watch">Home Watch</string>

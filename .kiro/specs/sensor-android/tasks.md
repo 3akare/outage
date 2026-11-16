@@ -59,7 +59,7 @@ Dependencies approved by ADR 0012 (Kotlin, Gradle, the Android Gradle plugin, An
 
 ## Wave 7
 
-- [ ] 12. Update `docs/traceability.md` (statuses and task IDs for S1 to S8), `docs/kiro-log.md`, and `apps/android/README.md`. The device checklist `docs/probe-checklist.md` for the feasibility probe already exists (not a CI test).
+- [x] 12. Update `docs/traceability.md` (statuses and task IDs for S1 to S8), `docs/kiro-log.md`, and `apps/android/README.md`. The device checklist `docs/probe-checklist.md` for the feasibility probe already exists (not a CI test).
   - Depends on: 3, 4, 5, 9, 10, 11
   - Requirements: all
 

@@ -186,6 +186,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/ui/MapPalette.kt` | Map colours (same as the web map) |
 | `apps/android/app/src/main/kotlin/app/outage/ui/MapScreen.kt` | The hex map on a Compose Canvas, legend, area list and cell sheet |
 | `apps/android/app/src/main/kotlin/app/outage/ui/SettingsScreen.kt` | Settings tab |
+| `apps/android/app/src/main/kotlin/app/outage/ui/SensorSetupScreens.kt` | Settings screens: Power sensor switch and Battery setup (maker steps, exemption prompt) |
 | `apps/android/app/src/main/kotlin/app/outage/ui/Shell.kt` | App frame: Home, Insights, Settings behind the bottom dock |
 | `apps/android/app/src/main/kotlin/app/outage/ui/ShellViewModel.kt` | Keeps the router across rotation |
 | `apps/android/app/src/main/kotlin/app/outage/ui/StatusRes.kt` | Maps shell states to resource IDs |

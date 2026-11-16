@@ -37,3 +37,12 @@ Only those in `.kiro/approved-dependencies.json`: Compose BOM (2026.06.01), Mate
 ## Tests
 
 JUnit 4 on the JVM, names start with the property ID: `AS1` to `AS7`. `AS8` is a device check at the end of `docs/probe-checklist.md`.
+
+## Sensor (sensor-android, station-mode)
+
+The first-run button records consent, asks for notifications (API 33 and up) and starts the sensor. After that each app open makes sure it runs (a visible app may start the foreground service). The receiver in `SensorService` is the primary path; `ChargingJobService` is the backup. Settings has two sensor screens, both in `ui/SensorSetupScreens.kt`:
+
+- **Power sensor**: one switch. Off stops the sensor and it stays off until switched on.
+- **Battery setup**: shows whether Outage is exempt from battery optimisation, a button for the system prompt, and the maker's steps from `oem-guide.json`.
+
+Station mode (a spare phone left charging) uses the same service. Unplug at 100%, Doze, maker restrictions and reboot recovery are in the Station section of `docs/probe-checklist.md`. The event `source` field stays on the phone until the Worker schema carries it (ADR 0034).

@@ -34,6 +34,7 @@ object SettingsItems {
     val all = listOf(
         Item("alarm_settings", R.string.settings_alarm),
         Item("notifications", R.string.settings_notifications),
+        Item("sensor", R.string.settings_sensor),
         Item("battery", R.string.settings_battery),
         Item("station", R.string.settings_station),
         Item("home_watch", R.string.settings_home_watch),

@@ -615,3 +615,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `net/HttpApi.kt`, `SensorOutbox.kt`, `UploadDriver.kt`: register on first upload, POST events to `BuildConfig.API_BASE`, server delete. `source` stays local until the wire schema adds it (ADR 0033).
 - 32 new JVM tests, all Android tests, lint and assembleDebug pass. Docs: ADR 0033, traceability, ARCHITECTURE.md.
 
+
+## FEAT-003 onboarding, battery and sensor switch (sensor-android task 12, station-mode task 8, event-ingest task 11)
+- First run already started the sensor (afa2008). Added Settings "Power sensor" switch and "Battery setup" screen (oem-guide.json steps plus the exemption prompt), `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`.
+- Docs: android and Worker READMEs, probe-checklist Station section, ARCHITECTURE.md. Station-mode task 1 deferred in ADR 0034. Load run needs a person.
+- Only `assembleDebug` was run, by instruction.

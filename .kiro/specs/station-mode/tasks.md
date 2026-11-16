@@ -10,7 +10,7 @@ This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (tas
 
 ## Wave 1 (needs sensor-android task 4 and event-ingest task 2)
 
-- [ ] 1. Amend shared types: add optional `source` to `SensorEvent` and the ingest wire schema and its strict allow-list; add `mode` to charge sessions in the sensor data model doc. Update golden fixtures.
+- [ ] 1. (deferred, ADR 0034) Amend shared types: add optional `source` to `SensorEvent` and the ingest wire schema and its strict allow-list; add `mode` to charge sessions in the sensor data model doc. Update golden fixtures.
   - Depends on: `sensor-android` task 2, `event-ingest` task 2
   - Requirements: R3.4, R6.3
 
@@ -46,7 +46,7 @@ This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (tas
 
 ## Wave 6
 
-- [ ] 8. Update `docs/traceability.md` (T1 to T7), `docs/kiro-log.md`, `docs/probe-checklist.md` (Station section: unplug at 100%, Doze, OEMs, boot), and `apps/android/README.md`.
+- [x] 8. Update `docs/traceability.md` (T1 to T7), `docs/kiro-log.md`, `docs/probe-checklist.md` (Station section: unplug at 100%, Doze, OEMs, boot), and `apps/android/README.md`.
   - Depends on: 5, 6, 7
   - Requirements: all
 

@@ -251,22 +251,22 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 <!-- BEGIN GENERATED: detection properties (.kiro/scripts/traceability.mjs) -->
 ## Detection properties P1 to P12 (generated)
 
-Scanned 0 test file(s) under packages/detection. A property counts when a test title names its ID.
+Scanned 15 test file(s) under packages/detection. A property counts when a test title names its ID.
 
 | ID | Test file | Test title | Status |
 |---|---|---|---|
-| P1 | - | - | no tests yet |
-| P2 | - | - | no tests yet |
-| P3 | - | - | no tests yet |
-| P4 | - | - | no tests yet |
-| P5 | - | - | no tests yet |
-| P6 | - | - | no tests yet |
-| P7 | - | - | no tests yet |
-| P8 | - | - | no tests yet |
-| P9 | - | - | no tests yet |
-| P10 | - | - | no tests yet |
-| P11 | - | - | no tests yet |
-| P12 | - | - | no tests yet |
+| P1 | `packages/detection/test/levels.test.ts` | P1_single_unplug_never_alerts | test written |
+| P2 | `packages/detection/test/levels.test.ts` | P2_confirmed_when_k3_p_small | test written |
+| P3 | `packages/detection/test/whole.test.ts` | P3_order_and_delay_independence | test written |
+| P4 | `packages/detection/test/merge.test.ts` | P4_duplicates_change_nothing | test written |
+| P5 | `packages/detection/test/restore.test.ts` | P5_spread_replugs_never_restore | test written |
+| P6 | `packages/detection/test/restore.test.ts` | P6_restore_needs_outage | test written |
+| P7 | `packages/detection/test/levels.test.ts` | P7_more_drops_never_lower | test written |
+| P8 | `packages/detection/test/whole.test.ts` | P8_time_shift_invariance | test written |
+| P9 | `packages/detection/test/merge.test.ts` | P9_simulated_never_counts | test written |
+| P10 | `packages/detection/test/weights.test.ts` | P10_noisy_never_confirms | test written |
+| P11 | `packages/detection/test/levels.test.ts` | P11_sparse_never_confirms | test written |
+| P12 | `packages/detection/test/decisions.test.ts` | P12_no_stale_push | test written |
 <!-- END GENERATED -->
 | R4, R2 (app-map-insights), W7 | M1 | `map.json with an unlisted catalog` (`workers/api/test/map-json.test.ts`) | 1 | test written: unlisted catalog cells are NO_DATA on the map, `/area/<slug>` stays 404 |
 

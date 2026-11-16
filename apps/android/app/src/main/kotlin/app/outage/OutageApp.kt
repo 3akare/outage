@@ -13,7 +13,9 @@ import app.outage.net.UrlConnectionPost
 import app.outage.sensor.Sensor
 import app.outage.shell.PrefsFollowedArea
 import app.outage.shell.ShellGraph
+import app.outage.ui.BatterySetupScreen
 import app.outage.ui.FeatureRegistry
+import app.outage.ui.SensorToggleScreen
 import app.outage.ui.InsightsScreen
 import app.outage.ui.MapScreen
 import java.io.File
@@ -46,8 +48,9 @@ class OutageApp : Application() {
         val onboarding = graph.onboarding
         val io = Executors.newSingleThreadExecutor()
         var upload: UploadDriver? = null
+        val prefs = getSharedPreferences("sensor_switch", MODE_PRIVATE)
         graph.sensorStarter = {
-            io.execute {
+            if (prefs.getBoolean("on", true)) io.execute {
                 val sensor = Sensor.get(this)
                 sensor.start()
                 if (upload == null && BuildConfig.API_BASE.isNotBlank()) {
@@ -56,6 +59,18 @@ class OutageApp : Application() {
                 }
             }
         }
+        graph.features.register("battery", R.string.settings_battery, { BatterySetupScreen() }, null)
+        graph.features.register(
+            "sensor",
+            R.string.settings_sensor,
+            {
+                SensorToggleScreen({ prefs.getBoolean("on", true) }) { on ->
+                    prefs.edit().putBoolean("on", on).apply()
+                    if (on) graph.sensorStarter() else io.execute { Sensor.peek()?.stop() }
+                }
+            },
+            null,
+        )
         graph.sensorState = { Sensor.peek()?.state() }
         graph.deletes.register("sensor") { Sensor.get(this).deleteAllData() }
         if (BuildConfig.API_BASE.isNotBlank()) {

@@ -55,7 +55,7 @@ Stack dependencies already named in the brief (TypeScript, Vitest, fast-check, W
 
 ## Wave 7
 
-- [ ] 11. Update `docs/traceability.md` (I1 to I9), `docs/kiro-log.md`, and `workers/api/README.md` including the exact human step `wrangler secret put INSTALL_TOKEN_SECRET`. Record measured free-tier usage from a local load run.
+- [x] 11. Update `docs/traceability.md` (I1 to I9), `docs/kiro-log.md`, and `workers/api/README.md` including the exact human step `wrangler secret put INSTALL_TOKEN_SECRET`. Record measured free-tier usage from a local load run.
   - Depends on: 10
   - Requirements: all
 
