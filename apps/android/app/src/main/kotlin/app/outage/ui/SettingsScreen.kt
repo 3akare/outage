@@ -43,6 +43,7 @@ object SettingsItems {
         Item("language", R.string.settings_language),
         Item("self_test", R.string.settings_self_test),
         Item("diagnostics", R.string.settings_diagnostics),
+        Item("judge", R.string.demo_try),
     )
 
     fun titleFor(key: String): Int? = (all.firstOrNull { it.key == key })?.titleRes

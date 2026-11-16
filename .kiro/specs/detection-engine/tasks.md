@@ -82,7 +82,7 @@ Kiro IDE is needed for task 15 (Correctness pass). Everything else can run in Ki
 
 ## Wave 8
 
-- [ ] 18. Golden fixture replay harness (empty until the field test produces a fixture), `packages/detection/README.md` final text, `docs/traceability.md` update for P1 to P12 and D1 to D6, `docs/kiro-log.md`.
+- [x] 18. Golden fixture replay harness (empty until the field test produces a fixture), `packages/detection/README.md` final text, `docs/traceability.md` update for P1 to P12 and D1 to D6, `docs/kiro-log.md`.
   - Depends on: 15, 16, 17
   - Requirements: R17
 

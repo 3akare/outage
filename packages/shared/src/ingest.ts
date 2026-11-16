@@ -7,6 +7,9 @@ export const MAX_ELAPSED_MS = 604_800_000; // 7 days (brief, event-time.md)
 
 export const STATE_TYPES = ['ARMED', 'DISARMED'] as const;
 export const DETECTION_TYPES = ['UNPLUG', 'BATTERY_FULL', 'REPLUG', 'LABEL', 'REPORT'] as const;
+/** home-watch R3: the `reason` of a DISARMED heartbeat sent while a station is on battery. Proof of life only. */
+export const HEARTBEAT_ON_BATTERY = 'HEARTBEAT_ON_BATTERY';
+
 export const EVENT_TYPES = ['ARMED', 'UNPLUG', 'BATTERY_FULL', 'REPLUG', 'DISARMED', 'LABEL', 'REPORT'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 export type StateType = (typeof STATE_TYPES)[number];

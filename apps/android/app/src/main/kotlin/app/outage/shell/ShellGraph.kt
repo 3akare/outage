@@ -20,6 +20,10 @@ class ShellGraph(context: Context) {
     /** Set by the sensor feature. Called after first run and on each app resume once set up. */
     var sensorStarter: () -> Unit = {}
 
+    /** Set by the shell while it is shown, so a feature screen can open another feature or go back. */
+    var openFeature: (String) -> Unit = {}
+    var goBack: () -> Unit = {}
+
     /** Set by the sensor feature; Home shows it (app-shell R2.1). */
     var sensorState: () -> SensorState? = { null }
 

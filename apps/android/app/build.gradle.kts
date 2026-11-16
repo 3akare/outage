@@ -31,6 +31,24 @@ abstract class CopyOemGuide : DefaultTask() {
     }
 }
 
+// demo-mode R7.2: the app ships the same replay file the Worker serves (`@outage/shared/fixtures/replay.json`), copied
+// at build time so there is one copy in git. DM7 checks the source path.
+abstract class CopyReplay : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val replay: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun copy() {
+        val out = outputDir.get().asFile
+        out.mkdirs()
+        replay.get().asFile.copyTo(File(out, "replay.json"), overwrite = true)
+    }
+}
+
 android {
     namespace = "app.outage"
     compileSdk = 36
@@ -74,6 +92,10 @@ androidComponents {
             guide.set(layout.projectDirectory.file("../../../packages/shared/src/oem-guide.json"))
         }
         variant.sources.assets?.addGeneratedSourceDirectory(copyGuide, CopyOemGuide::outputDir)
+        val copyReplay = tasks.register<CopyReplay>("copyReplay" + variant.name.replaceFirstChar { it.uppercase() }) {
+            replay.set(layout.projectDirectory.file("../../../packages/shared/fixtures/replay.json"))
+        }
+        variant.sources.assets?.addGeneratedSourceDirectory(copyReplay, CopyReplay::outputDir)
     }
 }
 

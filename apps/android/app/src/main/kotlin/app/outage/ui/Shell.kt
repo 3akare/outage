@@ -3,6 +3,7 @@ package app.outage.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -50,10 +52,15 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
     val stack = shell.stack
     val current = shell.current
     BackHandler(enabled = stack.size > 1) { shell.back() }
+    SideEffect {
+        graph.openFeature = { key -> shell.go(Route.Feature(key)) }
+        graph.goBack = { shell.back() }
+    }
 
     Scaffold(
         bottomBar = {
-            if (current != Route.Onboarding) {
+            // No dock before first run is done, also while Judge mode is open on top of it (demo-mode R1.2).
+            if (Route.Onboarding !in stack) {
                 val selected = stack.lastOrNull { r -> tabs.any { it.route == r } } ?: Route.Home
                 NavigationBar {
                     tabs.forEach { tab ->
@@ -79,15 +86,22 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
         Box(Modifier.fillMaxSize().padding(padding)) {
             val back: () -> Unit = { shell.back() }
             when (current) {
-                Route.Onboarding -> FirstRunScreen(onOk = { if (graph.completeFirstRun(System.currentTimeMillis())) shell.onboardingDone() })
+                Route.Onboarding -> FirstRunScreen(
+                    onOk = { if (graph.completeFirstRun(System.currentTimeMillis())) shell.onboardingDone() },
+                    onTryJudge = { shell.go(Route.Feature(FeatureRegistry.JUDGE)) },
+                )
                 Route.Home -> HomeScreen(
                     home, homeScroll,
                     onOpenAlarm = { shell.go(Route.Feature(FeatureRegistry.ALARM)) },
                     onOpenSetup = { key -> shell.go(Route.Feature(key)) },
                     hero = {
                         // The hex map is the first thing on Home. A fixed height keeps it inside the scrolling feed.
-                        Box(Modifier.fillMaxWidth().height(HERO_HEIGHT)) {
-                            graph.features.get(FeatureRegistry.AREA)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_home, null)
+                        Column {
+                            Box(Modifier.fillMaxWidth().height(HERO_HEIGHT)) {
+                                graph.features.get(FeatureRegistry.AREA)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_home, null)
+                            }
+                            // Home Watch card under the map, only when a home is paired (home-watch R4).
+                            graph.features.get(FeatureRegistry.HOME_CARD)?.screen?.invoke()
                         }
                     },
                 )

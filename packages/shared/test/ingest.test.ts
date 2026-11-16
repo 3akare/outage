@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import armed from '../fixtures/ingest/event-armed.json';
 import batteryFull from '../fixtures/ingest/event-battery-full.json';
 import disarmed from '../fixtures/ingest/event-disarmed.json';
+import heartbeatOnBattery from '../fixtures/ingest/event-heartbeat-battery.json';
 import label from '../fixtures/ingest/event-label.json';
 import replug from '../fixtures/ingest/event-replug.json';
 import request from '../fixtures/ingest/events-request.json';
@@ -21,7 +22,7 @@ const ALLOWED = new Set([
 
 describe('R1 contract fixtures', () => {
   it('R1.4 every fixture event validates and round-trips unchanged', () => {
-    for (const ev of [armed, disarmed, unplug, batteryFull, replug, label]) {
+    for (const ev of [armed, disarmed, heartbeatOnBattery, unplug, batteryFull, replug, label]) {
       const r = validateEvent(ev, INSTALL);
       expect(r).toEqual({ ok: true, event: ev });
     }

@@ -1,6 +1,14 @@
 package app.outage
 
 import android.app.Application
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import app.outage.home.HomeApi
+import app.outage.home.HomeCredentials
+import app.outage.home.HomeWatchModel
+import app.outage.home.PrefsPairBook
+import app.outage.home.UrlConnectionHomeHttp
 import app.outage.freezer.AndroidFreezerAlarms
 import app.outage.freezer.FreezerGuard
 import app.outage.insights.InsightsSources
@@ -36,16 +44,20 @@ import app.outage.net.PrefsCredentials
 import app.outage.net.UploadDriver
 import app.outage.net.UrlConnectionPost
 import app.outage.sensor.Sensor
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import app.outage.shell.PrefsFollowedArea
 import app.outage.shell.ShellGraph
 import app.outage.ui.BatterySetupScreen
+import app.outage.ui.DemoViewModel
+import app.outage.ui.FeatureRegistry
+import app.outage.ui.JudgeScreen
+import app.outage.ui.loadReplayAsset
+import app.outage.ui.HomeWatchCard
+import app.outage.ui.HomeWatchScreen
+import app.outage.ui.HomeWatchViewModel
+import app.outage.ui.StationPairScreen
 import app.outage.telemetry.PrefsTelemetryConsent
 import app.outage.telemetry.TelemetryDriver
 import app.outage.ui.DiagnosticsScreen
-import app.outage.ui.FeatureRegistry
 import app.outage.ui.FreezerScreen
 import app.outage.ui.SensorToggleScreen
 import app.outage.ui.InsightsScreen
@@ -71,6 +83,8 @@ class OutageApp : Application() {
         registerPowerLog()
         registerMapAndInsights()
         registerSensor()
+        registerHomeWatch()
+        registerJudgeMode()
         registerAlarmAndSpot()
         // A server delete that failed earlier is retried here, off the main thread (R5.3). After registerSensor,
         // which registers the server half.
@@ -179,9 +193,72 @@ class OutageApp : Application() {
                 val id = credentials.installId()
                 val token = credentials.token()
                 if (id == null || token == null) true
-                else api.delete(id, token, credentials.cells()).also { ok -> if (ok) credentials.clear() }
+                else api.delete(id, token, credentials.cells(), pendingDeletePairIds()).also { ok ->
+                    if (ok) {
+                        credentials.clear()
+                        pendingDeleteIds().edit().clear().apply()
+                    }
+                }
             }
         }
+    }
+
+    /** Set by [registerHomeWatch]; the server delete lists its pair ids (home-watch R7.4). */
+    /**
+     * Judge mode (demo-mode task 6): reads only the bundled replay asset, writes nothing, so it has no delete function.
+     * Opens from the first screen and from Settings.
+     */
+    private fun registerJudgeMode() {
+        graph.features.register(FeatureRegistry.JUDGE, R.string.demo_home_title, {
+            val vm: DemoViewModel = viewModel(factory = viewModelFactory { initializer { DemoViewModel({ loadReplayAsset(this@OutageApp) }) } })
+            JudgeScreen(vm, onLeave = { graph.goBack() })
+        }, null)
+    }
+
+    /** Pair ids kept on disk until the server delete succeeds, so a retry after a restart still cleans the station shards (review issue 1). */
+    private fun pendingDeleteIds() = getSharedPreferences("home_watch_pending_delete", MODE_PRIVATE)
+
+    private fun pendingDeletePairIds(): List<String> = pendingDeleteIds().getStringSet("ids", emptySet()).orEmpty().toList()
+
+    /**
+     * Home Watch (home-watch task 8): viewer screen in Settings > Home Watch, station screen in Settings > Station mode,
+     * and a card on Home. Pairing needs the Worker; without an address the screens say so (ADR 0024).
+     */
+    private fun registerHomeWatch() {
+        val credentials = PrefsCredentials(this)
+        val book = PrefsPairBook(this)
+        val api = BuildConfig.API_BASE.takeIf { it.isNotBlank() }?.let { HomeApi(it, UrlConnectionHomeHttp) }
+        val model = HomeWatchModel(
+            api = api,
+            credentials = object : HomeCredentials {
+                override fun installId() = credentials.installId()
+                override fun token() = credentials.token()
+            },
+            book = book,
+            cell = { graph.onboarding.load()?.cell },
+            nowMs = System::currentTimeMillis,
+            tzOffsetMin = { java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 60_000 },
+        )
+        val vm: @androidx.compose.runtime.Composable () -> HomeWatchViewModel = {
+            viewModel(
+                factory = viewModelFactory { initializer { HomeWatchViewModel(model) } },
+            )
+        }
+        graph.features.register(
+            FeatureRegistry.HOME_WATCH,
+            R.string.settings_home_watch,
+            { HomeWatchScreen(vm(), onBack = { graph.goBack() }, onOpenStation = { graph.openFeature(FeatureRegistry.STATION) }) },
+            // The phone side runs before the server call (app-shell R5), so keep the ids on disk until the server call succeeds.
+            {
+                val ids = model.pairIdsForDelete().toSet() + pendingDeletePairIds()
+                pendingDeleteIds().edit().putStringSet("ids", ids).commit()
+                book.clear()
+            },
+        )
+        graph.features.register(FeatureRegistry.STATION, R.string.settings_station, { StationPairScreen(vm(), onBack = { graph.goBack() }) }, null)
+        graph.features.register(FeatureRegistry.HOME_CARD, R.string.settings_home_watch, {
+            HomeWatchCard(vm(), onOpen = { graph.openFeature(FeatureRegistry.HOME_WATCH) })
+        }, null)
     }
 
     /**

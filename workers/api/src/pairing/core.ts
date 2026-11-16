@@ -3,6 +3,7 @@
 import { decideClaim, MAX_VIEWERS_PER_STATION, OFFER_TTL_MS } from '@outage/shared';
 import { admit, type Bucket, newBucket } from '../ingest/bucket.ts';
 import type { Tunables } from '../config.ts';
+import type { HomeStore } from '../home/core.ts';
 
 export interface OfferRow {
   key: string;
@@ -10,6 +11,8 @@ export interface OfferRow {
   stationInstall: string;
   expiresMs: number;
   attempts: number;
+  /** The station's res-8 cell, if it sent one (ADR 0044). Used once at claim time. Absent without a cell. */
+  stationCell?: string;
 }
 export interface PairRow {
   pairId: string;
@@ -21,8 +24,10 @@ export interface PairRow {
   tzOffsetMin: number;
   stationName: string | null;
   createdMs: number;
+  /** When FCM first said the viewer's token is dead, else null. Pushes stop; after 7 days the pair is removed (design 9). */
+  pushFailedMs: number | null;
 }
-export interface PairStore {
+export interface PairStore extends HomeStore {
   getOffer(key: string): OfferRow | undefined;
   putOffer(row: OfferRow): void;
   deleteOffer(key: string): number;
@@ -44,12 +49,14 @@ export type OfferResult =
   | { status: 'key_taken' }
   | { status: 'full' }
   | { status: 'limited'; retryAfterMs: number };
-export type ClaimResult = { status: 'ok'; pairId: string } | { status: 'fail' } | { status: 'full' } | { status: 'limited'; retryAfterMs: number };
+/** On success the Worker also learns the station, to tell its area actor to forward its events. Neither goes to the viewer. */
+export type ClaimResult = { status: 'ok'; pairId: string; stationInstall: string; stationCell: string | null } | { status: 'fail' } | { status: 'full' } | { status: 'limited'; retryAfterMs: number };
 
 export interface OfferInput {
   key: string;
   codeHash: string;
   stationInstall: string;
+  stationCell?: string;
   nowMs: number;
 }
 export interface ClaimInput {
@@ -100,7 +107,14 @@ export class PairingCore {
     if (taken && taken.stationInstall !== i.stationInstall) return { status: 'key_taken' };
     this.store.deleteOffersOfStation(i.stationInstall); // one live offer per station
     const expiresMs = i.nowMs + OFFER_TTL_MS; // R1.2
-    this.store.putOffer({ key: i.key, codeHash: i.codeHash, stationInstall: i.stationInstall, expiresMs, attempts: 0 });
+    this.store.putOffer({
+      key: i.key,
+      codeHash: i.codeHash,
+      stationInstall: i.stationInstall,
+      expiresMs,
+      attempts: 0,
+      ...(i.stationCell ? { stationCell: i.stationCell } : {}),
+    });
     return { status: 'ok', expiresAtMs: expiresMs };
   }
 
@@ -132,9 +146,10 @@ export class PairingCore {
       tzOffsetMin: i.tzOffsetMin,
       stationName: i.stationName,
       createdMs: i.nowMs,
+      pushFailedMs: null,
     });
     this.store.deleteOffer(i.key); // one successful claim (R1.2)
-    return { status: 'ok', pairId: i.pairId };
+    return { status: 'ok', pairId: i.pairId, stationInstall: station, stationCell: (offer as OfferRow).stationCell ?? null };
   }
 
   /** R1.10: either side may remove a pair; the row holds the push token, so the token goes with it. Anyone else gets false. */

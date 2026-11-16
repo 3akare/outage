@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -84,7 +85,7 @@ fun AboutScreen(onBack: () -> Unit) {
  * requires it. Nothing else blocks the first look: area, battery and Home Watch wait as cards on Home and in Settings.
  */
 @Composable
-fun FirstRunScreen(onOk: () -> Unit) {
+fun FirstRunScreen(onOk: () -> Unit, onTryJudge: (() -> Unit)? = null) {
     // https://developer.android.com/training/permissions/requesting (POST_NOTIFICATIONS is a runtime permission from API 33)
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { onOk() }
     Column(
@@ -98,5 +99,12 @@ fun FirstRunScreen(onOk: () -> Unit) {
             onClick = { if (Build.VERSION.SDK_INT >= 33) ask.launch(Manifest.permission.POST_NOTIFICATIONS) else onOk() },
             modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
         ) { Text(stringResource(R.string.first_run_ok)) }
+        // demo-mode R1.1, R1.2: Judge mode from the first screen, with no consent, permission or network.
+        if (onTryJudge != null) {
+            OutlinedButton(onClick = onTryJudge, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                Text(stringResource(R.string.demo_try))
+            }
+            Text(stringResource(R.string.demo_try_body), style = MaterialTheme.typography.bodySmall)
+        }
     }
 }

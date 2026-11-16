@@ -59,7 +59,7 @@ docs/                Decisions (adr/), logs, status, traceability, probe results
 | Ingest rate limits and batch sizes | `workers/api/src/config.ts` |
 | The wire format between phone and Worker | `packages/shared/src/ingest.ts`, then `apps/android/.../net/Wire.kt` and the fixtures in `packages/shared/fixtures/ingest/` |
 | The list of Lagos areas | `workers/api/src/web/catalog/catalog.source.json`, then run `generate.mjs` |
-| Web colours and layout | `workers/api/src/web/app/design.ts`; the Android copy of the tokens is `apps/android/.../ui/Tokens.kt` (ADR 0028) |
+| Web colours and layout | `workers/api/src/web/app/design.ts`; tokens come from `packages/shared/design/tokens.json` through `tools/tokens/build.mjs` (ADR 0028) |
 | UI words on the phone | `apps/android/app/src/main/res/values/strings.xml` (Pidgin in `values-pcm/`) |
 | UI words on the website state labels | `workers/api/src/web/site/strings.ts` |
 | The OEM battery steps | `packages/shared/src/oem-guide.json` (the Android build copies it into assets) |
@@ -116,13 +116,20 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/gradlew.bat` | Gradle wrapper script (Windows) |
 | `apps/android/gradle/wrapper/gradle-wrapper.jar` | Gradle wrapper binary |
 | `apps/android/gradle/wrapper/gradle-wrapper.properties` | Gradle version the wrapper downloads |
-| `apps/android/app/build.gradle.kts` | App module: SDK levels, Compose, the `API_BASE` build field, the task that copies `oem-guide.json` into assets, dependencies |
+| `apps/android/app/build.gradle.kts` | App module: SDK levels, Compose, the `API_BASE` build field, the tasks that copy `oem-guide.json` and `replay.json` into assets, dependencies |
 | `apps/android/app/src/main/AndroidManifest.xml` | Activity, application class and permissions |
 | `apps/android/app/src/main/assets/bands.json` | Tariff bands and their promised hours (power log, ADR 0020) |
 | `apps/android/app/src/main/kotlin/app/outage/MainActivity.kt` | The only Activity; hosts the Compose UI |
 | `apps/android/app/src/main/kotlin/app/outage/OutageApp.kt` | Application class: builds the shell graph and chooses real or demo map and insights sources |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmState.kt` | Light Alarm state shown on Home |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/StringPackCheck.kt` | Checks a string pack has every alarm string |
+| `apps/android/app/src/main/kotlin/app/outage/demo/ReplayFile.kt` | Judge mode: the replay file model and its loader, which refuses anything not labelled simulated |
+| `apps/android/app/src/main/kotlin/app/outage/demo/ReplayPlayer.kt` | Judge mode recorded replay: play, pause, restart, speed, gaps squeezed like the web player |
+| `apps/android/app/src/main/kotlin/app/outage/demo/JudgeFlow.kt` | Judge mode page, charger, demo prompt and demo alarm logic (pure) |
+| `apps/android/app/src/main/kotlin/app/outage/demo/DemoSession.kt` | Judge mode "Unplug your own phone": plays the unplug track on an injected clock, no engine |
+| `apps/android/app/src/main/kotlin/app/outage/home/HomeWatch.kt` | Home Watch on the phone: viewer API shapes, card wording, pairing calls (no state is derived on the phone) |
+| `apps/android/app/src/main/kotlin/app/outage/home/HomeWatchModel.kt` | Home Watch screen logic: claim, offer, refresh with cache, station pair list, remove |
+| `apps/android/app/src/main/kotlin/app/outage/home/HomeWatchAndroid.kt` | Home Watch pair list in SharedPreferences and the HTTP client |
 | `apps/android/app/src/main/kotlin/app/outage/freezer/FreezerGuard.kt` | Freezer Guard settings, pure rules (plan, alert, quiet hours) and the scheduler over the timeline |
 | `apps/android/app/src/main/kotlin/app/outage/freezer/FreezerAndroid.kt` | AlarmManager alarms, the receiver and the notification for Freezer Guard |
 | `apps/android/app/src/main/kotlin/app/outage/ui/DiagnosticsScreen.kt` | Settings switch for the anonymous diagnostics upload |
@@ -205,6 +212,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorState.kt` | Why the sensor is or is not armed |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorStateMachine.kt` | The sensor state machine (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SqliteEventStore.kt` | The outbox on SQLite |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/PlugObserver.kt` | Foreground plug observer and the in-process `DemoFlag` (sensor-android R13) |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/Telemetry.kt` | Armed time, charging time and gaps from the event log (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/shell/Connectivity.kt` | Whether the phone has a working network |
 | `apps/android/app/src/main/kotlin/app/outage/shell/DeleteRegistry.kt` | Delete-my-data: every feature registers its phone-side delete |
@@ -223,6 +231,9 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/ui/FeatureRegistry.kt` | Where features plug their screens into the shell |
 | `apps/android/app/src/main/kotlin/app/outage/ui/Fmt.kt` | Time and duration text |
 | `apps/android/app/src/main/kotlin/app/outage/ui/HomeScreen.kt` | Home tab: map and feed |
+| `apps/android/app/src/main/kotlin/app/outage/ui/DemoReplayScreen.kt` | Judge mode replay screen and the shared demo parts: banner, step tracker, phone dots, explanation card |
+| `apps/android/app/src/main/kotlin/app/outage/ui/DemoScreens.kt` | Judge mode: `DemoViewModel`, Judge home, Unplug your phone with the demo prompt and alarm, How it works |
+| `apps/android/app/src/main/kotlin/app/outage/ui/HomeWatchScreens.kt` | Home Watch: viewer screen, station pairing screen, Home card, `HomeWatchViewModel` |
 | `apps/android/app/src/main/kotlin/app/outage/ui/HomeViewModel.kt` | Builds `HomeUiState` from the status sources |
 | `apps/android/app/src/main/kotlin/app/outage/ui/InsightsScreen.kt` | Insights tab: charts of your own power |
 | `apps/android/app/src/main/kotlin/app/outage/ui/MapPalette.kt` | Map colours (same as the web map) |
@@ -233,7 +244,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/ui/ShellViewModel.kt` | Keeps the router across rotation |
 | `apps/android/app/src/main/kotlin/app/outage/ui/StatusRes.kt` | Maps shell states to resource IDs |
 | `apps/android/app/src/main/kotlin/app/outage/ui/Theme.kt` | Material 3 colour schemes |
-| `apps/android/app/src/main/kotlin/app/outage/ui/Tokens.kt` | Design tokens (same values as the web, ADR 0028) |
+| `apps/android/app/src/main/kotlin/app/outage/ui/Tokens.kt` | Design tokens, generated by `tools/tokens/build.mjs` (ADR 0028) |
 | `apps/android/app/src/main/kotlin/app/outage/ui/charts/BarChart.kt` | Hours-of-power bars with the promise line |
 | `apps/android/app/src/main/kotlin/app/outage/ui/charts/Heatmap.kt` | Weekday by hour outage heatmap |
 | `apps/android/app/src/main/kotlin/app/outage/ui/charts/LineChart.kt` | Trend line with gaps for missing weeks |
@@ -247,6 +258,11 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/res/values/themes.xml` | Light app theme |
 | `apps/android/app/src/main/res/values-night/themes.xml` | Dark app theme |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt` | Alarm strings exist in every pack |
+| `apps/android/app/src/test/kotlin/app/outage/demo/DemoSessionTest.kt` | Judge mode session on the committed replay file (DM1, DM5, R4) |
+| `apps/android/app/src/test/kotlin/app/outage/demo/ReplayPlayerTest.kt` | Replay player controls and the app copy of `replay.json` (R3, DM7) |
+| `apps/android/app/src/test/kotlin/app/outage/demo/JudgeFlowTest.kt` | Judge mode screen logic: real and simulated unplug, prompt, alarm, leave (R1, R4) |
+| `apps/android/app/src/test/kotlin/app/outage/demo/DemoArchitectureTest.kt` | The demo package imports nothing that can write real data (DM3) |
+| `apps/android/app/src/test/kotlin/app/outage/home/HomeWatchTest.kt` | Home Watch screen logic against the shared home fixture (R1, R4, H5, H8) |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmAdaptersTest.kt` | Alarm path has no network (L3), channel config (L11), core glue |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt` | AlarmPolicy properties L1, L2, L4, L9, L10 |
 | `apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt` | Insights numbers (IN1 to IN6) |
@@ -262,6 +278,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingTestSupport.kt` | In-memory onboarding store for tests |
 | `apps/android/app/src/test/kotlin/app/outage/sensor/SelfTestAndLabelTest.kt` | Self-test isolation (O6) and LABEL queueing |
 | `apps/android/app/src/test/kotlin/app/outage/sensor/SensorControllerTest.kt` | Sensor engine against fake adapters (S7, R2, R10, R11, R12) |
+| `apps/android/app/src/test/kotlin/app/outage/sensor/PlugObserverTest.kt` | Plug change filter and demo flag (R13) |
 | `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt` | Decision table and state machine (S1 to S8, T1 to T7) |
 | `apps/android/app/src/test/kotlin/app/outage/shell/DeleteRegistryTest.kt` | Delete-my-data registry (AS6) |
 | `apps/android/app/src/test/kotlin/app/outage/shell/HomeReducerTest.kt` | Home state reduction (AS5) |
@@ -318,6 +335,11 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/src/pairing/core.ts` | Pairing offers, claims and removals |
 | `workers/api/src/pairing/store.ts` | SQLite tables of one pairing shard |
 | `workers/api/src/pairing/hash.ts` | HMAC of a pairing code |
+| `workers/api/src/home/core.ts` | Home Watch core of one pairing shard: station state, silence, push, viewer view |
+| `workers/api/src/home/planner.ts` | Home push planner (pure): texts, channel, age rule, sent memory |
+| `workers/api/src/home/wake.ts` | Single-alarm planning shared by offer expiry, station silence and retries |
+| `workers/api/src/home/forward.ts` | Area actor's watch list and forwarding of a station's events to its shard |
+| `workers/api/src/home/cache.ts` | 10-second per-pair cache of the viewer's home view |
 | `workers/api/src/registry/actor.ts` | `RegistryActor`: revoked installs and daily usage counters |
 | `workers/api/src/registry/revocation.ts` | Revocation cache kept in a Worker isolate |
 | `workers/api/src/telemetry/actor.ts` | `TelemetryActor`: field-test device-days, outage and miss records |
@@ -372,6 +394,9 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/test/area-scope.test.ts` | Scope selection (A1 to A3) |
 | `workers/api/test/area-view.test.ts` | Public view whitelist (A8) |
 | `workers/api/test/pairing.test.ts` | Home Watch pairing |
+| `workers/api/test/home-watch.test.ts` | Home Watch: state, alarm multiplexer, push, viewer API, delete (H6, H7, H8 state parts) |
+| `workers/api/test/home-sql.test.ts` | Home Watch store and core on real SQLite, old-schema upgrade |
+| `workers/api/test/home-heartbeat.test.ts` | Battery heartbeat is proof of life only (H3, Worker side) |
 | `workers/api/test/telemetry.test.ts` | Telemetry endpoints and store |
 | `workers/api/test/telemetry-store.ts` | In-memory telemetry store for tests |
 | `workers/api/test/telemetry-integration.test.ts` | Telemetry actor in the local Workers runtime |
@@ -442,6 +467,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `packages/shared/src/map.ts` | `/api/map.json` types |
 | `packages/shared/src/follow.ts` | Follow and unfollow request shapes |
 | `packages/shared/src/pairing.ts` | Home Watch code alphabet, shard and request shapes |
+| `packages/shared/src/home.ts` | Home Watch pure station state and event window |
 | `packages/shared/src/sensor.ts` | Sensor event, telemetry and diagnostics types |
 | `packages/shared/src/device-day.ts` | Field telemetry device-day schema |
 | `packages/shared/src/field-dump.ts` | Shape of the admin field endpoint's answer |
@@ -450,8 +476,17 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `packages/shared/src/oem-guide.json` | Per-maker battery steps (the one copy; Android copies it at build) |
 | `packages/shared/fixtures/ingest/` | Contract fixtures for each event type, request and response (read by Vitest and JUnit) |
 | `packages/shared/fixtures/map/map.json` | Contract fixture for `/api/map.json` |
+| `packages/shared/design/tokens.json` | Design token source for web and app (ADR 0028) |
+| `packages/shared/design/tokens.css` | Generated CSS variables from tokens.json |
+| `workers/api/src/web/app/tokens.gen.ts` | Generated token strings used by design.ts |
+| `tools/tokens/build.mjs` | Generator for tokens.css, tokens.gen.ts and Tokens.kt (`--check` finds stale files) |
+| `.kiro/scripts/test/tokens.test.mjs` | UX3: tokens.json, CSS and Kotlin agree |
+| `packages/detection/fixtures/README.md` | Golden fixture format |
+| `packages/detection/test/golden.test.ts` | Replays each golden fixture and compares decisions |
 | `packages/shared/fixtures/replay.json` | Simulated replay played by `/app/simulate` (built by `tools/sim`) |
 | `packages/shared/fixtures/sensor/sensor-events.json` | Sensor event fixture read by TypeScript and Kotlin tests |
+| `packages/shared/fixtures/home/home-response.json` | Viewer API response shapes, one per status |
+| `packages/shared/fixtures/ingest/event-heartbeat-battery.json` | Wire fixture: DISARMED with reason HEARTBEAT_ON_BATTERY |
 | `packages/shared/fixtures/telemetry/` | Device-day fixtures: valid, station and invalid |
 | `packages/shared/test/arbs.ts` | fast-check arbitraries |
 | `packages/shared/test/runs.ts` | fast-check run count |
@@ -463,6 +498,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `packages/shared/test/ingest.test.ts` | Ingest validator |
 | `packages/shared/test/follow.test.ts` | Follow request schema |
 | `packages/shared/test/pairing.test.ts` | Pairing shapes |
+| `packages/shared/test/home.test.ts` | HomeState and station window, H1 to H4 |
 | `packages/shared/test/sensor.test.ts` | Sensor event shape |
 | `packages/shared/test/scaffold.test.ts` | Schema version |
 
@@ -475,8 +511,10 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `tools/sim/scripts/build-replay.mjs` | Writes `packages/shared/fixtures/replay.json` through the real engine |
 | `tools/sim/src/fixture.ts` | Synthetic outage fixture |
 | `tools/sim/src/replay.ts` | Replay builder |
+| `tools/sim/src/home-scenario.ts` | Home Watch scenario: router down, late reconnect, through the shared `homeState` |
 | `tools/sim/src/sanitize.ts` | Strips IDs, dates and cells from fixtures |
 | `tools/sim/src/scenario.ts` | "Unplug your own phone" scenario |
+| `tools/sim/test/home-scenario.test.ts` | Router-down scenario never shows OFF from silence and corrects on reconnect (H1, H2) |
 | `tools/sim/test/outage30.test.ts` | A 30-phone outage confirms within 10 s |
 | `tools/sim/test/replay.test.ts` | Replay builder against an independent reference |
 | `tools/sim/test/runs.ts` | fast-check run count |
@@ -722,5 +760,5 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `docs/probe/2026-11-15-samsung-b.md` | Probe result: Samsung phone, second run (probe v0.0.2) |
 | `docs/probe/2026-11-15-samsung-b.json` | Raw numbers behind the second Samsung result |
 | `docs/wip/detection-engine-notes.md` | Working notes for the detection engine |
-| `docs/adr/` | Architecture decision records 0001 to 0043, one decision each (context, decision, alternatives, consequences) |
+| `docs/adr/` | Architecture decision records 0001 to 0046, one decision each (context, decision, alternatives, consequences) |
 | `docs/visual/` | Website screenshots written by `workers/api/visual/check.mjs` (390 x 844 and `-desktop` 1280 x 800) |

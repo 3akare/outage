@@ -1,13 +1,7 @@
 // One stylesheet for the landing page and the app replica (ux-redesign task 2, ADR 0027 and 0028).
 // Served from the same origin at /app.css, so the CSP needs no inline style for these pages.
-// Tokens below follow ADR 0028. The generated tokens.css from tools/tokens is a later task; until then these are the source.
-
-const TOKENS_DARK =
-  '--bg:#0f141b;--raised:#171e27;--raised2:#1e2733;--line:#2b3340;--text:#eef2f6;--muted:#9aa7b5;--accent:#fff;' +
-  '--normal:#3ddc97;--possible:#ffc857;--confirmed:#ff5a5f;--restored:#5ab0ff;--nodata:#3a4554;--primary:#3ddc97;--on-primary:#06210f;';
-const TOKENS_LIGHT =
-  '--bg:#f3f6f9;--raised:#fff;--raised2:#eaeff4;--line:#d5dde6;--text:#11181f;--muted:#4f5c69;--accent:#11181f;' +
-  '--normal:#13935a;--possible:#b87900;--confirmed:#d03238;--restored:#2575c9;--nodata:#aab6c3;--primary:#0f7a4a;--on-primary:#fff;';
+// Tokens come from packages/shared/design/tokens.json via tools/tokens/build.mjs (ADR 0028).
+import { TOKENS_DARK, TOKENS_LIGHT } from './tokens.gen.ts';
 
 const CSS = `
 :root{${TOKENS_DARK}color-scheme:dark}

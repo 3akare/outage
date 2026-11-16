@@ -6,7 +6,11 @@ import { bump, type Counters, dayOf, shouldShed } from '../ingest/budget.ts';
 import type { Tunables } from '../config.ts';
 import type { DetectionPort, IngestedItem } from '../ingest/ports.ts';
 import { SeqWindow } from '../ingest/seqwindow.ts';
-import { isStateType, type EventType, type RejectCode } from '@outage/shared';
+import { HEARTBEAT_ON_BATTERY, isStateType, type EventType, type RejectCode } from '@outage/shared';
+
+/** home-watch R3.2, R3.3: a DISARMED with this reason is proof of life only. It never changes the armed flag and never reaches the engine. */
+export const isBatteryHeartbeat = (ev: Pick<AreaEvent, 'type' | 'reason'>): boolean =>
+  ev.type === 'DISARMED' && ev.reason === HEARTBEAT_ON_BATTERY;
 
 /** One validated event for this actor, as the Worker hands it over. */
 export interface AreaEvent {
@@ -19,6 +23,8 @@ export interface AreaEvent {
   schedulingDelayMs: number | null;
   refSeq?: number;
   answer?: 'YES' | 'NO';
+  /** Only `HEARTBEAT_ON_BATTERY` is carried (home-watch R3). Every other reason stays at the Worker edge. */
+  reason?: string;
 }
 export interface AreaIngestInput {
   parent: string;
@@ -151,6 +157,17 @@ export class AreaCore {
     const items: IngestedItem[] = [];
     for (const i of admittedIdx) {
       const ev = events[i];
+      if (isBatteryHeartbeat(ev)) {
+        this.window(ev.installId).add(ev.seq);
+        const t = this.installs.get(ev.installId) ?? this.load(ev.installId);
+        if (t) {
+          t.mem = touchSeen(t.mem, receiveTimeMs) ?? t.mem;
+          this.markDirty(ev.installId, receiveTimeMs);
+        }
+        results[i] = { status: 'accepted' };
+        bump(this.pendingCounters, `type.${ev.type}`);
+        continue; // not an armed change, nothing for the engine
+      }
       if (isStateType(ev.type)) {
         this.window(ev.installId).add(ev.seq);
         const t = this.installs.get(ev.installId) ?? this.load(ev.installId);

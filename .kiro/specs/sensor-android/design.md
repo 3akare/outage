@@ -243,6 +243,22 @@ interface SensorController {
 }
 ```
 
+Plug observer and demo flag (R13, added for `demo-mode` task 1):
+
+```kotlin
+// apps/android/app/src/main/kotlin/app/outage/sensor/PlugObserver.kt
+interface PlugObserver {
+    fun start(onChange: (Plug) -> Unit): Boolean  // false when the receiver cannot be registered
+    fun stop()
+}
+object DemoFlag {
+    fun enter(); fun leave(); fun backgrounded(nowMs: Long); fun foregrounded()
+    fun suppressPrompt(nowMs: Long): Boolean       // true while a demo is open, until 30 s in the background
+}
+```
+
+`AndroidPlugObserver` registers a receiver for the sticky `ACTION_BATTERY_CHANGED` in code (it cannot be declared in the manifest) and reads `EXTRA_PLUGGED`. It only reports a change of `Plug`, not every battery level tick.
+
 Kotlin core (pure):
 
 ```kotlin

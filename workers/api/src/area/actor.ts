@@ -20,6 +20,7 @@ import { CONFIG, type Tunables } from '../config.ts';
 import { type Env, REGISTRY_NAME, TELEMETRY_NAME } from '../env.ts';
 import { NoopDetectionPort } from '../ingest/ports.ts';
 import { INDEX_NAME } from '../public-index/core.ts';
+import { forwardable, WatchList } from '../home/forward.ts';
 
 export class AreaActor extends DurableObject<Env> {
   private core: AreaCore;
@@ -27,12 +28,14 @@ export class AreaActor extends DurableObject<Env> {
   private readonly alerts: AlertsCore;
   private readonly fcm: FcmClient;
   private readonly cfg: Tunables;
+  private readonly watch: WatchList;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.cfg = tunables(env);
     const store = new SqlAreaStore(ctx.storage.sql);
     this.alerts = new AlertsCore(new SqlAlertsStore(ctx.storage.sql));
+    this.watch = new WatchList(ctx.storage.sql);
     // The secret is read only here and passed to the client. It is never logged (R8.4, R11.3).
     this.fcm = new FcmClient({ secret: env.FCM_SERVICE_ACCOUNT, fetch: (input, init) => fetch(input, init), now: () => Date.now() });
     this.core = new AreaCore(store, new NoopDetectionPort(), this.cfg);
@@ -53,12 +56,31 @@ export class AreaActor extends DurableObject<Env> {
   /** One RPC per parent per request (R7.2). */
   async ingest(input: AreaIngestInput): Promise<AreaResponse> {
     const res = await this.core.ingest(input);
+    await this.forwardToHome(input, res);
     await this.afterChange(input.receiveTimeMs);
     return res;
   }
 
+  /** Home Watch (ADR 0044): remember that this install is a paired station, so its events are forwarded to its pairing shard. */
+  async watchStation(installId: string, shard: string): Promise<void> {
+    this.watch.add(installId, shard);
+  }
+
+  /** One call per watched station per batch, after our own work and best effort: a failure loses one heartbeat, the next batch repairs it. */
+  private async forwardToHome(input: AreaIngestInput, res: AreaResponse): Promise<void> {
+    const batches = forwardable(this.watch.map, input.events, res.results);
+    await Promise.allSettled(
+      [...batches].map(async ([installId, events]) => {
+        const shard = this.watch.map.get(installId) as string;
+        const needed = await this.env.PAIRING.get(this.env.PAIRING.idFromName(shard)).observe(installId, events, input.receiveTimeMs);
+        if (!needed) this.watch.remove(installId);
+      }),
+    );
+  }
+
   /** R12.1: rows, memory state and every engine state for one install, written at once. Returns rows deleted. */
   async deleteInstall(installId: string): Promise<number> {
+    this.watch.remove(installId);
     const n = this.core.deleteInstall(installId) + this.alerts.deleteInstall(installId); // R10.2: labels, subscriptions, queue, memory
     if (this.model) {
       this.model.deleteInstall(installId, Date.now());

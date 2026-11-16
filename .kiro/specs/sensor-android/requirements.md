@@ -100,6 +100,11 @@ The Sensor does not decide whether an outage happened. It reports facts and its 
 2. WHEN `stop` is called, THE Sensor SHALL cancel the Job and emit a final `DISARMED` with reason `USER_STOPPED`.
 3. IF `start` is called while already started, THEN THE Sensor SHALL do nothing and report the current state.
 
+### R13 Plug observer and demo flag (amended for `demo-mode` task 1)
+1. THE Sensor package SHALL expose a `PlugObserver` that a visible screen can start and stop. WHILE started, it SHALL report each change of plug type (AC, USB, wireless, dock, none) once, from the `ACTION_BATTERY_CHANGED` broadcast, with no Job, no Outbox and no event record.
+2. THE Sensor package SHALL expose a `DemoFlag`, an in-process flag set by the demo session. WHILE it is active, THE app SHALL NOT show the "Power just went?" prompt for real events; real events SHALL still be recorded.
+3. THE `DemoFlag` SHALL turn inactive when the demo screen closes, or when the app has been in the background for more than 30 seconds.
+
 ### R12 Privacy
 1. THE Sensor SHALL NOT use the microphone, accelerometer or location.
 2. WHEN delete-my-data is requested, THE Sensor SHALL erase the Outbox, telemetry and install ID.

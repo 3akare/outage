@@ -127,6 +127,7 @@ describe('H5_pairing_rules: claims (R1.2, R1.4, R1.5, R7.2)', () => {
         tzOffsetMin: 60,
         stationName: 'Home',
         createdMs: NOW,
+        pushFailedMs: null,
       },
     ]);
     expect((await claim(w, code, VIEWER2)).status).toBe(404);
@@ -257,7 +258,7 @@ describe('H5_pairing_rules: limits (R1.6, R1.9)', () => {
     const shard = w.shard(code.slice(0, 2));
     for (let i = 0; i < MAX_VIEWERS_PER_STATION; i++) {
       shard.store.pairs.set(`p${i}`, {
-        pairId: `p${i}`, stationInstall: ID, viewerInstall: `v${i}`, fcmToken: 't', quietStartMin: 0, quietEndMin: 0, tzOffsetMin: 0, stationName: null, createdMs: NOW,
+        pairId: `p${i}`, stationInstall: ID, viewerInstall: `v${i}`, fcmToken: 't', quietStartMin: 0, quietEndMin: 0, tzOffsetMin: 0, stationName: null, createdMs: NOW, pushFailedMs: null,
       });
     }
     const res = await claim(w, code);

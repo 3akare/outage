@@ -21,6 +21,8 @@ export interface FcmOutgoing {
   body: string;
   data: Record<string, string>;
   ttlSeconds: number;
+  /** Android message priority. Default HIGH. Home Watch sends OFFLINE at NORMAL (home-watch R5.7). https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#androidmessagepriority */
+  priority?: 'HIGH' | 'NORMAL';
 }
 
 export type SendResult =
@@ -149,7 +151,7 @@ export class FcmClient implements PushSender {
         token: msg.token,
         notification: { title: msg.title, body: msg.body },
         data: msg.data,
-        android: { priority: 'HIGH', ttl: `${msg.ttlSeconds}s`, notification: { channel_id: msg.channel } },
+        android: { priority: msg.priority ?? 'HIGH', ttl: `${msg.ttlSeconds}s`, notification: { channel_id: msg.channel } },
       },
     });
     for (let attempt = 0; attempt < 2; attempt++) {

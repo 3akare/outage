@@ -42,7 +42,7 @@ export interface Frame {
   tMs: number;
   simulated: true;
   cells: { cell: string; state: ReplayState }[];
-  events: { alias: string; type: string }[];
+  events: { alias: string; type: string; simulated: true }[];
   explanation?: Explanation;
 }
 
@@ -121,7 +121,7 @@ export function buildReplay(fx: Fixture, params: Params = DEFAULT_PARAMS): Repla
       tMs: t,
       simulated: true,
       cells: [{ cell: fx.cell, state: stateOf(out) }],
-      events: fx.events.filter((e) => e.tMs === t).map((e) => ({ alias: e.alias, type: e.type })),
+      events: fx.events.filter((e) => e.tMs === t).map((e) => ({ alias: e.alias, type: e.type, simulated: true as const })), // DM1
     };
     const d = latest(fresh);
     if (d) frame.explanation = d.explanation;

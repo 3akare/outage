@@ -61,7 +61,7 @@ This spec extends `sensor-android`. It adds a second driver for the same state m
 2. THE heartbeat interval SHALL be at most a third of the 30-minute silence limit used by Home Watch, so that at least two heartbeats can be missed before "Station offline" is shown.
 3. WHILE Station mode is enabled, THE Uploader SHALL upload state events at least once per heartbeat interval, overriding the normal maximum wait of `event-ingest` R9.2, and the Worker SHALL treat the heartbeat as a state event that refreshes last-seen time.
 4. THE worst-case time from a station going silent to the server noticing SHALL be below the 30-minute limit used by Home Watch.
-5. WHILE the phone is not on a detection plug, THE Sensor SHALL NOT write heartbeats as `ARMED`.
+5. WHILE the phone is not on a detection plug, THE Sensor SHALL NOT write heartbeats as `ARMED`. Amended by `home-watch` R3.1: on battery after an `UNPLUG`, or on a non-detection plug, it SHALL write a `DISARMED` event with reason `HEARTBEAT_ON_BATTERY` every heartbeat interval instead. That event changes no state and is not a gap.
 
 ### R6 Resilience
 1. IF the system kills the Station service, THEN THE Sensor SHALL ask Android to restart it and SHALL record a `DISARMED` gap with reason `PROCESS_DEATH` as in `sensor-android` R5.3.
