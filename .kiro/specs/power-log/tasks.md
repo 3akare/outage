@@ -20,7 +20,7 @@ Depends on `sensor-android` (task 9), `alerts-and-light-alarm` (tasks 1, 4), `ar
 
 ## Wave 2
 
-- [ ] 4. `TimelineBuilder` (Kotlin, JUnit 4): raw inputs to intervals, rebuild, evidence rules, `UNSURE` ends. Tests PL1, PL2, PL3.
+- [x] 4. `TimelineBuilder` (Kotlin, JUnit 4): raw inputs to intervals, rebuild, evidence rules, `UNSURE` ends. Tests PL1, PL2, PL3.
   - Depends on: 2
   - Requirements: R1, R2, R7.2
 - [ ] 5. Public outage endpoint and the phone-side sync with cache. Tests for empty result when not public.

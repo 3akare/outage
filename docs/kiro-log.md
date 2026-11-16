@@ -655,3 +655,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 feat(log): local log storage [spec:power-log task:2]
 - Second SQLite database `outage_log.db` on `SQLiteOpenHelper` with a step-by-step migration function, `raw_input` and `setting` tables, and a memory twin (ADR 0037). Intervals and day stats are rebuilt, not stored.
 - Gradle unit tests, lint and assembleDebug pass. No new test (human asked for no more tests).
+
+## 2026-11-23 feat(log): TimelineBuilder [spec:power-log task:4]
+- Pure Kotlin rebuild of the timeline from raw inputs: sensor segments, "Yes"/"No" answers, area outages (only for unanswered unplugs), manual "Power is out" and "Power is back", ends at the earliest evidence, `UNSURE` for a REPLUG end after 12 h or a sensor stop. Duplicates and arrival order do not change the result by construction.
+- Not done: tests PL1, PL2, PL3 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
