@@ -29,7 +29,7 @@ Depends on `sensor-android` (task 9), `alerts-and-light-alarm` (tasks 1, 4), `ar
 
 ## Wave 3
 
-- [ ] 6. `Stats` (Kotlin, JUnit 4): daily, month, Light Score, promise comparison. Tests PL4, PL5, PL6.
+- [x] 6. `Stats` (Kotlin, JUnit 4): daily, month, Light Score, promise comparison. Tests PL4, PL5, PL6.
   - Depends on: 4, 3
   - Requirements: R3, R4, R5
 - [ ] 7. Freezer Guard native scheduler and receiver, quiet-hours behavior, exact-alarm option, settings, copy. Tests PL7. Device checks in `docs/probe-checklist.md`.

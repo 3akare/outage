@@ -664,3 +664,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - The Worker endpoint already existed: `GET /api/v1/public/cell/:cell/outages?days=30` in `workers/api/src/web/routes.ts`, with tests in `workers/api/test/web-routes.test.ts` that include the empty result for a cell with no public scope. No new Worker folder was added, so the design's `/v1/public/...` path is served as `/api/v1/public/...`.
 - Phone side: `AreaOutageSync` fetches with `MapHttp`, parses with `MiniJson`, caches the body in a file and replaces the cached `AREA_OUTAGE` inputs. Offline it uses the cache. Only the cell is sent.
 - Gradle unit tests, lint and assembleDebug pass. No new phone test (human asked for no more tests).
+
+## 2026-11-23 feat(log): Stats [spec:power-log task:6]
+- Pure Kotlin daily stats (local midnight, 23 or 25 hour days handled), month list, Light Score (null below 7 qualifying days), promise comparison (null with no band) and its estimate text, which checks it never uses refund, compensation or claim.
+- Not done: tests PL4, PL5, PL6 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.

@@ -289,3 +289,4 @@ Scanned 15 test file(s) under packages/detection. A property counts when a test 
 | R1 | - | local RAW_INPUT store, migrations | power-log 2 | done: code, ADR 0037; no dedicated test yet |
 | R1, R2, R7.2 | PL1, PL2, PL3 | TimelineBuilder | power-log 4 | code done; tests PL1 to PL3 not written |
 | R9 | - | public outage endpoint and phone sync | power-log 5 | done: Worker tests in web-routes.test.ts (empty when not public); phone sync not tested |
+| R3, R4, R5 | PL4, PL5, PL6 | Stats | power-log 6 | code done; tests PL4 to PL6 not written |

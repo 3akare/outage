@@ -133,6 +133,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/log/LogInput.kt` | Power Log raw inputs and their stored JSON payload |
 | `apps/android/app/src/main/kotlin/app/outage/log/LogStore.kt` | Power Log database `outage_log.db` with migrations (ADR 0037) |
 | `apps/android/app/src/main/kotlin/app/outage/log/PowerLog.kt` | Feature keys for the Power Log |
+| `apps/android/app/src/main/kotlin/app/outage/log/Stats.kt` | Daily stats, Light Score and promise check from the timeline (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/log/TimelineBuilder.kt` | Raw inputs to ON, OUT, OFF_CHARGER and UNKNOWN intervals (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/map/AreaMapParser.kt` | Strict reader for `/api/map.json` |
 | `apps/android/app/src/main/kotlin/app/outage/map/AreaMapSource.kt` | Loads the map: network, cache, or the labelled demo map |
