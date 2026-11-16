@@ -89,8 +89,9 @@ fun AreaInsightsScreen(spotArea: String = DemoCity.cells.firstOrNull { it.id == 
             Text(stringResource(R.string.ins_area_sub, r.name), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         // Area picker: the spot's area first, then the rest, as chips you can scroll.
+        val pickerDesc = stringResource(R.string.ins_area_picker)
         Row(
-            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp).semantics { contentDescription = "area" },
+            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp).semantics { contentDescription = pickerDesc },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val ordered = DemoCity.areas.sortedBy { if (it.slug == spotArea) 0 else 1 }

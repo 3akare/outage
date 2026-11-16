@@ -235,11 +235,12 @@ private fun SearchBar(query: String, onQuery: (String) -> Unit, listView: Boolea
                 if (query.isEmpty()) {
                     Text(stringResource(R.string.map_search_hint), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                 }
+                val searchDesc = stringResource(R.string.map_search_hint)
                 BasicTextField(
                     value = query, onValueChange = onQuery, singleLine = true,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = "search" },
+                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = searchDesc },
                 )
             }
             IconButton(onClick = { if (query.isNotEmpty()) onQuery("") else onToggleList() }, modifier = Modifier.size(48.dp)) {

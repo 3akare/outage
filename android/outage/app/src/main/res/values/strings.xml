@@ -155,6 +155,7 @@
     <string name="map_search_hint">Search areas</string>
     <string name="map_search_none">No area by that name on this map</string>
     <string name="map_search_clear">Clear search</string>
+    <string name="ins_area_picker">Choose an area</string>
     <string name="map_city">%1$s</string>
     <string name="map_headline_out">%1$d of %2$d areas without power</string>
     <string name="map_headline_possible">%1$d of %2$d areas may be without power</string>
