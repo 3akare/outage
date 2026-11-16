@@ -69,7 +69,8 @@
       "events": [
         {
           "alias": "P1",
-          "type": "ARMED"
+          "type": "ARMED",
+          "simulated": true
         }
       ]
     },
@@ -85,7 +86,8 @@
       "events": [
         {
           "alias": "P2",
-          "type": "ARMED"
+          "type": "ARMED",
+          "simulated": true
         }
       ]
     },
@@ -101,7 +103,8 @@
       "events": [
         {
           "alias": "P3",
-          "type": "ARMED"
+          "type": "ARMED",
+          "simulated": true
         }
       ]
     },
@@ -117,7 +120,8 @@
       "events": [
         {
           "alias": "P4",
-          "type": "ARMED"
+          "type": "ARMED",
+          "simulated": true
         }
       ]
     },
@@ -133,7 +137,8 @@
       "events": [
         {
           "alias": "P5",
-          "type": "ARMED"
+          "type": "ARMED",
+          "simulated": true
         }
       ]
     },
@@ -149,7 +154,8 @@
       "events": [
         {
           "alias": "P6",
-          "type": "ARMED"
+          "type": "ARMED",
+          "simulated": true
         }
       ]
     },
@@ -165,7 +171,8 @@
       "events": [
         {
           "alias": "P7",
-          "type": "ARMED"
+          "type": "ARMED",
+          "simulated": true
         }
       ]
     },
@@ -181,7 +188,8 @@
       "events": [
         {
           "alias": "P8",
-          "type": "ARMED"
+          "type": "ARMED",
+          "simulated": true
         }
       ]
     },
@@ -197,7 +205,8 @@
       "events": [
         {
           "alias": "P9",
-          "type": "ARMED"
+          "type": "ARMED",
+          "simulated": true
         }
       ]
     },
@@ -213,7 +222,8 @@
       "events": [
         {
           "alias": "P10",
-          "type": "ARMED"
+          "type": "ARMED",
+          "simulated": true
         }
       ]
     },
@@ -229,7 +239,8 @@
       "events": [
         {
           "alias": "P10",
-          "type": "UNPLUG"
+          "type": "UNPLUG",
+          "simulated": true
         }
       ]
     },
@@ -245,7 +256,8 @@
       "events": [
         {
           "alias": "P10",
-          "type": "REPLUG"
+          "type": "REPLUG",
+          "simulated": true
         }
       ]
     },
@@ -261,7 +273,8 @@
       "events": [
         {
           "alias": "P1",
-          "type": "UNPLUG"
+          "type": "UNPLUG",
+          "simulated": true
         }
       ]
     },
@@ -277,7 +290,8 @@
       "events": [
         {
           "alias": "P2",
-          "type": "UNPLUG"
+          "type": "UNPLUG",
+          "simulated": true
         }
       ]
     },
@@ -293,7 +307,8 @@
       "events": [
         {
           "alias": "P3",
-          "type": "UNPLUG"
+          "type": "UNPLUG",
+          "simulated": true
         }
       ],
       "explanation": {
@@ -334,7 +349,8 @@
       "events": [
         {
           "alias": "P4",
-          "type": "UNPLUG"
+          "type": "UNPLUG",
+          "simulated": true
         }
       ]
     },
@@ -350,7 +366,8 @@
       "events": [
         {
           "alias": "P5",
-          "type": "UNPLUG"
+          "type": "UNPLUG",
+          "simulated": true
         }
       ],
       "explanation": {
@@ -391,7 +408,8 @@
       "events": [
         {
           "alias": "P6",
-          "type": "UNPLUG"
+          "type": "UNPLUG",
+          "simulated": true
         }
       ]
     },
@@ -407,7 +425,8 @@
       "events": [
         {
           "alias": "P7",
-          "type": "UNPLUG"
+          "type": "UNPLUG",
+          "simulated": true
         }
       ]
     },
@@ -423,7 +442,8 @@
       "events": [
         {
           "alias": "P1",
-          "type": "REPLUG"
+          "type": "REPLUG",
+          "simulated": true
         }
       ]
     },
@@ -439,7 +459,8 @@
       "events": [
         {
           "alias": "P2",
-          "type": "REPLUG"
+          "type": "REPLUG",
+          "simulated": true
         }
       ]
     },
@@ -455,7 +476,8 @@
       "events": [
         {
           "alias": "P3",
-          "type": "REPLUG"
+          "type": "REPLUG",
+          "simulated": true
         }
       ]
     },
@@ -471,7 +493,8 @@
       "events": [
         {
           "alias": "P4",
-          "type": "REPLUG"
+          "type": "REPLUG",
+          "simulated": true
         }
       ],
       "explanation": {
@@ -520,7 +543,8 @@
       "events": [
         {
           "alias": "P5",
-          "type": "REPLUG"
+          "type": "REPLUG",
+          "simulated": true
         }
       ]
     },
@@ -536,7 +560,8 @@
       "events": [
         {
           "alias": "P6",
-          "type": "REPLUG"
+          "type": "REPLUG",
+          "simulated": true
         }
       ]
     },
@@ -552,7 +577,8 @@
       "events": [
         {
           "alias": "P7",
-          "type": "REPLUG"
+          "type": "REPLUG",
+          "simulated": true
         }
       ]
     }

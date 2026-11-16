@@ -179,11 +179,12 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R2 | DM1 | `DM1_all_labeled` | 4 | planned |
+| R2 | DM1 | `DM1_all_labeled_the_loader_refuses_any_object_without_simulated_true`, `DM1_all_labeled_every_session_view_carries_the_banner` | 4 | passing (`apps/android/app/src/test/kotlin/app/outage/demo/DemoSessionTest.kt`) |
 | R4.4, R4.6 | DM2 | `DM2_default_params` | 3 | test written (`tools/sim/test/scenario.test.ts`) |
-| R5 | DM3 | `DM3_no_real_writes` | 4 | planned |
+| R5 | DM3 | `DM3_no_real_writes_demo_sources_import_only_the_parser_and_their_own_package` | 4 | passing (`DemoArchitectureTest.kt`; a source-import check of `app/outage/demo`, not a before-and-after diff of the stores) |
 | R4 | DM4 | `DM4_plan_confirms_and_restores` | 3 | test written (`tools/sim/test/scenario.test.ts`) |
-| R5.6 | DM5 | `DM5_one_real_drop` | 3 | test written (`tools/sim/test/scenario.test.ts`) |
+| R5.6 | DM5 | `DM5_one_real_drop` | 3, 4 | test written (`tools/sim/test/scenario.test.ts`); app side passing (`DM5_one_real_drop_the_judge_only_or_none_in_simulate_mode`) |
+| R4.5, R4.7, R4.8 | - | `R4_5_confirmed_shows_within_5_seconds_of_the_unplug_then_restored_after_the_replug`, `R4_7_an_early_replug_shows_every_unplug_frame_first`, `R4_8_demo_alarm_is_due_once_after_restored_only_if_the_judge_said_yes` | 4 | passing (`DemoSessionTest.kt`) |
 | R6 | DM6 | `DM6_sanitizer` | 2 | test written (`tools/sim/test/sanitize.test.ts`) |
 | R7 | DM7 | `DM7_replay_in_sync` | 5 | planned |
 

@@ -123,6 +123,8 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/OutageApp.kt` | Application class: builds the shell graph and chooses real or demo map and insights sources |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmState.kt` | Light Alarm state shown on Home |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/StringPackCheck.kt` | Checks a string pack has every alarm string |
+| `apps/android/app/src/main/kotlin/app/outage/demo/ReplayFile.kt` | Judge mode: the replay file model and its loader, which refuses anything not labelled simulated |
+| `apps/android/app/src/main/kotlin/app/outage/demo/DemoSession.kt` | Judge mode "Unplug your own phone": plays the unplug track on an injected clock, no engine |
 | `apps/android/app/src/main/kotlin/app/outage/home/HomeWatch.kt` | Home Watch on the phone: viewer API shapes, card wording, pairing calls (no state is derived on the phone) |
 | `apps/android/app/src/main/kotlin/app/outage/home/HomeWatchModel.kt` | Home Watch screen logic: claim, offer, refresh with cache, station pair list, remove |
 | `apps/android/app/src/main/kotlin/app/outage/home/HomeWatchAndroid.kt` | Home Watch pair list in SharedPreferences and the HTTP client |
@@ -208,6 +210,8 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/res/values/themes.xml` | Light app theme |
 | `apps/android/app/src/main/res/values-night/themes.xml` | Dark app theme |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt` | Alarm strings exist in every pack |
+| `apps/android/app/src/test/kotlin/app/outage/demo/DemoSessionTest.kt` | Judge mode session on the committed replay file (DM1, DM5, R4) |
+| `apps/android/app/src/test/kotlin/app/outage/demo/DemoArchitectureTest.kt` | The demo package imports nothing that can write real data (DM3) |
 | `apps/android/app/src/test/kotlin/app/outage/home/HomeWatchTest.kt` | Home Watch screen logic against the shared home fixture (R1, R4, H5, H8) |
 | `apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt` | Insights numbers (IN1 to IN6) |
 | `apps/android/app/src/test/kotlin/app/outage/log/BandConfigTest.kt` | Shipped band config is valid and sourced |

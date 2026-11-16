@@ -685,3 +685,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `sensor-android` amended with R13 and a design note: `PlugObserver` (a code-registered `ACTION_BATTERY_CHANGED` receiver that reports only plug changes, no Job, no Outbox) and `DemoFlag` (in-process, suppresses the "Power just went?" prompt while a demo is open, cleared on leave or after 30 s in the background).
 - The prompt itself is not built in this branch; whoever builds it must check `DemoFlag.suppressPrompt(now)` before showing it.
 - Tests: `PlugObserverTest` (3). Gradle testDebugUnitTest and lint clean.
+
+## 2026-11-23 feat(demo): DemoSession and the replay loader [spec:demo-mode task:4]
+- `app/outage/demo/ReplayFile.kt` reads `replay.json` and refuses the file if the file, a phone, a frame, an event, a neighbor or a track frame lacks `simulated: true` (DM1). `DemoSession` plays the unplug track at the judge's unplug plus each frame's offset on an injected clock, shows the judge's dot (real, or simulated in simulate mode), the engine's state and explanation from the file, and a demo alarm flag after Restored. No engine on the phone.
+- `tools/sim` replay frames' events now carry `simulated: true` too, so DM1 holds for every event; `replay.json` was rebuilt with `npm run build:replay -w tools/sim` (decisions unchanged).
+- DM3 is a source-import check of the demo package (only its own package, `MiniJson` and Kotlin), not a store diff: the package cannot reach any real store.
+- Tests: `DemoSessionTest` (6), `DemoArchitectureTest` (1).
