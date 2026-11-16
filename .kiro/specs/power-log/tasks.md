@@ -47,7 +47,7 @@ Depends on `sensor-android` (task 9), `alerts-and-light-alarm` (tasks 1, 4), `ar
 - [x] 9. (Decided in ADR 0040) Image share card.
   - Depends on: 8
   - Requirements: R8
-- [ ] 10. Delete-my-data for the timeline, traceability (PL1 to PL9), `docs/kiro-log.md`.
+- [x] 10. Delete-my-data for the timeline, traceability (PL1 to PL9), `docs/kiro-log.md`.
   - Depends on: 8
   - Requirements: R1.6
 

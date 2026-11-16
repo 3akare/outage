@@ -88,7 +88,8 @@ class OutageApp : Application() {
             runCatching { recorder.onSensorEvents(sensor.getPendingEvents(PENDING_BACKFILL)) }
             sensor.addListener(recorder::onSensorEvent)
         }
-        val sync = if (BuildConfig.API_BASE.isNotBlank()) AreaOutageSync(BuildConfig.API_BASE, logStore, FileOutageCache(File(filesDir, "outages"))) else null
+        val outageCache = FileOutageCache(File(filesDir, "outages"))
+        val sync = if (BuildConfig.API_BASE.isNotBlank()) AreaOutageSync(BuildConfig.API_BASE, logStore, outageCache) else null
         val service = PowerLogService(logStore, recorder, bandChoice, sync, cell = { graph.onboarding.load()?.cell })
 
         graph.features.register("freezer_guard", R.string.settings_freezer, { FreezerScreen(freezer, alarms::canScheduleExact) }, null)
@@ -101,6 +102,14 @@ class OutageApp : Application() {
             },
             null,
         )
+        // Delete-my-data (power-log R1.6): the log and its settings, the Freezer Guard alarm, the cached area outages and the
+        // cached share picture. Cancel the alarm after the clear, so a pending alert cannot find an outage to report.
+        graph.deletes.register("power_log") {
+            logStore.clear()
+            alarms.cancel()
+            outageCache.clear()
+            ShareCardImage.clear(this)
+        }
         Thread { runCatching { freezer.sync() } }.start()
     }
 

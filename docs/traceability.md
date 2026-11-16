@@ -118,16 +118,18 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R1, R2 | PL1 | `PL1_timeline_pure` | 4 | planned |
-| R1.2 | PL2 | `PL2_intervals_cover_time` | 4 | planned |
-| R2.2, R2.4 | PL3 | `PL3_no_outage_without_evidence` | 4 | planned |
-| R3 | PL4 | `PL4_daily_stats` | 6 | planned |
-| R4 | PL5 | `PL5_light_score` | 6 | planned |
-| R5 | PL6 | `PL6_promise_copy` | 6 | planned |
+| R1, R2 | PL1 | `PL1_timeline_pure` | 4 | code done (`TimelineBuilder`); test not written (human asked for no more tests, 2026-11-23) |
+| R1.2 | PL2 | `PL2_intervals_cover_time` | 4 | code done; test not written (same) |
+| R2.2, R2.4 | PL3 | `PL3_no_outage_without_evidence` | 4 | code done; test not written (same) |
+| R3 | PL4 | `PL4_daily_stats` | 6 | code done (`Stats`); test not written (same) |
+| R4 | PL5 | `PL5_light_score` | 6 | code done; test not written (same) |
+| R5 | PL6 | `PL6_promise_copy` | 6 | code done (`Stats.promiseText` checks its own words); test not written (same) |
 | R5.5 | - (band config + copy) | `BandConfigTest` (`apps/android/app/src/test/kotlin/app/outage/log/BandConfigTest.kt`) | 3 | test written |
-| R6 | PL7 | `PL7_freezer_guard_lifecycle` | 7 | planned |
-| R1.3, R8.2 | PL8 | `PL8_no_wall_clock_upload` | 8 | planned |
-| R8 | PL9 | `PL9_share_card_privacy` | 8 | planned |
+| R6 | PL7 | `PL7_freezer_guard_lifecycle` | 7 | code done (`FreezerRules`, `FreezerGuard`, ADR 0038); test not written (same); device checks in `docs/probe-checklist.md` |
+| R1.3, R8.2 | PL8 | `PL8_no_wall_clock_upload` | 8 | code done: the log database is never uploaded and `REPORT` carries `kind` only (`SensorOutbox.toPending`); test not written (same) |
+| R8 | PL9 | `PL9_share_card_privacy` | 8, 9 | code done: `ShareFacts` has no location, area, install ID or name; text in `ShareCardText`, picture in `ShareCardImage` (ADR 0040); test not written (same) |
+| R1.6 | - | delete-my-data clears the log, settings, Freezer Guard alarm and cached share picture | 10 | done: `OutageApp.registerPowerLog` registers `power_log`; no dedicated test (same) |
+| R7, R10 | - | Power Log screen, taps, rate limit | 8 | done: `PowerLogScreen`, `LogRecorder` (ADR 0039); no dedicated test (same) |
 
 ## home-watch
 
@@ -290,3 +292,8 @@ Scanned 15 test file(s) under packages/detection. A property counts when a test 
 | R1, R2, R7.2 | PL1, PL2, PL3 | TimelineBuilder | power-log 4 | code done; tests PL1 to PL3 not written |
 | R9 | - | public outage endpoint and phone sync | power-log 5 | done: Worker tests in web-routes.test.ts (empty when not public); phone sync not tested |
 | R3, R4, R5 | PL4, PL5, PL6 | Stats | power-log 6 | code done; tests PL4 to PL6 not written |
+| R6 | PL7 | Freezer Guard | power-log 7 | code done, ADR 0038; test PL7 not written |
+| R7, R10 | - | Power Log screen and sensor wiring | power-log 8 | code done, ADR 0039; tests PL8, PL9 not written |
+| R8 | PL9 | image share card | power-log 9 | code done, ADR 0040 |
+| R1.6 | - | delete-my-data for the log | power-log 10 | code done |
+| R5, R10 | IN | real Power Log in Insights, 12-week demo | app-map-insights 6 | done, ADR 0039; demo-days assertion updated to 84 |

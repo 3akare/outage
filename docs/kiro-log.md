@@ -685,3 +685,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 feat(log): image share card [spec:power-log task:9]
 - Decided and recorded in ADR 0040: a Canvas bitmap drawn on the phone, written to the cache and shared through `FileProvider` and `ACTION_SEND` with the text as a fallback. The card takes `ShareFacts` only, which has no location, area, install ID or name.
 - Not done: test PL9 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(log): delete-my-data and traceability for the Power Log [spec:power-log task:10]
+- `power_log` delete function: clears the log database and its settings, cancels the Freezer Guard alarm, clears the cached area outages and the cached share picture. It runs with the other phone-side deletes in `DeleteRegistry`; the server half still goes through the existing `/v1/delete`, which also removes the install's `REPORT` events (ADR 0036).
+- `docs/traceability.md`: PL1 to PL9 rows say what is code-done and that the tests were not written, because the human asked for no more tests on 2026-11-23.
