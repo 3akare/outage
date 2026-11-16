@@ -642,3 +642,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `StringPackTest` AS7 (app-shell R7) failed on the battery step line `Text("${i + 1}. $s")`. Moved to string resource `battery_step_item`.
 - `agents.test.mjs` limit (85,000 characters of file:// resources) failed for `sensor-engineer`. Dropped ADR 0001 and sensor-android `tasks.md` from its resources. No test changed.
 - Full checks now exit 0: Gradle testDebugUnitTest, lint and assembleDebug; npm test, lint and typecheck; spec-lint; architecture test. This replaces the "only assembleDebug" note above.
+
+## 2026-11-23 chore(merge): merge origin/main into work/alerts-server [spec:alerts-and-light-alarm task:merge]
+- Conflicts were in `ARCHITECTURE.md` (ADR range row) and `docs/kiro-log.md`; both sides kept. Main already had ADR 0032 (receiver-primary sensor), so the push subscriptions ADR was renumbered to `docs/adr/0035-push-subscriptions-and-sending.md` and its one log reference updated. The ADR range row now reads 0001 to 0035.
+- `npm test`, lint, typecheck, spec-lint and the architecture test pass. `npm test` failed once in four runs with the output lost; the likely cause is the known flaky `post-deploy-check` test (unconfirmed).
+- Open: confirm which test flaked.
