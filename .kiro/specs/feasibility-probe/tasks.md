@@ -39,16 +39,16 @@ Ask the human before adding any dependency beyond the ADR 0012 toolchain (Kotlin
 
 ## Wave 5 (human runs the checklist)
 
-- [ ] 8. Field run: the human runs the checklist on every available phone (including Tecno or Infinix, before and after exemption). Export, then run the analysis.
+- [x] 8. (Closed by waiver, ADR 0013, 2026-11-23.) Field run: the human runs the checklist on every available phone (including Tecno or Infinix, before and after exemption). Export, then run the analysis.
   - Depends on: 3, 7
   - Requirements: R6
 
 ## Wave 6
 
-- [ ] 9. Write `docs/probe/summary.md` and ADR 0013 (gate result and chosen path); update ADR 0001 and ADR 0004 with measured facts; list decisions for the human. If the gate fails, stop and write the options ADR.
+- [x] 9. (Closed by waiver; result in ADR 0013.) Write `docs/probe/summary.md` and ADR 0013 (gate result and chosen path); update ADR 0001 and ADR 0004 with measured facts; list decisions for the human. If the gate fails, stop and write the options ADR.
   - Depends on: 8
   - Requirements: R8
-- [ ] 10. Remove the probe Worker endpoint and token, or record that the human did; decide whether `tools/probe/` is deleted or archived; update `docs/kiro-log.md`.
+- [x] 10. (Closed by waiver; the probe stays archived in `tools/probe/`, and the probe Worker endpoint and token are removed when the human next deploys.) Remove the probe Worker endpoint and token, or record that the human did; decide whether `tools/probe/` is deleted or archived; update `docs/kiro-log.md`.
   - Depends on: 9
   - Requirements: R7.4
 

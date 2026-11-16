@@ -4,6 +4,8 @@ Rules: only real dependencies are listed. Tasks in the same wave run in parallel
 
 Highest reasoning effort for tasks 2, 3, 4. Checkpoint before tasks 2 and 3. Plan mode first for task 1 and task 3 (each touches more than 3 files). Confirm every Android API with the docs servers and put the doc URL in a comment.
 
+> **Amended 2026-11-23 (ADR 0032).** These tasks are now the primary sensor path and run before `sensor-android` task 7 (job backup). Task 6 also starts the service by default after first run. Task 1 and task 2 can start as soon as `sensor-android` tasks 2 and 3 exist, with the pure core as the contract.
+
 This spec depends on `sensor-android` (tasks 4, 5, 7, 9) and `event-ingest` (task 2). Do not start a task here until its dependency exists. No new dependency is needed.
 
 ## Wave 1 (needs sensor-android task 4 and event-ingest task 2)

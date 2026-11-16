@@ -6,6 +6,8 @@ Highest reasoning effort for tasks 3, 4, 7, 8. Create a checkpoint before tasks 
 
 Dependencies approved by ADR 0012 (Kotlin, Gradle, the Android Gradle plugin, AndroidX core, JUnit 4) are not new. Ask the human before adding anything else.
 
+> **Amended 2026-11-23 (ADR 0032).** Order: tasks 1 to 6, then the receiver service (station-mode tasks 2 to 5), then task 7 as the job backup, then 8 to 12. Task 9 wires both drivers.
+
 ## Wave 1 (no dependencies)
 
 - [ ] 1. Scaffold the `sensor` package in `apps/android` (Gradle project, JVM unit-test source set using JUnit 4; the project itself comes from the app scaffold, reuse the probe's Gradle settings). Needs a Plan mode pass first (touches more than 3 files).
@@ -33,7 +35,7 @@ Dependencies approved by ADR 0012 (Kotlin, Gradle, the Android Gradle plugin, An
 
 ## Wave 4
 
-- [ ] 7. Android adapters: `PowerFacts` (battery intent), `Scheduler` (one stable Job ID, idempotent), `ChargingJobService` (stay running, record before reschedule), `BootReceiver`.
+- [ ] 7. (Job backup, after the receiver service exists.) Android adapters: `PowerFacts` (battery intent), `Scheduler` (one stable Job ID, idempotent), `ChargingJobService` (stay running, record before reschedule), `BootReceiver`.
   - Depends on: 4, 5, 6
   - Requirements: R1, R2, R3, R4, R5, R8.1, R8.2
 - [ ] 8. Heartbeat and recovery: detect process death and reboot, record `PROCESS_DEATH` and `REBOOT` gaps.

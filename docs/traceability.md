@@ -272,3 +272,4 @@ Scanned 0 test file(s) under packages/detection. A property counts when a test t
 | R1.1, R1.2 | UX8 | first-run model | 7 | done on the phone: OnboardingFlowTest UX8_first_run_*, RoutingTest; on-device check and screenshots wait for the Kiro IDE pass (task 9) |
 | R6.1, R6.3, R6.4 | UX9 | landing content | 3 | done: web-app.test.ts |
 | R1 to R10 | - | spec, ADRs 0026 to 0028, steering | 1 | done (docs) |
+| - | - | ADR 0032: receiver primary, job backup (sensor-android and station-mode amended) | sensor-android 1 to 12, station-mode 1 to 8 | docs done; code not started |
