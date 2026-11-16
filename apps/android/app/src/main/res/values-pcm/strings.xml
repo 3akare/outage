@@ -10,4 +10,6 @@
     <string name="map_desc_confirmed">Light don go</string>
     <string name="map_desc_restored">Light don come</string>
     <string name="map_desc_possible">Light fit don go</string>
+    <string name="log_btn_out">Light don go</string>
+    <string name="log_btn_back">Light don come</string>
 </resources>

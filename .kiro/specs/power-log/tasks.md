@@ -38,7 +38,7 @@ Depends on `sensor-android` (task 9), `alerts-and-light-alarm` (tasks 1, 4), `ar
 
 ## Wave 4
 
-- [ ] 8. Compose screens and `PowerLogViewModel`: now, today, 30 days, month, open outage, band picker, Freezer Guard settings, "Power is out" and "Power is back" taps with the rate limit. Share card text fallback. Tests PL8, PL9.
+- [x] 8. Compose screens and `PowerLogViewModel`: now, today, 30 days, month, open outage, band picker, Freezer Guard settings, "Power is out" and "Power is back" taps with the rate limit. Share card text fallback. Tests PL8, PL9.
   - Depends on: 5, 6, 7
   - Requirements: R7, R8, R10
 

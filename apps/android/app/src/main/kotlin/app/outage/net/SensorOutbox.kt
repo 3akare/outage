@@ -17,7 +17,15 @@ class SensorOutbox(private val sensor: SensorController, private val cell: () ->
     override fun ack(upToSeq: Long) = sensor.ackEvents(upToSeq)
 
     companion object {
-        fun toPending(e: SensorEvent, cell: String) = PendingEvent(
+        /** A REPORT carries only the base fields plus `kind` (ingest.ts), so nothing else is copied. */
+        fun toPending(e: SensorEvent, cell: String): PendingEvent = if (e.type == app.outage.sensor.EventType.REPORT) {
+            PendingEvent(
+                seq = e.seq, type = e.type.name, recordedElapsedMs = e.recordedElapsedMs, cell = cell,
+                confidence = "HIGH", timeQuality = e.timeQuality.name, kind = "OUT",
+            )
+        } else toPendingBase(e, cell)
+
+        private fun toPendingBase(e: SensorEvent, cell: String) = PendingEvent(
             seq = e.seq,
             type = e.type.name,
             recordedElapsedMs = e.recordedElapsedMs,

@@ -676,3 +676,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 feat(insights): real Power Log in Insights [spec:app-map-insights task:6]
 - `LogStoreTimeline` turns the rebuilt `OUT` intervals into Insights outages. `InsightsSources.choose(apiBase, band, timeline)`: with a Worker address the user always sees their own record or the empty state; a demo build shows the real record once it has data and the labelled demo before that. The demo now covers 12 weeks (84 days), so the 12-week trend has data. The chosen band (not a fixed Band A) feeds the promise check. ADR 0039.
 - One existing assertion changed with the spec: the demo test now expects 84 days instead of 60. No test added or deleted.
+
+## 2026-11-23 feat(log): Power Log screen, taps and sensor wiring [spec:power-log task:8]
+- `PowerLogScreen` and `PowerLogViewModel`: power now, today, 30 days (bar chart), outage list with the open outage, month Light Score ring, band picker with the promise check worded as an estimate, "Power is out" (one per 10 minutes) and "Power is back", text share. `PowerLogService` and `PowerLogModel` hold the logic without Android types. Home has a card that opens it.
+- The sensor's events now reach the log (`Sensor.onCreated` hook plus a read of the pending Outbox), and "Power is out" queues a `REPORT` in the Outbox (`EventType.REPORT`, `recordReport()`). ADR 0039.
+- Not done: tests PL8, PL9 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.

@@ -86,6 +86,24 @@ class DefaultSensorController(
         for (e in written) for (l in listeners.toList()) runCatching { l(e) }
     }
 
+    /**
+     * power-log R7.4: queues a `REPORT` (kind OUT) in the Outbox for the "Power is out" tap. It changes no sensor state.
+     * Returns the event's seq, or null when the write failed. Listeners hear it so the uploader sends it promptly.
+     */
+    @Synchronized
+    fun recordReport(): Long? {
+        val now = clock.elapsedMs()
+        val boot = clock.bootCount()
+        val draft = EventDraft(
+            type = EventType.REPORT, recordedElapsedMs = now, confidence = Confidence.HIGH, batteryPct = 0,
+            plug = Plug.NONE, source = Source.RECEIVER,
+        )
+        val stored = try { StoredEvent(store.append(draft, boot), draft, boot) } catch (e: Exception) { bump(KEY_WRITE_FAILURES); return null }
+        val event = stored.toSensorEvent(now, boot)
+        for (l in listeners.toList()) runCatching { l(event) }
+        return stored.seq
+    }
+
     /** Called once per process. A non-idle saved state means the previous process died or the phone rebooted (R5.3, R5.4). */
     @Synchronized
     fun recoverOnProcessStart() {

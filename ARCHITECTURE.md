@@ -126,6 +126,9 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/freezer/FreezerGuard.kt` | Freezer Guard settings, pure rules (plan, alert, quiet hours) and the scheduler over the timeline |
 | `apps/android/app/src/main/kotlin/app/outage/freezer/FreezerAndroid.kt` | AlarmManager alarms, the receiver and the notification for Freezer Guard |
 | `apps/android/app/src/main/kotlin/app/outage/ui/FreezerScreen.kt` | Freezer Guard settings screen |
+| `apps/android/app/src/main/kotlin/app/outage/ui/PowerLogScreen.kt` | Power Log screen: now, taps, today, 30 days, outages, Light Score, band, share |
+| `apps/android/app/src/main/kotlin/app/outage/ui/PowerLogViewModel.kt` | State and background work for the Power Log screen |
+| `apps/android/app/src/main/kotlin/app/outage/ui/ShareCardText.kt` | The share card as text, and the facts both forms carry
 | `apps/android/app/src/main/kotlin/app/outage/insights/DemoOutages.kt` | About 60 days of labelled sample outages for demo mode |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsCalc.kt` | Pure numbers for Insights: hours of power, heatmap, trend, promise check |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsSource.kt` | Where Insights gets its outage timeline (demo or real) |
@@ -136,6 +139,9 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/log/BandStrings.kt` | String keys for the supply-promise copy |
 | `apps/android/app/src/main/kotlin/app/outage/log/LogInput.kt` | Power Log raw inputs and their stored JSON payload |
 | `apps/android/app/src/main/kotlin/app/outage/log/LogStore.kt` | Power Log database `outage_log.db` with migrations (ADR 0037) |
+| `apps/android/app/src/main/kotlin/app/outage/log/LogRecorder.kt` | Writes sensor events and taps into the log; rate limit for "Power is out" |
+| `apps/android/app/src/main/kotlin/app/outage/log/PowerLogModel.kt` | Pure view of the log for the screen, the share facts and the band choice |
+| `apps/android/app/src/main/kotlin/app/outage/log/PowerLogService.kt` | Load, area sync and taps for the Power Log screen, without Android types |
 | `apps/android/app/src/main/kotlin/app/outage/log/PowerLog.kt` | Feature keys for the Power Log |
 | `apps/android/app/src/main/kotlin/app/outage/log/Stats.kt` | Daily stats, Light Score and promise check from the timeline (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/log/TimelineBuilder.kt` | Raw inputs to ON, OUT, OFF_CHARGER and UNKNOWN intervals (pure) |
