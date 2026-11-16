@@ -186,7 +186,8 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 | R5.6 | DM5 | `DM5_one_real_drop` | 3, 4 | test written (`tools/sim/test/scenario.test.ts`); app side passing (`DM5_one_real_drop_the_judge_only_or_none_in_simulate_mode`) |
 | R4.5, R4.7, R4.8 | - | `R4_5_confirmed_shows_within_5_seconds_of_the_unplug_then_restored_after_the_replug`, `R4_7_an_early_replug_shows_every_unplug_frame_first`, `R4_8_demo_alarm_is_due_once_after_restored_only_if_the_judge_said_yes` | 4 | passing (`DemoSessionTest.kt`) |
 | R6 | DM6 | `DM6_sanitizer` | 2 | test written (`tools/sim/test/sanitize.test.ts`) |
-| R7 | DM7 | `DM7_replay_in_sync` | 5 | planned |
+| R7 | DM7 | `DM7_replay_in_sync_the_app_asset_is_the_file_the_worker_serves` (app side), `W5_replay_matches_engine` (build side) | 5 | passing (`apps/android/app/src/test/kotlin/app/outage/demo/ReplayPlayerTest.kt`, `tools/sim/test/replay.test.ts`) |
+| R3.3 to R3.5 | - | `R3_4_R3_5_play_reaches_every_state_including_your_spot_only`, `R3_3_pause_restart_and_speed`, `R3_a_run_at_1x_takes_about_15_seconds_like_the_web_player` | 5 | passing (`ReplayPlayerTest.kt`) |
 
 ## field-telemetry
 

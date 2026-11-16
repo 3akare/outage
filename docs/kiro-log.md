@@ -691,3 +691,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `tools/sim` replay frames' events now carry `simulated: true` too, so DM1 holds for every event; `replay.json` was rebuilt with `npm run build:replay -w tools/sim` (decisions unchanged).
 - DM3 is a source-import check of the demo package (only its own package, `MiniJson` and Kotlin), not a store diff: the package cannot reach any real store.
 - Tests: `DemoSessionTest` (6), `DemoArchitectureTest` (1).
+
+## 2026-11-23 feat(demo): replay player and screen [spec:demo-mode task:5]
+- `ReplayPlayer` plays the recorded replay frames on an injected clock with play, pause, restart and 1x, 2x, 4x. Gaps are squeezed with the web player's rule (ADR 0029), so a run takes about 15 s and both players feel the same.
+- `DemoReplayScreen` shows the banner "Simulated replay", how the outage was recorded (synthetic for now), the step tracker, one dot per simulated neighbor, the count, the "Your spot only" legend and the engine's numbers from the file.
+- `app/build.gradle.kts` copies `packages/shared/fixtures/replay.json` into generated assets (`CopyReplay`), the same file the Worker imports, so there is one copy in git. DM7 app side checks both paths and the built asset's hash.
+- Tests: `ReplayPlayerTest` (4).

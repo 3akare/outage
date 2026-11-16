@@ -26,7 +26,7 @@ Depends on `detection-engine` (tasks 13, 16), `web-and-area-pages` (task 9), `on
 
 ## Wave 3
 
-- [ ] 5. `ReplayPlayer` and the replay Compose screen reading the replay asset. Test DM7 (with `web-and-area-pages` task 9).
+- [x] 5. `ReplayPlayer` and the replay Compose screen reading the replay asset. Test DM7 (with `web-and-area-pages` task 9).
   - Depends on: `web-and-area-pages` 9, 4
   - Requirements: R3, R7
 - [ ] 6. Compose screens (Jetpack Compose, approved 2026-11-14) and `DemoViewModel`: Judge home, Unplug flow with the demo prompt and demo alarm, How it works, banner, leave and discard, entry from `onboarding` Welcome. Simulate fallback.
