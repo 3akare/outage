@@ -653,3 +653,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Worker: `AreaCore` treats it as proof of life only: seq window and last-seen, no armed change, nothing handed to the engine. `reason` travels to the area actor for this one value. Shared constant `HEARTBEAT_ON_BATTERY`, wire fixture `event-heartbeat-battery.json`, sensor fixture now has 5 events.
 - Station-mode R5.5 and T6 text amended. No `source` on the wire (still deferred, ADR 0034).
 
+## 2026-11-23 feat(home): HomeState and station event window [spec:home-watch task:3] [ADR 0036]
+- `packages/shared/src/home.ts`: `foldPower`, `homeState` (OFFLINE after 30 minutes of silence, with the last known state) and `mergeWindow` (power events only, deduplicated, at most 500, older ones folded into a seed event). Ties sort UNPLUG last; a repeated UNPLUG keeps the first since.
+- H1 to H4 in `packages/shared/test/home.test.ts` (fast-check): silence never gives OFF, any order, duplication and batching give one state, non-power events and heartbeats change nothing, extra area input changes nothing.
+- ADR 0036 records where the state lives (the pairing shard actor, not the area actor) and the stored-data additions for tasks 5 to 7.
+

@@ -133,10 +133,10 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 
 | Requirement | Property | Test | Task | Status |
 |---|---|---|---|---|
-| R2.4, R2.5 | H1 | `H1_offline_never_off` | 3 | planned |
-| R2.6, R2.7 | H2 | `H2_state_order_independent` | 3 | planned |
-| R2.2, R2.3, R3 | H3 | `H3_non_power_events_ignored` | 1, 3 | task 1 passing (`workers/api/test/home-heartbeat.test.ts`, Kotlin `T6_heartbeat_only_while_armed`, `R3_2_battery_heartbeat_is_not_a_gap`); task 3 planned |
-| R2.8 | H4 | `H4_state_independent_of_area` | 3 | planned |
+| R2.4, R2.5 | H1 | `H1_offline_never_off` | 3 | passing (`packages/shared/test/home.test.ts`) |
+| R2.6, R2.7 | H2 | `H2_state_order_independent` | 3 | passing (`packages/shared/test/home.test.ts`) |
+| R2.2, R2.3, R3 | H3 | `H3_non_power_events_ignored` | 1, 3 | task 1 passing (`workers/api/test/home-heartbeat.test.ts`, Kotlin `T6_heartbeat_only_while_armed`, `R3_2_battery_heartbeat_is_not_a_gap`); task 3 passing (`packages/shared/test/home.test.ts`) |
+| R2.8 | H4 | `H4_state_independent_of_area` | 3 | passing (`packages/shared/test/home.test.ts`) |
 | R1.2, R1.3, R1.5 | H5 (pure part) | `H5_pairing_rules` | 2 | passing (`packages/shared/test/pairing.test.ts`) |
 | R1.1 to R1.6, R1.9, R7.2 | H5 (Worker part) | `H5_pairing_rules` | 4 | passing (`workers/api/test/pairing.test.ts`) |
 | R5, R8.3 | H6 | `H6_push_once_per_change` | 6 | planned |
