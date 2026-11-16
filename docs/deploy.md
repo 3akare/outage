@@ -39,8 +39,11 @@ In the GitHub repo, open **Settings**, then **Secrets and variables**, then **Ac
 | `CLOUDFLARE_API_TOKEN` | the token from step 1 | yes |
 | `CLOUDFLARE_ACCOUNT_ID` | the ID from step 2 | yes |
 | `FIELD_READ_TOKEN` | any long random string you keep, for example the output of `openssl rand -hex 32` | optional |
+| `FCM_SERVICE_ACCOUNT` | the whole Firebase service-account JSON file (Firebase console, Project settings, Service accounts, Generate new private key), pasted as one value | optional, needed for push |
 
 `FIELD_READ_TOKEN` protects the daily field report. The field-report reader needs the same value later, so save it somewhere safe. Without it, `/v1/admin/field/...` answers 500 and nothing else breaks.
+
+`FCM_SERVICE_ACCOUNT` lets the Worker send push messages through Firebase Cloud Messaging (free). The workflow stores it as a Wrangler secret and never prints it. Without it, following an area still works but no push is sent. Keep the key file out of git and delete your local copy once the secret is saved.
 
 You do not make `INSTALL_TOKEN_SECRET`. The workflow creates it the first time and never changes it afterwards.
 
@@ -50,7 +53,7 @@ You do not make `INSTALL_TOKEN_SECRET`. The workflow creates it the first time a
 2. Click **Run workflow**, keep the branch as `main`, and click the green button.
 3. When it finishes, open the run. The summary shows `Deployed: https://outage-api.<your-name>.workers.dev`.
 
-The run does these things in order: checks (lint, typecheck, tests, spec lint), deploy, create `INSTALL_TOKEN_SECRET` if it is missing, push `FIELD_READ_TOKEN` if you set it, then a smoke check that loads `/` and `/api/v1/public/judge/replay` and fails if either is not a 2xx answer.
+The run does these things in order: checks (lint, typecheck, tests, spec lint), deploy, create `INSTALL_TOKEN_SECRET` if it is missing, push `FIELD_READ_TOKEN` and `FCM_SERVICE_ACCOUNT` if you set them, then a smoke check that loads `/` and `/api/v1/public/judge/replay` and fails if either is not a 2xx answer.
 
 If the two Cloudflare secrets are missing, the run still ends green. It prints "Deploy skipped" and nothing is deployed.
 
