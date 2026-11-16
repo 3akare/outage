@@ -711,3 +711,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 
 ## 2026-11-23 feat(detection): golden fixture harness [spec:detection-engine task:18]
 - `test/golden.test.ts` replays every `fixtures/*.json` and compares decisions. The folder has no fixtures until the field test records one. README and traceability updated. Task 15 (Kiro IDE pass) left open.
+
+## 2026-11-23 fix(detection): golden test without node types [spec:detection-engine task:18]
+- `test/golden.test.ts` now loads fixtures with `import.meta.glob` (`vite/client` reference) instead of `node:fs`, `node:path` and `import.meta.dirname`, so `npm run typecheck` passes without `@types/node` (no new dependency, `src` stays I/O-free).
+- Ran on the human's order: typecheck, biome on the file, Gradle assembleDebug. Not run: npm test, full lint, spec-lint, architecture test, Android unit tests and lint. The fixtures folder is empty, so the glob path is unexercised. Open: run the full suite once the human allows it.
