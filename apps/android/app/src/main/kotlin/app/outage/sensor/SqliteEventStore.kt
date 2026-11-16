@@ -13,20 +13,26 @@ import android.database.sqlite.SQLiteOpenHelper
  * https://developer.android.com/reference/android/database/sqlite/SQLiteOpenHelper
  */
 class SqliteEventStore(context: Context) : EventStore {
-    private val helper = object : SQLiteOpenHelper(context.applicationContext, DB_NAME, null, 1) {
+    private val helper = object : SQLiteOpenHelper(context.applicationContext, DB_NAME, null, 2) {
         override fun onCreate(db: SQLiteDatabase) {
             db.execSQL(
                 "CREATE TABLE event (seq INTEGER PRIMARY KEY, type TEXT NOT NULL, recorded_elapsed_ms INTEGER NOT NULL, " +
                     "boot_count INTEGER NOT NULL, confidence TEXT NOT NULL, stop_reason TEXT, battery_pct INTEGER NOT NULL, " +
                     "plug_type TEXT NOT NULL, scheduling_delay_ms INTEGER, reason TEXT, source TEXT NOT NULL DEFAULT 'JOB', " +
-                    "acked INTEGER NOT NULL DEFAULT 0)",
+                    "ref_seq INTEGER, answer TEXT, acked INTEGER NOT NULL DEFAULT 0)",
             )
             db.execSQL("CREATE TABLE state (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
             db.execSQL("CREATE TABLE counter (id INTEGER PRIMARY KEY CHECK (id = 1), last_seq INTEGER NOT NULL)")
             db.execSQL("INSERT INTO counter (id, last_seq) VALUES (1, 0)")
         }
 
-        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+            // v2: LABEL events (alerts-and-light-alarm task 1).
+            if (oldVersion < 2) {
+                db.execSQL("ALTER TABLE event ADD COLUMN ref_seq INTEGER")
+                db.execSQL("ALTER TABLE event ADD COLUMN answer TEXT")
+            }
+        }
     }
 
     private val db: SQLiteDatabase get() = helper.writableDatabase
@@ -50,6 +56,8 @@ class SqliteEventStore(context: Context) : EventStore {
                 put("scheduling_delay_ms", draft.schedulingDelayMs)
                 put("reason", draft.reason)
                 put("source", draft.source.name)
+                put("ref_seq", draft.refSeq)
+                put("answer", draft.answer)
             }
             d.insertOrThrow("event", null, v)
             d.setTransactionSuccessful()
@@ -71,7 +79,7 @@ class SqliteEventStore(context: Context) : EventStore {
     private fun query(tail: String): List<StoredEvent> = try {
         db.rawQuery(
             "SELECT seq, type, recorded_elapsed_ms, boot_count, confidence, stop_reason, battery_pct, plug_type, " +
-                "scheduling_delay_ms, reason, source, acked FROM event $tail",
+                "scheduling_delay_ms, reason, source, acked, ref_seq, answer FROM event $tail",
             null,
         ).use { c ->
             val out = ArrayList<StoredEvent>(c.count)
@@ -86,6 +94,8 @@ class SqliteEventStore(context: Context) : EventStore {
                     stopReason = if (c.isNull(5)) null else c.getString(5),
                     reason = if (c.isNull(9)) null else c.getString(9),
                     schedulingDelayMs = if (c.isNull(8)) null else c.getLong(8),
+                    refSeq = if (c.isNull(12)) null else c.getLong(12),
+                    answer = if (c.isNull(13)) null else c.getString(13),
                 )
                 out += StoredEvent(c.getLong(0), draft, c.getInt(3), c.getInt(11) == 1)
             }

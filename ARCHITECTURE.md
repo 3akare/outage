@@ -133,6 +133,28 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/ui/ShareCardText.kt` | The share card as text, and the facts both forms carry |
 | `apps/android/app/src/main/kotlin/app/outage/telemetry/DeviceDay.kt` | Builds the daily telemetry aggregate from the sensor's events (pure) |
 | `apps/android/app/src/main/kotlin/app/outage/telemetry/TelemetryUpload.kt` | Consent interface, its preference, and the daily uploader |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmCore.kt` | Glue from sensor events to AlarmPolicy and the effects interface |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmHost.kt` | One alarm layer per process: SQLite store, prompt, ring, label queue |
+| `apps/android/app/src/main/kotlin/app/outage/net/Follow.kt` | Follow and unfollow request bodies (match the shared strict schema), quiet window, `FollowApi` |
+| `apps/android/app/src/main/kotlin/app/outage/net/PushHost.kt` | Push registration (optional Firebase), follow store, token refresh service |
+| `apps/android/app/src/main/kotlin/app/outage/onboarding/Spot.kt` | Spot from a position or a map pick, first-result-wins; cell only |
+| `apps/android/app/src/main/kotlin/app/outage/onboarding/LocationSource.kt` | One coarse position, once, with an 8 s wait |
+| `apps/android/app/src/main/kotlin/app/outage/onboarding/Permissions.kt` | Alarm check list data and system permission reads and intents |
+| `apps/android/app/src/main/kotlin/app/outage/ui/AlarmScreens.kt` | Light Alarm settings (Test Light Alarm, Alarm check) and Notifications permission screen |
+| `apps/android/app/src/main/kotlin/app/outage/ui/SpotScreen.kt` | Your spot: location once or map pick with a tappable hex grid |
+| `apps/android/app/src/main/kotlin/app/outage/ui/FollowSelfTestScreens.kt` | Follow switches and quiet hours, and the charger self-test screen |
+| `apps/android/app/src/test/kotlin/app/outage/net/FollowTest.kt` | Follow request against the shared schema, quiet window, API answers |
+| `apps/android/app/src/test/kotlin/app/outage/onboarding/SpotAndChecksTest.kt` | O2 no coordinates stored, spot resolution, Alarm check list |
+| `tools/sim/src/push-plan.ts` | Planned follower pushes for a simulated outage, marked simulated, never sent |
+| `tools/sim/test/push-plan.test.ts` | Scenario test for the simulated push plan |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/ChannelSetup.kt` | Creates the notification channels |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/ChannelSpecs.kt` | Channel definitions as data (power-check, light-alarm, alerts, alerts-quiet) |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/LightAlarm.kt` | Rings the alarm: audio, vibration, notification, full-screen intent, wake lock |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/NotificationActionReceiver.kt` | Handles Yes, No and Stop taps with no screen open |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/PromptNotifier.kt` | Quiet "Power just went?" prompt with two actions |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/SqliteWakeStore.kt` | Wake and prompt memory in SQLite |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmPolicy.kt` | Pure Light Alarm decisions: prompt, answer, wake, ring, expiry, reboot |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/WakeStore.kt` | Wake and prompt memory interface and an in-memory fake |
 | `apps/android/app/src/main/kotlin/app/outage/insights/DemoOutages.kt` | About 60 days of labelled sample outages for demo mode |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsCalc.kt` | Pure numbers for Insights: hours of power, heatmap, trend, promise check |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsSource.kt` | Where Insights gets its outage timeline (demo or real) |
@@ -142,7 +164,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/log/AreaOutageSync.kt` | Fetches the spot's public outages, caches them, stores them as log inputs |
 | `apps/android/app/src/main/kotlin/app/outage/log/BandStrings.kt` | String keys for the supply-promise copy |
 | `apps/android/app/src/main/kotlin/app/outage/log/LogInput.kt` | Power Log raw inputs and their stored JSON payload |
-| `apps/android/app/src/main/kotlin/app/outage/log/LogStore.kt` | Power Log database `outage_log.db` with migrations (ADR 0037) |
+| `apps/android/app/src/main/kotlin/app/outage/log/LogStore.kt` | Power Log database `outage_log.db` with migrations (ADR 0043) |
 | `apps/android/app/src/main/kotlin/app/outage/log/LogRecorder.kt` | Writes sensor events and taps into the log; rate limit for "Power is out" |
 | `apps/android/app/src/main/kotlin/app/outage/log/PowerLogModel.kt` | Pure view of the log for the screen, the share facts and the band choice |
 | `apps/android/app/src/main/kotlin/app/outage/log/PowerLogService.kt` | Load, area sync and taps for the Power Log screen, without Android types |
@@ -178,6 +200,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/sensor/EventStore.kt` | Outbox interface, stored events and the in-memory store |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorController.kt` | The sensor engine the app and both drivers call |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorModel.kt` | Plug, confidence, event types and the stop decision table (pure) |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/SelfTest.kt` | Self-test recorder, result and foreground plug watcher |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorService.kt` | Primary driver: foreground service with power receivers and heartbeat |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorState.kt` | Why the sensor is or is not armed |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorStateMachine.kt` | The sensor state machine (pure) |
@@ -217,12 +240,15 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/ui/charts/Ring.kt` | Progress ring |
 | `apps/android/app/src/main/res/drawable/` | Vector icons: launcher, dock tabs, sensor and status icons, map buttons |
 | `apps/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` | Adaptive launcher icon |
+| `apps/android/app/src/main/res/raw/light_alarm_fallback.wav` | Bundled alarm sound used when the system alarm sound cannot be resolved |
 | `apps/android/app/src/main/res/values/strings.xml` | Every English UI string |
 | `apps/android/app/src/main/res/values-pcm/strings.xml` | Optional Nigerian Pidgin strings (fall back to English per key) |
 | `apps/android/app/src/main/res/xml/share_paths.xml` | FileProvider path for the share card picture (cache folder `share`) |
 | `apps/android/app/src/main/res/values/themes.xml` | Light app theme |
 | `apps/android/app/src/main/res/values-night/themes.xml` | Dark app theme |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt` | Alarm strings exist in every pack |
+| `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmAdaptersTest.kt` | Alarm path has no network (L3), channel config (L11), core glue |
+| `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt` | AlarmPolicy properties L1, L2, L4, L9, L10 |
 | `apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt` | Insights numbers (IN1 to IN6) |
 | `apps/android/app/src/test/kotlin/app/outage/log/BandConfigTest.kt` | Shipped band config is valid and sourced |
 | `apps/android/app/src/test/kotlin/app/outage/map/MapContractTest.kt` | The app reads the same map fixture as the Worker |
@@ -234,6 +260,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OemGuideTest.kt` | OEM guide rules (O4, O5) |
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt` | Onboarding state machine (O1, O3, O7, O8) |
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingTestSupport.kt` | In-memory onboarding store for tests |
+| `apps/android/app/src/test/kotlin/app/outage/sensor/SelfTestAndLabelTest.kt` | Self-test isolation (O6) and LABEL queueing |
 | `apps/android/app/src/test/kotlin/app/outage/sensor/SensorControllerTest.kt` | Sensor engine against fake adapters (S7, R2, R10, R11, R12) |
 | `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt` | Decision table and state machine (S1 to S8, T1 to T7) |
 | `apps/android/app/src/test/kotlin/app/outage/shell/DeleteRegistryTest.kt` | Delete-my-data registry (AS6) |
@@ -695,5 +722,5 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `docs/probe/2026-11-15-samsung-b.md` | Probe result: Samsung phone, second run (probe v0.0.2) |
 | `docs/probe/2026-11-15-samsung-b.json` | Raw numbers behind the second Samsung result |
 | `docs/wip/detection-engine-notes.md` | Working notes for the detection engine |
-| `docs/adr/` | Architecture decision records 0001 to 0037, one decision each (context, decision, alternatives, consequences) |
+| `docs/adr/` | Architecture decision records 0001 to 0043, one decision each (context, decision, alternatives, consequences) |
 | `docs/visual/` | Website screenshots written by `workers/api/visual/check.mjs` (390 x 844 and `-desktop` 1280 x 800) |

@@ -17,26 +17,33 @@ class SensorOutbox(private val sensor: SensorController, private val cell: () ->
     override fun ack(upToSeq: Long) = sensor.ackEvents(upToSeq)
 
     companion object {
-        /** A REPORT carries only the base fields plus `kind` (ingest.ts), so nothing else is copied. */
-        fun toPending(e: SensorEvent, cell: String): PendingEvent = if (e.type == app.outage.sensor.EventType.REPORT) {
-            PendingEvent(
-                seq = e.seq, type = e.type.name, recordedElapsedMs = e.recordedElapsedMs, cell = cell,
-                confidence = "HIGH", timeQuality = e.timeQuality.name, kind = "OUT",
+        /**
+         * A REPORT carries only the base fields plus `kind`; a LABEL carries only the base fields plus `refSeq` and
+         * `answer`. The strict schema rejects the rest (ingest.ts).
+         */
+        fun toPending(e: SensorEvent, cell: String): PendingEvent {
+            if (e.type == app.outage.sensor.EventType.REPORT) {
+                return PendingEvent(
+                    seq = e.seq, type = e.type.name, recordedElapsedMs = e.recordedElapsedMs, cell = cell,
+                    confidence = "HIGH", timeQuality = e.timeQuality.name, kind = "OUT",
+                )
+            }
+            val label = e.type == app.outage.sensor.EventType.LABEL
+            return PendingEvent(
+                seq = e.seq,
+                type = e.type.name,
+                recordedElapsedMs = e.recordedElapsedMs,
+                cell = cell,
+                confidence = e.confidence.name,
+                timeQuality = e.timeQuality.name,
+                stopReason = if (label) null else e.stopReason,
+                reason = if (label) null else e.reason,
+                schedulingDelayMs = if (label) null else e.schedulingDelayMs,
+                batteryPct = if (label) null else e.batteryPct,
+                plugType = if (label) null else e.plugType.name,
+                refSeq = e.refSeq,
+                answer = e.answer,
             )
-        } else toPendingBase(e, cell)
-
-        private fun toPendingBase(e: SensorEvent, cell: String) = PendingEvent(
-            seq = e.seq,
-            type = e.type.name,
-            recordedElapsedMs = e.recordedElapsedMs,
-            cell = cell,
-            confidence = e.confidence.name,
-            timeQuality = e.timeQuality.name,
-            stopReason = e.stopReason,
-            reason = e.reason,
-            schedulingDelayMs = e.schedulingDelayMs,
-            batteryPct = e.batteryPct,
-            plugType = e.plugType.name,
-        )
+        }
     }
 }

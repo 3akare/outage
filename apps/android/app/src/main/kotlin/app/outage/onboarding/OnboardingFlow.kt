@@ -47,6 +47,17 @@ class OnboardingFlow private constructor(
         return true
     }
 
+    /**
+     * Set or change the spot after the first run (ADR 0030: the spot moved to Settings and the Home card). Only once
+     * consent is stored, so no cell exists without consent (R4.3). Takes the cell only (O2); the step stays where it is.
+     */
+    fun changeSpot(cell: String, areaName: String?, postcodePrefix: String?): Boolean {
+        if (!record.hasConsent || !isCell(cell)) return false
+        record = record.copy(cell = cell, areaName = areaName, postcodePrefix = postcodePrefix?.trim()?.takeIf { it.isNotBlank() })
+        store.save(record)
+        return true
+    }
+
     /** "I agree". Stores the consent version and time on the phone (R4.4). */
     fun agree(version: Int, atMs: Long, diagnosticsOptIn: Boolean, facts: OnboardingFacts, elapsedMs: Long = 0): Boolean {
         if (record.step != OnboardingStep.CONSENT || version < 1 || record.cell == null) return false

@@ -5,7 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-/** The Power Log's raw inputs and settings (power-log R1, design section 4, ADR 0037). */
+/** The Power Log's raw inputs and settings (power-log R1, design section 4, ADR 0043). */
 interface LogStore {
     /** Stores one input. Events, reports and taps keep the first copy; answers and area outages keep the latest. */
     fun add(input: LogInput)

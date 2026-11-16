@@ -1,4 +1,4 @@
-# ADR 0036: REPORT event and the manual-report hint
+# ADR 0042: REPORT event and the manual-report hint
 
 Status: accepted (human blanket approval 2026-11-15). Spec: power-log task 1 (R7.4, R7.5).
 

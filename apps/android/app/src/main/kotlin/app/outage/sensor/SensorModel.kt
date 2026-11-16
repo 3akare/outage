@@ -27,7 +27,7 @@ enum class Plug {
 
 enum class Confidence { HIGH, LOW }
 
-/** `REPORT` is the "Power is out" tap (power-log R7.4, ADR 0036); it is queued for upload and never changes the sensor state. */
+/** `REPORT` is the "Power is out" tap (power-log R7.4, ADR 0042); it is queued for upload and never changes the sensor state. */
 enum class EventType { ARMED, UNPLUG, BATTERY_FULL, REPLUG, DISARMED, LABEL, REPORT }
 
 /** station-mode R3.4: which driver saw the event. */
@@ -49,6 +49,10 @@ data class EventDraft(
     val stopReason: String? = null,
     val reason: String? = null,
     val schedulingDelayMs: Long? = null,
+    /** LABEL only (alerts-and-light-alarm R2.5): the sequence number of the UNPLUG the user answered about. */
+    val refSeq: Long? = null,
+    /** LABEL only: `YES` or `NO`. */
+    val answer: String? = null,
 )
 
 /** Disarm reasons. Short identifiers so they pass the ingest `SHORT_ID` rule. */

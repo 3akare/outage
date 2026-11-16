@@ -649,11 +649,11 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Open: confirm which test flaked.
 
 ## 2026-11-23 feat(log): REPORT events [spec:power-log task:1]
-- Added the `REPORT` wire event (kind `OUT`) to the shared types and strict validator, the Kotlin wire, a contract fixture, the ingest handoff and the area reducer. The reducer keeps reports for 10 minutes and feeds the distinct-install count to the manual hint (ADR 0036).
+- Added the `REPORT` wire event (kind `OUT`) to the shared types and strict validator, the Kotlin wire, a contract fixture, the ingest handoff and the area reducer. The reducer keeps reports for 10 minutes and feeds the distinct-install count to the manual hint (ADR 0042).
 - `npm test`, typecheck and lint were run before the commit; no new test was written for it (human asked for no more tests).
 
 ## 2026-11-23 feat(log): local log storage [spec:power-log task:2]
-- Second SQLite database `outage_log.db` on `SQLiteOpenHelper` with a step-by-step migration function, `raw_input` and `setting` tables, and a memory twin (ADR 0037). Intervals and day stats are rebuilt, not stored.
+- Second SQLite database `outage_log.db` on `SQLiteOpenHelper` with a step-by-step migration function, `raw_input` and `setting` tables, and a memory twin (ADR 0043). Intervals and day stats are rebuilt, not stored.
 - Gradle unit tests, lint and assembleDebug pass. No new test (human asked for no more tests).
 
 ## 2026-11-23 feat(log): TimelineBuilder [spec:power-log task:4]
@@ -687,10 +687,28 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Not done: test PL9 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
 
 ## 2026-11-23 feat(log): delete-my-data and traceability for the Power Log [spec:power-log task:10]
-- `power_log` delete function: clears the log database and its settings, cancels the Freezer Guard alarm, clears the cached area outages and the cached share picture. It runs with the other phone-side deletes in `DeleteRegistry`; the server half still goes through the existing `/v1/delete`, which also removes the install's `REPORT` events (ADR 0036).
+- `power_log` delete function: clears the log database and its settings, cancels the Freezer Guard alarm, clears the cached area outages and the cached share picture. It runs with the other phone-side deletes in `DeleteRegistry`; the server half still goes through the existing `/v1/delete`, which also removes the install's `REPORT` events (ADR 0042).
 - `docs/traceability.md`: PL1 to PL9 rows say what is code-done and that the tests were not written, because the human asked for no more tests on 2026-11-23.
 
 ## 2026-11-23 feat(field): phone telemetry aggregator and daily uploader [spec:field-telemetry task:4]
 - `DeviceDays.build` makes one `DeviceDay` for a local day from the sensor's events and diagnostics, in the exact shape of `packages/shared/fixtures/telemetry/device-day.json`. `TelemetryDriver` sends the previous day once, only with consent, a registered install and a Worker address. `IngestApi.postTelemetry` calls the existing `POST /v1/telemetry`. Consent is the interface `TelemetryConsent` over the preference `telemetry_prefs/share_diagnostics`; the Settings row "Share anonymous diagnostics" is wired to it. ADR 0041.
 - Note for the onboarding agent: call `PrefsTelemetryConsent(context).set(optIn)` from the diagnostics choice. Settings registers the feature `diagnostics`; if onboarding registers its own, keep one.
 - Not done: Kotlin tests F1 and F2 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(alarm): LABEL on the phone, AlarmPolicy, self-test mode [spec:alerts-and-light-alarm tasks:1,3, spec:onboarding tasks:1,2]
+- LABEL was already in the shared types, the strict ingest schema and the fixtures. The phone side was missing: `EventDraft`, `SensorEvent` and the SQLite event table (schema v2, `ref_seq`, `answer`) now carry `refSeq` and `answer`, `queueLabel` appends one, and `SensorOutbox` sends a LABEL with only the fields the strict schema allows.
+- `AlarmPolicy` (pure) and `WakeStore` with an in-memory fake. Tests L1, L2 (against a reference model), L4, L9, L10 as seeded loops, no new dependency.
+- Self-test: `beginSelfTest`, `endSelfTest`, `plugChanged`, `PlugWatcher`, and `Diagnostics.selfTest`. While a test runs the controller records and appends nothing, so no listener, prompt or alarm sees it (O6). `endSelfTest` puts the machine back in line with the plug silently. The battery checklist field is left to onboarding task 7.
+
+## 2026-11-23 feat(alarm): Light Alarm adapters [spec:alerts-and-light-alarm task:4]
+- Kotlin adapters in `alarm`: `PromptNotifier` (channel `power-check`, immutable pending intents to an explicit non-exported `NotificationActionReceiver`), SQLite `WakeStore`, `ChannelSetup` and `ChannelSpecs`, `LightAlarm` (looped alarm-usage audio with a bundled fallback sound, vibration, alarm-category notification with Stop, full-screen intent only where `canUseFullScreenIntent()` allows, a wake lock capped at 120 s), `AlarmCore` and `AlarmHost`. The sensor controller notifies `AlarmCore` in-process, so the ring needs no network.
+- Label writes go through a single-thread executor, so the sensor lock and the alarm lock are never taken in opposite orders. The receiver flushes the executor before it finishes.
+- Manifest: `WAKE_LOCK`, `VIBRATE`, `USE_FULL_SCREEN_INTENT`, the receiver. Delete-my-data clears the wake store. Station mode shows no prompt because it has no per-unplug question flow yet; the station flag is not wired (station-mode owns it).
+- Tests L3 (import scan plus a run with only store, clock and effects) and L11. Device checks stay in `docs/probe-checklist.md` and are not run (human's order).
+
+## 2026-11-23 feat(app): alarm screens, follow, spot, permissions, charger test, Firebase Messaging [spec:alerts-and-light-alarm tasks:8,9 spec:onboarding tasks:5,6,7]
+- Firebase Messaging added under the blanket approval (FCM is free on Spark, checked on firebase.google.com/pricing and the client doc). ADR 0036. BoM 35.2.0, plugin `com.google.gms.google-services` 4.6.0. The plugin is applied only when the Firebase config file exists in `apps/android/app/`, so the build works without it; `PushHost.isAvailable()` turns push off at run time. `docs/deploy.md` section 6 gives the exact file place and the CI secret `FIREBASE_CONFIG_B64` decoded in `android.yml`. `approved-dependencies.json` updated.
+- ADR 0037: coarse location, asked once on the Spot screen, resolved against the published map outlines (no H3 library on the phone). The sensor manifest test still bans fine and background location; only the coarse entry left its ban list. This amends one assertion, no test was deleted.
+- Screens (Compose): Light Alarm settings with Test Light Alarm (rings after 5 s, nothing sent) and the Alarm check list, Notifications permission screen, Your spot (location once or map pick with tap-able hex grid, postcode optional) with follow switches and quiet hours below, Charger test with three results. All reachable from Settings and the Home cards, so first run stays one button (ADR 0030). Permissions are asked in context.
+- Tests: `FollowTest`, `SpotAndChecksTest` (O2, first-result-wins, mock confirm, Alarm check data), `tools/sim/test/push-plan.test.ts` (simulated push plan, marked simulated, no send path).
+- Left: onboarding task 8 (device run, skipped by the human's order). Self-test screen has no per-step timing record and no Station offer link (no navigation handle in feature screens); the self-test text points to Settings.

@@ -1,4 +1,4 @@
-# ADR 0037: Power Log storage in a second SQLite database
+# ADR 0043: Power Log storage in a second SQLite database
 
 Status: accepted (human blanket approval 2026-11-15). Spec: power-log task 2 (R1, design section 4).
 
