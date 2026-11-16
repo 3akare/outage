@@ -784,3 +784,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Screens (Compose): Light Alarm settings with Test Light Alarm (rings after 5 s, nothing sent) and the Alarm check list, Notifications permission screen, Your spot (location once or map pick with tap-able hex grid, postcode optional) with follow switches and quiet hours below, Charger test with three results. All reachable from Settings and the Home cards, so first run stays one button (ADR 0030). Permissions are asked in context.
 - Tests: `FollowTest`, `SpotAndChecksTest` (O2, first-result-wins, mock confirm, Alarm check data), `tools/sim/test/push-plan.test.ts` (simulated push plan, marked simulated, no send path).
 - Left: onboarding task 8 (device run, skipped by the human's order). Self-test screen has no per-step timing record and no Station offer link (no navigation handle in feature screens); the self-test text points to Settings.
+
+## 2026-11-24 chore(merge): merge origin/main and work/power-log into work/home-watch-demo [spec:none task:merge]
+- Merged `origin/main` into `work/power-log` (fed7090) and into `work/home-watch-demo`, then `work/power-log` into `work/home-watch-demo` (a3144e0), so #27 merges cleanly after #26. Kept every feature from all three branches.
+- ADR numbers collided with main (0036, 0037) and between the two branches (0036 to 0038). Renumbered power-log's to 0042 and 0043 and home-watch's to 0044 to 0046, and updated references. Shaped by the ADR numbering rule that spec-lint needs contiguous numbers.
+- Merge fix: two `SwitchRow` composables with the same signature; kept the one in `FreezerScreen.kt` with the `contentDescription` label. `REPORT` and the heartbeat reason are both in `ingest.ts`.
+- Checks on both final trees: `npm test`, lint, typecheck, spec-lint, architecture test and Gradle unit tests, lint and assembleDebug all exit 0.
+- Open: #26 has no kiro-log entry for its own merge; add one if the human wants it. No device run.
