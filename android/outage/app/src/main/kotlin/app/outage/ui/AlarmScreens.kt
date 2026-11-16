@@ -5,36 +5,21 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import app.outage.R
 import app.outage.alarm.AlarmHost
 import app.outage.onboarding.AlarmCheck
-import app.outage.onboarding.AlarmCheckFacts
 import app.outage.onboarding.Permissions
 
 private const val TEST_DELAY_MS = 5_000L
@@ -54,50 +39,37 @@ fun AlarmSettingsScreen(registered: () -> Boolean, onOpenBattery: () -> Unit) {
         facts = Permissions.facts(ctx, registered())
     }
 
-    Column(
-        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(stringResource(R.string.alarm_title), style = MaterialTheme.typography.headlineSmall)
-        Text(stringResource(R.string.alarm_screen_intro), style = MaterialTheme.typography.bodyLarge)
-
-        Button(
-            onClick = { testing = true; scheduleTest(ctx) { testing = false } },
-            enabled = !testing,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-        ) { Text(stringResource(if (testing) R.string.alarm_test_running else R.string.alarm_test_start)) }
-        if (testing) {
-            OutlinedButton(
-                onClick = { cancelTest(ctx); testing = false },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-            ) { Text(stringResource(R.string.alarm_test_stop)) }
+    FeaturePage(R.string.alarm_title) {
+        PageText(stringResource(R.string.alarm_screen_intro))
+        Gap()
+        ActionStack {
+            InkButton(
+                stringResource(if (testing) R.string.alarm_test_running else R.string.alarm_test_start),
+                onClick = { testing = true; scheduleTest(ctx) { testing = false } },
+                modifier = Modifier.fillMaxWidth(),
+                busy = testing,
+            )
+            if (testing) FillButton(stringResource(R.string.alarm_test_stop), { cancelTest(ctx); testing = false }, Modifier.fillMaxWidth())
         }
 
-        Text(stringResource(R.string.alarm_check_title), style = MaterialTheme.typography.titleMedium)
-        AlarmCheck.items(facts).forEach { item ->
-            val text = stringResource(item.textRes)
-            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).semantics { contentDescription = text }, verticalAlignment = Alignment.CenterVertically) {
-                Text(if (item.ok) "\u2713  " else "!  ", color = if (item.ok) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
-                Text(text, style = MaterialTheme.typography.bodyLarge)
-            }
-            if (!item.ok) {
-                when (item.key) {
-                    "notifications" -> FixButton(R.string.alarm_check_fix_notifications) {
+        GroupHeader(stringResource(R.string.alarm_check_title))
+        DayCard {
+            AlarmCheck.items(facts).forEachIndexed { i, item ->
+                if (i > 0) RowDivider(50.dp)
+                val fix: Pair<Int, () -> Unit>? = if (item.ok) null else when (item.key) {
+                    "notifications" -> R.string.alarm_check_fix_notifications to {
                         val perm = Permissions.notificationPermissionOrNull()
                         if (perm != null) askNotifications.launch(perm) else ctx.startActivity(Permissions.notificationSettingsIntent(ctx))
                     }
-                    "fullscreen" -> FixButton(R.string.alarm_check_fix_fullscreen) { ctx.startActivity(Permissions.fullScreenSettingsIntent(ctx)) }
-                    "battery" -> FixButton(R.string.alarm_check_fix_battery, onOpenBattery)
+                    "fullscreen" -> R.string.alarm_check_fix_fullscreen to { ctx.startActivity(Permissions.fullScreenSettingsIntent(ctx)) }
+                    "battery" -> R.string.alarm_check_fix_battery to onOpenBattery
+                    else -> null
                 }
+                CheckRow(stringResource(item.textRes), item.ok, fix?.let { stringResource(it.first) }, fix?.second)
             }
         }
-        Text(stringResource(R.string.alarm_reboot_note), style = MaterialTheme.typography.bodyMedium)
+        GroupFooter(stringResource(R.string.alarm_reboot_note))
     }
-}
-
-@Composable
-private fun FixButton(textRes: Int, onClick: () -> Unit) {
-    OutlinedButton(onClick = onClick, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(textRes)) }
 }
 
 private val handler = Handler(Looper.getMainLooper())
@@ -139,31 +111,37 @@ fun PermissionsScreen() {
         ok = Permissions.notificationsOk(ctx)
         asked = true
     }
-    Column(
-        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(stringResource(R.string.perm_title), style = MaterialTheme.typography.headlineSmall)
-        Text(stringResource(R.string.perm_notifications_reason), style = MaterialTheme.typography.bodyLarge)
-        Text(stringResource(if (ok) R.string.alarm_check_notifications_ok else R.string.alarm_check_notifications_off))
-        if (!ok) {
-            Button(
-                onClick = {
-                    val perm = Permissions.notificationPermissionOrNull()
-                    // After a refusal Android may not show the dialog again, so the system settings page is the way.
-                    if (perm != null && !asked) ask.launch(perm) else ctx.startActivity(Permissions.notificationSettingsIntent(ctx))
-                },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-            ) { Text(stringResource(if (asked) R.string.perm_open_settings else R.string.perm_notifications_button)) }
-            if (asked) Text(stringResource(R.string.perm_notifications_denied), style = MaterialTheme.typography.bodyMedium)
+    FeaturePage(R.string.perm_title) {
+        PageText(stringResource(R.string.perm_notifications_reason))
+        Gap()
+        DayCard {
+            CheckRow(stringResource(if (ok) R.string.alarm_check_notifications_ok else R.string.alarm_check_notifications_off), ok)
         }
-        Text(stringResource(R.string.perm_fullscreen_reason), style = MaterialTheme.typography.bodyLarge)
-        Text(stringResource(if (fullScreen) R.string.alarm_check_fullscreen_ok else R.string.alarm_check_fullscreen_off))
-        if (!fullScreen) {
-            OutlinedButton(
-                onClick = { ctx.startActivity(Permissions.fullScreenSettingsIntent(ctx)) },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-            ) { Text(stringResource(R.string.perm_fullscreen_button)) }
+        if (asked && !ok) GroupFooter(stringResource(R.string.perm_notifications_denied))
+        if (!ok) {
+            Gap()
+            ActionStack {
+                InkButton(
+                    stringResource(if (asked) R.string.perm_open_settings else R.string.perm_notifications_button),
+                    onClick = {
+                        val perm = Permissions.notificationPermissionOrNull()
+                        // After a refusal Android may not show the dialog again, so the system settings page is the way.
+                        if (perm != null && !asked) ask.launch(perm) else ctx.startActivity(Permissions.notificationSettingsIntent(ctx))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+        Gap(20.dp)
+        PageText(stringResource(R.string.perm_fullscreen_reason))
+        Gap()
+        DayCard {
+            CheckRow(
+                stringResource(if (fullScreen) R.string.alarm_check_fullscreen_ok else R.string.alarm_check_fullscreen_off), fullScreen,
+                if (fullScreen) null else stringResource(R.string.perm_fullscreen_button),
+                if (fullScreen) null else ({ ctx.startActivity(Permissions.fullScreenSettingsIntent(ctx)) }),
+            )
         }
     }
 }
+

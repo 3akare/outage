@@ -6,17 +6,15 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,23 +40,41 @@ fun BatterySetupScreen() {
     val ctx = LocalContext.current
     val maker = remember { runCatching { AssetOemGuide.load(ctx).match(Build.MANUFACTURER, Build.BRAND) }.getOrNull() }
     var exempt by remember { mutableStateOf(isExempt(ctx)) }
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(stringResource(R.string.setup_battery_title), style = MaterialTheme.typography.headlineSmall)
-        Text(stringResource(if (exempt) R.string.alarm_check_battery_ok else R.string.alarm_check_battery_off))
-        Button(onClick = { ctx.startActivity(exemptionIntent(ctx)); exempt = isExempt(ctx) }, modifier = Modifier.heightIn(min = 48.dp)) {
-            Text(stringResource(R.string.battery_allow_button))
+    FeaturePage(R.string.setup_battery_title) {
+        DayCard {
+            CheckRow(stringResource(if (exempt) R.string.alarm_check_battery_ok else R.string.alarm_check_battery_off), exempt)
+        }
+        Gap()
+        ActionStack {
+            InkButton(stringResource(R.string.battery_allow_button), { ctx.startActivity(exemptionIntent(ctx)); exempt = isExempt(ctx) }, Modifier.fillMaxWidth())
         }
         if (maker != null) {
-            Text(
+            GroupHeader(
                 if (maker.label == GuideLabel.VERIFIED) stringResource(R.string.battery_verified_steps, maker.name)
                 else stringResource(R.string.battery_general_steps),
-                style = MaterialTheme.typography.bodyMedium,
             )
             maker.stepGroups.forEach { g ->
-                Text(g.title, style = MaterialTheme.typography.titleMedium)
-                g.steps.forEachIndexed { i, s -> Text(stringResource(R.string.battery_step_item, i + 1, s)) }
+                Gap(4.dp)
+                DayCard(padding = 20.dp) {
+                    Text(g.title, style = DayType.title3, color = Day.ink, modifier = Modifier.padding(bottom = 10.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        g.steps.forEachIndexed { i, s -> StepLine(i + 1, s) }
+                    }
+                }
+                Gap(8.dp)
             }
         }
+    }
+}
+
+/** One numbered step: the number in a small grey disc, then the words. */
+@Composable
+private fun StepLine(n: Int, text: String) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Box(Modifier.size(24.dp).clip(CircleShape).background(Day.fill), contentAlignment = Alignment.Center) {
+            Text(n.toString(), style = DayType.caption.copy(fontFeatureSettings = "tnum"), color = Day.ink)
+        }
+        Text(text, style = DayType.callout, color = Day.ink2, modifier = Modifier.weight(1f))
     }
 }
 
@@ -65,9 +82,10 @@ fun BatterySetupScreen() {
 @Composable
 fun SensorToggleScreen(isOn: () -> Boolean, setOn: (Boolean) -> Unit) {
     var on by remember { mutableStateOf(isOn()) }
-    Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(stringResource(R.string.sensor_toggle_label), style = MaterialTheme.typography.bodyLarge)
-        Switch(checked = on, onCheckedChange = { on = it; setOn(it) })
+    FeaturePage(R.string.settings_sensor) {
+        DayCard {
+            SwitchRow(R.string.sensor_toggle_label, on, R.drawable.ic_sym_bolt to Tokens.Colors.tileGreen) { on = it; setOn(it) }
+        }
     }
 }
 

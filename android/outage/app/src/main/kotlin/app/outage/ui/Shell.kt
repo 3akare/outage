@@ -133,7 +133,7 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
                 is Route.Feature -> {
                     val feature = graph.features.get(current.key)
                     when {
-                        feature != null -> feature.screen()
+                        feature != null -> androidx.compose.runtime.CompositionLocalProvider(LocalBack provides back) { feature.screen() }
                         current.key == SettingsItems.ABOUT -> AboutScreen(back)
                         else -> ComingSoonScreen(SettingsItems.titleFor(current.key) ?: titleForKey(current.key), back)
                     }

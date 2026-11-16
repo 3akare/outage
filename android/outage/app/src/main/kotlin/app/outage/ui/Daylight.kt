@@ -164,8 +164,8 @@ fun DayRow(
     value: String? = null,
     titleColor: Color = Day.ink,
     chevron: Boolean = false,
-    onClick: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
+    onClick: (() -> Unit)? = null,
 ) {
     val base = Modifier.fillMaxWidth().heightIn(min = 52.dp)
     Row(
@@ -187,9 +187,9 @@ fun DayRow(
 /** A row with a switch; the row toggles it too. Green when on, like iOS. */
 @Composable
 fun SwitchRow(title: String, subtitle: String? = null, checked: Boolean, tile: Pair<Int, Color>? = null, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
-    DayRow(title, subtitle, tile, onClick = if (enabled) ({ onChange(!checked) }) else null) {
+    DayRow(title, subtitle, tile, onClick = if (enabled) ({ onChange(!checked) }) else null, trailing = {
         DaySwitch(checked, enabled, onChange)
-    }
+    })
 }
 
 @Composable
@@ -386,3 +386,59 @@ fun RowScope.Fill() = Spacer(Modifier.weight(1f))
 /** A fixed-width spacer. */
 @Composable
 fun HGap(w: Dp) = Spacer(Modifier.width(w))
+
+/** The back action of the screen on top, set by the shell for pushed feature screens. Null on a top-level destination. */
+val LocalBack = androidx.compose.runtime.staticCompositionLocalOf<(() -> Unit)?> { null }
+
+/** A pushed feature screen: the back row from [LocalBack], a large title, then the content on the grey page. */
+@Composable
+fun FeaturePage(
+    titleRes: Int,
+    scroll: ScrollState = rememberScrollState(),
+    trailing: @Composable RowScope.() -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    DayPage(title = stringResource(titleRes), onBack = LocalBack.current, scroll = scroll, trailing = trailing, content = content)
+}
+
+/** A label, then a value between a minus and a plus button; each button is a 48 dp target. */
+@Composable
+fun StepperRow(label: String, value: String, lessDesc: Int, moreDesc: Int, canLess: Boolean, canMore: Boolean, onLess: () -> Unit, onMore: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = DayType.body, color = Day.ink, modifier = Modifier.weight(1f))
+        StepButton(R.drawable.ic_sym_remove, lessDesc, canLess, onLess)
+        Text(value, style = DayType.headline.copy(fontFeatureSettings = "tnum"), color = Day.ink, textAlign = TextAlign.Center, modifier = Modifier.width(64.dp))
+        StepButton(R.drawable.ic_sym_add, moreDesc, canMore, onMore)
+    }
+}
+
+@Composable
+private fun StepButton(icon: Int, desc: Int, enabled: Boolean, onClick: () -> Unit) {
+    val d = stringResource(desc)
+    Box(
+        Modifier.size(48.dp).clip(CircleShape).clickable(enabled = enabled, role = Role.Button, onClick = onClick).semantics { contentDescription = d },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(Modifier.size(34.dp).clip(CircleShape).background(Day.fill), contentAlignment = Alignment.Center) {
+            Glyph(icon, if (enabled) Day.ink else Day.rule2, 18.dp)
+        }
+    }
+}
+
+/** A check-list line: a green check or a red alert, the words, and an optional fix action under them. */
+@Composable
+fun CheckRow(text: String, ok: Boolean, fix: String? = null, onFix: (() -> Unit)? = null) {
+    val s = LocalStatusColors.current
+    Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = if (fix != null) 2.dp else 14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Glyph(if (ok) R.drawable.ic_sym_check else R.drawable.ic_sym_alert, if (ok) s.normal.color else s.confirmed.color, 22.dp)
+        Column(Modifier.weight(1f)) {
+            Text(text, style = DayType.body, color = Day.ink)
+            if (fix != null && onFix != null) {
+                Box(Modifier.padding(top = 2.dp)) { TextAction(fix, onFix, Modifier.padding(start = 0.dp)) }
+            }
+        }
+    }
+}

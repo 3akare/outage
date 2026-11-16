@@ -98,7 +98,6 @@
 
     <!-- Onboarding: battery step label (R7.4) -->
     <string name="battery_general_steps">General steps. Names may differ on your phone.</string>
-    <string name="battery_step_item" translatable="false">%1$d. %2$s</string>
     <string name="battery_verified_steps">Checked on a %1$s phone.</string>
 
     <!-- Light Alarm and prompt (alerts-and-light-alarm, string pack L12) -->
@@ -335,8 +334,8 @@
     <string name="follow_kind_restored">When power comes back</string>
     <string name="follow_quiet_switch">Quiet hours</string>
     <string name="follow_quiet_hint">Inside this window alerts arrive without sound. The Light Alarm ignores it.</string>
-    <string name="follow_quiet_from">From %1$s</string>
-    <string name="follow_quiet_to">To %1$s</string>
+    <string name="follow_quiet_from">From</string>
+    <string name="follow_quiet_to">To</string>
     <string name="follow_earlier">Earlier</string>
     <string name="follow_later">Later</string>
     <string name="follow_google_note">Alerts come through Google. Your phone sends Google and Outage a push address once you turn this on.</string>
@@ -488,7 +487,10 @@
     <string name="freezer_title">Freezer Guard</string>
     <string name="freezer_intro">Get an alert when the power has been off for too long, so you can check your freezer.</string>
     <string name="freezer_on">Freezer Guard</string>
-    <string name="freezer_limit">Alert after %1$d h without power</string>
+    <string name="freezer_limit_label">Alert after</string>
+    <string name="freezer_hours_value">%1$d h</string>
+    <string name="freezer_quiet_start_label">Starts</string>
+    <string name="freezer_quiet_end_label">Ends</string>
     <string name="freezer_limit_less">One hour less</string>
     <string name="freezer_limit_more">One hour more</string>
     <string name="freezer_late_note">This can arrive later than your limit when the phone is saving battery.</string>
