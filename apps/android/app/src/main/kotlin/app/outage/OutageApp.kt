@@ -34,6 +34,7 @@ import app.outage.ui.InsightsScreen
 import app.outage.ui.MapScreen
 import app.outage.ui.PowerLogScreen
 import app.outage.ui.PowerLogViewModel
+import app.outage.ui.ShareCardImage
 import java.io.File
 import java.util.concurrent.Executors
 import kotlinx.coroutines.Dispatchers
@@ -96,7 +97,7 @@ class OutageApp : Application() {
             R.string.log_title,
             {
                 val vm: PowerLogViewModel = viewModel(factory = viewModelFactory { initializer { PowerLogViewModel(service) } })
-                PowerLogScreen(vm, shareImage = null)
+                PowerLogScreen(vm, shareImage = { v -> Thread { runCatching { ShareCardImage.share(applicationContext, v.share) } }.start() })
             },
             null,
         )

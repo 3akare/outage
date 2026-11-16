@@ -128,7 +128,8 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/ui/FreezerScreen.kt` | Freezer Guard settings screen |
 | `apps/android/app/src/main/kotlin/app/outage/ui/PowerLogScreen.kt` | Power Log screen: now, taps, today, 30 days, outages, Light Score, band, share |
 | `apps/android/app/src/main/kotlin/app/outage/ui/PowerLogViewModel.kt` | State and background work for the Power Log screen |
-| `apps/android/app/src/main/kotlin/app/outage/ui/ShareCardText.kt` | The share card as text, and the facts both forms carry
+| `apps/android/app/src/main/kotlin/app/outage/ui/ShareCardImage.kt` | The share card drawn as a picture with Canvas and shared through FileProvider |
+| `apps/android/app/src/main/kotlin/app/outage/ui/ShareCardText.kt` | The share card as text, and the facts both forms carry |
 | `apps/android/app/src/main/kotlin/app/outage/insights/DemoOutages.kt` | About 60 days of labelled sample outages for demo mode |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsCalc.kt` | Pure numbers for Insights: hours of power, heatmap, trend, promise check |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsSource.kt` | Where Insights gets its outage timeline (demo or real) |
@@ -215,6 +216,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` | Adaptive launcher icon |
 | `apps/android/app/src/main/res/values/strings.xml` | Every English UI string |
 | `apps/android/app/src/main/res/values-pcm/strings.xml` | Optional Nigerian Pidgin strings (fall back to English per key) |
+| `apps/android/app/src/main/res/xml/share_paths.xml` | FileProvider path for the share card picture (cache folder `share`) |
 | `apps/android/app/src/main/res/values/themes.xml` | Light app theme |
 | `apps/android/app/src/main/res/values-night/themes.xml` | Dark app theme |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt` | Alarm strings exist in every pack |

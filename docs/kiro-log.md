@@ -681,3 +681,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - `PowerLogScreen` and `PowerLogViewModel`: power now, today, 30 days (bar chart), outage list with the open outage, month Light Score ring, band picker with the promise check worded as an estimate, "Power is out" (one per 10 minutes) and "Power is back", text share. `PowerLogService` and `PowerLogModel` hold the logic without Android types. Home has a card that opens it.
 - The sensor's events now reach the log (`Sensor.onCreated` hook plus a read of the pending Outbox), and "Power is out" queues a `REPORT` in the Outbox (`EventType.REPORT`, `recordReport()`). ADR 0039.
 - Not done: tests PL8, PL9 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(log): image share card [spec:power-log task:9]
+- Decided and recorded in ADR 0040: a Canvas bitmap drawn on the phone, written to the cache and shared through `FileProvider` and `ACTION_SEND` with the text as a fallback. The card takes `ShareFacts` only, which has no location, area, install ID or name.
+- Not done: test PL9 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
