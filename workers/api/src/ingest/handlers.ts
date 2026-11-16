@@ -188,6 +188,7 @@ function toAreaEvent(ev: WireEvent, receiveTimeMs: number): AreaEvent {
     confidence: ev.confidence,
   };
   if (ev.type === 'LABEL') return { ...base, schedulingDelayMs: null, refSeq: ev.refSeq, answer: ev.answer };
+  if (ev.type === 'REPORT') return { ...base, schedulingDelayMs: null };
   return { ...base, schedulingDelayMs: ev.schedulingDelayMs ?? null };
 }
 

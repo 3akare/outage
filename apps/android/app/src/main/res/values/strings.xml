@@ -229,6 +229,56 @@
     <string name="ins_empty_body">Outage logs power while your phone charges. Keep it plugged in at home and your pattern appears here.</string>
     <string name="ins_empty_battery">Check battery setup</string>
     <string name="ins_simulated_note">Sample data to show the charts. Your own log starts once your phone has watched for a day.</string>
+    <!-- Power Log screen (power-log R7, R8, R10; copy.md: plain words, "power") -->
+    <string name="log_title">Power log</string>
+    <string name="home_log_title">Power log</string>
+    <string name="home_log_body">Power now, today, the last 30 days and your Light Score.</string>
+    <string name="log_now_on">Power on since %1$s</string>
+    <string name="log_now_out">Power out since %1$s</string>
+    <string name="log_now_out_for">Out for %1$s so far</string>
+    <string name="log_now_off_charger">Your phone is not on the charger, so power cannot be checked.</string>
+    <string name="log_now_unknown">Not watching right now. Plug in your phone to start.</string>
+    <string name="log_now_none">No power record yet. Keep your phone charging at home and it fills in.</string>
+    <string name="log_btn_out">Power is out</string>
+    <string name="log_btn_back">Power is back</string>
+    <string name="log_msg_out_started">Noted. Power out from now.</string>
+    <string name="log_msg_out_charging">Your phone is charging, so power looks on here. Your report was still sent.</string>
+    <string name="log_msg_rate">You can report again in %1$d min.</string>
+    <string name="log_msg_back">Noted. Power is back.</string>
+    <string name="log_msg_back_none">No outage is open.</string>
+    <string name="log_today_title">Today</string>
+    <string name="log_today_no_data">Not enough data yet today.</string>
+    <string name="log_today_power">%1$s of power</string>
+    <plurals name="log_outage_count">
+        <item quantity="one">%1$d outage</item>
+        <item quantity="other">%1$d outages</item>
+    </plurals>
+    <string name="log_longest">Longest %1$s</string>
+    <string name="log_30_title">Last 30 days</string>
+    <string name="log_list_title">Outages in the last 30 days</string>
+    <string name="log_list_none">No outages in the last 30 days.</string>
+    <string name="log_list_row">%1$s to %2$s</string>
+    <string name="log_list_row_open">%1$s, still out</string>
+    <string name="log_list_unsure">The end time is a guess.</string>
+    <string name="log_month_title">Light Score, %1$s</string>
+    <string name="log_score_value">%1$d%%</string>
+    <string name="log_score_not_enough">Not enough days yet</string>
+    <string name="log_score_days">An estimate from %1$d days with enough data.</string>
+    <string name="log_score_summary">Light Score %1$d percent</string>
+    <string name="log_score_summary_none">Light Score not available yet</string>
+    <string name="log_share">Share my month</string>
+    <string name="log_share_picture">Share as a picture</string>
+    <string name="log_share_chooser">Share your Light Score</string>
+    <string name="log_share_text">My Light Score for %1$s: %2$s. %3$.1f hours of power and %4$d outages, an estimate from %5$d days.</string>
+    <string name="log_share_text_link">Get Outage: %1$s</string>
+    <string name="log_share_card_title">My power, %1$s</string>
+    <string name="log_share_card_hours">%1$.1f hours of power</string>
+    <string name="log_share_card_outages">%1$d outages</string>
+    <string name="log_share_card_estimate">Estimate from %1$d days</string>
+    <string name="log_share_card_name">Outage</string>
+    <!-- Anonymous diagnostics (field-telemetry R1) -->
+    <string name="diag_switch">Share anonymous diagnostics</string>
+    <string name="diag_body">Once a day Outage sends how well it watched your power: charging hours, watching hours, gaps and how late the phone woke the app. It has no location, name, phone number or phone model, and you can turn it off at any time. Delete my data removes it.</string>
     <!-- Screens for the alarm, follow, spot, permissions and self-test (alerts-and-light-alarm task 8, onboarding tasks 5 to 7) -->
     <!-- Light Alarm settings and Alarm check -->
     <string name="alarm_screen_intro">Light Alarm rings when power comes back at your spot, even at night. It works without internet.</string>
@@ -316,4 +366,31 @@
     <string name="sensor_notification_title">Outage station</string>
     <string name="sensor_notification_body">Watching your power</string>
     <string name="sensor_notification_stop">Stop station</string>
+    <!-- Freezer Guard (power-log R6, copy.md: plain words) -->
+    <string name="settings_freezer">Freezer Guard</string>
+    <string name="freezer_title">Freezer Guard</string>
+    <string name="freezer_intro">Get an alert when the power has been off for too long, so you can check your freezer.</string>
+    <string name="freezer_on">Freezer Guard</string>
+    <string name="freezer_limit">Alert after %1$d h without power</string>
+    <string name="freezer_limit_less">One hour less</string>
+    <string name="freezer_limit_more">One hour more</string>
+    <string name="freezer_late_note">This can arrive later than your limit when the phone is saving battery.</string>
+    <string name="freezer_reboot_note">If the phone restarts, Freezer Guard starts counting again when you open Outage.</string>
+    <string name="freezer_quiet_window">Quiet hours: %1$s to %2$s</string>
+    <string name="freezer_quiet_start_less">Quiet hours start one hour earlier</string>
+    <string name="freezer_quiet_start_more">Quiet hours start one hour later</string>
+    <string name="freezer_quiet_end_less">Quiet hours end one hour earlier</string>
+    <string name="freezer_quiet_end_more">Quiet hours end one hour later</string>
+    <string name="freezer_quiet_sound">Freezer Guard may sound in quiet hours</string>
+    <string name="freezer_exact">Alert on time</string>
+    <string name="freezer_exact_body">Uses an exact alarm, so the alert comes at your limit and not later.</string>
+    <string name="freezer_exact_allow">Allow alarms and reminders</string>
+    <string name="freezer_notifications_off">Notifications are off for Outage, so the alert cannot show. Turn them on in phone settings.</string>
+    <string name="freezer_channel">Freezer Guard</string>
+    <string name="freezer_channel_quiet">Freezer Guard (quiet hours)</string>
+    <string name="freezer_alert_title">Check your freezer</string>
+    <plurals name="freezer_alert_body">
+        <item quantity="one">Power has been off for %1$d hour. Check your freezer.</item>
+        <item quantity="other">Power has been off for %1$d hours. Check your freezer.</item>
+    </plurals>
 </resources>

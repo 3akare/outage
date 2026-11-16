@@ -25,6 +25,8 @@ data class PendingEvent(
     val plugType: String? = null,
     val refSeq: Long? = null,
     val answer: String? = null,
+    /** REPORT only: `OUT` (power-log R7.4). */
+    val kind: String? = null,
 ) {
     /** Simulated events and reboot-crossing (`LOST`) events are never uploaded (R9.7, R4.3). */
     val uploadable: Boolean get() = !simulated && timeQuality == "OK"

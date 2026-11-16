@@ -6,8 +6,8 @@ import { isPairId, MAX_PAIR_IDS_PER_DELETE } from './pairing.ts';
 export const MAX_ELAPSED_MS = 604_800_000; // 7 days (brief, event-time.md)
 
 export const STATE_TYPES = ['ARMED', 'DISARMED'] as const;
-export const DETECTION_TYPES = ['UNPLUG', 'BATTERY_FULL', 'REPLUG', 'LABEL'] as const;
-export const EVENT_TYPES = ['ARMED', 'UNPLUG', 'BATTERY_FULL', 'REPLUG', 'DISARMED', 'LABEL'] as const;
+export const DETECTION_TYPES = ['UNPLUG', 'BATTERY_FULL', 'REPLUG', 'LABEL', 'REPORT'] as const;
+export const EVENT_TYPES = ['ARMED', 'UNPLUG', 'BATTERY_FULL', 'REPLUG', 'DISARMED', 'LABEL', 'REPORT'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 export type StateType = (typeof STATE_TYPES)[number];
 
@@ -34,7 +34,7 @@ export function isPermanent(code: RejectCode): boolean {
   return PERMANENT_CODES.includes(code);
 }
 
-/** State events are write-behind and droppable; everything else (UNPLUG, BATTERY_FULL, REPLUG, LABEL) is detection-class. */
+/** State events are write-behind and droppable; everything else (UNPLUG, BATTERY_FULL, REPLUG, LABEL, REPORT) is detection-class. */
 export function isStateType(type: EventType): type is StateType {
   return type === 'ARMED' || type === 'DISARMED';
 }
@@ -67,7 +67,19 @@ export interface LabelWireEvent {
   answer: 'YES' | 'NO';
 }
 
-export type WireEvent = BaseWireEvent | LabelWireEvent;
+/** power-log R7.4: the user's "Power is out" tap. Only kind OUT is uploaded; "Power is back" stays on the phone (R7.3). */
+export interface ReportWireEvent {
+  installId: string;
+  seq: number;
+  type: 'REPORT';
+  elapsedMs: number;
+  cell: string;
+  confidence: 'HIGH';
+  timeQuality: 'OK';
+  kind: 'OUT';
+}
+
+export type WireEvent = BaseWireEvent | LabelWireEvent | ReportWireEvent;
 
 export interface EventsRequest {
   installId: string;
@@ -98,6 +110,7 @@ const BASE_REQUIRED = ['installId', 'seq', 'type', 'elapsedMs', 'cell', 'confide
 const BASE_OPTIONAL = ['stopReason', 'reason', 'schedulingDelayMs', 'batteryPct', 'plugType'] as const;
 const BASE_FIELDS: ReadonlySet<string> = new Set([...BASE_REQUIRED, ...BASE_OPTIONAL]);
 const LABEL_FIELDS: ReadonlySet<string> = new Set([...BASE_REQUIRED, 'refSeq', 'answer']);
+const REPORT_FIELDS: ReadonlySet<string> = new Set([...BASE_REQUIRED, 'kind']);
 
 /** 128-bit id as 26 lowercase base32 characters. */
 export const INSTALL_ID_PATTERN = /^[a-z2-7]{26}$/;
@@ -128,7 +141,7 @@ export function validateEvent(raw: unknown, requestInstallId: string, maxElapsed
   if (Object.hasOwn(raw, 'simulated')) return rej('SIMULATED_REJECTED'); // R10.1, property P9
   const type = raw.type;
   if (typeof type !== 'string' || !(EVENT_TYPES as readonly string[]).includes(type)) return rej('BAD_FIELD');
-  const allowed = type === 'LABEL' ? LABEL_FIELDS : BASE_FIELDS;
+  const allowed = type === 'LABEL' ? LABEL_FIELDS : type === 'REPORT' ? REPORT_FIELDS : BASE_FIELDS;
   for (const key of Object.keys(raw)) if (!allowed.has(key)) return rej('UNKNOWN_FIELD'); // R1.2
   for (const key of BASE_REQUIRED) if (!Object.hasOwn(raw, key)) return rej('BAD_FIELD');
 
@@ -159,6 +172,24 @@ export function validateEvent(raw: unknown, requestInstallId: string, maxElapsed
         timeQuality: 'OK',
         refSeq: raw.refSeq,
         answer: raw.answer,
+      },
+    };
+  }
+
+  if (type === 'REPORT') {
+    if (raw.confidence !== 'HIGH') return rej('BAD_FIELD');
+    if (raw.kind !== 'OUT') return rej('BAD_FIELD');
+    return {
+      ok: true,
+      event: {
+        installId: requestInstallId,
+        seq: raw.seq,
+        type: 'REPORT',
+        elapsedMs: elapsed,
+        cell: raw.cell,
+        confidence: 'HIGH',
+        timeQuality: 'OK',
+        kind: 'OUT',
       },
     };
   }

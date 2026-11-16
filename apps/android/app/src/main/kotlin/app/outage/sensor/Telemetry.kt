@@ -56,7 +56,7 @@ object TelemetryCalc {
                         if (gap == null) gap = (e.reason ?: e.stopReason ?: Reason.UNKNOWN_CAUSE) to t
                     }
                 }
-                EventType.BATTERY_FULL, EventType.LABEL -> Unit
+                EventType.BATTERY_FULL, EventType.LABEL, EventType.REPORT -> Unit
             }
         }
         endArmed(nowElapsedMs)

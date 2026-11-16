@@ -81,8 +81,23 @@ class IngestApi(private val base: String, private val http: HttpPost) : Transpor
         return code == 200
     }
 
+    /**
+     * `POST /v1/telemetry` (field-telemetry R3.1). [Sent] on 2xx, [Dropped] when the Worker will never accept this body
+     * (400, 413, 401, 403: retrying cannot help), [Retry] for a network failure, 429 and 5xx.
+     */
+    fun postTelemetry(deviceDayJson: String, token: String): TelemetryResult {
+        val (code, _) = http.post(url("/v1/telemetry"), deviceDayJson, token) ?: return TelemetryResult.Retry
+        return when {
+            code in 200..299 -> TelemetryResult.Sent
+            code == 429 || code >= 500 -> TelemetryResult.Retry
+            else -> TelemetryResult.Dropped
+        }
+    }
+
     companion object {
         private val INSTALL_ID = Regex("^[a-z2-7]{26}$")
         private val CELL = Regex("^[0-9a-f]{15}$")
     }
 }
+
+enum class TelemetryResult { Sent, Dropped, Retry }

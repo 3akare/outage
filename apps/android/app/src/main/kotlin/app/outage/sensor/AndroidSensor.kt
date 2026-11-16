@@ -91,6 +91,12 @@ class AndroidSensorPlatform(private val ctx: Context) : SensorPlatform {
 object Sensor {
     @Volatile private var instance: DefaultSensorController? = null
 
+    /**
+     * Runs once when this process builds the sensor, before it recovers from a restart, so a listener added here
+     * hears every event of the process (the Power Log uses it, power-log R1). Set by `OutageApp.onCreate`.
+     */
+    @Volatile var onCreated: (DefaultSensorController) -> Unit = {}
+
     /** The sensor if this process already built it. Never builds it, so Home can read it on the main thread. */
     fun peek(): DefaultSensorController? = instance
 
@@ -101,6 +107,7 @@ object Sensor {
             AndroidSensorPlatform(ctx.applicationContext),
         ).also {
             instance = it
+            runCatching { onCreated(it) }
             // The Light Alarm hears every event in this process, with no network (alerts-and-light-alarm R3.3).
             val alarm = app.outage.alarm.AlarmHost.get(ctx)
             it.addListener { e -> alarm.core.onSensorEvent(e) }
