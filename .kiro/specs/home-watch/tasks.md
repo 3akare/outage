@@ -8,7 +8,7 @@ Depends on `station-mode` (tasks 2, 5), `event-ingest` (tasks 4, 5), `area-cells
 
 ## Wave 1
 
-- [ ] 1. Amend `station-mode` and `sensor-android` for the battery heartbeat: `DISARMED` with reason `HEARTBEAT_ON_BATTERY`, state-machine rule that it changes no armed interval, shared fixtures. Update `station-mode` R5.5 text and tests T6, T7 for the new case.
+- [x] 1. Amend `station-mode` and `sensor-android` for the battery heartbeat: `DISARMED` with reason `HEARTBEAT_ON_BATTERY`, state-machine rule that it changes no armed interval, shared fixtures. Update `station-mode` R5.5 text and tests T6, T7 for the new case.
   - Depends on: `station-mode` 2
   - Requirements: R3
 - [x] 2. Pairing routing scheme and ADR 0009 (options: parent code prefix, global `PairingDirectory` actor). Code alphabet and attempts rule in `packages/shared` with tests H5 (pure part).

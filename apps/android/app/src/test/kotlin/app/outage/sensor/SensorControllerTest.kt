@@ -117,6 +117,19 @@ class SensorControllerTest {
         assertEquals(1, ctl.getDiagnostics().stopReasonCounts["TIMEOUT"])
     }
 
+    /** home-watch R3.2: the battery heartbeat is not a gap and does not end the charging run or any armed interval. */
+    @Test
+    fun R3_2_battery_heartbeat_is_not_a_gap() {
+        fun ev(seq: Long, type: EventType, at: Long, plug: Plug, reason: String? = null) =
+            SensorEvent(seq, type, 0, at, TimeQuality.OK, Confidence.HIGH, null, 50, plug, null, reason, Source.RECEIVER)
+        val armed = ev(1, EventType.ARMED, 0, Plug.AC)
+        val unplug = ev(2, EventType.UNPLUG, 10_000, Plug.NONE)
+        val beat = ev(3, EventType.DISARMED, 20_000, Plug.NONE, Reason.HEARTBEAT_ON_BATTERY)
+        val withBeat = TelemetryCalc.compute(listOf(armed, unplug, beat), 30_000, 60_000)
+        assertEquals(TelemetryCalc.compute(listOf(armed, unplug), 30_000, 60_000), withBeat)
+        assertTrue(withBeat.gaps.isEmpty())
+    }
+
     @Test
     fun R10_no_charging_gives_null_ratio() {
         platform.facts = Facts(Plug.NONE, 50)
@@ -166,7 +179,7 @@ class SensorControllerTest {
             Confidence.valueOf(m["confidence"] as String)
             TimeQuality.valueOf(m["timeQuality"] as String)
         }
-        assertEquals(4, list.size)
+        assertEquals(5, list.size)
     }
 
     /** R12, station-mode R10.2: the manifest asks for no microphone, motion, location or advertising permission and no dataSync service. */

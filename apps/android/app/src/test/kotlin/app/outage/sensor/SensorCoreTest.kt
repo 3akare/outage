@@ -126,7 +126,16 @@ class SensorCoreTest {
     fun T6_heartbeat_only_while_armed() {
         for (p in Phase.entries) {
             val o = SensorStateMachine.step(MachineState(p), Input.Heartbeat, ac, 9, true)
-            assertEquals(if (p == Phase.ARMED) 1 else 0, o.events.size)
+            val expected = when (p) {
+                Phase.ARMED -> EventType.ARMED
+                // home-watch R3.1: on battery the heartbeat is DISARMED with a reason; the phase never changes.
+                Phase.DROPPED, Phase.NOT_CHARGING -> EventType.DISARMED
+                else -> null
+            }
+            assertEquals(if (expected == null) 0 else 1, o.events.size)
+            assertEquals(expected, o.events.firstOrNull()?.type)
+            assertEquals(MachineState(p), o.state)
+            if (expected == EventType.DISARMED) assertEquals(Reason.HEARTBEAT_ON_BATTERY, o.events[0].reason)
         }
     }
 

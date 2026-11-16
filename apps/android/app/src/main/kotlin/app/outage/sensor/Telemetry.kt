@@ -49,7 +49,8 @@ object TelemetryCalc {
                     if (e.type == EventType.REPLUG && t >= from) e.schedulingDelayMs?.let { delays += it }
                 }
                 EventType.UNPLUG -> { endArmed(t); endCharging(t); endGap(t) }
-                EventType.DISARMED -> {
+                // home-watch R3.2: the battery heartbeat is proof of life only. It is not a gap and changes no interval.
+                EventType.DISARMED -> if (e.reason != Reason.HEARTBEAT_ON_BATTERY) {
                     endArmed(t)
                     if (e.reason in NOT_CHARGING_REASONS) { endCharging(t); endGap(t) } else {
                         if (chargingSince == null) chargingSince = t

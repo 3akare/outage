@@ -325,6 +325,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `workers/api/test/area-scope.test.ts` | Scope selection (A1 to A3) |
 | `workers/api/test/area-view.test.ts` | Public view whitelist (A8) |
 | `workers/api/test/pairing.test.ts` | Home Watch pairing |
+| `workers/api/test/home-heartbeat.test.ts` | Battery heartbeat is proof of life only (H3, Worker side) |
 | `workers/api/test/telemetry.test.ts` | Telemetry endpoints and store |
 | `workers/api/test/telemetry-store.ts` | In-memory telemetry store for tests |
 | `workers/api/test/telemetry-integration.test.ts` | Telemetry actor in the local Workers runtime |
@@ -405,6 +406,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `packages/shared/fixtures/map/map.json` | Contract fixture for `/api/map.json` |
 | `packages/shared/fixtures/replay.json` | Simulated replay played by `/app/simulate` (built by `tools/sim`) |
 | `packages/shared/fixtures/sensor/sensor-events.json` | Sensor event fixture read by TypeScript and Kotlin tests |
+| `packages/shared/fixtures/ingest/event-heartbeat-battery.json` | Wire fixture: DISARMED with reason HEARTBEAT_ON_BATTERY |
 | `packages/shared/fixtures/telemetry/` | Device-day fixtures: valid, station and invalid |
 | `packages/shared/test/arbs.ts` | fast-check arbitraries |
 | `packages/shared/test/runs.ts` | fast-check run count |

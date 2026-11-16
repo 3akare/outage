@@ -11,6 +11,7 @@ import {
   type FieldDump,
   generateCode,
   generatePairId,
+  HEARTBEAT_ON_BATTERY,
   isPermanent,
   keyOfCode,
   type OfferResponse,
@@ -188,6 +189,7 @@ function toAreaEvent(ev: WireEvent, receiveTimeMs: number): AreaEvent {
     confidence: ev.confidence,
   };
   if (ev.type === 'LABEL') return { ...base, schedulingDelayMs: null, refSeq: ev.refSeq, answer: ev.answer };
+  if (ev.type === 'DISARMED' && ev.reason === HEARTBEAT_ON_BATTERY) return { ...base, schedulingDelayMs: null, reason: ev.reason };
   return { ...base, schedulingDelayMs: ev.schedulingDelayMs ?? null };
 }
 

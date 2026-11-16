@@ -647,3 +647,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Conflicts were in `ARCHITECTURE.md` (ADR range row) and `docs/kiro-log.md`; both sides kept. Main already had ADR 0032 (receiver-primary sensor), so the push subscriptions ADR was renumbered to `docs/adr/0035-push-subscriptions-and-sending.md` and its one log reference updated. The ADR range row now reads 0001 to 0035.
 - `npm test`, lint, typecheck, spec-lint and the architecture test pass. `npm test` failed once in four runs with the output lost; the likely cause is the known flaky `post-deploy-check` test (unconfirmed).
 - Open: confirm which test flaked.
+
+## 2026-11-23 feat(home): battery heartbeat [spec:home-watch task:1]
+- Station on battery now sends `DISARMED` with reason `HEARTBEAT_ON_BATTERY` every heartbeat interval (state machine phases `Dropped` and `NotCharging`; state unchanged). `TelemetryCalc` ignores it, so it is no gap and ends no interval.
+- Worker: `AreaCore` treats it as proof of life only: seq window and last-seen, no armed change, nothing handed to the engine. `reason` travels to the area actor for this one value. Shared constant `HEARTBEAT_ON_BATTERY`, wire fixture `event-heartbeat-battery.json`, sensor fixture now has 5 events.
+- Station-mode R5.5 and T6 text amended. No `source` on the wire (still deferred, ADR 0034).
+
