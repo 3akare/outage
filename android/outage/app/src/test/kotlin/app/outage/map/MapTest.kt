@@ -193,9 +193,10 @@ class MapTest {
     }
 
     @Test
-    fun demo_map_is_simulated_mixed_and_about_twenty_cells() {
+    fun demo_map_is_real_lagos_areas_simulated_and_mixed() {
         assertTrue(map.simulated)
-        assertTrue(map.cells.size in 18..24)
+        assertEquals(DemoCity.cells.size, map.cells.size)
+        assertTrue(map.areas.size >= 10) // real Lagos areas at their real places (ADR 0052)
         assertTrue(map.cells.map { it.id }.all { it.startsWith("sim-") })
         assertEquals(map.cells.size, map.cells.map { it.id }.toSet().size)
         val states = map.cells.map { it.state }.toSet()

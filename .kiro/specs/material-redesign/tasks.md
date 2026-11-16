@@ -49,6 +49,11 @@ graph LR
 - [x] 10. Android globe (`GlobeMath.kt`, `Globe.kt`), Home and first run on it, dark-only theme, tests GL1 to GL4.
   - Depends on: 8
 
+- [x] 11. Simulated city at real Lagos places: `build-demo-city.mjs`, `demo-city.json`, `DemoCity.kt`, tests (ADR 0052).
+  - Depends on: 9, 10
+- [x] 12. Hallmark (installed from `Nutlope/hallmark`), theme Midnight, Mona Sans, landing and app in the browser rebuilt, Android theme (ADR 0052).
+  - Depends on: 8
+
 ## Wave 5: checks
 
 - [ ] 7. Device screenshots and a TalkBack pass of first run, Home, Insights and Settings (needs a phone or emulator; the Kiro IDE pass).

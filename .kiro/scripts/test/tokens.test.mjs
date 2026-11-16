@@ -12,7 +12,7 @@ const SETS = [
 
 test('MD1 generated files are current', () => {
   const out = render(tokens);
-  for (const k of ['css', 'ts', 'kt']) assert.equal(readFileSync(paths[k], 'utf8'), out[k], `${paths[k]} is stale`);
+  for (const k of ['css', 'ts', 'kt', 'font']) assert.equal(readFileSync(paths[k], 'utf8'), out[k], `${paths[k]} is stale`);
 });
 
 test('MD1 every colour appears in CSS and Kotlin', () => {
@@ -27,9 +27,9 @@ test('MD1 every colour appears in CSS and Kotlin', () => {
   }
 });
 
-test('MD1 every colour role and the four power states exist', () => {
-  const roles = ['primary', 'on-primary', 'surface', 'on-surface', 'on-surface-variant', 'outline', 'outline-variant'];
-  const containers = ['surface-container-lowest', 'surface-container-low', 'surface-container', 'surface-container-high', 'surface-container-highest'];
+test('MD1 every colour of the Midnight theme and the four power states exist', () => {
+  const roles = ['paper', 'paper-2', 'paper-3', 'ink', 'ink-2', 'muted', 'rule', 'rule-2', 'accent', 'accent-2', 'accent-ink', 'focus'];
+  const containers = [];
   const status = ['normal', 'possible', 'confirmed', 'restored'].flatMap((s) => [s, `on-${s}`, `${s}-container`, `on-${s}-container`]);
   for (const r of [...roles, ...containers, ...status]) assert.match(tokens.colors[r] ?? '', /^#[0-9a-f]{6}$/, r);
   for (const s of ['normal', 'possible', 'confirmed', 'restored', 'nodata']) assert.match(tokens.map[s], /^#[0-9a-f]{6}$/);

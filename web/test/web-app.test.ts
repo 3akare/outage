@@ -7,6 +7,8 @@ import { handleWeb, type WebDeps } from '../routes.ts';
 import { NAV_ORDER } from '../ui/simulate/simulate.ts';
 import { stores } from '../landing/landing.ts';
 import { AREAS, NOW, SITE } from './web-helpers.ts';
+import city from '@outage/shared/fixtures/demo-city.json' with { type: 'json' };
+import { latLngToCell } from 'h3-js';
 
 function deps(site: Site = SITE): WebDeps {
   const index: IndexReader = {
@@ -27,7 +29,7 @@ describe('landing /', () => {
   it('UX9: the pitch, the app in the browser, the GitHub download, and no hardware-sensor claim', async () => {
     const { res, body } = await page('/');
     expect(res.status).toBe(200);
-    expect(body).toContain('Your phone charger is a <em>power-grid sensor</em>.');
+    expect(body).toContain('<h1 id="hero-h">Your phone charger is a power-grid sensor.</h1>');
     expect(body).toContain('href="/app/simulate"');
     expect(body).toContain('Try the app in your browser');
     expect(body).toContain('GitHub');
@@ -45,7 +47,7 @@ describe('landing /', () => {
     const all = await page('/', { ...SITE, playUrl: 'https://play.google.com/store/apps/details?id=app.outage', aptoideUrl: 'https://outage.en.aptoide.com/app' });
     expect(all.body).toContain('Google Play');
     expect(all.body).toContain('Aptoide');
-    expect(stores({ ...SITE, playUrl: 'javascript:alert(1)' }).map((s) => s.name)).toEqual(['GitHub']);
+    expect(stores({ ...SITE, playUrl: 'javascript:alert(1)' }).map((s) => s.label)).toEqual(['Download the APK from GitHub']);
   });
 });
 
@@ -67,9 +69,27 @@ describe('the app in the browser /app/simulate', () => {
     expect(body.indexOf('src="/globe.js"')).toBeLessThan(body.indexOf('src="/simulate.js"'));
     const js = (await page('/simulate.js')).body;
     const cells = JSON.parse(/var CELLS=(\[.*?\]),AREA=/.exec(js)?.[1] ?? '[]') as { id: string; ring: number[][] }[];
-    expect(cells.length).toBe(21);
+    expect(cells.length).toBe(city.cells.length);
     expect(cells.every((c) => c.id.startsWith('sim-') && c.ring.length === 6)).toBe(true);
-    expect(js).toContain("var SPOT='sim-0,0'");
+    expect(js).toContain(`var SPOT='${city.spot}'`);
+  });
+
+  it('ADR 0052: the simulated city puts real Lagos areas at their real places', () => {
+    const km = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) =>
+      Math.hypot((a.lat - b.lat) * 111.32, (a.lng - b.lng) * 111.32 * Math.cos((a.lat * Math.PI) / 180));
+    const area = (slug: string) => city.areas.find((a) => a.slug === slug) as (typeof city.areas)[number];
+    // Yaba (mainland) and Lekki (on the island side) are about 11 km apart, not neighbours.
+    expect(km(area('yaba'), area('lekki'))).toBeGreaterThan(9);
+    expect(km(area('ikeja'), area('ajah'))).toBeGreaterThan(20);
+    // Each area's centre block is the real H3 cell at its catalog coordinates, and its blocks sit around it.
+    for (const a of city.areas) {
+      expect(a.centre).toBe(`sim-${latLngToCell(a.lat, a.lng, 8)}`);
+      for (const id of a.cells) {
+        const c = city.cells.find((x) => x.id === id) as (typeof city.cells)[number];
+        const [lat, lng] = [c.ring.reduce((s, p) => s + p[0], 0) / 6, c.ring.reduce((s, p) => s + p[1], 0) / 6];
+        expect(km(a, { lat, lng })).toBeLessThan(3);
+      }
+    }
   });
 
   it('serves the globe with the land dots and no request elsewhere', async () => {
@@ -90,11 +110,15 @@ describe('the app in the browser /app/simulate', () => {
 });
 
 describe('shared assets', () => {
-  it('serves the stylesheet with the Material 3 tokens and the favicon from the same origin', async () => {
+  it('serves the stylesheet (Hallmark stamp, Midnight tokens), the font and the favicon from the same origin', async () => {
     const css = await page('/app.css');
     expect(css.res.headers.get('content-type')).toContain('text/css');
-    expect(css.body).toContain('--c-primary:');
+    expect(css.body.split('\n')[0]).toMatch(/^\/\* Hallmark · /); // the Hallmark stamp opens the stylesheet
+    expect(css.body).toContain('--c-paper:');
     expect(css.body).toContain('--map-confirmed:');
+    const font = await handleWeb(new Request('https://outage.test/fonts/mona-sans.woff2'), deps());
+    expect(font.headers.get('content-type')).toBe('font/woff2');
+    expect(new Uint8Array(await font.arrayBuffer()).slice(0, 4)).toEqual(new Uint8Array([0x77, 0x4f, 0x46, 0x32])); // "wOF2"
     const icon = await page('/favicon.svg');
     expect(icon.res.headers.get('content-type')).toContain('image/svg+xml');
     expect(icon.body).toContain('<svg');

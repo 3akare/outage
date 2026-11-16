@@ -20,10 +20,10 @@ interface MapCache {
     fun clear()
 }
 
-/** Labelled sample map for demo and judges (R5). Never touches the cache (AM6). The sample spot is the Yaba centre hex. */
+/** Labelled sample map for demo and judges (R5). Never touches the cache (AM6). The sample spot is the Yaba centre block. */
 class DemoAreaMapSource : AreaMapSource {
     override suspend fun load(city: String, nowMs: Long): MapResult =
-        MapResult.Loaded(MapLoad(DemoAreaMap.build(nowMs), spotCellId = "sim-0,0", fetchedMs = nowMs, fromCache = false))
+        MapResult.Loaded(MapLoad(DemoAreaMap.build(nowMs), spotCellId = DemoCity.SPOT, fetchedMs = nowMs, fromCache = false))
 }
 
 /**

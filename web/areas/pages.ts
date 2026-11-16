@@ -87,7 +87,7 @@ function historyHtml(history: readonly PublicOutage[], tz: number): string {
   const items = history
     .map((o) => {
       const end = o.endMs === null ? 'unknown' : formatDateTime(o.endMs, tz);
-      return `<li>${e(formatDateTime(o.startMs, tz))} to ${e(end)} · ${e(stateText(o.level).label)} · ${e(PRECISION_LABEL[o.precision])}</li>`;
+      return `<li>${e(stateText(o.level).label)} from ${e(formatDateTime(o.startMs, tz))} to ${e(end)}. ${e(PRECISION_LABEL[o.precision])}.</li>`;
     })
     .join('');
   return `<h2>Last 30 days</h2><ul class="list">${items}</ul><p class="note">Times are ${e(formatOffset(tz))}.</p>`;

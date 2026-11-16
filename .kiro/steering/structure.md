@@ -27,6 +27,7 @@ tools/geo              Rebuilds the globe's land dots from Natural Earth (public
 powers/grid-sensing    Kiro Power (Agent Plugin): charging-sensor, blackout-detection, oem-battery-guide skills
 docs/                  kiro-log.md, adr/, field/, traceability.md
 .kiro/                 steering, specs, hooks, skills, agents, settings
+.agents/skills         Third-party skills installed with npx skills (hallmark), pinned in skills-lock.json
 .github/               CI workflows and their scripts
 ```
 

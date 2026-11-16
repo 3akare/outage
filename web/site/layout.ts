@@ -37,9 +37,9 @@ export function layout(input: LayoutInput): string {
     `<link rel="canonical" href="${escapeHtml(canonical)}">` +
     (input.noindex ? '<meta name="robots" content="noindex">' : '') +
     `${FAVICON_LINK}<link rel="stylesheet" href="/app.css"></head><body>` +
-    `<header class="site-top">${brandLink('/')}<nav aria-label="Site"><a href="/areas">Areas</a><a href="/app/simulate">Try it</a></nav></header>` +
-    `<div class="site">${input.body}</div>` +
-    '<footer class="site-foot note"><a href="/">Home</a><a href="/app/simulate">Try the app</a><a href="/install">Install</a><a href="/privacy">Privacy</a></footer>' +
+    `<header class="site-top"><div class="container">${brandLink('/')}<nav aria-label="Site"><a class="link" href="/areas">Areas</a><a class="btn btn--primary" href="/app/simulate">Try it</a></nav></div></header>` +
+    `<div class="site container">${input.body}</div>` +
+    '<footer class="site-foot"><div class="container"><a class="link" href="/">Home</a><a class="link" href="/app/simulate">Try the app</a><a class="link" href="/install">Install</a><a class="link" href="/privacy">Privacy</a></div></footer>' +
     (input.script ? `<script nonce="${NONCE_PLACEHOLDER}">${input.script}</script>` : '') +
     '</body></html>'
   );

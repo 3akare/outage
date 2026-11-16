@@ -10,48 +10,58 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.em
+import app.outage.R
 
-// The Outage night theme (ADR 0051): one dark palette, the same file the website's stylesheet is built from
-// (core/shared/design/tokens.json), so the phone and the web look the same. Compose components read it through the colour
-// roles. There is no light mode and no dynamic colour: the globe and the four power states must look the same everywhere.
+// Theme Midnight, built with Hallmark (ADR 0052): midnight-blue ground, cool white ink, square surfaces, one azure signal,
+// Mona Sans. The same file the website's stylesheet is built from (core/shared/design/tokens.json), so the phone and the web
+// look the same. No light mode and no dynamic colour: the globe and the four power states must look the same everywhere.
 
+// Theme Midnight's colours on the Material colour roles that Compose components read.
 private val DarkColors: ColorScheme = darkColorScheme(
-    primary = Tokens.Colors.primary,
-    onPrimary = Tokens.Colors.onPrimary,
-    primaryContainer = Tokens.Colors.primaryContainer,
-    onPrimaryContainer = Tokens.Colors.onPrimaryContainer,
-    inversePrimary = Tokens.Colors.inversePrimary,
-    secondary = Tokens.Colors.secondary,
-    onSecondary = Tokens.Colors.onSecondary,
-    secondaryContainer = Tokens.Colors.secondaryContainer,
-    onSecondaryContainer = Tokens.Colors.onSecondaryContainer,
-    tertiary = Tokens.Colors.tertiary,
-    onTertiary = Tokens.Colors.onTertiary,
-    tertiaryContainer = Tokens.Colors.tertiaryContainer,
-    onTertiaryContainer = Tokens.Colors.onTertiaryContainer,
-    error = Tokens.Colors.error,
-    onError = Tokens.Colors.onError,
-    errorContainer = Tokens.Colors.errorContainer,
-    onErrorContainer = Tokens.Colors.onErrorContainer,
-    background = Tokens.Colors.background,
-    onBackground = Tokens.Colors.onBackground,
-    surface = Tokens.Colors.surface,
-    onSurface = Tokens.Colors.onSurface,
-    surfaceVariant = Tokens.Colors.surfaceVariant,
-    onSurfaceVariant = Tokens.Colors.onSurfaceVariant,
-    surfaceTint = Tokens.Colors.primary,
-    inverseSurface = Tokens.Colors.inverseSurface,
-    inverseOnSurface = Tokens.Colors.inverseOnSurface,
-    outline = Tokens.Colors.outline,
-    outlineVariant = Tokens.Colors.outlineVariant,
-    scrim = Tokens.Colors.scrim,
-    surfaceBright = Tokens.Colors.surfaceBright,
-    surfaceDim = Tokens.Colors.surfaceDim,
-    surfaceContainerLowest = Tokens.Colors.surfaceContainerLowest,
-    surfaceContainerLow = Tokens.Colors.surfaceContainerLow,
-    surfaceContainer = Tokens.Colors.surfaceContainer,
-    surfaceContainerHigh = Tokens.Colors.surfaceContainerHigh,
-    surfaceContainerHighest = Tokens.Colors.surfaceContainerHighest,
+    primary = Tokens.Colors.accent,
+    onPrimary = Tokens.Colors.accentInk,
+    primaryContainer = Tokens.Colors.paper3,
+    onPrimaryContainer = Tokens.Colors.ink,
+    inversePrimary = Tokens.Colors.accent2,
+    secondary = Tokens.Colors.ink2,
+    onSecondary = Tokens.Colors.accentInk,
+    secondaryContainer = Tokens.Colors.paper3,
+    onSecondaryContainer = Tokens.Colors.ink,
+    tertiary = Tokens.Colors.accent2,
+    onTertiary = Tokens.Colors.ink,
+    tertiaryContainer = Tokens.Colors.paper3,
+    onTertiaryContainer = Tokens.Colors.ink2,
+    error = Tokens.Colors.confirmed,
+    onError = Tokens.Colors.onConfirmed,
+    errorContainer = Tokens.Colors.confirmedContainer,
+    onErrorContainer = Tokens.Colors.onConfirmedContainer,
+    background = Tokens.Colors.paper,
+    onBackground = Tokens.Colors.ink,
+    surface = Tokens.Colors.paper,
+    onSurface = Tokens.Colors.ink,
+    surfaceVariant = Tokens.Colors.paper3,
+    onSurfaceVariant = Tokens.Colors.muted,
+    surfaceTint = Tokens.Colors.paper,
+    inverseSurface = Tokens.Colors.ink,
+    inverseOnSurface = Tokens.Colors.paper,
+    outline = Tokens.Colors.rule2,
+    outlineVariant = Tokens.Colors.rule,
+    scrim = Tokens.Colors.paper,
+    surfaceBright = Tokens.Colors.paper3,
+    surfaceDim = Tokens.Colors.paper,
+    surfaceContainerLowest = Tokens.Colors.paper,
+    surfaceContainerLow = Tokens.Colors.paper2,
+    surfaceContainer = Tokens.Colors.paper2,
+    surfaceContainerHigh = Tokens.Colors.paper3,
+    surfaceContainerHighest = Tokens.Colors.paper3,
 )
 
 /** One power state's colour family: the strong colour, and the container with its text colour (Material custom colours). */
@@ -93,25 +103,43 @@ private val DarkStatus = StatusColors(
     map = MapColors(
         normal = Tokens.Map.normal, possible = Tokens.Map.possible, confirmed = Tokens.Map.confirmed,
         restored = Tokens.Map.restored, noData = Tokens.Map.nodata,
-        ground = Tokens.Colors.surfaceContainer, edge = Color(0xE6070B1C), label = Tokens.Colors.onSurface,
-        labelHalo = Color(0xFF070B1C), spot = Tokens.Colors.restored, backdrop = Tokens.Colors.outlineVariant, space = Tokens.Colors.space,
+        ground = Tokens.Colors.paper2, edge = Tokens.Colors.paper2, label = Tokens.Colors.ink,
+        labelHalo = Tokens.Colors.paper, spot = Tokens.Colors.ink, backdrop = Tokens.Colors.rule2, space = Tokens.Colors.paper,
     ),
 )
 
 val LocalStatusColors = staticCompositionLocalOf { DarkStatus }
 
-/** Material 3 corner scale from the tokens. */
-private val OutageShapes = Shapes(
-    extraSmall = RoundedCornerShape(Tokens.cornerSmall),
-    small = RoundedCornerShape(Tokens.cornerSmall),
-    medium = RoundedCornerShape(Tokens.cornerMedium),
-    large = RoundedCornerShape(Tokens.cornerLarge),
-    extraLarge = RoundedCornerShape(Tokens.cornerExtraLarge),
+/** Theme Midnight is square end to end: every surface, control and sheet is cut at radius 0. */
+private val Square = RoundedCornerShape(Tokens.cornerNone)
+private val OutageShapes = Shapes(extraSmall = Square, small = Square, medium = Square, large = Square, extraLarge = Square)
+
+// Mona Sans (OFL 1.1), one variable family: the expanded light cut for display and headlines, the normal width for reading.
+// https://developer.android.com/develop/ui/compose/text/fonts#variable-fonts
+@OptIn(ExperimentalTextApi::class)
+private fun mona(weight: Int, width: Float) = Font(
+    R.font.mona_sans,
+    weight = FontWeight(weight),
+    variationSettings = FontVariation.Settings(FontVariation.weight(weight), FontVariation.width(width)),
 )
+private val MonaWide = FontFamily(mona(300, 125f))
+private val Mona = FontFamily(mona(400, 100f), mona(500, 100f))
+
+private val OutageType: Typography = Typography().let { d ->
+    fun TextStyle.wide() = copy(fontFamily = MonaWide, fontWeight = FontWeight(300), letterSpacing = (-0.015).em)
+    fun TextStyle.body() = copy(fontFamily = Mona)
+    Typography(
+        displayLarge = d.displayLarge.wide(), displayMedium = d.displayMedium.wide(), displaySmall = d.displaySmall.wide(),
+        headlineLarge = d.headlineLarge.wide(), headlineMedium = d.headlineMedium.wide(), headlineSmall = d.headlineSmall.wide(),
+        titleLarge = d.titleLarge.body(), titleMedium = d.titleMedium.body(), titleSmall = d.titleSmall.body(),
+        bodyLarge = d.bodyLarge.body(), bodyMedium = d.bodyMedium.body(), bodySmall = d.bodySmall.body(),
+        labelLarge = d.labelLarge.body(), labelMedium = d.labelMedium.body(), labelSmall = d.labelSmall.body(),
+    )
+}
 
 @Composable
 fun OutageTheme(content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalStatusColors provides DarkStatus) {
-        MaterialTheme(colorScheme = DarkColors, shapes = OutageShapes, content = content)
+        MaterialTheme(colorScheme = DarkColors, shapes = OutageShapes, typography = OutageType, content = content)
     }
 }

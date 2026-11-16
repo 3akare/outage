@@ -11,13 +11,19 @@ import type { Rendered } from '../../site/headers.ts';
 export const GLOBE_JS_PATH = '/globe.js';
 const TTL_SECONDS = 86_400;
 
-/** Map colours by state on the dark globe (tokens `map.*`). Kept here so the script has no other input. */
+import tokens from '@outage/shared/design/tokens.json' with { type: 'json' };
+
+/** Map colours by state and the ground (tokens `map.*` and Midnight's paper, ink and rule). */
 const COLOURS = {
-  NORMAL: '#2ee6a0',
-  POSSIBLE: '#ffb020',
-  CONFIRMED: '#ff4d5e',
-  RESTORED: '#4c9dff',
-  NO_DATA: '#6b74a3',
+  NORMAL: tokens.map.normal,
+  POSSIBLE: tokens.map.possible,
+  CONFIRMED: tokens.map.confirmed,
+  RESTORED: tokens.map.restored,
+  NO_DATA: tokens.map.nodata,
+  ocean: tokens.colors['paper-2'],
+  rim: tokens.colors['rule-2'],
+  ink: tokens.colors.ink,
+  paper: tokens.colors.paper,
 };
 
 const JS = `(function(){
@@ -63,50 +69,49 @@ function Globe(canvas,opt){
     var dt=Math.min(64,n-last);last=n;if(spin&&!drag&&!fly)lon+=dt*0.00006*(R0/R);
     ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
     var Y=cy(),big=R>Math.hypot(w,h)*1.5;
-    // Atmosphere and ocean.
-    if(!big){var g=ctx.createRadialGradient(w/2,Y,R*0.92,w/2,Y,R*1.22);g.addColorStop(0,'rgba(76,157,255,0.35)');g.addColorStop(0.35,'rgba(76,157,255,0.12)');g.addColorStop(1,'rgba(76,157,255,0)');
-      ctx.fillStyle=g;ctx.beginPath();ctx.arc(w/2,Y,R*1.22,0,7);ctx.fill();}
-    var og=ctx.createRadialGradient(w/2-R*0.35,Y-R*0.4,R*0.05,w/2,Y,R);og.addColorStop(0,'#1b2a5e');og.addColorStop(1,'#070b1c');
-    ctx.fillStyle=og;ctx.beginPath();if(big)ctx.rect(0,0,w,h);else ctx.arc(w/2,Y,R,0,7);ctx.fill();
+    // The ocean: a flat disc one lightness step above the ground, with a hairline rim. No glow (theme Midnight).
+    ctx.fillStyle=COL.ocean;ctx.beginPath();if(big)ctx.rect(0,0,w,h);else ctx.arc(w/2,Y,R,0,7);ctx.fill();
+    if(!big){ctx.strokeStyle=COL.rim;ctx.lineWidth=1;ctx.beginPath();ctx.arc(w/2,Y,R,0,7);ctx.stroke();}
     // Land dots, fading out as we come down to street level.
     var z=R/R0,fade=Math.max(0,Math.min(1,1-(z-8)/14));
     if(fade>0){var ds=Math.max(1.1,Math.min(3.2,R*0.0055)),half=ds/2,b=[new Path2D(),new Path2D(),new Path2D()],sl=Math.sin(lat),cl=Math.cos(lat);
       for(var i=0;i<DOTS.length;i+=3){var sp=DOTS[i],cp=DOTS[i+1],d=DOTS[i+2]-lon,cd=Math.cos(d),cz=sl*sp+cl*cp*cd;if(cz<=0.02)continue;
         var x=w/2+R*cp*Math.sin(d),y=Y-R*(cl*sp-sl*cp*cd);if(x<-4||y<-4||x>w+4||y>h+4)continue;b[cz>0.66?2:cz>0.33?1:0].rect(x-half,y-half,ds,ds);}
-      ['rgba(150,170,255,','rgba(170,190,255,','rgba(200,214,255,'].forEach(function(c,k){ctx.fillStyle=c+(fade*(0.32+k*0.22))+')';ctx.fill(b[k]);});}
+      [0.26,0.46,0.7].forEach(function(a,k){ctx.fillStyle=hex(COL.ink,fade*a);ctx.fill(b[k]);});}
     // The coast near Lagos, once close enough to need it.
-    if(z>6){ctx.strokeStyle='rgba(160,180,255,'+Math.min(.5,(z-6)/20)+')';ctx.lineWidth=1.5;COAST.forEach(function(l){ctx.beginPath();var ok=false;l.forEach(function(p,k){var q=proj(p[0],p[1]);if(q[2]<=0)return;if(!ok){ctx.moveTo(q[0],q[1]);ok=true;}else ctx.lineTo(q[0],q[1]);});ctx.stroke();});}
+    if(z>6){ctx.strokeStyle=hex(COL.ink,Math.min(.4,(z-6)/20));ctx.lineWidth=1.5;COAST.forEach(function(l){ctx.beginPath();var ok=false;l.forEach(function(p,k){var q=proj(p[0],p[1]);if(q[2]<=0)return;if(!ok){ctx.moveTo(q[0],q[1]);ok=true;}else ctx.lineTo(q[0],q[1]);});ctx.stroke();});}
     var hp=hexPx(),pulse=((n-t0)%1900)/1900;
-    if(hp<5){
+    if(hp<2.5){
       // Too small to draw blocks: a beacon over the city, coloured by its worst state.
       if(cells.length||opt.beaconState){var wst=cells.length?worst():opt.beaconState,q=proj(LAGOS[0]*D2R,LAGOS[1]*D2R);if(q[2]>0){var c=COL[wst]||COL.NORMAL;
-        ctx.fillStyle=hex(c,.25*(1-pulse));ctx.beginPath();ctx.arc(q[0],q[1],6+22*pulse,0,7);ctx.fill();
-        ctx.fillStyle=c;ctx.shadowColor=c;ctx.shadowBlur=12;ctx.beginPath();ctx.arc(q[0],q[1],4.5,0,7);ctx.fill();ctx.shadowBlur=0;
-        if(opt.beaconLabel!==false){ctx.font='600 13px Inter,Roboto,system-ui,sans-serif';ctx.fillStyle='rgba(238,241,255,.92)';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(opt.beaconLabel||'Lagos',q[0]+11,q[1]);}}}
+        ctx.strokeStyle=hex(c,.8*(1-pulse));ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(q[0],q[1],6+20*pulse,0,7);ctx.stroke();
+        ctx.fillStyle=c;ctx.fillRect(q[0]-4.5,q[1]-4.5,9,9);
+        if(opt.beaconLabel!==false){ctx.font='500 13px "Mona Sans",system-ui,sans-serif';ctx.fillStyle=COL.ink;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(opt.beaconLabel||'Lagos',q[0]+11,q[1]);}}}
     }else{
       hatch=hatch||pattern(COL.POSSIBLE);
-      if(back.length){ctx.strokeStyle='rgba(120,135,200,.16)';ctx.lineWidth=1;ctx.beginPath();back.forEach(function(r){var ok=true,q=r.map(function(p){var v=proj(p[0],p[1]);if(v[2]<=0)ok=false;return v;});if(!ok)return;q.forEach(function(v,k){if(k)ctx.lineTo(v[0],v[1]);else ctx.moveTo(v[0],v[1]);});ctx.closePath();});ctx.stroke();}
+      if(back.length){ctx.strokeStyle=hex(COL.rim,.45);ctx.lineWidth=1;ctx.beginPath();back.forEach(function(r){var ok=true,q=r.map(function(p){var v=proj(p[0],p[1]);if(v[2]<=0)ok=false;return v;});if(!ok)return;q.forEach(function(v,k){if(k)ctx.lineTo(v[0],v[1]);else ctx.moveTo(v[0],v[1]);});ctx.closePath();});ctx.stroke();}
       var shapes=[];cells.forEach(function(cl2){var pts=[],vis=true;cl2.ring.forEach(function(p){var q=proj(p[0],p[1]);if(q[2]<=0)vis=false;pts.push(q);});if(vis)shapes.push({c:cl2,p:pts});});
       shapes.forEach(function(s){var st=state[s.c.id]||'NO_DATA',col=COL[st];ctx.beginPath();s.p.forEach(function(q,k){if(k)ctx.lineTo(q[0],q[1]);else ctx.moveTo(q[0],q[1]);});ctx.closePath();
-        if(st==='NO_DATA'){ctx.fillStyle='rgba(107,116,163,.10)';ctx.fill();ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(107,116,163,.55)';ctx.lineWidth=1.2;ctx.stroke();ctx.setLineDash([]);return;}
+        if(st==='NO_DATA'){ctx.fillStyle=hex(col,.12);ctx.fill();ctx.setLineDash([4,4]);ctx.strokeStyle=hex(col,.7);ctx.lineWidth=1.2;ctx.stroke();ctx.setLineDash([]);return;}
         if(st==='POSSIBLE'){ctx.fillStyle=hatch;ctx.fill();}
-        else if(st==='CONFIRMED'){ctx.fillStyle=hex(col,.82);ctx.shadowColor=col;ctx.shadowBlur=18;ctx.fill();ctx.shadowBlur=0;}
+        else if(st==='CONFIRMED'){ctx.fillStyle=hex(col,.88);ctx.fill();}
         else if(st==='RESTORED'){ctx.fillStyle=hex(col,.28);ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.stroke();}
         else{ctx.fillStyle=hex(col,.32);ctx.fill();}
-        ctx.strokeStyle='rgba(7,11,28,.9)';ctx.lineWidth=2;ctx.stroke();
+        ctx.strokeStyle=COL.ocean;ctx.lineWidth=2;ctx.stroke();
         if(st==='CONFIRMED'){ctx.strokeStyle=hex(col,(1-pulse)*.7);ctx.lineWidth=2+10*pulse;ctx.stroke();}
-        if(s.c.id===sel){ctx.setLineDash([6,4]);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);}});
-      var sc=spot&&cellById(spot);if(sc){var q2=proj(sc.c[0],sc.c[1]);if(q2[2]>0){ctx.fillStyle='rgba(76,157,255,.22)';ctx.beginPath();ctx.arc(q2[0],q2[1],Math.min(26,hp*.45),0,7);ctx.fill();
-        ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(q2[0],q2[1],8,0,7);ctx.fill();ctx.fillStyle='#4c9dff';ctx.beginPath();ctx.arc(q2[0],q2[1],5.5,0,7);ctx.fill();}}
-      if(hp>22){ctx.font='600 13px Inter,Roboto,system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';labels.forEach(function(l){var q=proj(l.lat*D2R,l.lng*D2R);if(q[2]<=0)return;var y=q[1]+(l.below?hp*.55:0),tw=ctx.measureText(l.name).width+16;
-        ctx.fillStyle='rgba(7,11,28,.72)';ctx.beginPath();ctx.roundRect(q[0]-tw/2,y-11,tw,22,11);ctx.fill();ctx.fillStyle='#eef1ff';ctx.fillText(l.name,q[0],y);});}
+        if(s.c.id===sel){ctx.setLineDash([6,4]);ctx.strokeStyle=COL.ink;ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);}});
+      var sc=spot&&cellById(spot);if(sc){var q2=proj(sc.c[0],sc.c[1]);if(q2[2]>0){ctx.fillStyle=COL.ink;ctx.beginPath();ctx.arc(q2[0],q2[1],8,0,7);ctx.fill();ctx.fillStyle=COL.paper;ctx.beginPath();ctx.arc(q2[0],q2[1],4.5,0,7);ctx.fill();}}
+      if(hp>7){ctx.font='500 13px "Mona Sans",system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';var placed=[];labels.forEach(function(l){var q=proj(l.lat*D2R,l.lng*D2R);if(q[2]<=0)return;var y=q[1]+(l.below?Math.min(hp*.55,26):0),tw=ctx.measureText(l.name).width+16;
+        // Area names that would overlap one already placed are left out; the list order sets who wins.
+        if(placed.some(function(b){return Math.abs(b[0]-q[0])<(b[2]+tw)/2+4&&Math.abs(b[1]-y)<26;}))return;placed.push([q[0],y,tw]);
+        ctx.fillStyle=hex(COL.paper,.86);ctx.fillRect(q[0]-tw/2,y-11,tw,22);ctx.fillStyle=COL.ink;ctx.fillText(l.name,q[0],y);});}
     }
     requestAnimationFrame(draw);
   }
   function worst(){var r={CONFIRMED:4,POSSIBLE:3,RESTORED:2,NORMAL:1,NO_DATA:0},b='NO_DATA';for(var k in state)if(r[state[k]]>r[b])b=state[k];return b;}
 
   function inPoly(x,y,p){var c=false;for(var i=0,j=p.length-1;i<p.length;j=i++){if((p[i][1]>y)!==(p[j][1]>y)&&x<(p[j][0]-p[i][0])*(y-p[i][1])/(p[j][1]-p[i][1])+p[i][0])c=!c;}return c;}
-  function hit(x,y){cam();if(hexPx()<5){if(!cells.length&&!opt.beaconState)return null;var q=proj(LAGOS[0]*D2R,LAGOS[1]*D2R);return q[2]>0&&Math.hypot(q[0]-x,q[1]-y)<28?'beacon':null;}
+  function hit(x,y){cam();if(hexPx()<2.5){if(!cells.length&&!opt.beaconState)return null;var q=proj(LAGOS[0]*D2R,LAGOS[1]*D2R);return q[2]>0&&Math.hypot(q[0]-x,q[1]-y)<28?'beacon':null;}
     for(var i=0;i<cells.length;i++){var pts=cells[i].ring.map(function(p){return proj(p[0],p[1]);});if(pts.every(function(q){return q[2]>0;})&&inPoly(x,y,pts))return cells[i].id;}return null;}
   var pts={};
   canvas.addEventListener('pointerdown',function(e){canvas.setPointerCapture(e.pointerId);pts[e.pointerId]=[e.clientX,e.clientY];var k=Object.keys(pts);

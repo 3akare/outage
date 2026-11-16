@@ -49,7 +49,7 @@ describe('W6 simulated separation', () => {
   it('W6_simulated_separation: /app/simulate carries the banner in the HTML, never reads the index or the replay, and the API is labelled', async () => {
     const page = await text('/app/simulate');
     expect(page.res.status).toBe(200);
-    expect(page.body).toMatch(/<div class="sim-banner" role="note">.*Simulation · simulated data, not live<\/div>/);
+    expect(page.body).toMatch(/<div class="sim-banner" role="note">.*Simulation: simulated data, not live<\/div>/);
     expect(page.body).toContain('<title>Simulation: the Outage app in your browser');
     expect(page.body).toContain('Simulate a blackout');
     expect(page.counts.index).toBe(0);

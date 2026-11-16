@@ -24,7 +24,7 @@ import {
   renderJudgeServiceWorker,
 } from './ui/simulate/replay.ts';
 import { redirectToApp, renderAppCss } from './ui/app/app.ts';
-import { renderFavicon } from './site/brand.ts';
+import { FONT_PATH, fontResponse, renderFavicon } from './site/brand.ts';
 import { renderGlobeJs } from './ui/globe/globe.ts';
 import { renderSimulateJs, renderSimulatePage, SIMULATE_PATH } from './ui/simulate/simulate.ts';
 import { renderLanding } from './landing/landing.ts';
@@ -183,6 +183,7 @@ export const isWebPath = (pathname: string): boolean => !pathname.startsWith('/v
 export async function handleWeb(req: Request, deps: WebDeps): Promise<Response> {
   if (req.method !== 'GET' && req.method !== 'HEAD') return methodNotAllowed(); // R11.3
   const url = new URL(req.url);
+  if (url.pathname === FONT_PATH) return fontResponse();
   for (const r of ROUTES) {
     const m = r.pattern.exec(url.pathname);
     if (m) return deps.cache.get(req, () => r.render(m, url, deps));

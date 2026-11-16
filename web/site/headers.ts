@@ -30,6 +30,7 @@ export function contentSecurityPolicy(nonce: string): string {
     `script-src 'nonce-${nonce}' 'self'`,
     `style-src 'nonce-${nonce}' 'self'`,
     "img-src 'self' data:",
+    "font-src 'self'", // Mona Sans, served by this Worker (ADR 0052)
     "connect-src 'self'",
     "worker-src 'self'", // the Judge page's service worker (R6.7)
     "base-uri 'none'",

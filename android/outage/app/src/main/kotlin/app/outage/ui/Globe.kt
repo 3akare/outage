@@ -4,8 +4,6 @@ import android.content.Context
 import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.RadialGradient
-import android.graphics.Shader
 import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -194,18 +192,20 @@ fun GlobeView(
         val big = r > hypot(w.toDouble(), h.toDouble()) * 1.5
         drawIntoCanvas { canvas ->
             val nc = canvas.nativeCanvas
-            // Space, the atmosphere and the ocean.
+            // The ground, then the ocean as one lightness step up with a hairline rim. No glow (theme Midnight, ADR 0052).
             paint.style = Paint.Style.FILL
             paint.shader = null
             paint.color = colors.space.toArgb()
             nc.drawRect(0f, 0f, w, h, paint)
-            if (!big) {
-                paint.shader = RadialGradient(cx.toFloat(), cy.toFloat(), (r * 1.22).toFloat(), intArrayOf(0x594C9DFF, 0x1F4C9DFF, 0x004C9DFF), floatArrayOf(0.75f, 0.85f, 1f), Shader.TileMode.CLAMP)
-                nc.drawCircle(cx.toFloat(), cy.toFloat(), (r * 1.22).toFloat(), paint)
-            }
-            paint.shader = RadialGradient((cx - r * 0.35).toFloat(), (cy - r * 0.4).toFloat(), max(1f, r.toFloat() * 1.3f), intArrayOf(0xFF1B2A5E.toInt(), 0xFF070B1C.toInt()), null, Shader.TileMode.CLAMP)
+            paint.color = colors.ground.toArgb()
             if (big) nc.drawRect(0f, 0f, w, h, paint) else nc.drawCircle(cx.toFloat(), cy.toFloat(), r.toFloat(), paint)
-            paint.shader = null
+            if (!big) {
+                paint.style = Paint.Style.STROKE
+                paint.strokeWidth = 2f
+                paint.color = colors.backdrop.toArgb()
+                nc.drawCircle(cx.toFloat(), cy.toFloat(), r.toFloat(), paint)
+                paint.style = Paint.Style.FILL
+            }
 
             // Land dots, in three brightness bands by how much they face us; they fade out near the ground.
             val zoom = r / restPx
@@ -230,17 +230,21 @@ fun GlobeView(
                 }
                 paint.strokeWidth = (r * 0.0055).toFloat().coerceIn(2.2f, 6.4f)
                 paint.strokeCap = Paint.Cap.ROUND
+                val ink = colors.label.toArgb()
                 for (b in 0..2) {
-                    paint.color = android.graphics.Color.argb((255 * fade * (0.32 + b * 0.22)).toInt(), 170 + b * 15, 190 + b * 12, 255)
+                    paint.color = ink
+                    paint.alpha = (255 * fade * (0.26 + b * 0.22)).toInt()
                     nc.drawPoints(bands[b], 0, counts[b] * 2, paint)
                 }
+                paint.alpha = 255
             }
 
             // The Lagos coast, once close.
             if (zoom > 6) {
                 paint.style = Paint.Style.STROKE
                 paint.strokeWidth = 3f
-                paint.color = android.graphics.Color.argb((255 * min(0.5, (zoom - 6) / 20)).toInt(), 160, 180, 255)
+                paint.color = colors.label.toArgb()
+                paint.alpha = (255 * min(0.4, (zoom - 6) / 20)).toInt()
                 for (line in data.coast) {
                     val path = Path()
                     var started = false
@@ -261,12 +265,14 @@ fun GlobeView(
                     val q = camera.project(GlobeCamera.deg(LAGOS.lat), GlobeCamera.deg(LAGOS.lng), cx, cy)
                     if (q.visible) {
                         val c = MapPalette.accent(worstOf(states.values), colors).toArgb()
-                        paint.style = Paint.Style.FILL
+                        paint.style = Paint.Style.STROKE
+                        paint.strokeWidth = 3f
                         paint.color = c
-                        paint.alpha = (60 * (1 - pulse)).toInt()
-                        nc.drawCircle(q.x.toFloat(), q.y.toFloat(), 14f + 50f * pulse, paint)
+                        paint.alpha = (200 * (1 - pulse)).toInt()
+                        nc.drawCircle(q.x.toFloat(), q.y.toFloat(), 14f + 44f * pulse, paint)
+                        paint.style = Paint.Style.FILL
                         paint.alpha = 255
-                        nc.drawCircle(q.x.toFloat(), q.y.toFloat(), 10f, paint)
+                        nc.drawRect(q.x.toFloat() - 10f, q.y.toFloat() - 10f, q.x.toFloat() + 10f, q.y.toFloat() + 10f, paint)
                         text.color = colors.label.toArgb()
                         text.textSize = 34f
                         text.textAlign = Paint.Align.LEFT
@@ -290,9 +296,7 @@ fun GlobeView(
                         CellState.NORMAL -> { paint.color = accent; paint.alpha = 82; nc.drawPath(path, paint) }
                         CellState.RESTORED -> { paint.color = accent; paint.alpha = 72; nc.drawPath(path, paint) }
                         CellState.CONFIRMED -> {
-                            paint.color = accent; paint.alpha = 60
-                            paint.style = Paint.Style.STROKE; paint.strokeWidth = 28f; nc.drawPath(path, paint) // glow
-                            paint.style = Paint.Style.FILL; paint.alpha = 210; nc.drawPath(path, paint)
+                            paint.color = accent; paint.alpha = 225; nc.drawPath(path, paint)
                         }
                         CellState.POSSIBLE -> {
                             paint.color = accent; paint.alpha = 90; nc.drawPath(path, paint)
@@ -319,7 +323,7 @@ fun GlobeView(
                         nc.drawPath(path, paint); paint.alpha = 255
                     }
                     if (cell.id == selectedId) {
-                        paint.pathEffect = dash; paint.color = android.graphics.Color.WHITE; paint.strokeWidth = 4f
+                        paint.pathEffect = dash; paint.color = colors.label.toArgb(); paint.strokeWidth = 4f
                         nc.drawPath(path, paint); paint.pathEffect = null
                     }
                 }
@@ -329,13 +333,12 @@ fun GlobeView(
                     val lng = s.ring.sumOf { it.lng } / s.ring.size
                     val q = camera.project(GlobeCamera.deg(lat), GlobeCamera.deg(lng), cx, cy)
                     if (q.visible) {
+                        // "You are here": an ink ring around a dot of the ground, no halo (theme Midnight).
                         paint.style = Paint.Style.FILL
-                        paint.color = colors.spot.toArgb(); paint.alpha = 56
-                        nc.drawCircle(q.x.toFloat(), q.y.toFloat(), min(64f, (blockPx * 0.45).toFloat()), paint)
-                        paint.alpha = 255; paint.color = android.graphics.Color.WHITE
-                        nc.drawCircle(q.x.toFloat(), q.y.toFloat(), 22f, paint)
                         paint.color = colors.spot.toArgb()
-                        nc.drawCircle(q.x.toFloat(), q.y.toFloat(), 15f, paint)
+                        nc.drawCircle(q.x.toFloat(), q.y.toFloat(), 22f, paint)
+                        paint.color = colors.space.toArgb()
+                        nc.drawCircle(q.x.toFloat(), q.y.toFloat(), 12f, paint)
                     }
                 }
                 if (blockPx > 60) {
@@ -348,8 +351,8 @@ fun GlobeView(
                         val y = q.y.toFloat() + if (below) (blockPx * 0.55).toFloat() else 0f
                         val tw = text.measureText(name) + 36f
                         paint.style = Paint.Style.FILL
-                        paint.color = colors.labelHalo.toArgb(); paint.alpha = 190
-                        nc.drawRoundRect(q.x.toFloat() - tw / 2, y - 30f, q.x.toFloat() + tw / 2, y + 30f, 30f, 30f, paint)
+                        paint.color = colors.labelHalo.toArgb(); paint.alpha = 220
+                        nc.drawRect(q.x.toFloat() - tw / 2, y - 30f, q.x.toFloat() + tw / 2, y + 30f, paint)
                         paint.alpha = 255
                         text.color = colors.label.toArgb()
                         nc.drawText(name, q.x.toFloat(), y + 12f, text)

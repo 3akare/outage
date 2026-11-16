@@ -818,3 +818,10 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Tests: GL1 to GL4 (`GlobeMathTest`), web tests for `/globe.js` and the simulated blocks, token and icon tests updated. `npm test`, lint, typecheck, spec-lint, the visual check (phone and desktop, the whole blackout, offline reload) and Android tests, lint and assembleDebug pass.
 - Not done: Android screens on a device (task 7, no emulator in the cloud session).
 
+## 2026-11-24 feat(design): Hallmark Midnight, Mona Sans, and the simulated city at real Lagos places [spec:material-redesign tasks:11-12]
+- Asked for by the human: install Hallmark; use real locations ("Lekki and Yaba aren't that close"). ADR 0052.
+- Installed `Nutlope/hallmark` (MIT) with `npx skills add Nutlope/hallmark --skill hallmark`. Its linter could not run here (the session refused third-party scripts); its Floor was followed by hand. Theme Midnight, Mona Sans self-hosted at `/fonts/mona-sans.woff2`, CSP `font-src 'self'`.
+- Landing rebuilt in Hallmark's shape; app in the browser restyled (square, no glass, no device frame, no dot-joined labels); area pages on the same header and container; the globe without glow on both platforms.
+- Demo city: 10 real areas (catalog plus Lekki from OpenStreetMap) as 174 real H3 resolution-8 blocks, one generator for web and Android. Yaba to Lekki is 11.3 km.
+- Android: Midnight colours on the Material roles, square shapes, Mona Sans (wide light cut for headings). Compiles; screens not seen on a device.
+
