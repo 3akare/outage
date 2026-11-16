@@ -8,6 +8,9 @@
   // the Worker runs: https://developers.cloudflare.com/workers/static-assets/
   "assets": { "directory": "./public" },
   "build": { "command": "node scripts/vendor-maplibre.mjs" },
+  // The deploy's version id, so the page cache never serves pages from the deploy before:
+  // https://developers.cloudflare.com/workers/runtime-apis/bindings/version-metadata/
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
   // Public, non-secret values (ADR 0024). APK_URL is the releases page until the release workflow fills in a direct APK link
   // with APK_VERSION, APK_SIZE_BYTES and APK_SHA256 (release-apk skill).
   "vars": {

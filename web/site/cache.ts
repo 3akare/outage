@@ -26,6 +26,11 @@ export type PageCacheOptions = {
   cache?: CacheLike | null;
   now?: () => number;
   maxEntries?: number;
+  /**
+   * The deploy's version id (the Worker's version metadata). It is part of every key, so a new deploy never serves pages
+   * cached by the one before it. https://developers.cloudflare.com/workers/runtime-apis/bindings/version-metadata/
+   */
+  version?: string;
 };
 
 export type CacheLayer = 'cache-api' | 'isolate' | 'miss';
@@ -35,17 +40,20 @@ export class PageCache {
   private readonly now: () => number;
   private readonly max: number;
   private readonly store = new Map<string, Entry>();
+  private readonly version: string;
 
   constructor(opts: PageCacheOptions = {}) {
     this.cache = opts.cache ?? null;
     this.now = opts.now ?? Date.now;
     this.max = opts.maxEntries ?? MAX_ISOLATE_ENTRIES;
+    this.version = opts.version ?? '';
   }
 
-  /** The cache key: always a GET for the same URL (HEAD shares GET's entry). */
-  static key(request: Request): Request {
+  /** The cache key: always a GET for the same URL (HEAD shares GET's entry), tagged with the deploy's version. */
+  static key(request: Request, version = ''): Request {
     const url = new URL(request.url);
     url.hash = '';
+    if (version) url.searchParams.set('__deploy', version);
     return new Request(url.toString(), { method: 'GET' });
   }
 
@@ -55,7 +63,7 @@ export class PageCache {
    */
   async get(request: Request, render: () => Promise<Rendered> | Rendered): Promise<Response> {
     const method = request.method === 'HEAD' ? 'HEAD' : 'GET';
-    const key = PageCache.key(request);
+    const key = PageCache.key(request, this.version);
     const hit = await this.lookup(key);
     if (hit) return this.respond(hit.rendered, method, hit.layer);
     const rendered = await render();

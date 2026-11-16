@@ -152,3 +152,20 @@ describe('W4 cache ttl', () => {
     expect(hit.headers.get('X-Robots-Tag')).toBe('noindex');
   });
 });
+
+describe('deploy version in the cache key', () => {
+  it('a new deploy never reads pages cached by the one before', async () => {
+    const store = new Map<string, Response>();
+    const cache = {
+      match: async (r: Request) => store.get(r.url)?.clone(),
+      put: async (r: Request, res: Response) => void store.set(r.url, res),
+    };
+    const req = new Request('https://outage.test/');
+    const page = (body: string) => () => ({ status: 200, contentType: 'text/html', body, ttlSeconds: 3600 });
+    await new PageCache({ cache, version: 'v1' }).get(req, page('old'));
+    const res = await new PageCache({ cache, version: 'v2' }).get(req, page('new'));
+    expect(await res.text()).toBe('new');
+    expect(PageCache.key(req, 'v2').url).toBe('https://outage.test/?__deploy=v2');
+    expect(PageCache.key(req).url).toBe('https://outage.test/');
+  });
+});

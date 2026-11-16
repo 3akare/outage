@@ -95,7 +95,7 @@ function makeDeps(env: Env): Deps {
 let pageCache: PageCache | undefined;
 
 function webDeps(req: Request, env: Env): WebDeps {
-  pageCache ??= new PageCache({ cache: typeof caches === 'undefined' ? null : caches.default });
+  pageCache ??= new PageCache({ cache: typeof caches === 'undefined' ? null : caches.default, version: env.CF_VERSION_METADATA?.id });
   const origin = (env.SITE_ORIGIN ?? new URL(req.url).origin).replace(/\/$/, '');
   const apkUrl = env.APK_URL ? env.APK_URL : null;
   return {
