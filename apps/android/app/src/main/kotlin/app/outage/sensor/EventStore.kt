@@ -23,6 +23,8 @@ data class SensorEvent(
     val schedulingDelayMs: Long?,
     val reason: String?,
     val source: Source,
+    val refSeq: Long? = null,
+    val answer: String? = null,
 )
 
 /** Read-time view of a stored event: elapsed time is only valid within the same boot (R9.4). */
@@ -41,6 +43,8 @@ fun StoredEvent.toSensorEvent(nowElapsedMs: Long, currentBoot: Int): SensorEvent
         schedulingDelayMs = draft.schedulingDelayMs,
         reason = draft.reason,
         source = draft.source,
+        refSeq = draft.refSeq,
+        answer = draft.answer,
     )
 }
 

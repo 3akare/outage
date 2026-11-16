@@ -8,10 +8,10 @@ Depends on `sensor-android` (tasks 4, 7, 9), `event-ingest` (tasks 3, 4, 10), `a
 
 ## Wave 1
 
-- [ ] 1. Amend `sensor-android` for `beginSelfTest`, `endSelfTest`, the foreground `plugChanged` event, and `isIgnoringBatteryOptimizations`, plus diagnostics fields. Update R11 of that spec and the Kotlin interface.
+- [x] 1. Amend `sensor-android` for `beginSelfTest`, `endSelfTest`, the foreground `plugChanged` event, and `isIgnoringBatteryOptimizations`, plus diagnostics fields. Update R11 of that spec and the Kotlin interface.
   - Depends on: `sensor-android` 9
   - Requirements: R7.6, R8.2
-- [ ] 2. State machine support for `SELF_TEST` mode: record results, emit nothing, suppress prompt and alarm. Tests O6 (native side).
+- [x] 2. State machine support for `SELF_TEST` mode: record results, emit nothing, suppress prompt and alarm. Tests O6 (native side).
   - Depends on: `sensor-android` 4, `alerts-and-light-alarm` 3
   - Requirements: R8.2, R8.6
 - [x] 3. `OnboardingFlow` pure Kotlin machine, persisted record in `SharedPreferences`, resume, re-onboarding skips. Tests O1, O3, O7, O8.

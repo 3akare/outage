@@ -123,6 +123,8 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/OutageApp.kt` | Application class: builds the shell graph and chooses real or demo map and insights sources |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmState.kt` | Light Alarm state shown on Home |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/StringPackCheck.kt` | Checks a string pack has every alarm string |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmPolicy.kt` | Pure Light Alarm decisions: prompt, answer, wake, ring, expiry, reboot |
+| `apps/android/app/src/main/kotlin/app/outage/alarm/WakeStore.kt` | Wake and prompt memory interface and an in-memory fake |
 | `apps/android/app/src/main/kotlin/app/outage/insights/DemoOutages.kt` | About 60 days of labelled sample outages for demo mode |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsCalc.kt` | Pure numbers for Insights: hours of power, heatmap, trend, promise check |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsSource.kt` | Where Insights gets its outage timeline (demo or real) |
@@ -159,6 +161,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/sensor/EventStore.kt` | Outbox interface, stored events and the in-memory store |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorController.kt` | The sensor engine the app and both drivers call |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorModel.kt` | Plug, confidence, event types and the stop decision table (pure) |
+| `apps/android/app/src/main/kotlin/app/outage/sensor/SelfTest.kt` | Self-test recorder, result and foreground plug watcher |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorService.kt` | Primary driver: foreground service with power receivers and heartbeat |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorState.kt` | Why the sensor is or is not armed |
 | `apps/android/app/src/main/kotlin/app/outage/sensor/SensorStateMachine.kt` | The sensor state machine (pure) |
@@ -203,6 +206,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/res/values/themes.xml` | Light app theme |
 | `apps/android/app/src/main/res/values-night/themes.xml` | Dark app theme |
 | `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmStringPackTest.kt` | Alarm strings exist in every pack |
+| `apps/android/app/src/test/kotlin/app/outage/alarm/AlarmPolicyTest.kt` | AlarmPolicy properties L1, L2, L4, L9, L10 |
 | `apps/android/app/src/test/kotlin/app/outage/insights/InsightsTest.kt` | Insights numbers (IN1 to IN6) |
 | `apps/android/app/src/test/kotlin/app/outage/log/BandConfigTest.kt` | Shipped band config is valid and sourced |
 | `apps/android/app/src/test/kotlin/app/outage/map/MapContractTest.kt` | The app reads the same map fixture as the Worker |
@@ -214,6 +218,7 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OemGuideTest.kt` | OEM guide rules (O4, O5) |
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingFlowTest.kt` | Onboarding state machine (O1, O3, O7, O8) |
 | `apps/android/app/src/test/kotlin/app/outage/onboarding/OnboardingTestSupport.kt` | In-memory onboarding store for tests |
+| `apps/android/app/src/test/kotlin/app/outage/sensor/SelfTestAndLabelTest.kt` | Self-test isolation (O6) and LABEL queueing |
 | `apps/android/app/src/test/kotlin/app/outage/sensor/SensorControllerTest.kt` | Sensor engine against fake adapters (S7, R2, R10, R11, R12) |
 | `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt` | Decision table and state machine (S1 to S8, T1 to T7) |
 | `apps/android/app/src/test/kotlin/app/outage/shell/DeleteRegistryTest.kt` | Delete-my-data registry (AS6) |

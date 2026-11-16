@@ -10,7 +10,7 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 
 ## Wave 1
 
-- [ ] 1. Amend shared types for `LABEL`: `sensor-android` EVENT table and `SensorEvent` type, `event-ingest` strict schema allow-list and tests (I8), shared fixtures, and the engine `Label` mapping in `area-cells` routing. Update tasks 2 and 5 of ingest where they list event types.
+- [x] 1. Amend shared types for `LABEL`: `sensor-android` EVENT table and `SensorEvent` type, `event-ingest` strict schema allow-list and tests (I8), shared fixtures, and the engine `Label` mapping in `area-cells` routing. Update tasks 2 and 5 of ingest where they list event types.
   - Depends on: `sensor-android` 2, `event-ingest` 2, `detection-engine` 1
   - Requirements: R2.5
 - [x] 2. String pack: English and optional Pidgin strings for the prompt, alarm, test, push texts, status list; a checker for missing keys. Test L12.
@@ -19,7 +19,7 @@ Human actions before deploy (see requirements): Firebase project, service-accoun
 
 ## Wave 2
 
-- [ ] 3. `AlarmPolicy` pure core, `WakeStore` interface with an in-memory fake, expiry and reboot handling. Tests L1, L2, L4, L9, L10.
+- [x] 3. `AlarmPolicy` pure core, `WakeStore` interface with an in-memory fake, expiry and reboot handling. Tests L1, L2, L4, L9, L10.
   - Depends on: 1, `sensor-android` 4
   - Requirements: R1, R2, R3.1, R3.2, R4
 - [x] 6. `PushPlanner` and the quiet-window function, string selection by precision, size check. Tests L5, L6, L12.

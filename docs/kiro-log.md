@@ -647,3 +647,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Conflicts were in `ARCHITECTURE.md` (ADR range row) and `docs/kiro-log.md`; both sides kept. Main already had ADR 0032 (receiver-primary sensor), so the push subscriptions ADR was renumbered to `docs/adr/0035-push-subscriptions-and-sending.md` and its one log reference updated. The ADR range row now reads 0001 to 0035.
 - `npm test`, lint, typecheck, spec-lint and the architecture test pass. `npm test` failed once in four runs with the output lost; the likely cause is the known flaky `post-deploy-check` test (unconfirmed).
 - Open: confirm which test flaked.
+
+## 2026-11-23 feat(alarm): LABEL on the phone, AlarmPolicy, self-test mode [spec:alerts-and-light-alarm tasks:1,3, spec:onboarding tasks:1,2]
+- LABEL was already in the shared types, the strict ingest schema and the fixtures. The phone side was missing: `EventDraft`, `SensorEvent` and the SQLite event table (schema v2, `ref_seq`, `answer`) now carry `refSeq` and `answer`, `queueLabel` appends one, and `SensorOutbox` sends a LABEL with only the fields the strict schema allows.
+- `AlarmPolicy` (pure) and `WakeStore` with an in-memory fake. Tests L1, L2 (against a reference model), L4, L9, L10 as seeded loops, no new dependency.
+- Self-test: `beginSelfTest`, `endSelfTest`, `plugChanged`, `PlugWatcher`, and `Diagnostics.selfTest`. While a test runs the controller records and appends nothing, so no listener, prompt or alarm sees it (O6). `endSelfTest` puts the machine back in line with the plug silently. The battery checklist field is left to onboarding task 7.
