@@ -129,6 +129,8 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/insights/PromiseText.kt` | Plain sentence comparing logged hours with the tariff promise |
 | `apps/android/app/src/main/kotlin/app/outage/log/BandConfig.kt` | Reads and validates `bands.json` |
 | `apps/android/app/src/main/kotlin/app/outage/log/BandStrings.kt` | String keys for the supply-promise copy |
+| `apps/android/app/src/main/kotlin/app/outage/log/LogInput.kt` | Power Log raw inputs and their stored JSON payload |
+| `apps/android/app/src/main/kotlin/app/outage/log/LogStore.kt` | Power Log database `outage_log.db` with migrations (ADR 0037) |
 | `apps/android/app/src/main/kotlin/app/outage/log/PowerLog.kt` | Feature keys for the Power Log |
 | `apps/android/app/src/main/kotlin/app/outage/map/AreaMapParser.kt` | Strict reader for `/api/map.json` |
 | `apps/android/app/src/main/kotlin/app/outage/map/AreaMapSource.kt` | Loads the map: network, cache, or the labelled demo map |
@@ -675,5 +677,5 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `docs/probe/2026-11-15-samsung-b.md` | Probe result: Samsung phone, second run (probe v0.0.2) |
 | `docs/probe/2026-11-15-samsung-b.json` | Raw numbers behind the second Samsung result |
 | `docs/wip/detection-engine-notes.md` | Working notes for the detection engine |
-| `docs/adr/` | Architecture decision records 0001 to 0036, one decision each (context, decision, alternatives, consequences) |
+| `docs/adr/` | Architecture decision records 0001 to 0037, one decision each (context, decision, alternatives, consequences) |
 | `docs/visual/` | Website screenshots written by `workers/api/visual/check.mjs` (390 x 844 and `-desktop` 1280 x 800) |

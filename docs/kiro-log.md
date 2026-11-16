@@ -651,3 +651,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 feat(log): REPORT events [spec:power-log task:1]
 - Added the `REPORT` wire event (kind `OUT`) to the shared types and strict validator, the Kotlin wire, a contract fixture, the ingest handoff and the area reducer. The reducer keeps reports for 10 minutes and feeds the distinct-install count to the manual hint (ADR 0036).
 - `npm test`, typecheck and lint were run before the commit; no new test was written for it (human asked for no more tests).
+
+## 2026-11-23 feat(log): local log storage [spec:power-log task:2]
+- Second SQLite database `outage_log.db` on `SQLiteOpenHelper` with a step-by-step migration function, `raw_input` and `setting` tables, and a memory twin (ADR 0037). Intervals and day stats are rebuilt, not stored.
+- Gradle unit tests, lint and assembleDebug pass. No new test (human asked for no more tests).
