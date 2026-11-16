@@ -276,6 +276,9 @@
     <string name="log_share_card_outages">%1$d outages</string>
     <string name="log_share_card_estimate">Estimate from %1$d days</string>
     <string name="log_share_card_name">Outage</string>
+    <!-- Anonymous diagnostics (field-telemetry R1) -->
+    <string name="diag_switch">Share anonymous diagnostics</string>
+    <string name="diag_body">Once a day Outage sends how well it watched your power: charging hours, watching hours, gaps and how late the phone woke the app. It has no location, name, phone number or phone model, and you can turn it off at any time. Delete my data removes it.</string>
     <!-- Sensor foreground service (station-mode design section 7). Fixed strings, no variables. -->
     <string name="sensor_channel">Power sensor</string>
     <string name="sensor_notification_title">Outage station</string>

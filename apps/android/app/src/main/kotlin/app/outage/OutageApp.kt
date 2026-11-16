@@ -27,6 +27,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import app.outage.shell.PrefsFollowedArea
 import app.outage.shell.ShellGraph
 import app.outage.ui.BatterySetupScreen
+import app.outage.telemetry.PrefsTelemetryConsent
+import app.outage.telemetry.TelemetryDriver
+import app.outage.ui.DiagnosticsScreen
 import app.outage.ui.FeatureRegistry
 import app.outage.ui.FreezerScreen
 import app.outage.ui.SensorToggleScreen
@@ -123,6 +126,9 @@ class OutageApp : Application() {
         val io = Executors.newSingleThreadExecutor()
         var upload: UploadDriver? = null
         val prefs = getSharedPreferences("sensor_switch", MODE_PRIVATE)
+        val consent = PrefsTelemetryConsent(this)
+        graph.features.register("diagnostics", R.string.settings_diagnostics, { DiagnosticsScreen(consent::enabled, consent::set) }, null)
+        graph.deletes.register("telemetry_consent") { consent.clear() }
         graph.sensorStarter = {
             if (prefs.getBoolean("on", true)) io.execute {
                 val sensor = Sensor.get(this)
@@ -130,6 +136,8 @@ class OutageApp : Application() {
                 if (upload == null && BuildConfig.API_BASE.isNotBlank()) {
                     upload = UploadDriver(IngestApi(BuildConfig.API_BASE, UrlConnectionPost), credentials, sensor) { onboarding.load()?.cell }
                         .also { it.start() }
+                    // Daily anonymous diagnostics, only with the user's opt-in (field-telemetry R1.1).
+                    TelemetryDriver(this, IngestApi(BuildConfig.API_BASE, UrlConnectionPost), credentials, sensor, consent).start()
                 }
             }
         }

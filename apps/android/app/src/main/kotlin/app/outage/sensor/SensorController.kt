@@ -189,6 +189,14 @@ class DefaultSensorController(
         return TelemetryCalc.compute(store.all().map { it.toSensorEvent(now, boot) }, now, periodMs)
     }
 
+    /** Every stored event with its age at read time. For the daily telemetry aggregate (field-telemetry task 4). */
+    @Synchronized
+    fun recentEvents(): List<SensorEvent> {
+        val now = clock.elapsedMs()
+        val boot = clock.bootCount()
+        return store.all().map { it.toSensorEvent(now, boot) }
+    }
+
     @Synchronized
     override fun getDiagnostics(): Diagnostics {
         val counts = STOP_KEYS.mapNotNull { k -> store.getState("stop:$k")?.toIntOrNull()?.let { k to it } }.toMap()

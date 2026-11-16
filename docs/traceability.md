@@ -297,3 +297,4 @@ Scanned 15 test file(s) under packages/detection. A property counts when a test 
 | R8 | PL9 | image share card | power-log 9 | code done, ADR 0040 |
 | R1.6 | - | delete-my-data for the log | power-log 10 | code done |
 | R5, R10 | IN | real Power Log in Insights, 12-week demo | app-map-insights 6 | done, ADR 0039; demo-days assertion updated to 84 |
+| R1, R2 | F1, F2 (client) | phone aggregator and daily uploader | field-telemetry 4 | code done, ADR 0041; Kotlin tests F1, F2 not written (human asked for no more tests); consent through `TelemetryConsent` |

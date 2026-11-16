@@ -689,3 +689,8 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 feat(log): delete-my-data and traceability for the Power Log [spec:power-log task:10]
 - `power_log` delete function: clears the log database and its settings, cancels the Freezer Guard alarm, clears the cached area outages and the cached share picture. It runs with the other phone-side deletes in `DeleteRegistry`; the server half still goes through the existing `/v1/delete`, which also removes the install's `REPORT` events (ADR 0036).
 - `docs/traceability.md`: PL1 to PL9 rows say what is code-done and that the tests were not written, because the human asked for no more tests on 2026-11-23.
+
+## 2026-11-23 feat(field): phone telemetry aggregator and daily uploader [spec:field-telemetry task:4]
+- `DeviceDays.build` makes one `DeviceDay` for a local day from the sensor's events and diagnostics, in the exact shape of `packages/shared/fixtures/telemetry/device-day.json`. `TelemetryDriver` sends the previous day once, only with consent, a registered install and a Worker address. `IngestApi.postTelemetry` calls the existing `POST /v1/telemetry`. Consent is the interface `TelemetryConsent` over the preference `telemetry_prefs/share_diagnostics`; the Settings row "Share anonymous diagnostics" is wired to it. ADR 0041.
+- Note for the onboarding agent: call `PrefsTelemetryConsent(context).set(optIn)` from the diagnostics choice. Settings registers the feature `diagnostics`; if onboarding registers its own, keep one.
+- Not done: Kotlin tests F1 and F2 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
