@@ -48,6 +48,7 @@ Depends on `station-mode` (tasks 2, 5), `event-ingest` (tasks 4, 5), `area-cells
 - [ ] 9. Scenario test in `tools/sim` (router down, late reconnect), push latency check on devices, traceability (H1 to H8), `docs/kiro-log.md`, `docs/probe-checklist.md`.
   - Depends on: 8, `detection-engine` 16
   - Requirements: all
+  - Status 2026-11-23: scenario (`tools/sim/test/home-scenario.test.ts`), traceability H1 to H8, kiro-log and the checklist section are done. Open: the push latency check on devices, which needs Firebase Messaging in the app (ADR 0037) and the human with two phones.
 
 ## Dependency graph
 

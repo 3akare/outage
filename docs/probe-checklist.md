@@ -249,3 +249,14 @@ Spare phone, left plugged in. Check each on the real phone, write the result in 
 3. Apply the maker's battery steps in Settings, Battery setup. Repeat step 2 overnight.
 4. Reboot the phone. After boot the sensor re-arms without opening the app, and the gap is recorded.
 5. Switch Power sensor off in Settings. Nothing is recorded or uploaded until it is switched on.
+
+## Home Watch section (home-watch task 9)
+
+Two phones: a station (spare phone, plugged in at home) and a viewer (main phone). A build with a Worker address (`-PoutageApiBase=...`). Write the result in the log sheet:
+
+1. Station: Settings, Station mode, "Pair with my phone". A 10-symbol code shows, with "Valid until" 10 minutes ahead.
+2. Viewer: Settings, Home Watch, type the code and a name, Pair. "Paired." shows, and a card "Home: power on since ..." appears in Home Watch and on Home under the map.
+3. Unplug the station's charger. Open the viewer app: within a minute the card says "Home: power off since ..." with the unplug time. Replug: "Home: power on since ...".
+4. Router down: switch the home router off, then unplug the station (no SIM data). After about 30 minutes the viewer says "Station offline" and "Last known: power on since ...", never "power off". Switch the router on: within 10 minutes the card says "power off since" the real unplug time, or "power on since" the replug time.
+5. Station, Station mode: the paired phone is listed. Remove it. The viewer card disappears on its next refresh.
+6. **Push latency (open, needs Firebase Messaging, ADR 0037):** with the viewer app closed, unplug the station and time the push "Home: power off since ...". Target: under 60 seconds from the event reaching the Worker (R5.1). Until Firebase Messaging is in the app, the viewer only refreshes while open, so this step cannot pass yet.

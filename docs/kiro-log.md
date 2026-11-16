@@ -674,3 +674,9 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Worker: `POST /v1/pair/list` for the station's pair list (ids and creation times) and the no-push token `none`, skipped by the home push planner, until Firebase Messaging exists (ADR 0037).
 - Delete-my-data on a viewer now sends its pair ids.
 - Tests: `HomeWatchTest` (12, reads `packages/shared/fixtures/home/home-response.json`), three new cases in `workers/api/test/home-watch.test.ts`.
+
+## 2026-11-23 test(home): router-down scenario, checklist, traceability [spec:home-watch task:9]
+- `tools/sim/src/home-scenario.ts` builds a station's deliveries (heartbeats, a power cut with the router down, buffered upload at reconnect in any order) and reads the viewer's answer through the shared `homeState` and `mergeWindow`. Every event has `simulated: true`.
+- `tools/sim/test/home-scenario.test.ts`: silence shows ON then "Station offline" with last known ON, never OFF; after reconnect OFF since the real cut, or ON since the real return; a fast-check property over cut time, outage length, router delay and upload order.
+- `docs/probe-checklist.md` has a Home Watch section. Traceability lists H1 to H8 plus the scenario and the open latency row.
+- Task 9 stays unticked: the device push latency check is left for the human and needs Firebase Messaging in the app (ADR 0037). The human asked for no device testing now.

@@ -143,6 +143,8 @@ Tests in `apps/android/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt`.
 | R6, R8.1, R8.2 | H7 | `H7_alarm_multiplexer` | 5 | passing (`workers/api/test/home-watch.test.ts`) |
 | R4, R7.5 | viewer API | `viewer API GET /v1/home/:pairId` | 7 | passing (`workers/api/test/home-watch.test.ts`, shape in `packages/shared/test/home.test.ts`) |
 | R1.1, R1.4, R1.8 to R1.10, R4, R7.6, R9 | app screens | `R1_4_claim_sends_the_normalized_code_and_no_push_token_and_stores_the_name_locally`, `R4_2_fixture_states_map_to_the_spec_wording`, `R4_4_a_failed_refresh_keeps_the_cached_state_and_marks_it_stale`, `R1_9_station_lists_every_pair_and_removes_a_dead_viewer`, `H5_R1_5_every_failed_claim_gives_the_same_answer`, `H8_R7_4_delete_lists_the_viewer_pair_ids` | 8 | passing (`apps/android/app/src/test/kotlin/app/outage/home/HomeWatchTest.kt`; station list and no-push token: `workers/api/test/home-watch.test.ts`) |
+| R2.4 to R2.7 | H1, H2 (scenario) | `H1_offline_never_off: power off with the router down ...`, `H2_state_order_independent: power back before the router ...`, `H1_offline_never_off and H2_state_order_independent: any cut, outage, router delay and upload order` | 9 | passing (`tools/sim/test/home-scenario.test.ts`) |
+| R5.1 | push latency on devices | `docs/probe-checklist.md` Home Watch step 6 | 9 | open: needs Firebase Messaging in the app (ADR 0037) and two phones; left for the human |
 | R1.10, R7.4 | H8 (pair part) | `H8_delete_removes_pairs`, `R1.10 remove a pair` | 4 | passing (`workers/api/test/pairing.test.ts`; state parts: `H8_delete_removes_pairs (state parts, R7.3, R7.4)` in `workers/api/test/home-watch.test.ts`) |
 
 ## onboarding

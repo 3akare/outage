@@ -445,8 +445,10 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `tools/sim/scripts/build-replay.mjs` | Writes `packages/shared/fixtures/replay.json` through the real engine |
 | `tools/sim/src/fixture.ts` | Synthetic outage fixture |
 | `tools/sim/src/replay.ts` | Replay builder |
+| `tools/sim/src/home-scenario.ts` | Home Watch scenario: router down, late reconnect, through the shared `homeState` |
 | `tools/sim/src/sanitize.ts` | Strips IDs, dates and cells from fixtures |
 | `tools/sim/src/scenario.ts` | "Unplug your own phone" scenario |
+| `tools/sim/test/home-scenario.test.ts` | Router-down scenario never shows OFF from silence and corrects on reconnect (H1, H2) |
 | `tools/sim/test/outage30.test.ts` | A 30-phone outage confirms within 10 s |
 | `tools/sim/test/replay.test.ts` | Replay builder against an independent reference |
 | `tools/sim/test/runs.ts` | fast-check run count |
