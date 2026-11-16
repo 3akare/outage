@@ -234,4 +234,31 @@
     <string name="sensor_notification_title">Outage station</string>
     <string name="sensor_notification_body">Watching your power</string>
     <string name="sensor_notification_stop">Stop station</string>
+    <!-- Freezer Guard (power-log R6, copy.md: plain words) -->
+    <string name="settings_freezer">Freezer Guard</string>
+    <string name="freezer_title">Freezer Guard</string>
+    <string name="freezer_intro">Get an alert when the power has been off for too long, so you can check your freezer.</string>
+    <string name="freezer_on">Freezer Guard</string>
+    <string name="freezer_limit">Alert after %1$d h without power</string>
+    <string name="freezer_limit_less">One hour less</string>
+    <string name="freezer_limit_more">One hour more</string>
+    <string name="freezer_late_note">This can arrive later than your limit when the phone is saving battery.</string>
+    <string name="freezer_reboot_note">If the phone restarts, Freezer Guard starts counting again when you open Outage.</string>
+    <string name="freezer_quiet_window">Quiet hours: %1$s to %2$s</string>
+    <string name="freezer_quiet_start_less">Quiet hours start one hour earlier</string>
+    <string name="freezer_quiet_start_more">Quiet hours start one hour later</string>
+    <string name="freezer_quiet_end_less">Quiet hours end one hour earlier</string>
+    <string name="freezer_quiet_end_more">Quiet hours end one hour later</string>
+    <string name="freezer_quiet_sound">Freezer Guard may sound in quiet hours</string>
+    <string name="freezer_exact">Alert on time</string>
+    <string name="freezer_exact_body">Uses an exact alarm, so the alert comes at your limit and not later.</string>
+    <string name="freezer_exact_allow">Allow alarms and reminders</string>
+    <string name="freezer_notifications_off">Notifications are off for Outage, so the alert cannot show. Turn them on in phone settings.</string>
+    <string name="freezer_channel">Freezer Guard</string>
+    <string name="freezer_channel_quiet">Freezer Guard (quiet hours)</string>
+    <string name="freezer_alert_title">Check your freezer</string>
+    <plurals name="freezer_alert_body">
+        <item quantity="one">Power has been off for %1$d hour. Check your freezer.</item>
+        <item quantity="other">Power has been off for %1$d hours. Check your freezer.</item>
+    </plurals>
 </resources>

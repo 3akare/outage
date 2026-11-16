@@ -123,6 +123,9 @@ Gradle project. Kotlin sources are grouped by feature under `app/src/main/kotlin
 | `apps/android/app/src/main/kotlin/app/outage/OutageApp.kt` | Application class: builds the shell graph and chooses real or demo map and insights sources |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/AlarmState.kt` | Light Alarm state shown on Home |
 | `apps/android/app/src/main/kotlin/app/outage/alarm/StringPackCheck.kt` | Checks a string pack has every alarm string |
+| `apps/android/app/src/main/kotlin/app/outage/freezer/FreezerGuard.kt` | Freezer Guard settings, pure rules (plan, alert, quiet hours) and the scheduler over the timeline |
+| `apps/android/app/src/main/kotlin/app/outage/freezer/FreezerAndroid.kt` | AlarmManager alarms, the receiver and the notification for Freezer Guard |
+| `apps/android/app/src/main/kotlin/app/outage/ui/FreezerScreen.kt` | Freezer Guard settings screen |
 | `apps/android/app/src/main/kotlin/app/outage/insights/DemoOutages.kt` | About 60 days of labelled sample outages for demo mode |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsCalc.kt` | Pure numbers for Insights: hours of power, heatmap, trend, promise check |
 | `apps/android/app/src/main/kotlin/app/outage/insights/InsightsSource.kt` | Where Insights gets its outage timeline (demo or real) |

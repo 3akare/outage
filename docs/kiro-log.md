@@ -668,3 +668,7 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 ## 2026-11-23 feat(log): Stats [spec:power-log task:6]
 - Pure Kotlin daily stats (local midnight, 23 or 25 hour days handled), month list, Light Score (null below 7 qualifying days), promise comparison (null with no band) and its estimate text, which checks it never uses refund, compensation or claim.
 - Not done: tests PL4, PL5, PL6 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.
+
+## 2026-11-23 feat(freezer): Freezer Guard [spec:power-log task:7]
+- Pure rules (`FreezerRules`: plan, alert once per interval, quiet hours, 1 to 24 h), settings in the log database, `FreezerGuard.sync()` over the rebuilt timeline, `AlarmManager` alarms on the monotonic clock (inexact by default, exact only when the user asks and `canScheduleExactAlarms()` allows), receiver and notification on their own channels, settings screen. ADR 0038 records `SCHEDULE_EXACT_ALARM` over `USE_EXACT_ALARM`. Device checks added to `docs/probe-checklist.md`.
+- Not done: test PL7 (human asked for no more tests). Gradle unit tests, lint and assembleDebug pass.

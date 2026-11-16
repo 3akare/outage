@@ -144,3 +144,12 @@ class MemoryLogStore : LogStore {
         settings.clear()
     }
 }
+
+/** One [SqliteLogStore] per process, shared by the UI, the sensor listener and the Freezer Guard receiver. */
+object LogStores {
+    @Volatile private var instance: LogStore? = null
+
+    fun get(context: Context): LogStore = instance ?: synchronized(this) {
+        instance ?: SqliteLogStore(context.applicationContext).also { instance = it }
+    }
+}

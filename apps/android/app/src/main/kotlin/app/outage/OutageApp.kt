@@ -1,7 +1,10 @@
 package app.outage
 
 import android.app.Application
+import app.outage.freezer.AndroidFreezerAlarms
+import app.outage.freezer.FreezerGuard
 import app.outage.insights.InsightsSources
+import app.outage.log.LogStores
 import app.outage.log.BandConfig
 import app.outage.map.AreaMapSources
 import app.outage.map.FileMapCache
@@ -15,6 +18,7 @@ import app.outage.shell.PrefsFollowedArea
 import app.outage.shell.ShellGraph
 import app.outage.ui.BatterySetupScreen
 import app.outage.ui.FeatureRegistry
+import app.outage.ui.FreezerScreen
 import app.outage.ui.SensorToggleScreen
 import app.outage.ui.InsightsScreen
 import app.outage.ui.MapScreen
@@ -31,12 +35,22 @@ class OutageApp : Application() {
         super.onCreate()
         graph = ShellGraph(this)
         registerMapAndInsights()
+        registerPowerLog()
         registerSensor()
         // A server delete that failed earlier is retried here, off the main thread (R5.3). After registerSensor,
         // which registers the server half.
         if (graph.store.pendingServerDelete) Thread { graph.deletes.retryPending() }.start()
         // Feature packages register their screens and delete functions on `graph.features` and
         // `graph.deletes` here, as they are built. Nothing else starts at app start (R1.4).
+    }
+
+    /** Power Log (spec power-log): Freezer Guard first; the log screens and sensor wiring are added by later tasks. */
+    private fun registerPowerLog() {
+        val alarms = AndroidFreezerAlarms(this)
+        val freezer = FreezerGuard(LogStores.get(this), alarms)
+        graph.features.register("freezer_guard", R.string.settings_freezer, { FreezerScreen(freezer, alarms::canScheduleExact) }, null)
+        // Alarms are lost at a reboot (design section 6); plan again at every process start, off the main thread.
+        Thread { runCatching { freezer.sync() } }.start()
     }
 
     /**
