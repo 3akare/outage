@@ -1,5 +1,5 @@
 // The Outage app in the browser, for people without an Android phone (ADR 0049, ADR 0054). The same four tabs as the
-// phone: Now (one giant answer for your spot), Map (a street map of Lagos with see-through hexagons coloured by power),
+// phone: Now (one giant answer for your spot), Map (a street map with see-through hexagons coloured by power),
 // Insights with charts, and Settings. Everything on it is simulated and says so. The
 // blackout is the replay built by tools/sim from the real detection engine; the page never reads the public index (W6).
 // This file renders the shell. The behaviour is in public/js/app.js, served as a static file with MapLibre.
@@ -44,7 +44,7 @@ export const LEGEND = [
   { state: 'NORMAL', label: 'On' },
 ] as const;
 
-/** The simulated city as JSON for the page's script: real Lagos areas, made-up states and history (ADR 0053). */
+/** The simulated city as JSON for the page's script: real areas at their real places, made-up states and history (ADR 0053). */
 export const renderDemoCityJson = (): Rendered => json(city, TTL_SECONDS);
 
 // Icons the script builds rows with, inlined so it loads nothing more.
@@ -64,12 +64,12 @@ export function appScreen(): string {
     .join('');
   const now =
     '<section class="screen" id="now" data-page="now" aria-label="Now"><div class="screen-in" id="nowbody">' +
-    '<header class="head"><div><p class="over">Simulated city</p><h1>Lagos</h1></div><span class="tag">Simulated</span></header>' +
+    '<header class="head"><div><p class="over">Outage</p><h1>Simulated city</h1></div><span class="tag">Simulated</span></header>' +
     `<h2 class="sec">Areas</h2><ul class="group" id="arealist">${areas}</ul></div></section>`;
   const search =
     '<form class="search" role="search" id="searchform"><div class="search-box">' +
     LOGO_SVG +
-    '<label class="visually-hidden" for="q">Search areas in Lagos</label>' +
+    '<label class="visually-hidden" for="q">Search areas</label>' +
     '<input id="q" type="search" placeholder="Search areas" autocomplete="off" spellcheck="false" aria-controls="suggest" aria-expanded="false">' +
     `<button type="button" class="icon-btn" id="clear" aria-label="Clear search" hidden>${icon('close')}</button></div>` +
     '<ul class="suggest" id="suggest" role="listbox" hidden></ul></form>';
@@ -84,7 +84,7 @@ export function appScreen(): string {
     rail +
     now +
     '<div class="mapwrap" id="mapwrap">' +
-    '<div class="map" id="map" role="region" aria-label="Map of Lagos with every block coloured by power. The Now screen and each area\'s sheet have the same information."></div>' +
+    '<div class="map" id="map" role="region" aria-label="Map with every block coloured by power. The Now screen and each area\'s sheet have the same information."></div>' +
     search +
     legendHtml() +
     controls +
@@ -113,7 +113,7 @@ export function renderSimulatePage(site: Site): Rendered {
     '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
     `<title>${SIM_BANNER_TEXT}: the Outage app in your browser</title>` +
-    '<meta name="description" content="Try the Outage Android app in your browser: a street map of Lagos coloured by power, a simulated blackout, and charts of when the power goes. Not live data.">' +
+    '<meta name="description" content="Try the Outage Android app in your browser: a street map coloured by power, a simulated blackout, and charts of when the power goes. Not live data.">' +
     '<meta name="theme-color" content="#1d1d1f">' +
     `<link rel="canonical" href="${e(site.origin + SIMULATE_PATH)}">${FAVICON_LINK}` +
     `<link rel="modulepreload" href="/vendor/maplibre-gl/maplibre-gl.mjs"><link rel="stylesheet" href="${MAPLIBRE_CSS_PATH}">` +

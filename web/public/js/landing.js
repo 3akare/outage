@@ -1,4 +1,4 @@
-// The landing page's live map and chart (ADR 0054): the simulated Lagos on the real street map, and Yaba's last 30 days.
+// The landing page's live map and chart (ADR 0054): the simulated city on the real street map, and Yaba's last 30 days.
 import { bindTips, dailyBars } from './charts.js';
 import { dailyHours, summary } from './data.js';
 import { createMap } from './map.js';

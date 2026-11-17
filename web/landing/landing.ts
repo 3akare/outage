@@ -1,5 +1,5 @@
 // Landing page at / (ADR 0054). Outage Daylight: a centred headline and one sentence, then the live street map of the
-// simulated Lagos (MapLibre over OpenFreeMap) with the app's own Now card on it, how one power cut is caught, the features
+// simulated city (MapLibre over OpenFreeMap) with the app's own Now card on it, how one power cut is caught, the features
 // with a real chart from the simulated history, the privacy facts, and the downloads. Google Play and Aptoide appear only when their links are configured; GitHub is
 // always there. Does not repeat any hardware-sensor claim (UX9) and invents no figure.
 import { brandLink, FAVICON_LINK } from '../site/brand.ts';
@@ -65,7 +65,7 @@ export function renderLanding(site: Site): Rendered {
     '<h1 id="hero-h">Know the moment the power goes.</h1>' +
     '<p class="lead">Your phone charger is a power-grid sensor for your street.</p>' +
     `<div class="actions"><a class="btn primary lg" href="${SIMULATE_HREF}">Try the app in your browser</a><a class="btn text lg" href="#get">Get it for Android</a></div></div>` +
-    '<figure class="stage" aria-label="Street map of Lagos with simulated power blocks"><div class="stage-in">' +
+    '<figure class="stage" aria-label="Street map with simulated power blocks"><div class="stage-in">' +
     `<div class="map" id="heromap"></div>${nowCard()}${legendHtml()}</div></figure></section>`;
   const how =
     '<section class="section" id="how" aria-labelledby="how-h"><div class="container">' +
@@ -93,7 +93,7 @@ export function renderLanding(site: Site): Rendered {
     `<div class="stores">${stores(site)
       .map((s) => `<a class="store" href="${e(s.href)}" aria-label="${s.label}">${icon(s.icon)}<span><small>${s.over}</small><b>${s.label.replace(/^(Get it on |Download the APK from )/, '')}</b></span></a>`)
       .join('')}</div>` +
-    `<p class="muted">No Android phone? <a href="${SIMULATE_HREF}">Try the app in your browser</a> on a simulated Lagos.</p>` +
+    `<p class="muted">No Android phone? <a href="${SIMULATE_HREF}">Try the app in your browser</a> on a simulated city.</p>` +
     '</div></section>';
   const foot =
     `<footer class="site-foot"><div class="container">${brandLink('/')}` +

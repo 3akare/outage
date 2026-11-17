@@ -1,4 +1,4 @@
-// The simulated city the app shows in the browser (ADR 0049, ADR 0052): real Lagos areas at their real places, as real
+// The simulated city the app shows in the browser (ADR 0049, ADR 0052): real areas at their real places, as real
 // H3 resolution-8 blocks, with made-up power states. Built by tools/sim/scripts/build-demo-city.mjs from the catalog
 // into core/shared/fixtures/demo-city.json; the phone's sample map is generated from the same build. Every cell id starts
 // with "sim-", so nothing here can be mistaken for a real cell. Yaba starts with power on: the replay cuts it.

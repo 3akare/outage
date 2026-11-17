@@ -156,8 +156,8 @@ function renderNow() {
         `<li class="weekbars"><div class="mini" data-mini="${SPOT_AREA}"></div></li></ul>`
       : '') +
     `<h2 class="sec">${spotSet ? 'Nearby' : 'Areas'}</h2><ul class="group" id="arealist">${nearbyRows()}</ul>` +
-    `<ul class="group cards" id="maprow"><li><button type="button" class="row" data-goto="map"><span class="tile blue">${ICON.map}</span><span class="txt"><b>Open the map</b><span>Every block in Lagos, coloured by power</span></span>${ICON.chevron}</button></li></ul>` +
-    '<p class="foot">Simulated city: real Lagos areas at their real places, made-up power. Map data from OpenStreetMap contributors, tiles by OpenFreeMap.</p>';
+    `<ul class="group cards" id="maprow"><li><button type="button" class="row" data-goto="map"><span class="tile blue">${ICON.map}</span><span class="txt"><b>Open the map</b><span>Every block, coloured by power</span></span>${ICON.chevron}</button></li></ul>` +
+    '<p class="foot">Simulated city: real neighbourhoods at their real places, made-up power. Map data from OpenStreetMap contributors, tiles by OpenFreeMap.</p>';
   drawMini();
   bindNow();
 }

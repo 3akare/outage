@@ -539,7 +539,7 @@
     <string name="now_hours_promise">%1$.1f h of %2$d h promised</string>
     <string name="now_hours_value">%1$.1f h of power</string>
     <string name="now_see_map">See the map</string>
-    <string name="now_see_map_body">Every area in Lagos, block by block</string>
+    <string name="now_see_map_body">Every area, block by block</string>
     <string name="now_sensor">This phone</string>
     <string name="now_set_up">Set up</string>
     <string name="settings_delete_footer">Removes this phone\'s data here and on the server.</string>

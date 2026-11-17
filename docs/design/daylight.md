@@ -87,6 +87,6 @@ the selected tab is ink, the others `muted`. On a computer the same four sit in 
 
 - **Landing.** Apple product page: a centred headline in `display` ("Know the moment the power goes."), one sentence, an ink
   pill ("Try it in your browser") and a link ("Get it for Android"). Under it, the real app (the Now screen) in a phone
-  frame beside the live map of Lagos. Then three short sections with one idea each, set big, and a footer.
+  frame beside the live map. Then three short sections with one idea each, set big, and a footer.
 - **Pages** (areas, an area, install, privacy, 404): a slim top bar (the mark and "Outage", two links, an ink pill), a
   680 px column of type on the grey page with white cards for grouped facts.
