@@ -4,6 +4,8 @@ package app.outage.shell
 sealed interface Route {
     data object Onboarding : Route
     data object Home : Route
+    /** The power map, its own tab since the status-first redesign (ADR 0054). */
+    data object Map : Route
     data object Insights : Route
     data object Settings : Route
     data class Feature(val key: String) : Route

@@ -98,7 +98,6 @@
 
     <!-- Onboarding: battery step label (R7.4) -->
     <string name="battery_general_steps">General steps. Names may differ on your phone.</string>
-    <string name="battery_step_item" translatable="false">%1$d. %2$s</string>
     <string name="battery_verified_steps">Checked on a %1$s phone.</string>
 
     <!-- Light Alarm and prompt (alerts-and-light-alarm, string pack L12) -->
@@ -168,13 +167,11 @@
     <string name="map_desc_no_data">Not enough phones here yet</string>
     <string name="map_hex_desc">%1$s, %2$s</string>
     <string name="map_hex_desc_since">%1$s, %2$s since %3$s</string>
-    <string name="map_legend">Legend</string>
     <string name="map_recentre">Centre on my spot</string>
     <string name="map_zoom_in">Zoom in</string>
     <string name="map_zoom_out">Zoom out</string>
     <string name="map_show_list">Show list</string>
     <string name="map_show_map">Show map</string>
-    <string name="map_close">Close</string>
     <string name="map_your_spot">Your spot</string>
     <string name="map_offline_banner">Offline. Last update %1$s</string>
     <string name="map_none">No phones reporting here yet</string>
@@ -337,8 +334,8 @@
     <string name="follow_kind_restored">When power comes back</string>
     <string name="follow_quiet_switch">Quiet hours</string>
     <string name="follow_quiet_hint">Inside this window alerts arrive without sound. The Light Alarm ignores it.</string>
-    <string name="follow_quiet_from">From %1$s</string>
-    <string name="follow_quiet_to">To %1$s</string>
+    <string name="follow_quiet_from">From</string>
+    <string name="follow_quiet_to">To</string>
     <string name="follow_earlier">Earlier</string>
     <string name="follow_later">Later</string>
     <string name="follow_google_note">Alerts come through Google. Your phone sends Google and Outage a push address once you turn this on.</string>
@@ -490,7 +487,10 @@
     <string name="freezer_title">Freezer Guard</string>
     <string name="freezer_intro">Get an alert when the power has been off for too long, so you can check your freezer.</string>
     <string name="freezer_on">Freezer Guard</string>
-    <string name="freezer_limit">Alert after %1$d h without power</string>
+    <string name="freezer_limit_label">Alert after</string>
+    <string name="freezer_hours_value">%1$d h</string>
+    <string name="freezer_quiet_start_label">Starts</string>
+    <string name="freezer_quiet_end_label">Ends</string>
     <string name="freezer_limit_less">One hour less</string>
     <string name="freezer_limit_more">One hour more</string>
     <string name="freezer_late_note">This can arrive later than your limit when the phone is saving battery.</string>
@@ -512,4 +512,35 @@
         <item quantity="one">Power has been off for %1$d hour. Check your freezer.</item>
         <item quantity="other">Power has been off for %1$d hours. Check your freezer.</item>
     </plurals>
+    <!-- Outage Daylight (ADR 0054): the Now tab, status first. -->
+    <string name="nav_now">Now</string>
+    <string name="nav_map">Map</string>
+    <string name="now_your_spot">Your spot</string>
+    <string name="now_no_spot">No spot yet</string>
+    <string name="now_power_is">Power is</string>
+    <string name="now_word_normal">On</string>
+    <string name="now_word_spot_only">Maybe out</string>
+    <string name="now_word_possible">Maybe out</string>
+    <string name="now_word_confirmed">Out</string>
+    <string name="now_word_restored">Back</string>
+    <string name="now_word_unknown">Unknown</string>
+    <string name="now_note_normal">Phones near you are charging normally.</string>
+    <string name="now_note_spot_only">Only your phone stopped charging. It may be your socket, not the grid.</string>
+    <string name="now_note_possible">Some phones near you stopped charging at once. Checking.</string>
+    <string name="now_note_confirmed">Phones near you lost power together. We will tell you when it is back.</string>
+    <string name="now_note_restored">Phones near you are charging again.</string>
+    <string name="now_note_unknown">Choose your area to see its power here.</string>
+    <string name="now_step_on">On</string>
+    <string name="now_step_maybe">Maybe</string>
+    <string name="now_step_out">Out</string>
+    <string name="now_step_back">Back</string>
+    <string name="now_group_today">Today</string>
+    <string name="now_group_more">More</string>
+    <string name="now_hours_promise">%1$.1f h of %2$d h promised</string>
+    <string name="now_hours_value">%1$.1f h of power</string>
+    <string name="now_see_map">See the map</string>
+    <string name="now_see_map_body">Every area, block by block</string>
+    <string name="now_sensor">This phone</string>
+    <string name="now_set_up">Set up</string>
+    <string name="settings_delete_footer">Removes this phone\'s data here and on the server.</string>
 </resources>

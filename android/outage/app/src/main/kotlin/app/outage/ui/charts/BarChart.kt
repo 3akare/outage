@@ -45,7 +45,7 @@ fun BarChart(
     modifier: Modifier = Modifier,
 ) {
     val measurer = rememberTextMeasurer()
-    val label = TextStyle(fontSize = 11.sp, color = textColor)
+    val label = TextStyle(fontFamily = app.outage.ui.Inter, fontSize = 12.sp, fontFeatureSettings = "tnum", color = textColor)
     Canvas(
         modifier.fillMaxWidth().height(200.dp).semantics { contentDescription = summary }
             .pointerInput(values) {
@@ -69,7 +69,7 @@ fun BarChart(
         fun y(v: Double) = top + h - (h * (v / maxValue).toFloat().coerceIn(0f, 1f))
 
         for ((v, text) in yTicks) {
-            drawLine(gridColor, Offset(left, y(v)), Offset(size.width - right, y(v)), 1.dp.toPx())
+            drawLine(gridColor, Offset(left, y(v)), Offset(size.width - right, y(v)), 0.5.dp.toPx())
             drawText(measurer, text, Offset(0f, y(v) - 7.dp.toPx()), label)
         }
         val slot = w / values.size

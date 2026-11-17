@@ -2,34 +2,27 @@ package app.outage.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
@@ -100,40 +93,53 @@ fun homeLineText(line: HomeLine?, name: String, nowMs: Long): Pair<String, Strin
     is HomeLine.Waiting, null -> stringResource(R.string.home_waiting, name) to null
 }
 
-@Composable
-private fun HomeCardView(card: HomeCard, nowMs: Long, onRemove: (() -> Unit)?) {
-    Card(Modifier.fillMaxWidth()) {
-        HomeCardBody(card, nowMs)
-        if (onRemove != null) {
-            TextButton(onClick = onRemove, modifier = Modifier.padding(horizontal = 8.dp).heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.home_remove_pair))
-            }
-        }
-    }
+/** The tile colour of a home: green with power, red without, grey when the station is quiet. */
+private fun lineTile(line: HomeLine?) = when (line) {
+    is HomeLine.PowerOn -> Tokens.Colors.tileGreen
+    is HomeLine.PowerOff -> Tokens.Colors.tileRed
+    else -> Tokens.Colors.tileGrey
 }
 
-/** The Home tab card under the map: one line per paired home. Nothing shows until a pair exists. */
+/** One home as a grouped-list row: tile, the line, and its age when it is cached (R4.4). */
+@Composable
+private fun HomeRow(card: HomeCard, nowMs: Long, onClick: (() -> Unit)? = null) {
+    val (title, sub) = homeLineText(card.line, card.name, nowMs)
+    val age = if (card.stale && card.fetchedAtMs != null) stringResource(R.string.home_age, Fmt.ageMinutes(nowMs, card.fetchedAtMs)) else null
+    DayRow(
+        title, listOfNotNull(sub, age).joinToString("\n").ifEmpty { null },
+        tile = R.drawable.ic_sym_home_watch to lineTile(card.line), chevron = onClick != null, onClick = onClick,
+    )
+}
+
+/** Home Watch on Now: one row per paired home. Nothing shows until a pair exists. */
 @Composable
 fun HomeWatchCard(vm: HomeWatchViewModel, onOpen: () -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
     RefreshWhileShown { vm.refresh() }
     if (state.cards.isEmpty()) return
     val now = System.currentTimeMillis()
-    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        state.cards.forEach { card -> Card(onClick = onOpen, modifier = Modifier.fillMaxWidth()) { HomeCardBody(card, now) } }
+    GroupHeader(stringResource(R.string.settings_home_watch))
+    DayCard {
+        state.cards.forEachIndexed { i, card ->
+            if (i > 0) RowDivider(TileInset)
+            HomeRow(card, now, onOpen)
+        }
     }
 }
 
+/** A labelled text field inside a grouped card: the label small above, the text at body size. */
 @Composable
-private fun HomeCardBody(card: HomeCard, nowMs: Long) {
-    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        val (title, sub) = homeLineText(card.line, card.name, nowMs)
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        sub?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-        // R4.4: a cached state shows its age when the phone could not refresh it.
-        if (card.stale && card.fetchedAtMs != null) {
-            Text(stringResource(R.string.home_age, Fmt.ageMinutes(nowMs, card.fetchedAtMs)), style = MaterialTheme.typography.bodySmall)
-        }
+private fun FieldRow(label: String, state: TextFieldState) {
+    Column(Modifier.fillMaxWidth().heightIn(min = 60.dp).padding(horizontal = 16.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(label, style = DayType.footnote, color = Day.muted)
+        // State-based text field: https://developer.android.com/develop/ui/compose/text/user-input
+        BasicTextField(
+            state = state,
+            lineLimits = TextFieldLineLimits.SingleLine,
+            textStyle = DayType.body.copy(color = Day.ink),
+            cursorBrush = SolidColor(Day.focus),
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = label },
+        )
     }
 }
 
@@ -145,41 +151,41 @@ fun HomeWatchScreen(vm: HomeWatchViewModel, onBack: () -> Unit, onOpenStation: (
     val code = rememberTextFieldState()
     val name = rememberTextFieldState(initialText = stringResource(R.string.home_default_name))
     val now = System.currentTimeMillis()
-    Column(Modifier.fillMaxSize()) {
-        SubScreenHeader(R.string.settings_home_watch, onBack)
-        Column(
-            Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(stringResource(R.string.home_intro), style = MaterialTheme.typography.bodyLarge)
-            ServerNotes(state)
-            state.cards.forEach { card -> HomeCardView(card, now) { vm.removeViewerPair(card.pairId) } }
-            if (state.cards.size < HomeWatchModel.MAX_VIEWER_PAIRS) {
-                Text(stringResource(R.string.home_enter_code_title), style = MaterialTheme.typography.titleMedium)
-                // State-based text field: https://developer.android.com/develop/ui/compose/text/user-input
-                OutlinedTextField(
-                    state = code,
-                    label = { Text(stringResource(R.string.home_code_label)) },
-                    lineLimits = TextFieldLineLimits.SingleLine,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OutlinedTextField(
-                    state = name,
-                    label = { Text(stringResource(R.string.home_name_label)) },
-                    lineLimits = TextFieldLineLimits.SingleLine,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Button(
+    DayPage(title = stringResource(R.string.settings_home_watch), onBack = onBack) {
+        PageText(stringResource(R.string.home_intro))
+        ServerNotes(state)
+        if (state.cards.isNotEmpty()) {
+            Gap()
+            DayCard {
+                state.cards.forEachIndexed { i, card ->
+                    if (i > 0) RowDivider(TileInset)
+                    HomeRow(card, now)
+                    DayRow(stringResource(R.string.home_remove_pair), titleColor = LocalStatusColors.current.confirmed.color) { vm.removeViewerPair(card.pairId) }
+                }
+            }
+        }
+        if (state.cards.size < HomeWatchModel.MAX_VIEWER_PAIRS) {
+            GroupHeader(stringResource(R.string.home_enter_code_title))
+            DayCard {
+                FieldRow(stringResource(R.string.home_code_label), code)
+                RowDivider()
+                FieldRow(stringResource(R.string.home_name_label), name)
+            }
+            claimText(state.claim)?.let { GroupFooter(it) }
+            Gap()
+            ActionStack {
+                InkButton(
+                    stringResource(R.string.home_pair_button),
                     onClick = { vm.claim(code.text.toString(), name.text.toString()) },
-                    enabled = state.claim != ClaimStatus.BUSY && !state.noServer,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
-                ) { Text(stringResource(R.string.home_pair_button)) }
-                claimText(state.claim)?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !state.noServer,
+                    busy = state.claim == ClaimStatus.BUSY,
+                )
             }
-            HorizontalDivider()
-            OutlinedButton(onClick = onOpenStation, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.home_setup_spare))
-            }
+        }
+        Gap(20.dp)
+        DayCard {
+            DayRow(stringResource(R.string.home_setup_spare), tile = R.drawable.ic_sym_plug to Tokens.Colors.tileGreen, chevron = true, onClick = onOpenStation)
         }
     }
 }
@@ -195,8 +201,8 @@ private fun claimText(s: ClaimStatus): String? = when (s) {
 
 @Composable
 private fun ServerNotes(state: HomeWatchUi) {
-    if (state.noServer) Text(stringResource(R.string.home_no_server), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
-    else if (state.notRegistered) Text(stringResource(R.string.home_not_registered), style = MaterialTheme.typography.bodyMedium)
+    if (state.noServer) PageText(stringResource(R.string.home_no_server), color = LocalStatusColors.current.confirmed.color, style = DayType.subhead)
+    else if (state.notRegistered) PageText(stringResource(R.string.home_not_registered), color = Day.muted, style = DayType.subhead)
 }
 
 /** Settings > Station mode: the spare phone side. "Pair with my phone", the code, every pair with remove, the SIM hint (R1.1, R9.1). */
@@ -204,46 +210,51 @@ private fun ServerNotes(state: HomeWatchUi) {
 fun StationPairScreen(vm: HomeWatchViewModel, onBack: () -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { vm.loadStationPairs() }
-    Column(Modifier.fillMaxSize()) {
-        SubScreenHeader(R.string.settings_station, onBack)
-        Column(
-            Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(stringResource(R.string.station_intro), style = MaterialTheme.typography.bodyLarge)
-            Text(stringResource(R.string.home_sim_hint), style = MaterialTheme.typography.bodyMedium)
-            ServerNotes(state)
-            Button(
+    DayPage(title = stringResource(R.string.settings_station), onBack = onBack) {
+        PageText(stringResource(R.string.station_intro))
+        PageText(stringResource(R.string.home_sim_hint), color = Day.muted, style = DayType.subhead)
+        ServerNotes(state)
+        Gap()
+        val shown = vm.offerShown()
+        if (shown != null && state.offerExpiresAtMs != null) {
+            // The code, set big in tabular figures so it is easy to read across a room.
+            DayCard(padding = 24.dp) {
+                Text(
+                    shown.chunked(5).joinToString(" "), style = DayType.title1Num.copy(fontSize = DayType.largeTitle.fontSize), color = Day.ink,
+                    textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    stringResource(R.string.station_code_valid_until, Fmt.time(state.offerExpiresAtMs!!)), style = DayType.subhead, color = Day.muted,
+                    textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                )
+            }
+            Gap()
+        }
+        ActionStack {
+            InkButton(
+                stringResource(R.string.station_pair_button),
                 onClick = { vm.requestOffer() },
-                enabled = state.station != StationStatus.BUSY && !state.noServer,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
-            ) { Text(stringResource(R.string.station_pair_button)) }
-            val shown = vm.offerShown()
-            if (shown != null && state.offerExpiresAtMs != null) {
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(shown.chunked(5).joinToString(" "), style = MaterialTheme.typography.headlineLarge, fontFamily = FontFamily.Monospace)
-                        Text(stringResource(R.string.station_code_valid_until, Fmt.time(state.offerExpiresAtMs!!)), style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
-            when (state.station) {
-                StationStatus.FULL -> Text(stringResource(R.string.home_claim_full))
-                StationStatus.FAILED -> Text(stringResource(R.string.station_offer_failed))
-                else -> Unit
-            }
-            HorizontalDivider()
-            Text(stringResource(R.string.station_pairs_title), style = MaterialTheme.typography.titleMedium)
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !state.noServer,
+                busy = state.station == StationStatus.BUSY,
+            )
+        }
+        when (state.station) {
+            StationStatus.FULL -> GroupFooter(stringResource(R.string.home_claim_full))
+            StationStatus.FAILED -> GroupFooter(stringResource(R.string.station_offer_failed))
+            else -> Unit
+        }
+        GroupHeader(stringResource(R.string.station_pairs_title))
+        DayCard {
             val pairs = state.stationPairs
-            if (pairs.isNullOrEmpty()) Text(stringResource(R.string.station_pairs_none), style = MaterialTheme.typography.bodyMedium)
+            if (pairs.isNullOrEmpty()) DayRow(stringResource(R.string.station_pairs_none), titleColor = Day.muted)
             pairs?.forEachIndexed { i, p ->
-                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.station_pair_row, i + 1, Fmt.day(p.createdMs)), Modifier.weight(1f))
-                    TextButton(onClick = { vm.removeStationPair(p.pairId) }, modifier = Modifier.heightIn(min = 48.dp)) {
-                        Text(stringResource(R.string.home_remove_pair))
-                    }
-                }
+                if (i > 0) RowDivider()
+                DayRow(stringResource(R.string.station_pair_row, i + 1, Fmt.day(p.createdMs)), trailing = {
+                    TextAction(stringResource(R.string.home_remove_pair), { vm.removeStationPair(p.pairId) }, color = LocalStatusColors.current.confirmed.color)
+                })
             }
         }
     }
 }
+

@@ -97,9 +97,11 @@ describe('W8 headers and escaping', () => {
   it('W8_layout_loads_nothing_from_another_origin', () => {
     const out = layout({ site: SITE, title: 't', description: 'd', path: '/', body: '<main></main>', script: 'void 0' });
     expect(out).not.toMatch(/(src|href)="https?:\/\/(?!outage\.test)/);
-    // The one stylesheet is the shared same-origin /app.css (ADR 0048); never a font or another site's file.
+    // The one stylesheet is the shared same-origin /app.css (ADR 0048); the one font is Inter from this origin (ADR 0054).
     expect([...out.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/g)].map((m) => m[0])).toEqual(['<link rel="stylesheet" href="/app.css">']);
-    expect(out).not.toMatch(/<link[^>]+(preload|font)/);
+    expect([...out.matchAll(/<link[^>]+rel="preload"[^>]*>/g)].map((m) => m[0])).toEqual([
+      '<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>',
+    ]);
     expect(out).not.toMatch(/style="/); // inline style attributes would break the style nonce policy
     expect(out.match(/<script/g)?.length).toBe(1);
   });

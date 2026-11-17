@@ -1,6 +1,6 @@
-// The Outage app in the browser, for people without an Android phone (ADR 0049, ADR 0053). A street map of Lagos in the
-// manner of Google Maps, with see-through hexagons on top coloured by power, a search box, filter chips, a side panel
-// (a bottom sheet on a phone), Insights with charts, and Settings. Everything on it is simulated and says so. The
+// The Outage app in the browser, for people without an Android phone (ADR 0049, ADR 0054). The same four tabs as the
+// phone: Now (one giant answer for your spot), Map (a street map with see-through hexagons coloured by power),
+// Insights with charts, and Settings. Everything on it is simulated and says so. The
 // blackout is the replay built by tools/sim from the real detection engine; the page never reads the public index (W6).
 // This file renders the shell. The behaviour is in public/js/app.js, served as a static file with MapLibre.
 import city from '@outage/shared/fixtures/demo-city.json' with { type: 'json' };
@@ -29,67 +29,69 @@ export const STATE_WORDS = {
 } as const;
 
 const NAV: { id: string; label: string; icon: IconName }[] = [
+  { id: 'now', label: 'Now', icon: 'home' },
+  { id: 'map', label: 'Map', icon: 'map' },
   { id: 'insights', label: 'Insights', icon: 'insights' },
-  { id: 'home', label: 'Home', icon: 'home' },
   { id: 'settings', label: 'Settings', icon: 'settings' },
 ];
 export const NAV_ORDER = NAV.map((n) => n.label);
 
-/** The filter chips over the map, as in Google Maps. */
-export const CHIPS = [
-  { state: 'CONFIRMED', label: 'Power out' },
-  { state: 'POSSIBLE', label: 'Maybe out' },
-  { state: 'RESTORED', label: 'Power back' },
-  { state: 'NORMAL', label: 'Power on' },
+/** The map key: the four power states and "no data". */
+export const LEGEND = [
+  { state: 'CONFIRMED', label: 'Out' },
+  { state: 'POSSIBLE', label: 'Maybe' },
+  { state: 'RESTORED', label: 'Back' },
+  { state: 'NORMAL', label: 'On' },
 ] as const;
 
-/** The simulated city as JSON for the page's script: real Lagos areas, made-up states and history (ADR 0053). */
+/** The simulated city as JSON for the page's script: real areas at their real places, made-up states and history (ADR 0053). */
 export const renderDemoCityJson = (): Rendered => json(city, TTL_SECONDS);
 
 // Icons the script builds rows with, inlined so it loads nothing more.
-const SCRIPT_ICONS: IconName[] = ['chevron', 'place', 'alarm', 'notifications', 'phone', 'freezer', 'bolt', 'battery', 'language', 'info', 'delete', 'chart', 'shield', 'arrow', 'close', 'check', 'groups'];
+const SCRIPT_ICONS: IconName[] = ['chevron', 'place', 'alarm', 'notifications', 'phone', 'freezer', 'bolt', 'battery', 'language', 'info', 'delete', 'chart', 'shield', 'arrow', 'close', 'check', 'groups', 'map', 'homeWatch', 'play', 'plug', 'clock'];
 
-/** The app: map, search, chips, panel, the three tabs. Reads without scripts as a list of areas. */
+export const legendHtml = (): string =>
+  `<div class="maplegend" aria-hidden="true">${LEGEND.map((l) => `<span><i class="sw" data-state="${l.state}"></i>${l.label}</span>`).join('')}</div>`;
+
+/** The app: the Now screen, the map, Insights and Settings. Reads without scripts as a list of areas. */
 export function appScreen(): string {
-  const rail = `<nav class="rail" aria-label="App">${NAV.map(
+  const rail = `<nav class="rail" aria-label="App"><span class="rail-brand">${LOGO_SVG}Outage</span>${NAV.map(
     (n) =>
-      `<button type="button" data-tab="${n.id}"${n.id === 'home' ? ' aria-current="page"' : ''}><span class="pill">${icon(n.icon)}</span><span>${n.label}</span></button>`,
+      `<button type="button" data-tab="${n.id}"${n.id === 'now' ? ' aria-current="page"' : ''}>${icon(n.icon)}<span>${n.label}</span></button>`,
   ).join('')}</nav>`;
-  const search =
-    '<div class="topbar"><form class="search" role="search" id="searchform">' +
-    `<span class="search-brand">${LOGO_SVG}</span>` +
-    '<label class="visually-hidden" for="q">Search areas in Lagos</label>' +
-    '<input id="q" type="search" placeholder="Search Lagos areas" autocomplete="off" spellcheck="false" aria-controls="suggest" aria-expanded="false">' +
-    `<button type="button" class="icon-btn" id="clear" aria-label="Clear search" hidden>${icon('close')}</button>` +
-    `<span class="search-ico">${icon('search')}</span>` +
-    '<ul class="suggest" id="suggest" role="listbox" hidden></ul></form>' +
-    `<div class="chips" role="group" aria-label="Show on the map">${CHIPS.map(
-      (c) => `<button type="button" class="chip" data-filter="${c.state}" aria-pressed="false"><span class="chip-in"><i class="dot" data-state="${c.state}"></i>${c.label}</span></button>`,
-    ).join('')}</div></div>`;
   const areas = city.areas
-    .map((a) => `<li><button type="button" class="row" data-area="${a.slug}"><i class="dot" data-state="NORMAL"></i><span class="txt"><b>${e(a.name)}</b><span>Band ${a.band}</span></span></button></li>`)
+    .map((a) => `<li><button type="button" class="row" data-area="${a.slug}"><span class="txt"><b>${e(a.name)}</b><span>Band ${a.band}, ${city.bands[a.band as keyof typeof city.bands]} hours promised</span></span>${icon('chevron')}</button></li>`)
     .join('');
-  const panel =
-    '<aside class="panel" id="panel" aria-label="Your spot and areas"><button type="button" class="grab" id="grab" aria-label="Show more"><span></span></button>' +
-    `<div class="panel-body" id="panelbody"><h2 class="sec">Areas in the simulated city</h2><ul class="rows" id="arealist">${areas}</ul></div></aside>`;
+  const now =
+    '<section class="screen" id="now" data-page="now" aria-label="Now"><div class="screen-in" id="nowbody">' +
+    '<header class="head"><div><p class="over">Outage</p><h1>Simulated city</h1></div><span class="tag">Simulated</span></header>' +
+    `<h2 class="sec">Areas</h2><ul class="group" id="arealist">${areas}</ul></div></section>`;
+  const search =
+    '<form class="search" role="search" id="searchform"><div class="search-box">' +
+    LOGO_SVG +
+    '<label class="visually-hidden" for="q">Search areas</label>' +
+    '<input id="q" type="search" placeholder="Search areas" autocomplete="off" spellcheck="false" aria-controls="suggest" aria-expanded="false">' +
+    `<button type="button" class="icon-btn" id="clear" aria-label="Clear search" hidden>${icon('close')}</button></div>` +
+    '<ul class="suggest" id="suggest" role="listbox" hidden></ul></form>';
   const controls =
     '<div class="mapctl" id="mapctl">' +
     `<button type="button" class="fab" id="myloc" aria-label="Go to my spot">${icon('myLocation')}</button>` +
     `<div class="zoom"><button type="button" id="zin" aria-label="Zoom in">${icon('add')}</button><button type="button" id="zout" aria-label="Zoom out">${icon('remove')}</button></div></div>`;
-  const legend =
-    `<div class="legend" aria-hidden="true">${(['CONFIRMED', 'POSSIBLE', 'RESTORED', 'NORMAL', 'NO_DATA'] as const)
-      .map((s) => `<span><i class="sw" data-state="${s}"></i>${{ CONFIRMED: 'Out', POSSIBLE: 'Maybe', RESTORED: 'Back', NORMAL: 'On', NO_DATA: 'No data' }[s]}</span>`)
-      .join('')}</div>`;
+  const sheet =
+    '<aside class="sheet" id="sheet" aria-label="Area" hidden><button type="button" class="grab" id="grab" aria-label="Close"><span></span></button><div id="sheetbody"></div></aside>';
   return (
-    '<div class="app" id="app" data-tab="home">' +
+    '<div class="app" id="app" data-tab="now">' +
     rail +
-    '<div class="map" id="map" role="region" aria-label="Map of Lagos with every block coloured by power. The list in the panel has the same information."></div>' +
+    now +
+    '<div class="mapwrap" id="mapwrap">' +
+    '<div class="map" id="map" role="region" aria-label="Map with every block coloured by power. The Now screen and each area\'s sheet have the same information."></div>' +
     search +
-    legend +
+    legendHtml() +
     controls +
-    panel +
-    '<section class="page" id="insights" data-page="insights" aria-label="Insights" hidden></section>' +
-    '<section class="page" id="settings" data-page="settings" aria-label="Settings" hidden></section>' +
+    sheet +
+    '</div>' +
+    '<section class="screen" id="insights" data-page="insights" aria-label="Insights" hidden></section>' +
+    '<section class="screen" id="settings" data-page="settings" aria-label="Settings" hidden></section>' +
     '<div class="toast" id="toast" role="status" aria-live="polite"></div>' +
     `<div class="notif" id="notif" role="alert" aria-hidden="true"><span class="notif-ico">${LOGO_SVG}</span><div><b id="notift"></b><span id="notifb"></span></div></div>` +
     '<div class="tip" id="tip" role="tooltip" hidden></div>' +
@@ -102,17 +104,17 @@ export function renderSimulatePage(site: Site): Rendered {
   const icons = JSON.stringify(Object.fromEntries([...SCRIPT_ICONS.map((n) => [n, icon(n)]), ['logo', LOGO_SVG]])).replace(/</g, '\\u003c');
   const body =
     `<div class="sim-banner" role="note">${icon('info')}<p>${SIM_BANNER_TEXT}: simulated data, not live. <span class="hide-s">${SIM_SENTENCE}</span></p>` +
-    `<ul><li><a href="${apk}">Get the Android app</a></li><li><a href="/">About Outage</a></li></ul></div>` +
+    `<ul><li><a href="${apk}">Get the app</a></li><li><a class="hide-s" href="/">About Outage</a></li></ul></div>` +
     appScreen() +
     `<script type="application/json" id="icons" nonce="__OUTAGE_NONCE__">${icons}</script>` +
-    '<noscript><p class="noscript">The app in the browser needs JavaScript. The area list above still shows every simulated area.</p></noscript>' +
+    '<noscript><p class="noscript">The app in the browser needs JavaScript. The list above still shows every simulated area.</p></noscript>' +
     `<script type="module" src="${APP_JS_PATH}"></script>`;
   const page =
     '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
     `<title>${SIM_BANNER_TEXT}: the Outage app in your browser</title>` +
-    '<meta name="description" content="Try the Outage Android app in your browser: a street map of Lagos coloured by power, a simulated blackout, and charts of when the power goes. Not live data.">' +
-    '<meta name="theme-color" content="#ffffff">' +
+    '<meta name="description" content="Try the Outage Android app in your browser: a street map coloured by power, a simulated blackout, and charts of when the power goes. Not live data.">' +
+    '<meta name="theme-color" content="#1d1d1f">' +
     `<link rel="canonical" href="${e(site.origin + SIMULATE_PATH)}">${FAVICON_LINK}` +
     `<link rel="modulepreload" href="/vendor/maplibre-gl/maplibre-gl.mjs"><link rel="stylesheet" href="${MAPLIBRE_CSS_PATH}">` +
     `<link rel="stylesheet" href="/app.css"></head><body class="sim">${body}</body></html>`;

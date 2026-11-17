@@ -16,6 +16,7 @@ object Routes {
         val value = extra.trim().lowercase()
         return when (value) {
             "home" -> Route.Home
+            "map" -> Route.Map
             // Log merged into Insights and Area into Home (ADR 0026), so old links still open.
             "log" -> Route.Insights
             "area" -> Route.Home

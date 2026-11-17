@@ -42,7 +42,7 @@ fun Heatmap(
     modifier: Modifier = Modifier,
 ) {
     val measurer = rememberTextMeasurer()
-    val label = TextStyle(fontSize = 11.sp, color = textColor)
+    val label = TextStyle(fontFamily = app.outage.ui.Inter, fontSize = 12.sp, fontFeatureSettings = "tnum", color = textColor)
     Canvas(
         modifier.fillMaxWidth().height(190.dp).semantics { contentDescription = summary }
             .pointerInput(shares) {

@@ -12,4 +12,8 @@
     <string name="map_desc_possible">Light fit don go</string>
     <string name="log_btn_out">Light don go</string>
     <string name="log_btn_back">Light don come</string>
+    <string name="now_power_is">Light</string>
+    <string name="now_word_normal">Dey</string>
+    <string name="now_word_confirmed">Don go</string>
+    <string name="now_word_restored">Don come</string>
 </resources>

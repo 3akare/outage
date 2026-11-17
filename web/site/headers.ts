@@ -34,6 +34,8 @@ export function contentSecurityPolicy(nonce: string, map = false): string {
     "default-src 'none'",
     `script-src 'nonce-${nonce}' 'self'`,
     `style-src 'nonce-${nonce}' 'self'`,
+    // Inter, self-hosted at /fonts/inter.woff2 (ADR 0054).
+    "font-src 'self'",
     // MapLibre decodes sprite images into blob: URLs.
     map ? "img-src 'self' data: blob:" : "img-src 'self' data:",
     map ? `connect-src 'self' ${TILE_ORIGIN}` : "connect-src 'self'",
