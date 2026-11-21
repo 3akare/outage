@@ -58,6 +58,8 @@ fun HomeScreen(
             }
         }
     }
+    // Plug, unplug, sensor events and the sensor starting after app open show within about a second.
+    RefreshOnPlugOrSensor { vm.refresh() }
     val name = remember(state.area) { spotName() }
     DayPage(scroll = scroll) {
         LargeTitle(name ?: stringResource(R.string.nav_now), supporting = stringResource(if (name != null) R.string.now_your_spot else R.string.now_no_spot), top = 20.dp)

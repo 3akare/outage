@@ -40,6 +40,11 @@ class PowerLogViewModel(private val service: PowerLogService) : ViewModel() {
         }
     }
 
+    /** Reads the log again without a sync, for a plug or sensor change while the screen is visible. */
+    fun reloadLocal() {
+        viewModelScope.launch { reload() }
+    }
+
     fun powerOut() = tap { service.powerOut() }
 
     fun powerBack() = tap { service.powerBack() }

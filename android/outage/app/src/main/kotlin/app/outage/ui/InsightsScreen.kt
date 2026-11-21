@@ -25,13 +25,14 @@ import app.outage.insights.InsightsCalc
 import app.outage.insights.InsightsResult
 import app.outage.insights.InsightsSource
 import app.outage.insights.PromiseCheck
+import app.outage.log.LightScore
+import app.outage.log.Stats
 import app.outage.ui.charts.BarChart
 import app.outage.ui.charts.Heatmap
 import app.outage.ui.charts.LineChart
 import app.outage.ui.charts.Ring
 import java.time.ZoneId
 import kotlin.math.ceil
-import kotlin.math.roundToInt
 
 private val ranges = listOf(7, 30, 90)
 
@@ -42,18 +43,17 @@ private val ranges = listOf(7, 30, 90)
  */
 @Composable
 fun InsightsScreen(source: InsightsSource) {
-    // The sample city has its own history for every area (ADR 0053); a real install shows the person's own Power Log.
-    if (source is app.outage.insights.DemoInsightsSource) {
-        AreaInsightsScreen()
-        return
-    }
     var range by rememberSaveable { mutableIntStateOf(30) }
     val zone = remember { ZoneId.systemDefault() }
     val now = remember { System.currentTimeMillis() }
     val input = remember(source) { source.input(now, zone) }
     val band = remember(source) { source.band() }
     val result = remember(input, range) { InsightsCalc.compute(input, now, zone, range, band) }
-    val month = remember(input) { InsightsCalc.compute(input, now, zone, 30, band) }
+    // The Light Score is this calendar month's, by the same rule as the Power Log (Stats.scoreOf).
+    val month = remember(input) {
+        val today = java.time.Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
+        InsightsCalc.lightScore(InsightsCalc.compute(input, now, zone, today.dayOfMonth, band).days, java.time.YearMonth.from(today))
+    }
 
     // Charts draw in each time the range changes.
     val progress = remember { Animatable(0f) }
@@ -123,12 +123,11 @@ private fun EarlyCard(daysWithData: Int) {
     }
 }
 
-/** The ring of the month's share with power, and four numbers beside it. */
+/** The ring of this month's Light Score ("Day N of 7" until it has 7 days), and four numbers beside it. */
 @Composable
-private fun Hero(r: InsightsResult, month: InsightsResult, progress: Float) {
+private fun Hero(r: InsightsResult, month: LightScore, progress: Float) {
     val s = LocalStatusColors.current
-    val avg = month.avgPowerHoursPerDay
-    val score = avg?.let { (it / 24.0 * 100).roundToInt().coerceIn(0, 100) }
+    val score = month.score
     ChartCard {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
             Ring(
@@ -137,7 +136,11 @@ private fun Hero(r: InsightsResult, month: InsightsResult, progress: Float) {
                 summary = if (score == null) stringResource(R.string.ins_ring_none) else stringResource(R.string.ins_summary_ring, score),
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(if (score == null) stringResource(R.string.ins_none_value) else stringResource(R.string.ins_ring_value, score), style = DayType.title1Num, color = Day.ink)
+                    if (score == null) {
+                        Text(stringResource(R.string.ins_early_title, Stats.scoreDayNumber(month.qualifyingDays)), style = DayType.headline, color = Day.ink)
+                    } else {
+                        Text(stringResource(R.string.ins_ring_value, score), style = DayType.title1Num, color = Day.ink)
+                    }
                     Text(stringResource(R.string.ins_ring_title), style = DayType.caption, color = Day.muted)
                 }
             }

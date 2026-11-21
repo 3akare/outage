@@ -1,6 +1,7 @@
 package app.outage.shell
 
 import android.content.Context
+import app.outage.alarm.AlarmState
 import app.outage.onboarding.OnboardingFacts
 import app.outage.onboarding.OnboardingFlow
 import app.outage.onboarding.OnboardingStore
@@ -28,6 +29,12 @@ class ShellGraph(context: Context) {
     /** Set by the sensor feature; Home shows it (app-shell R2.1). */
     var sensorState: () -> SensorState? = { null }
 
+    /** Set by the Power Log: hours with power seen today, null with nothing watched today. Read off the main thread. */
+    var todayPowerHours: () -> Double? = { null }
+
+    /** Set by the Light Alarm feature; Home shows it (app-shell R2.5). Read off the main thread. */
+    var alarmState: () -> AlarmState? = { null }
+
     /** Set by the spot feature: reads the position once, saves the cell and drops the position (first run, ADR 0050). */
     var locateSpot: suspend () -> SpotOutcome = { SpotOutcome.NotFound }
 
@@ -37,6 +44,8 @@ class ShellGraph(context: Context) {
     val sources: StatusSources = object : StatusSources by NoStatusSources {
         override fun areaStatus(): AreaStatus? = areaCache.read()
         override fun sensorState(): SensorState? = this@ShellGraph.sensorState()
+        override fun todayPowerHours(): Double? = this@ShellGraph.todayPowerHours()
+        override fun alarmState(): AlarmState? = this@ShellGraph.alarmState()
     }
     val onboarding: OnboardingStore = PrefsOnboardingStore(context)
     val deletes = DeleteRegistry(store).also {

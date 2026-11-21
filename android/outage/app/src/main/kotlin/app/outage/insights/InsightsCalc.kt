@@ -1,8 +1,12 @@
 package app.outage.insights
 
 import app.outage.log.Band
+import app.outage.log.LightScore
+import app.outage.log.ScoreDay
+import app.outage.log.Stats
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -10,8 +14,15 @@ import java.time.temporal.ChronoUnit
 /** One outage on the phone's own spot. [endMs] null means it is still going. Pure data, no clock. */
 data class Outage(val startMs: Long, val endMs: Long?, val simulated: Boolean = false)
 
-/** The Power Log timeline as insights see it: the outages and when observation began (first armed time). */
-data class InsightsInput(val outages: List<Outage>, val observedFromMs: Long, val simulated: Boolean)
+/** A stretch of time the phone was watching (ON or OUT in the Power Log). [endMs] null means it is still going. */
+data class Watched(val startMs: Long, val endMs: Long?)
+
+/**
+ * The Power Log timeline as insights see it: the outages and when observation began (first armed time). [watched] is the
+ * time actually watched; null means every moment since [observedFromMs] was watched (the demo history and tests). Time
+ * off the charger or not watched is not observed time, so it never counts as power.
+ */
+data class InsightsInput(val outages: List<Outage>, val observedFromMs: Long, val simulated: Boolean, val watched: List<Watched>? = null)
 
 /** One local day. [powerHours] is null when coverage is under 50% (power-log R3.2), never 0 (IN4). */
 data class DayStat(
@@ -79,6 +90,9 @@ object InsightsCalc {
         require(rangeDays > 0) { "rangeDays" }
         val observedFrom = minOf(input.observedFromMs, nowMs)
         val merged = merge(input.outages, observedFrom, nowMs)
+        // Outage time is watched time too, so it joins the watched spans.
+        val watched = input.watched?.let { w -> union(w.map { Span(it.startMs, minOf(it.endMs ?: nowMs, nowMs)) } + merged, observedFrom) }
+            ?: listOf(Span(observedFrom, nowMs))
 
         // Day stats cover the longer of the range and the 12-week trend window.
         val today = Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate()
@@ -88,7 +102,7 @@ object InsightsCalc {
         val all = generateSequence(first) { it.plusDays(1) }.takeWhile { !it.isAfter(today) }.map { d ->
             val ds = d.atStartOfDay(zone).toInstant().toEpochMilli()
             val de = d.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
-            d to dayStat(ds, de, observedFrom, nowMs, merged)
+            d to dayStat(ds, de, observedFrom, nowMs, merged, watched)
         }.toList()
 
         val days = all.filter { !it.first.isBefore(rangeStart) }.map { it.second }
@@ -104,7 +118,7 @@ object InsightsCalc {
             (inRange.last().s - inRange.first().s) / (inRange.size - 1)
         } else null
 
-        val heat = heatmap(merged, windowStart, nowMs, zone)
+        val heat = heatmap(merged, watched, windowStart, nowMs, zone)
         val worst = if (withData.size >= MIN_DAYS_FOR_SENTENCE) {
             heat.filter { it.share != null && it.share > 0.0 }
                 .maxWithOrNull(compareBy<HeatCell> { it.share!! }.thenByDescending { it.weekday * 24 + it.hour })
@@ -145,11 +159,21 @@ object InsightsCalc {
         )
     }
 
+    /**
+     * The Light Score of [days] by the one rule the Power Log uses too ([Stats.scoreOf]): the share of watched time with
+     * power over the days at least half watched, null below 7 such days.
+     */
+    fun lightScore(days: List<DayStat>, month: YearMonth): LightScore {
+        val q = days.filter { it.powerHours != null }.map { ScoreDay(watchedHours = it.observedHours, powerHours = it.powerHours!!) }
+        return LightScore(month, q.size, Stats.scoreOf(q))
+    }
+
     /** Clips to the observed window, drops empty spans, sorts and merges overlaps so no time counts twice (IN1). */
-    private fun merge(outages: List<Outage>, from: Long, now: Long): List<Span> {
-        val spans = outages.map { Span(it.startMs, minOf(it.endMs ?: now, now)) }
-            .filter { it.e > it.s && it.e > from }
-            .sortedBy { it.s }
+    private fun merge(outages: List<Outage>, from: Long, now: Long): List<Span> =
+        union(outages.map { Span(it.startMs, minOf(it.endMs ?: now, now)) }, from)
+
+    private fun union(list: List<Span>, from: Long): List<Span> {
+        val spans = list.filter { it.e > it.s && it.e > from }.sortedBy { it.s }
         val out = ArrayList<Span>()
         for (sp in spans) {
             val last = out.lastOrNull()
@@ -160,11 +184,11 @@ object InsightsCalc {
 
     private fun overlap(aS: Long, aE: Long, bS: Long, bE: Long): Long = maxOf(0L, minOf(aE, bE) - maxOf(aS, bS))
 
-    private fun dayStat(ds: Long, de: Long, observedFrom: Long, now: Long, merged: List<Span>): DayStat {
+    private fun dayStat(ds: Long, de: Long, observedFrom: Long, now: Long, merged: List<Span>, watched: List<Span>): DayStat {
         val len = (de - ds).toDouble()
         val obsS = maxOf(ds, observedFrom)
         val obsE = minOf(de, now)
-        val observed = maxOf(0L, obsE - obsS)
+        val observed = if (obsE <= obsS) 0L else watched.sumOf { overlap(it.s, it.e, obsS, obsE) }
         val outage = if (observed == 0L) 0L else merged.sumOf { overlap(it.s, it.e, obsS, obsE) }
         val cov = observed / len
         val count = merged.count { overlap(it.s, it.e, obsS, obsE) > 0 && observed > 0 }
@@ -178,7 +202,7 @@ object InsightsCalc {
         )
     }
 
-    private fun heatmap(merged: List<Span>, from: Long, now: Long, zone: ZoneId): List<HeatCell> {
+    private fun heatmap(merged: List<Span>, watched: List<Span>, from: Long, now: Long, zone: ZoneId): List<HeatCell> {
         val seen = IntArray(7 * 24)
         val obs = LongArray(7 * 24)
         val out = LongArray(7 * 24)
@@ -186,7 +210,7 @@ object InsightsCalc {
         while (t.toInstant().toEpochMilli() < now) {
             val s = t.toInstant().toEpochMilli()
             val e = t.plusHours(1).toInstant().toEpochMilli()
-            val o = overlap(s, e, from, now)
+            val o = if (minOf(e, now) <= maxOf(s, from)) 0L else watched.sumOf { overlap(it.s, it.e, maxOf(s, from), minOf(e, now)) }
             if (o * 2 >= e - s) {
                 val i = (t.dayOfWeek.value - 1) * 24 + t.hour
                 seen[i]++

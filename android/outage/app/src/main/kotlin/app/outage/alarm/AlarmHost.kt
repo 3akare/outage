@@ -32,6 +32,13 @@ class AlarmHost private constructor(private val ctx: Context) {
         runCatching { io.submit {}.get(3, TimeUnit.SECONDS) }
     }
 
+    /** What the Light Alarm row on Now shows (app-shell R2.5). Reads the wake store, so call it off the main thread. */
+    fun state(): AlarmState = when {
+        lightAlarm.isRinging() -> AlarmState.RINGING
+        core.waiting() -> AlarmState.WAITING_FOR_POWER
+        else -> AlarmState.OFF
+    }
+
     /** The Settings "Test Light Alarm" button: the same ring path, marked as a test, nothing queued or sent. */
     fun testRing() = lightAlarm.ring(-1L, test = true)
 

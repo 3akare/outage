@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.outage.R
 import app.outage.log.NowKind
+import app.outage.log.Stats
 import app.outage.log.PowerLogView
 import app.outage.log.TapResult
 import app.outage.ui.charts.BarChart
@@ -31,12 +32,14 @@ import app.outage.ui.charts.Ring
 
 /**
  * The Power Log (power-log R7, R8, R10): power now, today, the last 30 days, the open outage, the month's Light Score,
- * the band picker and the share buttons. The numbers come from [app.outage.log.PowerLogModel]; this file only words and
+ * the band picker and the share button. The numbers come from [app.outage.log.PowerLogModel]; this file only words and
  * draws them. Only this phone's own data is shown (R10.3).
  */
 @Composable
-fun PowerLogScreen(vm: PowerLogViewModel, shareImage: ((PowerLogView) -> Unit)?) {
+fun PowerLogScreen(vm: PowerLogViewModel) {
     LaunchedEffect(Unit) { vm.refresh() }
+    // "Power now" follows the plug and the sensor within about a second.
+    RefreshOnPlugOrSensor { vm.reloadLocal() }
     val view = vm.view
     val ctx = LocalContext.current
     val progress = remember { Animatable(0f) }
@@ -52,7 +55,7 @@ fun PowerLogScreen(vm: PowerLogViewModel, shareImage: ((PowerLogView) -> Unit)?)
         ThirtyDaysCard(view, vm.band?.promisedMinHoursPerDay, progress.value)
         OutageList(view)
         Gap(20.dp)
-        MonthCard(view, progress.value, onShareText = { shareText(ctx, view) }, onShareImage = shareImage?.let { share -> { share(view) } })
+        MonthCard(view, progress.value, onShareText = { shareText(ctx, view) })
         BandCard(vm)
     }
 }
@@ -177,7 +180,7 @@ private fun OutageList(v: PowerLogView) {
 }
 
 @Composable
-private fun MonthCard(v: PowerLogView, progress: Float, onShareText: () -> Unit, onShareImage: (() -> Unit)?) {
+private fun MonthCard(v: PowerLogView, progress: Float, onShareText: () -> Unit) {
     val score = v.score.score
     LogCard {
         CardTitle(stringResource(R.string.log_month_title, ShareCardText.monthName(v.share)))
@@ -187,7 +190,11 @@ private fun MonthCard(v: PowerLogView, progress: Float, onShareText: () -> Unit,
                 startColor = LocalStatusColors.current.map.normal, endColor = LocalStatusColors.current.map.normal, trackColor = Day.fill,
                 summary = if (score == null) stringResource(R.string.log_score_summary_none) else stringResource(R.string.log_score_summary, score),
             ) {
-                Text(if (score == null) stringResource(R.string.ins_none_value) else stringResource(R.string.log_score_value, score), style = DayType.title1Num, color = Day.ink)
+                if (score == null) {
+                    Text(stringResource(R.string.ins_early_title, Stats.scoreDayNumber(v.score.qualifyingDays)), style = DayType.headline, color = Day.ink)
+                } else {
+                    Text(stringResource(R.string.log_score_value, score), style = DayType.title1Num, color = Day.ink)
+                }
             }
             Text(
                 if (score == null) stringResource(R.string.log_score_not_enough) else stringResource(R.string.log_score_days, v.score.qualifyingDays),
@@ -195,10 +202,7 @@ private fun MonthCard(v: PowerLogView, progress: Float, onShareText: () -> Unit,
             )
         }
         Gap(4.dp)
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            FillButton(stringResource(R.string.log_share), onShareText, Modifier.weight(1f))
-            if (onShareImage != null) FillButton(stringResource(R.string.log_share_picture), onShareImage, Modifier.weight(1f))
-        }
+        FillButton(stringResource(R.string.log_share), onShareText, Modifier.fillMaxWidth())
     }
 }
 
@@ -233,7 +237,7 @@ private fun BandCard(vm: PowerLogViewModel) {
     GroupFooter(stringResource(R.string.band_picker_hint))
 }
 
-/** Text fallback of the share card (R8.4): the same facts as the picture, no location, name or ID (R8.2). */
+/** The share card as text (R8.4): no location, name or ID (R8.2). */
 private fun shareText(ctx: Context, v: PowerLogView) {
     val text = ShareCardText.build(ctx, v.share)
     val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
