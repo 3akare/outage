@@ -73,6 +73,8 @@ export function createMap(container, city, opts = {}) {
   // The 20 local governments: outlines and names on the street map, and the box that holds all of them.
   let lgaBox = null;
   const lgaData = fetch('/lga-outlines.json').then((r) => r.json()).catch(() => null);
+  // Every land hex of Lagos as thin lines (one MultiLineString, shared edges once), under the LGA borders and names.
+  const gridData = fetch('/lga-grid.json').then((r) => r.json()).catch(() => null);
   const showLagos = (ms, padding) => {
     if (!lgaBox) return;
     const pad = typeof padding === 'number' ? padding : { top: 24, bottom: 24, left: 24, right: 24, ...(padding ?? {}) };
@@ -117,6 +119,20 @@ export function createMap(container, city, opts = {}) {
       source: 'cells',
       filter: ['==', ['get', 'id'], ''],
       paint: { 'line-color': INK, 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 1.5, 15, 3.5] },
+    });
+    gridData.then((grid) => {
+      if (!grid || !map.getStyle() || map.getSource('lagos-grid')) return;
+      map.addSource('lagos-grid', { type: 'geojson', data: grid });
+      map.addLayer(
+        {
+          id: 'lagos-grid-line',
+          type: 'line',
+          source: 'lagos-grid',
+          minzoom: 6,
+          paint: { 'line-color': INK, 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.5, 11, 0.8, 14, 1.2], 'line-opacity': 0.4 },
+        },
+        map.getLayer('lga-line') ? 'lga-line' : 'cells-selected',
+      );
     });
     lgaData.then((lgas) => {
       if (!lgas || !map.getStyle()) return;

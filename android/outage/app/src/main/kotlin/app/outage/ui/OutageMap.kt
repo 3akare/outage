@@ -56,6 +56,8 @@ const val MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty"
 private const val SRC_CELLS = "outage-cells"
 private const val SRC_SPOT = "outage-spot"
 private const val SRC_OUTLINE = "outage-outline"
+private const val SRC_GRID = "outage-grid"
+private const val LAYER_GRID = "outage-grid-line"
 private const val LAYER_OUTLINE = "outage-outline-line"
 private const val LAYER_FILL = "outage-fill"
 private const val LAYER_LINE = "outage-line"
@@ -131,6 +133,7 @@ private fun selectedFilter(id: String?): Expression = Expression.eq(Expression.g
 /**
  * [cells] with their drawn [states]; [spotId] gets the blue "you are here" dot; [selectedId] a dark outline.
  * [outlines] is GeoJSON from [HexGeoJson.lines] (LGA or ward boundaries), drawn as a thin dashed line under the labels.
+ * [grid] is GeoJSON from [HexGeoJson.grid]: every hex of Lagos as thin lines, under the outlines.
  * [top] and [bottom] are how much of the map other things cover (the search bar, the sheet), so the camera centres
  * places in the part people can see. [onTap] gets the tapped cell id, or null for a tap on no cell.
  */
@@ -147,6 +150,7 @@ fun OutageMap(
     interactive: Boolean = true,
     description: String = "",
     outlines: String? = null,
+    grid: String? = null,
     onTap: (String?) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -207,6 +211,12 @@ fun OutageMap(
                 s.addSource(GeoJsonSource(SRC_CELLS, HexGeoJson.cells(emptyList(), emptyMap(), null)))
                 s.addSource(GeoJsonSource(SRC_SPOT, HexGeoJson.point(null)))
                 s.addSource(GeoJsonSource(SRC_OUTLINE, HexGeoJson.lines(emptyList())))
+                s.addSource(GeoJsonSource(SRC_GRID, HexGeoJson.lines(emptyList())))
+                val gridLine = LineLayer(LAYER_GRID, SRC_GRID).withProperties(
+                    PropertyFactory.lineColor(Tokens.Colors.ink.toArgb()),
+                    PropertyFactory.lineWidth(byZoom(8 to 0.5, 11 to 0.8, 14 to 1.2)),
+                    PropertyFactory.lineOpacity(0.4f),
+                )
                 val outline = LineLayer(LAYER_OUTLINE, SRC_OUTLINE).withProperties(
                     PropertyFactory.lineColor(Tokens.Colors.ink.toArgb()),
                     PropertyFactory.lineWidth(byZoom(9 to 0.8, 13 to 1.6, 16 to 2.4)),
@@ -227,7 +237,7 @@ fun OutageMap(
                     PropertyFactory.lineWidth(3.5f),
                 )
                 val firstLabel = s.layers.firstOrNull { it is SymbolLayer }?.id
-                for (layer in listOf(fill, line, outline, selected)) {
+                for (layer in listOf(fill, line, gridLine, outline, selected)) {
                     if (firstLabel != null) s.addLayerBelow(layer, firstLabel) else s.addLayer(layer)
                 }
                 s.addLayer(
@@ -279,6 +289,9 @@ fun OutageMap(
     }
     LaunchedEffect(style, outlines) {
         style?.getSourceAs<GeoJsonSource>(SRC_OUTLINE)?.setGeoJson(outlines ?: HexGeoJson.lines(emptyList()))
+    }
+    LaunchedEffect(style, grid) {
+        style?.getSourceAs<GeoJsonSource>(SRC_GRID)?.setGeoJson(grid ?: HexGeoJson.lines(emptyList()))
     }
     LaunchedEffect(style, selectedId) {
         (style?.getLayer(LAYER_SELECTED) as? LineLayer)?.setFilter(selectedFilter(selectedId))
