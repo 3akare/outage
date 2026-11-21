@@ -148,6 +148,7 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
         else geo?.ring(id)?.let { MapCell(id, places?.wardOfCell(id)?.lgaSlug ?: "", CellState.NO_DATA, null, null, emptyList(), it) }
     }
     val lgaLines = remember(geo) { geo?.let { g -> HexGeoJson.lines(g.lgaOutlines.values.flatten()) } }
+    val grid = remember(geo) { geo?.let { HexGeoJson.grid(it.cells.values) } }
     val outlines = remember(geo, wardSlug, lgaLines) { wardSlug?.let { geo?.wardOutlines?.get(it) }?.let(HexGeoJson::lines) ?: lgaLines }
 
     val areaStates = remember(map, states) {
@@ -207,7 +208,7 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
             cells = shown, states = states, spotId = load.spotCellId, selectedId = selectedId, controller = controller,
             modifier = Modifier.fillMaxSize(), top = barsHeight, bottom = inset,
             description = stringResource(R.string.map_summary, total, out, possible),
-            outlines = outlines,
+            outlines = outlines, grid = grid,
             onTap = { id -> selectedId = id },
         )
         if (listView) {

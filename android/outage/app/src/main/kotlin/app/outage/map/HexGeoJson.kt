@@ -55,6 +55,28 @@ object HexGeoJson {
         return sb.append("]}}]}").toString()
     }
 
+    /**
+     * Every hex ring in [rings] as one MultiLineString Feature, each edge shared by two hexes written once, so the whole
+     * of Lagos (about five thousand hexes) draws as one cheap line layer. Coordinates are rounded to 5 decimals first.
+     */
+    fun grid(rings: Collection<List<LatLng>>): String {
+        val seen = HashSet<String>()
+        val sb = StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"MultiLineString\",\"coordinates\":[")
+        var first = true
+        fun r5(v: Double) = Math.round(v * 1e5) / 1e5
+        for (ring in rings) {
+            for (i in ring.indices) {
+                val a = ring[i]; val b = ring[(i + 1) % ring.size]
+                val ka = "${r5(a.lng)},${r5(a.lat)}"; val kb = "${r5(b.lng)},${r5(b.lat)}"
+                if (!seen.add(if (ka < kb) "$ka|$kb" else "$kb|$ka")) continue
+                if (!first) sb.append(',')
+                first = false
+                sb.append("[[").append(ka).append("],[").append(kb).append("]]")
+            }
+        }
+        return sb.append("]}}]}").toString()
+    }
+
     /** One Point Feature at [at] (the spot marker), or an empty collection when there is no spot. */
     fun point(at: LatLng?): String =
         if (at == null) "{\"type\":\"FeatureCollection\",\"features\":[]}"

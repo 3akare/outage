@@ -1,12 +1,13 @@
 // SVG map of the LGAs coloured by state (R5, ADR 0010, ADR 0056). One outline per LGA from lagos-geo.json, not one path per hex,
 // so the page stays small. No tiles, no outside request.
 import { cellToLatLng } from 'h3-js';
-import type { Outlines } from './catalog/build.ts';
-import type { CatalogArea } from './catalog/schema.ts';
-import { escapeHtml } from '../site/escape.ts';
 import type { PublicScopeView } from '../api/public-index/public-view.ts';
+import { escapeHtml } from '../site/escape.ts';
 import { areaStatus } from '../site/status.ts';
 import type { PublicStateKey } from '../site/strings.ts';
+import type { Outlines } from './catalog/build.ts';
+import type { CatalogArea } from './catalog/schema.ts';
+import { gridEdges } from './lga-grid.ts';
 
 const WIDTH = 1000;
 const PAD = 40;
@@ -16,7 +17,11 @@ export type MapArea = Pick<CatalogArea, 'slug' | 'name' | 'centreCell' | 'cells'
 export type AreaStates = ReadonlyMap<string, PublicStateKey | null>;
 
 /** The state of each area from the scope views that cover its cells. */
-export function areaStates(areas: readonly MapArea[], views: readonly PublicScopeView[], nowMs: number): Map<string, PublicStateKey | null> {
+export function areaStates(
+  areas: readonly MapArea[],
+  views: readonly PublicScopeView[],
+  nowMs: number,
+): Map<string, PublicStateKey | null> {
   const out = new Map<string, PublicStateKey | null>();
   for (const area of areas) {
     const s = areaStatus(area, views, nowMs);
@@ -66,6 +71,15 @@ export function renderMap(areas: readonly MapArea[], outlines: Outlines, states:
       .join('');
     shapes += `<path d="${d}"${st ? ` data-state="${st}"` : ' class="none"'}></path>`;
   }
+
+  // The hex grid: every shared edge once, as one path of short relative strokes.
+  let grid = '';
+  for (const [[ax, ay], [bx, by]] of gridEdges(drawn.flatMap((a) => a.cells))) {
+    const x = px(ax);
+    const y = py(ay);
+    grid += `M${r1(x)} ${r1(y)}l${r1(px(bx) - x)} ${r1(py(by) - y)}`;
+  }
+  if (grid) shapes += `<path class="grid" d="${grid}"></path>`;
 
   let labels = '';
   for (const area of drawn) {

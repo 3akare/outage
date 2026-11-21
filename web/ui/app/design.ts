@@ -175,6 +175,7 @@ const SITE = `
 .chip[data-state="SPOT_ONLY"]{background:var(--c-paper-3);color:var(--c-ink-2)}
 svg.map{display:block;width:100%;height:auto;margin-top:28px;background:var(--c-paper);border-radius:var(--r-l)}
 svg.map path{fill:var(--st-v);fill-opacity:.55;stroke:var(--c-paper);stroke-width:1}
+svg.map path.grid{fill:none;stroke:var(--c-ink);stroke-opacity:.35;stroke-width:.3}
 svg.map path.none{fill:var(--c-paper-3);fill-opacity:1}
 svg.map text{font:var(--t-caption);fill:var(--c-ink-2)}
 `;

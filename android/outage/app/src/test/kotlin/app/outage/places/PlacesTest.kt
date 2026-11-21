@@ -1,5 +1,6 @@
 package app.outage.places
 
+import app.outage.onboarding.MiniJson
 import app.outage.onboarding.OnboardingRecord
 import app.outage.onboarding.OnboardingStep
 import org.junit.Assert.assertEquals
@@ -154,5 +155,31 @@ class PlacesTest {
         val epe = geo.lgaOutlines.getValue("epe").flatten()
         assertEquals(epe.maxOf { it.lng }, east, 0.0)
         assertTrue(west < 2.8)
+    }
+
+    @Test fun theGridLayerHoldsEveryOneOfTheLandHexesOfLagos() {
+        val geo = PlacesGeo.parse(File(dir, "lagos-geo.json").readText())
+        assertEquals(4968, geo.cells.size)
+        assertEquals(4968, places.lgas.sumOf { it.cellCount })
+        val root = MiniJson.parse(app.outage.map.HexGeoJson.grid(geo.cells.values)) as Map<*, *>
+        val geometry = ((root["features"] as List<*>).single() as Map<*, *>)["geometry"] as Map<*, *>
+        assertEquals("MultiLineString", geometry["type"])
+        val lines = geometry["coordinates"] as List<*>
+        fun key(a: Any?, b: Any?): String {
+            fun pt(p: Any?) = (p as List<*>).let { "${(it[0] as Number).toDouble()},${(it[1] as Number).toDouble()}" }
+            val x = pt(a); val y = pt(b)
+            return if (x < y) "$x|$y" else "$y|$x"
+        }
+        val drawn = lines.map { l -> (l as List<*>).let { key(it[0], it[1]) } }.toSet()
+        assertEquals(lines.size, drawn.size)
+        assertTrue(lines.size < 6 * 4968)
+        fun r5(v: Double) = Math.round(v * 1e5) / 1e5
+        for ((id, ring) in geo.cells) {
+            for (i in ring.indices) {
+                val a = ring[i]; val b = ring[(i + 1) % ring.size]
+                val x = "${r5(a.lng)},${r5(a.lat)}"; val y = "${r5(b.lng)},${r5(b.lat)}"
+                assertTrue("$id edge missing from the grid", (if (x < y) "$x|$y" else "$y|$x") in drawn)
+            }
+        }
     }
 }

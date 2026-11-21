@@ -127,3 +127,11 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Web street maps: new `/lga-outlines.json` (`web/areas/lga-geojson.ts`) with the 20 outlines, names and the box around them. `map.js` draws dashed LGA borders and names, and the landing map and the simulation's "no spot" view open fitted to all of Lagos.
 - Tests in `web/test/lga-geojson.test.ts`: all 20 names in the /areas SVG, every path point inside its view box, 20 links, and the street-map box covers every LGA cell.
 - Not run: `web/visual/run.sh` (wrangler dev does not start here) and a device check of the MapLibre fit.
+
+## 2026-11-21 hex grid across all of Lagos on every map
+- The user wants to see the hex grid itself over the whole of Lagos, not only LGA borders. All 4,968 land hexes (H3 resolution 8) are now drawn as thin lines on the Android Map tab, the web landing and simulation street maps (one `map.js` serves both, and the live map), and the /areas SVG. LGA borders and names stay on top.
+- Decision: one MultiLineString where each edge shared by two hexes is written once (about 15,000 edges, not 30,000 ring sides), coordinates rounded to 5 decimals (about 1 m). Web: new `/lga-grid.json` (`web/areas/lga-grid.ts`), built once per Worker instance and cached for a day; about 790 KB raw, compresses well. Android builds the same lines once from the bundled `lagos-geo.json` (`HexGeoJson.grid`) in a single line layer under the outlines.
+- /areas: the grid is one extra non-interactive `<path class="grid">`, so the 44 px tap-target check is unaffected.
+- Grid lines fade in from zoom 6 (web) and get thicker as you zoom in; they are thin ink lines at 40% opacity so power colours and street names stay readable.
+- Tests: `web/test/lga-geojson.test.ts` checks all 4,968 cells and every hex edge are in the served grid; `PlacesTest` checks the same for the Android grid layer data.
+- Not run: `web/visual/run.sh` (wrangler dev) and a device check. `npm run lint` already reports errors in untouched files (fcm.ts, sender.ts, store.ts, generated JSON); my files pass biome. Android `:app:testDebugUnitTest`: 223 of 224 pass; the one failure is a Robolectric test that cannot create `/root/.m2` in the sandbox.

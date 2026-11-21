@@ -5,12 +5,14 @@ import { renderHomePage } from '../areas/pages.ts';
 import { AREAS, cellView, confirmedNow, IKEJA, MAINLAND, NOW, parentView, SITE } from './web-helpers.ts';
 
 const countOf = (s: string, sub: string) => s.split(sub).length - 1;
-const draw = (areas: typeof AREAS, views: Parameters<typeof areaStates>[1] = []) => renderMap(areas, LGA_OUTLINES, areaStates(areas, views, NOW));
+const draw = (areas: typeof AREAS, views: Parameters<typeof areaStates>[1] = []) =>
+  renderMap(areas, LGA_OUTLINES, areaStates(areas, views, NOW));
 
 describe('map renderer (R5, ADR 0056)', () => {
   it('map_draws_one_outline_per_lga_and_one_label_per_lga_not_one_per_hex', () => {
     const svg = draw(AREAS);
-    expect(countOf(svg, '<path ')).toBe(2);
+    expect(countOf(svg, '<path ')).toBe(3); // two LGA outlines and the hex grid
+    expect(countOf(svg, '<path class="grid"')).toBe(1);
     expect(countOf(svg, '<text ')).toBe(2);
     expect(svg).toContain('>Lagos Mainland</text>');
     expect(svg).toContain('>Ikeja</text>');
@@ -18,7 +20,10 @@ describe('map renderer (R5, ADR 0056)', () => {
   });
 
   it('map_colours_lgas_by_state_and_is_decorative', () => {
-    const views = [cellView(MAINLAND.cells[0] as string, confirmedNow()), cellView(MAINLAND.cells[1] as string, { status: 'POSSIBLE' })];
+    const views = [
+      cellView(MAINLAND.cells[0] as string, confirmedNow()),
+      cellView(MAINLAND.cells[1] as string, { status: 'POSSIBLE' }),
+    ];
     const svg = draw(AREAS, views);
     expect(countOf(svg, 'data-state="CONFIRMED"')).toBe(1); // the worst state in the LGA wins
     expect(svg).toContain('aria-hidden="true"');
@@ -26,7 +31,11 @@ describe('map renderer (R5, ADR 0056)', () => {
   });
 
   it('map_colours_an_lga_from_a_parent_scope_view_over_its_cells', () => {
-    const states = areaStates(AREAS, [parentView(MAINLAND.cells[0] as string, { status: 'CONFIRMED', ...confirmedNow() })], NOW);
+    const states = areaStates(
+      AREAS,
+      [parentView(MAINLAND.cells[0] as string, { status: 'CONFIRMED', ...confirmedNow() })],
+      NOW,
+    );
     expect(states.get('lagos-mainland')).toBe('CONFIRMED');
     expect(states.get('ikeja')).toBeNull();
   });

@@ -2,14 +2,12 @@
 // Each uncached page reads the public index at most once (R9.3). Responses go through PageCache (R9.1, R9.2).
 // Pure routing with injected dependencies, so Vitest runs it without the Workers runtime.
 import { isValidRes8Cell } from '@outage/shared';
-import type { PageCache } from './site/cache.ts';
-import { PAGE_TTL_SECONDS, STATIC_TTL_SECONDS } from './site/cache.ts';
+import { buildMapJson, cityFrom } from './api/map/map-json.ts';
+import type { IndexReader } from './api/public-index/reader.ts';
 import { type CatalogArea, lgasOf } from './areas/catalog/schema.ts';
 import { MAX_QUERY, searchAreas } from './areas/catalog/search.ts';
-import { escapeXml } from './site/escape.ts';
-import { json, methodNotAllowed, type Rendered } from './site/headers.ts';
-import type { IndexReader } from './api/public-index/reader.ts';
-import type { Site } from './site/layout.ts';
+import { renderLgaGeoJson } from './areas/lga-geojson.ts';
+import { renderLgaGrid } from './areas/lga-grid.ts';
 import {
   type InstallInfo,
   renderAreaPage,
@@ -19,18 +17,17 @@ import {
   renderNotFound,
   renderPrivacyPage,
 } from './areas/pages.ts';
-import {
-  type ReplayData,
-  renderJudgeReplayJson,
-  renderJudgeServiceWorker,
-} from './ui/simulate/replay.ts';
-import { redirectToApp, renderAppCss } from './ui/app/app.ts';
-import { renderFavicon } from './site/brand.ts';
-import { renderDemoCityJson, renderSimulatePage, SIMULATE_PATH } from './ui/simulate/simulate.ts';
-import { renderLgaGeoJson } from './areas/lga-geojson.ts';
 import { renderLanding } from './landing/landing.ts';
-import { buildMapJson, cityFrom } from './api/map/map-json.ts';
+import { renderFavicon } from './site/brand.ts';
+import type { PageCache } from './site/cache.ts';
+import { PAGE_TTL_SECONDS, STATIC_TTL_SECONDS } from './site/cache.ts';
+import { escapeXml } from './site/escape.ts';
+import { json, methodNotAllowed, type Rendered } from './site/headers.ts';
+import type { Site } from './site/layout.ts';
 import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './site/status.ts';
+import { redirectToApp, renderAppCss } from './ui/app/app.ts';
+import { type ReplayData, renderJudgeReplayJson, renderJudgeServiceWorker } from './ui/simulate/replay.ts';
+import { renderDemoCityJson, renderSimulatePage, SIMULATE_PATH } from './ui/simulate/simulate.ts';
 
 export interface WebDeps {
   site: Site;
@@ -88,6 +85,7 @@ const ROUTES: Route[] = [
   { pattern: /^\/demo-city\.json$/, render: () => renderDemoCityJson() },
   // The 20 LGA outlines, so every street map can draw and open on all of Lagos.
   { pattern: /^\/lga-outlines\.json$/, render: () => renderLgaGeoJson() },
+  { pattern: /^\/lga-grid\.json$/, render: () => renderLgaGrid() },
   // The old real-data web app folded into the app in the browser (ADR 0049).
   { pattern: /^\/app(?:\/(?:insights|settings))?$/, render: () => redirectToApp() },
   // The simulation page is static. It fetches the replay JSON itself and never reads the public index (W6).
@@ -95,7 +93,13 @@ const ROUTES: Route[] = [
   {
     pattern: /^\/areas$/,
     render: async (_m, u, d) =>
-      renderHomePage({ site: d.site, areas: d.areas, views: await d.index.views(), nowMs: d.now(), query: (u.searchParams.get('q') ?? '').slice(0, MAX_QUERY) }),
+      renderHomePage({
+        site: d.site,
+        areas: d.areas,
+        views: await d.index.views(),
+        nowMs: d.now(),
+        query: (u.searchParams.get('q') ?? '').slice(0, MAX_QUERY),
+      }),
   },
   {
     pattern: /^\/area\/([a-z0-9-]{1,64})$/,
@@ -114,7 +118,16 @@ const ROUTES: Route[] = [
     },
   },
   // The old judge page moved to the simulation area (ADR 0029).
-  { pattern: /^\/judge$/, render: () => ({ status: 301, contentType: 'text/plain; charset=utf-8', body: '', ttlSeconds: 0, headers: { Location: SIMULATE_PATH } }) },
+  {
+    pattern: /^\/judge$/,
+    render: () => ({
+      status: 301,
+      contentType: 'text/plain; charset=utf-8',
+      body: '',
+      ttlSeconds: 0,
+      headers: { Location: SIMULATE_PATH },
+    }),
+  },
   { pattern: /^\/judge-sw\.js$/, render: () => renderJudgeServiceWorker() },
   { pattern: /^\/api\/v1\/public\/judge\/replay$/, render: (_m, _u, d) => renderJudgeReplayJson(d.replay()) },
   { pattern: /^\/install$/, render: (_m, _u, d) => renderInstallPage({ site: d.site, install: d.install }) },
@@ -133,7 +146,10 @@ const ROUTES: Route[] = [
     render: async (_m, url, d) => {
       const views = await d.index.views();
       if (views === null) return apiUnavailable();
-      return json(buildMapJson(cityFrom(url.searchParams.get('city')), d.mapAreas ?? lgasOf(d.areas), views, d.now()), PAGE_TTL_SECONDS);
+      return json(
+        buildMapJson(cityFrom(url.searchParams.get('city')), d.mapAreas ?? lgasOf(d.areas), views, d.now()),
+        PAGE_TTL_SECONDS,
+      );
     },
   },
   {
@@ -142,7 +158,11 @@ const ROUTES: Route[] = [
       const views = await d.index.views();
       if (views === null) return apiUnavailable();
       const now = d.now();
-      const areas = lgasOf(d.areas).map((a) => ({ slug: a.slug, name: a.name, ...statusJson(areaStatus(a, views, now)) }));
+      const areas = lgasOf(d.areas).map((a) => ({
+        slug: a.slug,
+        name: a.name,
+        ...statusJson(areaStatus(a, views, now)),
+      }));
       return json({ areas }, PAGE_TTL_SECONDS);
     },
   },
