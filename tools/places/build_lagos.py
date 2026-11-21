@@ -14,7 +14,8 @@ How the grid is drawn and how a person gets a cell (ADR 0056):
     Hexes whose centre is in the lagoon or the sea belong to no ward and are not offered.
   * Each ward has an anchor cell: its own hex nearest the ward's representative point. A small ward (35 of them,
     mostly on Lagos Island, Surulere, Shomolu, Mushin) owns no hex centre, so its anchor is the hex that contains
-    its representative point, which belongs to a neighbouring ward a few hundred metres away.
+    its representative point, which belongs to a neighbouring ward. The build stops if that hex is more than 500 m
+    from the ward (the widest of the 35 is 384 m).
   * A person picks LGA -> ward. If the ward has one cell (or none of its own) they get the anchor. If it has more,
     the app shows that ward's hexes on a street map with the anchor selected and the person can tap their street.
 
@@ -37,6 +38,7 @@ from shapely.ops import unary_union
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'core/shared/fixtures/places'
 RES = 8
+MAX_ANCHOR_M = 500  # about one hex edge (0.46 km); ADR 0056
 
 # GRID3 LGA spelling -> (display name, NIPOST LGA number). NIPOST numbers the 20 LGAs alphabetically.
 LGAS = {
@@ -140,10 +142,17 @@ def main(src: str):
             # own hex nearest the representative point
             w['anchor'] = min(sorted(w['cells']), key=lambda c: h3.grid_distance(c, here) if h3.is_valid_cell(here) else 0)
         else:
-            w['anchor'] = here
+            # No hex of its own: the anchor is the hex that holds its representative point. That hex must be land
+            # (some ward owns it) and its centre must be within MAX_ANCHOR_M of the ward, so a big rural ward can never
+            # be anchored far away. Measured 2026-11-21: all 35 are within 400 m. Anything wider stops the build.
             if here not in owner:
-                # point in water inside a ward polygon edge case: take the nearest owned hex
-                w['anchor'] = min(owner, key=lambda c: Point(h3.cell_to_latlng(c)[::-1]).distance(rp))
+                # the point sits where the hex centre is water: take the nearest land hex, still checked below
+                here = min(owner, key=lambda c: Point(h3.cell_to_latlng(c)[::-1]).distance(rp))
+            lat, lng = h3.cell_to_latlng(here)
+            gap = w['shape'].distance(Point(lng, lat)) * 111000
+            if gap > MAX_ANCHOR_M:
+                sys.exit(f"{w['slug']}: anchor is {gap:.0f} m from the ward, more than {MAX_ANCHOR_M} m")
+            w['anchor'] = here
 
     lgas_out = []
     for raw, (disp, num) in LGAS.items():

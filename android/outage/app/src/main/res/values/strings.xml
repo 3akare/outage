@@ -158,7 +158,7 @@
     <string name="map_your_spot">Your spot</string>
     <string name="map_offline_banner">Offline. Last update %1$s</string>
     <string name="map_none">No phones reporting here yet</string>
-    <string name="map_none_body">Areas show up on the map as phones in them start reporting. Connect to the internet once to load the map of your city.</string>
+    <string name="map_none_body">The map fills in as phones near you report. Connect to the internet once to load it.</string>
     <string name="map_loading">Loading the map</string>
     <string name="map_simulated_note">Sample data to show how the map looks. These are not real outages.</string>
     <string name="map_summary">Map of %1$d areas. %2$d without power, %3$d possible. Double tap an area in the list for details.</string>
@@ -190,7 +190,7 @@
     <string name="ins_dur_m">%1$d min</string>
     <string name="ins_ongoing">Still out</string>
     <string name="ins_bars_title">Hours of power per day</string>
-    <string name="ins_bars_hint">Tap a day. Dashed stubs are days without enough data.</string>
+    <string name="ins_bars_hint">Tap a day. A dashed line means not enough data that day.</string>
     <string name="ins_day_value">%1$s: %2$.1f h of power, %3$d outages</string>
     <string name="ins_day_no_data">%1$s: not enough data</string>
     <string name="ins_summary_bars">Bar chart of hours of power per day over %1$d days. Average %2$.1f hours.</string>

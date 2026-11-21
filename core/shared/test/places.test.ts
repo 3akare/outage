@@ -11,6 +11,29 @@ const lgas = places.lgas as Lga[];
 const wards = places.wards as Ward[];
 const lgaBySlug = new Map(lgas.map((l) => [l.slug, l]));
 
+const MAX_ANCHOR_M = 500;
+
+/** Metres from a cell centre to a ward outline: 0 inside, else the nearest edge (flat approximation, fine at this size). */
+function metresToWard(cell: string, slug: string): number {
+  const [lat, lng] = cellToLatLng(cell);
+  const kx = 111_320 * Math.cos((lat * Math.PI) / 180);
+  const ky = 110_540;
+  let best = Number.POSITIVE_INFINITY;
+  for (const ringPts of (geo.wards as Record<string, number[][][]>)[slug]) {
+    let inside = false;
+    for (let i = 0, j = ringPts.length - 1; i < ringPts.length; j = i++) {
+      const [ay, ax] = ringPts[j];
+      const [by, bx] = ringPts[i];
+      if (ax > lng !== bx > lng && lat < ((by - ay) * (lng - ax)) / (bx - ax) + ay) inside = !inside;
+      const px = (lng - ax) * kx, py = (lat - ay) * ky, dx = (bx - ax) * kx, dy = (by - ay) * ky;
+      const t = dx === 0 && dy === 0 ? 0 : Math.max(0, Math.min(1, (px * dx + py * dy) / (dx * dx + dy * dy)));
+      best = Math.min(best, Math.hypot(px - t * dx, py - t * dy));
+    }
+    if (inside) return 0;
+  }
+  return best;
+}
+
 const LGA_NAMES_ALPHABETICAL = [
   'Agege', 'Ajeromi-Ifelodun', 'Alimosho', 'Amuwo-Odofin', 'Apapa', 'Badagry', 'Epe', 'Eti-Osa', 'Ibeju-Lekki', 'Ifako-Ijaiye',
   'Ikeja', 'Ikorodu', 'Kosofe', 'Lagos Island', 'Lagos Mainland', 'Mushin', 'Ojo', 'Oshodi-Isolo', 'Shomolu', 'Surulere',
@@ -85,17 +108,26 @@ describe('Lagos places fixture (ADR 0056)', () => {
     expect(Object.keys(geoCells)).toHaveLength(4968);
   });
 
-  it('gives a point in Lagos exactly one cell, and that cell belongs to one ward or to no ward', () => {
-    const owners = new Map<string, number>();
-    for (const w of wards) for (const c of w.cells) owners.set(c, (owners.get(c) ?? 0) + 1);
-    for (const [lat, lng] of [[6.6018, 3.3515], [6.4541, 3.3947], [6.5244, 3.3792], [6.4698, 3.5852], [6.6, 3.9], [6.42, 2.95]] as const) {
-      const cell = latLngToCell(lat, lng, 8);
-      expect(owners.get(cell) ?? 0).toBeLessThanOrEqual(1);
+  it('resolves every ward cell and every ward anchor back to one ward, and a known point to its ward and LGA', () => {
+    const owner = new Map<string, string>();
+    for (const w of wards) {
+      for (const c of w.cells) {
+        expect(owner.has(c), `${c} is in two wards`).toBe(false);
+        owner.set(c, w.slug);
+      }
     }
-    // Ikeja GRA centre is a land cell owned by an Ikeja ward.
-    const ikeja = latLngToCell(6.6018, 3.3515, 8);
-    const w = wards.find((x) => x.cells.includes(ikeja));
-    expect(w?.lga).toBe('ikeja');
+    // A ward that has hexes is anchored on one of them, so the anchor resolves back to the same ward.
+    for (const w of wards) if (w.cells.length > 0) expect(owner.get(w.anchor), w.slug).toBe(w.slug);
+    // The land cells are exactly the cells in the map file: nothing owned is missing, nothing extra is drawn.
+    expect([...owner.keys()].sort()).toEqual(Object.keys(geo.cells).sort());
+    // Known points: Ikeja GRA and Surulere each land in a ward of the expected LGA.
+    for (const [lat, lng, lga] of [[6.6018, 3.3515, 'ikeja'], [6.5095, 3.3711, 'surulere']] as const) {
+      const cell = latLngToCell(lat, lng, 8);
+      const ward = wards.find((x) => x.slug === owner.get(cell));
+      expect(ward?.lga, `${lat},${lng}`).toBe(lga);
+    }
+    // Open water belongs to no ward.
+    expect(owner.has(latLngToCell(6.3, 3.4, 8))).toBe(false);
   });
 
   it('puts every ward anchor on a valid land cell inside the ward, or the nearest one for the 35 wards with no hex', () => {
@@ -110,8 +142,10 @@ describe('Lagos places fixture (ADR 0056)', () => {
         expect(w.cells, w.slug).toContain(w.anchor);
       } else {
         hexless++;
-        // The anchor sits in a neighbouring ward of the same or a nearby LGA, a few hexes away at most.
-        expect(host!.lga === w.lga || gridDistance(w.anchor, lgaBySlug.get(w.lga)!.centreCell) < 25, w.slug).toBe(true);
+        // The anchor hex centre is at most MAX_ANCHOR_M from the ward outline (tools/places/build_lagos.py).
+        expect(metresToWard(w.anchor, w.slug), w.slug).toBeLessThanOrEqual(MAX_ANCHOR_M);
+        // And it is near the LGA, so a big rural ward can never be anchored far away.
+        expect(host!.lga === w.lga || gridDistance(w.anchor, lgaBySlug.get(w.lga)!.centreCell) <= 5, w.slug).toBe(true);
       }
     }
     expect(hexless).toBe(35);

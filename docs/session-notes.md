@@ -106,3 +106,12 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 
 ## 2026-11-21 cut list (ADR 0058)
 - Cut Freezer Guard, the tariff band and promise check, the diagnostics settings screen, the web Insights tab and the demo Settings rows that only said "On the phone this opens...". The telemetry opt-in stays (first run and Delete my data). Old `/app/insights` links still redirect.
+
+## 2026-11-21 polish (ADR 0059)
+- Screenshots of Now, the spot picker and History are made on the JVM with Robolectric and saved in `docs/visual/android-*.png` (ADR 0059). Roborazzi and kotlinx-coroutines-test were allowed but not needed, so they are not added. The Map tab cannot be drawn on the JVM (MapLibre is native code), so it has no screenshot.
+- Hexless ward anchors: `tools/places/build_lagos.py` now stops if a ward with no hex of its own gets an anchor more than 500 m from the ward. The GRID3 file was downloaded and the script re-run: the fixtures came out byte for byte the same, so no Android or web catalog copy changed. The widest of the 35 is 384 m. `places.test.ts` checks the 500 m limit and the old 25-step rule is now 5 steps.
+- `places.test.ts`: the weak "exactly one cell" test is replaced by one that checks every cell has one ward, every anchor resolves back to its ward, the land cells equal the map file, two known points fall in Ikeja and Surulere, and open sea has no ward.
+- ADR 0040 now reads as history: the picture card is described in the past tense and as removed.
+- Wording: the 30-day bar hint is now "Tap a day. A dashed line means not enough data that day." The empty map now says "The map fills in as phones near you report. Connect to the internet once to load it."
+- Icons: `freezer` is removed from `core/shared/design/icons.json` and `tools/icon/lucide.mjs`, and `ic_sym_chart.xml` is generated again. The web still uses `chart`, and the icon test needs every generated file present. That test failed after the cut list commit and passes now.
+- Known flaky test: `.kiro/scripts/test/post-deploy-check.test.mjs` fails now and then on the base commit as well. It was not changed here.

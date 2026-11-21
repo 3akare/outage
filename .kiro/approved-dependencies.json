@@ -1,5 +1,5 @@
 {
-  "_comment": "Dependencies the human approved. npm packages in `allowed`, Gradle coordinates (group:artifact) in `gradleAllowed`, Gradle plugin ids in `gradlePluginsAllowed`. Anything else needs the human: the dependency guard asks before it is installed. Add an entry only after the human approves it. Stack: native Kotlin app, Cloudflare Worker, TypeScript, Vitest + fast-check, h3-js (ADR 0012). 2026-11-14: the human chose Biome for lint and format. @outage/* are this repository's own workspace packages, not external dependencies. 2026-11-14: the human approved Jetpack Compose (BOM, ui, foundation, material3, the Compose compiler plugin, and the activity and lifecycle bridges Compose needs to host screens and ViewModels). Navigation libraries are not included. 2026-11-23: Firebase Messaging (BoM, firebase-messaging) and the google-services plugin approved under the blanket approval, free on Spark, ADR 0036. 2026-11-16: the human chose MapLibre with OpenFreeMap for the map (MapLibre Native Android org.maplibre.gl:android-sdk, BSD-2, no key; MapLibre GL JS maplibre-gl 6.16.0 for the website, BSD-3, served from our own origin), ADR 0053.",
+  "_comment": "Dependencies the human approved. npm packages in `allowed`, Gradle coordinates (group:artifact) in `gradleAllowed`, Gradle plugin ids in `gradlePluginsAllowed`. Anything else needs the human: the dependency guard asks before it is installed. Add an entry only after the human approves it. Stack: native Kotlin app, Cloudflare Worker, TypeScript, Vitest + fast-check, h3-js (ADR 0012). 2026-11-14: the human chose Biome for lint and format. @outage/* are this repository's own workspace packages, not external dependencies. 2026-11-14: the human approved Jetpack Compose (BOM, ui, foundation, material3, the Compose compiler plugin, and the activity and lifecycle bridges Compose needs to host screens and ViewModels). Navigation libraries are not included. 2026-11-23: Firebase Messaging (BoM, firebase-messaging) and the google-services plugin approved under the blanket approval, free on Spark, ADR 0036. 2026-11-21: Robolectric and the Compose test libraries approved by the owner (blanket permission) for JVM screenshots of the new screens, ADR 0059. Roborazzi and kotlinx-coroutines-test were not needed. 2026-11-16: the human chose MapLibre with OpenFreeMap for the map (MapLibre Native Android org.maplibre.gl:android-sdk, BSD-2, no key; MapLibre GL JS maplibre-gl 6.16.0 for the website, BSD-3, served from our own origin), ADR 0053.",
   "allowed": [
     "typescript",
     "vitest",
@@ -39,7 +39,8 @@
     "androidx.lifecycle:lifecycle-runtime-ktx",
     "com.google.firebase:firebase-bom",
     "com.google.firebase:firebase-messaging",
-    "org.maplibre.gl:android-sdk"
+    "org.maplibre.gl:android-sdk",
+    "org.robolectric:robolectric"
   ],
   "gradlePluginsAllowed": [
     "com.android.application",

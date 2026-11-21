@@ -97,6 +97,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    testOptions {
+        unitTests {
+            // Robolectric needs the merged resources and assets (the Lagos places files) on the JVM.
+            isIncludeAndroidResources = true
+        }
+    }
+
     lint {
         // Pidgin (values-pcm) is optional and falls back to English per key (app-shell R7.2),
         // so a key missing from values-pcm is not an error. AS7 checks the opposite direction.
@@ -154,4 +161,12 @@ dependencies {
 
     // JUnit 4 is approved by ADR 0012.
     testImplementation("junit:junit:4.13.2")
+
+    // Screenshots of the new screens on the JVM, no emulator (ADR 0059). Robolectric 4.18.1 is the newest in
+    // https://repo1.maven.org/maven2/org/robolectric/robolectric/maven-metadata.xml. Compose test comes from the BOM.
+    // https://developer.android.com/develop/ui/compose/testing
+    testImplementation("org.robolectric:robolectric:4.18.1")
+    testImplementation(platform("androidx.compose:compose-bom:2026.06.01"))
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

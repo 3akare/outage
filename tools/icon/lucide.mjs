@@ -19,7 +19,6 @@ const MAP = {
   lock: 'lock',
   shield: 'shield',
   download: 'download',
-  freezer: 'snowflake',
   phone: 'smartphone',
   chart: 'trending-up',
   info: 'info',
