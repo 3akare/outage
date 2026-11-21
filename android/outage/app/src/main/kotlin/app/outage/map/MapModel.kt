@@ -23,7 +23,7 @@ data class MapCell(
 
 /**
  * The box the map opens on and cannot zoom out of: all of Lagos State, the same box as the website (LAGOS_BOUNDS in
- * web/public/js/app.js, [[2.7, 6.36], [4.37, 6.71]] as lng, lat). The first frame is Lagos, never the world.
+ * web/public/js/map.js, [[2.7, 6.36], [4.37, 6.71]] as lng, lat). The first frame is Lagos, never the world.
  */
 data class LagosBounds(val south: Double, val west: Double, val north: Double, val east: Double) {
     val centre: LatLng get() = LatLng((south + north) / 2, (west + east) / 2)

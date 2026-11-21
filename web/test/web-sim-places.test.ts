@@ -105,6 +105,10 @@ describe('a deploy always reaches people (no old stylesheet or script)', () => {
     expect(sw).toContain("cache:'no-cache'");
   });
 
+  it('keeps the map attribution icon at 24px so the 44px summary rule cannot tile it twice', () => {
+    expect(designSrc).toMatch(/summary\.maplibregl-ctrl-attrib-button\{min-height:0;height:24px;/);
+  });
+
   it('asks for the scripts every time', () => {
     expect(headersFile).toMatch(/\/js\/\*\n\s+! Cache-Control\n\s+Cache-Control: no-cache/);
   });

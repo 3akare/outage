@@ -43,6 +43,13 @@ for path in /app /judge; do
   echo "Post-deploy check ok: $path redirects to /app/simulate"
 done
 
+# Scripts keep fixed names, so they must be revalidated on every load or a phone could run an old app.js (no hashed URLs).
+for path in /js/map.js /js/app.js; do
+  h=$(curl -sS -D - -o /dev/null -A "$UA" "$URL$path" | tr -d '\r')
+  echo "$h" | grep -qi '^cache-control: .*no-cache' || fail "$path is not served with Cache-Control: no-cache"
+  echo "Post-deploy check ok: $path revalidates"
+done
+
 nonce_of() { curl -sS -A "$UA" -D - -o /dev/null "$URL/" | grep -i '^content-security' | grep -o "nonce-[^']*" | head -1; }
 a=$(nonce_of)
 b=$(nonce_of)

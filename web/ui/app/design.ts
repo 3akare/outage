@@ -364,6 +364,7 @@ body.sim{height:100dvh;display:flex;flex-direction:column;overflow:hidden;backgr
 @keyframes pulse{50%{transform:scale(1.08)}}
 
 /* MapLibre's own controls, quietened. */
+.maplibregl-ctrl-attrib summary.maplibregl-ctrl-attrib-button{min-height:0;height:24px;display:block;background-repeat:no-repeat}
 .maplibregl-ctrl-attrib{font:var(--t-caption)!important;background:var(--glass)!important;border-radius:var(--r-full)!important}
 .maplibregl-ctrl-bottom-right{bottom:76px!important}
 .stage .maplibregl-ctrl-bottom-right,.app[data-tab="now"] .maplibregl-ctrl-bottom-right{bottom:0!important}
