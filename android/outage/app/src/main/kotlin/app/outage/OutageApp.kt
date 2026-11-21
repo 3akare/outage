@@ -27,16 +27,13 @@ import app.outage.map.MapHttp
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.runtime.Composable
-import app.outage.map.DemoAreaMap
-import app.outage.map.MapResult
 import app.outage.net.IngestApi
 import app.outage.net.PushHost
 import app.outage.onboarding.OnboardingFacts
 import app.outage.onboarding.OnboardingFlow
-import app.outage.onboarding.SpotChoice
-import app.outage.onboarding.LocationSource
-import app.outage.onboarding.Spot
-import app.outage.ui.SpotOutcome
+import app.outage.places.PlacePick
+import app.outage.places.PlacesAssets
+import app.outage.places.SpotUpgrade
 import app.outage.ui.AlarmSettingsScreen
 import app.outage.ui.FollowSection
 import app.outage.ui.PermissionsScreen
@@ -272,8 +269,6 @@ class OutageApp : Application() {
     private fun registerAlarmAndSpot() {
         val credentials = PrefsCredentials(this)
         val push = PushHost.get(this)
-        val mapCache = FileMapCache(File(filesDir, "map"))
-        val mapSource = AreaMapSources.choose(BuildConfig.API_BASE, mapCache) { url -> withContext(Dispatchers.IO) { MapHttp.get(url) } }
         val openBatteryList = {
             startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
@@ -287,12 +282,11 @@ class OutageApp : Application() {
             R.string.settings_followed_area,
             {
                 SpotScreen(
-                    loadMap = { (mapSource.load(DemoAreaMap.CITY, System.currentTimeMillis()) as? MapResult.Loaded)?.load?.map },
                     current = {
                         val r = graph.onboarding.load()
-                        SpotState(r?.cell, r?.areaName, r?.postcodePrefix)
+                        SpotState(r?.cell, r?.areaName, SpotUpgrade.needsRepick(r, PlacesAssets.cachedPlaces()))
                     },
-                    save = { choice, postcode -> saveSpot(push, choice, postcode) },
+                    save = { pick -> saveSpot(push, pick) },
                     below = { spot -> FollowSection(spot) },
                 )
             },
@@ -300,29 +294,26 @@ class OutageApp : Application() {
         )
         graph.deletes.register("follow") { push.deleteLocal() }
 
-        // First run: "Use my location" reads one coarse position, turns it into a cell of the published map, saves the
-        // cell only and drops the position (onboarding O2, ADR 0037, ADR 0050). A mocked position or a place outside the
-        // map is not saved here; the person can confirm or pick on the map in Settings.
-        graph.locateSpot = {
-            withContext(Dispatchers.IO) {
-                val fix = LocationSource.readOnce(this@OutageApp)
-                val map = (mapSource.load(DemoAreaMap.CITY, System.currentTimeMillis()) as? MapResult.Loaded)?.load?.map
-                val choice = if (fix != null && map != null) Spot.resolve(map, fix.lat, fix.lng, fix.mocked) else null
-                when {
-                    choice == null || choice.needsConfirm || !Spot.isRealCell(choice.cell) -> SpotOutcome.NotFound
-                    saveSpot(push, choice, null) -> SpotOutcome.Saved(choice.areaName)
-                    else -> SpotOutcome.NotFound
-                }
-            }
-        }
+        // First run picks the spot by local government and ward (ADR 0056): no position is ever read.
+        graph.saveSpot = { pick -> saveSpot(push, pick) }
+
+        // Upgrade from the nine-area map: a saved Lagos land cell gets its "Ward, LGA" name. Parsing the places is the only
+        // work, off the main thread, and it warms the cache the spot picker and the map search use.
+        Thread {
+            val places = PlacesAssets.places(this) ?: return@Thread
+            runCatching { SpotUpgrade.run(graph.onboarding, places) }
+        }.start()
     }
 
-    /** Stores the cell only (O2). A follow on the old cell moves to the new one. */
-    private fun saveSpot(push: PushHost, choice: SpotChoice, postcode: String?): Boolean {
+    /**
+     * Stores the cell and "Ward, LGA" only (O2, ADR 0056). No postcode is kept: the old prefix, if any, is cleared. A follow
+     * on the old cell moves to the new one.
+     */
+    private fun saveSpot(push: PushHost, pick: PlacePick): Boolean {
         val flow = OnboardingFlow.open(graph.onboarding, OnboardingFacts(notificationsOk = true, fullScreenOk = true, batteryExempt = false))
-        if (!flow.changeSpot(choice.cell, choice.areaName, postcode)) return false
+        if (!flow.changeSpot(pick.cell, pick.areaName, null)) return false
         val old = push.store.read()
-        if (old != null && old.cell != choice.cell) push.follow(old.copy(cell = choice.cell)) { }
+        if (old != null && old.cell != pick.cell) push.follow(old.copy(cell = pick.cell)) { }
         return true
     }
 

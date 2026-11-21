@@ -1,0 +1,12 @@
+Ward and LGA boundaries: GRID3 (Geo-Referenced Infrastructure and Demographic Data for Development), CC BY-SA 4.0
+
+Source: GRID3 NGA Operational Wards v4.0, Lagos State
+https://data.humdata.org/dataset/grid3-nga-operational-wards-v4-0
+
+Outage uses these boundaries to list the 20 Lagos local government areas and their 376 wards, and to assign each
+H3 resolution-8 hexagon to the ward that contains its centre. The derived files (lagos-places.json, lagos-geo.json)
+are adapted from the source (names tidied, outlines simplified, hexagons added; see tools/places/build_lagos.py)
+and are shared under the same licence.
+
+Licence: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+https://creativecommons.org/licenses/by-sa/4.0/legalcode

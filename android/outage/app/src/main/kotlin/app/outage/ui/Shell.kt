@@ -35,6 +35,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.outage.BuildConfig
 import app.outage.R
+import app.outage.places.PlacesAssets
+import app.outage.places.SpotUpgrade
 import app.outage.shell.Route
 import app.outage.shell.ShellGraph
 import kotlinx.coroutines.launch
@@ -68,10 +70,8 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
     }
 
     val snackbar = remember { SnackbarHostState() }
-    val spotSaved = stringResource(R.string.first_run_spot_saved)
     val spotSavedIn = stringResource(R.string.first_run_spot_saved_in)
-    val spotMissing = stringResource(R.string.spot_not_found)
-    val spotDenied = stringResource(R.string.first_run_spot_later)
+    val spotLater = stringResource(R.string.first_run_spot_later)
     val scope = rememberCoroutineScope()
 
     Scaffold(
@@ -98,14 +98,10 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
             when (current) {
                 Route.Onboarding -> FirstRunScreen(
                     finish = { graph.completeFirstRun(System.currentTimeMillis()) || !graph.onboardingNeeded() },
-                    locate = { graph.locateSpot() },
-                    onDone = { outcome ->
+                    save = { pick -> graph.saveSpot(pick) },
+                    onDone = { area ->
                         shell.onboardingDone()
-                        val message = when (outcome) {
-                            is SpotOutcome.Saved -> outcome.area?.let { String.format(spotSavedIn, it) } ?: spotSaved
-                            SpotOutcome.NotFound -> spotMissing
-                            SpotOutcome.Denied, SpotOutcome.Skipped -> spotDenied
-                        }
+                        val message = if (area != null) String.format(spotSavedIn, area) else spotLater
                         scope.launch { snackbar.showSnackbar(message) }
                     },
                     onTryJudge = { shell.go(Route.Feature(FeatureRegistry.JUDGE)) },
@@ -116,7 +112,8 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
                     onOpenSetup = { key -> shell.go(Route.Feature(key)) },
                     onOpenMap = { shell.tab(Route.Map) },
                     band = graph.band,
-                    spotName = { graph.onboarding.load()?.areaName },
+                    // A spot from the old area map that is not a Lagos ward cell counts as not chosen (ADR 0056).
+                    spotName = { graph.onboarding.load()?.takeUnless { SpotUpgrade.needsRepick(it, PlacesAssets.cachedPlaces()) }?.areaName },
                     // Home Watch card on Now, only when a home is paired (home-watch R4).
                     homeCard = { graph.features.get(FeatureRegistry.HOME_CARD)?.screen?.invoke() },
                 )
