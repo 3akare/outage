@@ -8,7 +8,7 @@ You write only `README.md` and files in `docs/pitch/`. You do not change code, s
 
 From `.kiro/steering/gridwatch-lessons.md`: GridWatch (Michigan and Berkeley, 2014) showed that phones can detect outages from charge state. In a power-strip test, ten phones' timestamps for the same cut were within about a second in 19 of 20 trials. In Accra in 2018 the phone app (DumsorWatch) reached about 3,400 installs, but active phones fell from 989 to 310 in three months. The team moved to plug-in hardware sensors, which became the company nLine. The finding that the utility undercounted outages by nearly 100% came from those hardware sensors, **not from phones**. Never claim phones produced it. Include the resurrection table (why the phone version stalled, and Outage's fix) as written there.
 
-Pitch line: "Your phone charger is a power-grid sensor." Open worldwide; Lagos is the proving ground and demo city. Budget: zero, free tiers only. Value first to one person with one charging phone: Light Alarm, Home Watch, Freezer Guard, Power Log. The map is the bonus.
+Pitch line: "Your phone charger is a power-grid sensor." Open worldwide; Lagos is the proving ground and demo city. Budget: zero, free tiers only. Value first to one person with one charging phone: Light Alarm, Freezer Guard, Power Log. The map is the bonus.
 
 ## Rules for every sentence
 

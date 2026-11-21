@@ -10,7 +10,9 @@ A spare phone sits at 100% battery. The normal sensor treats a stop at 95% or mo
 
 This spec extends `sensor-android`. It adds a second driver for the same state machine and does not replace it.
 
-> **Amended 2026-11-23 (ADR 0032).** The receiver driver is now the primary sensor for every user, not a fallback for spare phones. R1 (enable) applies by default after first run. The spare-phone role for Home Watch stays here.
+> **Amended 2026-11-23 (ADR 0032).** The receiver driver is now the primary sensor for every user, not a fallback for spare phones. R1 (enable) applies by default after first run.
+>
+> **Amended 2026-11-21 (ADR 0055).** Home Watch is removed, and with it the spare-phone "station" role: there is no pairing, no viewer and no "Station offline" display. The receiver driver, the service, boot restore and the `ARMED` heartbeat stay as the main sensor on every phone. R5.5 no longer writes a battery heartbeat. R8.2 is withdrawn. Mentions of Home Watch below are kept for history and no longer bind.
 
 ## Glossary
 
@@ -61,7 +63,7 @@ This spec extends `sensor-android`. It adds a second driver for the same state m
 2. THE heartbeat interval SHALL be at most a third of the 30-minute silence limit used by Home Watch, so that at least two heartbeats can be missed before "Station offline" is shown.
 3. WHILE Station mode is enabled, THE Uploader SHALL upload state events at least once per heartbeat interval, overriding the normal maximum wait of `event-ingest` R9.2, and the Worker SHALL treat the heartbeat as a state event that refreshes last-seen time.
 4. THE worst-case time from a station going silent to the server noticing SHALL be below the 30-minute limit used by Home Watch.
-5. WHILE the phone is not on a detection plug, THE Sensor SHALL NOT write heartbeats as `ARMED`. Amended by `home-watch` R3.1: on battery after an `UNPLUG`, or on a non-detection plug, it SHALL write a `DISARMED` event with reason `HEARTBEAT_ON_BATTERY` every heartbeat interval instead. That event changes no state and is not a gap.
+5. WHILE the phone is not on a detection plug, THE Sensor SHALL NOT write heartbeats. (The `home-watch` R3.1 battery heartbeat, `DISARMED` with reason `HEARTBEAT_ON_BATTERY`, was removed by ADR 0055. The Worker still accepts and ignores it from older APKs.)
 
 ### R6 Resilience
 1. IF the system kills the Station service, THEN THE Sensor SHALL ask Android to restart it and SHALL record a `DISARMED` gap with reason `PROCESS_DEATH` as in `sensor-android` R5.3.
@@ -74,9 +76,9 @@ This spec extends `sensor-android`. It adds a second driver for the same state m
 2. THE app SHALL tell the user that USB from a computer and wireless charging are not used for detection.
 3. THE app SHALL say in plain words that the station uses a small notification and little battery power. Claims about battery use SHALL come from measured diagnostics, not guesses.
 
-### R8 Role for Home Watch
+### R8 Diagnostics flag
 1. THE Sensor SHALL expose a `stationMode` flag in diagnostics, and the Uploader SHALL NOT add any field to events for it.
-2. THE Home Watch spec SHALL own QR pairing. This spec SHALL NOT store pairing data.
+2. Withdrawn (ADR 0055): Home Watch and its pairing are removed. This spec SHALL NOT store pairing data.
 
 ### R9 Platform restrictions
 1. THE Sensor SHALL NOT start the Station service from the background except from the boot receiver or other cases Android's background-start rules allow.

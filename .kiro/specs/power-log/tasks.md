@@ -69,4 +69,4 @@ graph LR
 
 ## Not in this spec
 - Cost estimate (generator hours x fuel use x price) and usual-pattern prediction: stretch features, written as their own specs only if time allows.
-- The "Power's back" live-count moment: part of `web-and-area-pages` and `home-watch` stretch.
+- The "Power's back" live-count moment: part of `web-and-area-pages` stretch.

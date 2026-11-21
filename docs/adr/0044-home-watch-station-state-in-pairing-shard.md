@@ -1,6 +1,6 @@
 # ADR 0044: Home Watch station state lives in the pairing shard actor
 
-Status: ACCEPTED 2026-11-23, under the human's blanket approval (decide, record, proceed). Stored-data change: see "Stored data".
+Status: SUPERSEDED by ADR 0055 (2026-11-21, Home Watch removed). Was: ACCEPTED 2026-11-23, under the human's blanket approval (decide, record, proceed). Stored-data change: see "Stored data".
 
 ## Context
 This ADR also records one deviation from `home-watch` design sections 6 to 8: the state, alarm and push planner are in the pairing shard actor, not the area actor.

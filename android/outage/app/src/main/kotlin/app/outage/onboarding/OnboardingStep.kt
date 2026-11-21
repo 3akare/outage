@@ -2,10 +2,10 @@ package app.outage.onboarding
 
 /** The steps of onboarding in order (onboarding R1.1, design section 3). Pure Kotlin: no Android imports. */
 enum class OnboardingStep {
-    WELCOME, SPOT, CONSENT, NOTIFICATIONS, BATTERY, SELF_TEST, STATION_OFFER, FINISH;
+    WELCOME, SPOT, CONSENT, NOTIFICATIONS, BATTERY, SELF_TEST, FINISH;
 
     /** True for steps the user may skip with one tap (R6.6, R7.8, R8.5, R9.4). Spot and Consent cannot be skipped. */
-    val skippable: Boolean get() = this == NOTIFICATIONS || this == BATTERY || this == SELF_TEST || this == STATION_OFFER
+    val skippable: Boolean get() = this == NOTIFICATIONS || this == BATTERY || this == SELF_TEST
 }
 
 /**

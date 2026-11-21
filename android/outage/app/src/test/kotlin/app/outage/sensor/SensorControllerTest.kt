@@ -117,14 +117,14 @@ class SensorControllerTest {
         assertEquals(1, ctl.getDiagnostics().stopReasonCounts["TIMEOUT"])
     }
 
-    /** home-watch R3.2: the battery heartbeat is not a gap and does not end the charging run or any armed interval. */
+    /** A battery heartbeat recorded by an older version (ADR 0055) is still not a gap after an update. */
     @Test
-    fun R3_2_battery_heartbeat_is_not_a_gap() {
+    fun legacy_battery_heartbeat_is_not_a_gap() {
         fun ev(seq: Long, type: EventType, at: Long, plug: Plug, reason: String? = null) =
             SensorEvent(seq, type, 0, at, TimeQuality.OK, Confidence.HIGH, null, 50, plug, null, reason, Source.RECEIVER)
         val armed = ev(1, EventType.ARMED, 0, Plug.AC)
         val unplug = ev(2, EventType.UNPLUG, 10_000, Plug.NONE)
-        val beat = ev(3, EventType.DISARMED, 20_000, Plug.NONE, Reason.HEARTBEAT_ON_BATTERY)
+        val beat = ev(3, EventType.DISARMED, 20_000, Plug.NONE, "HEARTBEAT_ON_BATTERY")
         val withBeat = TelemetryCalc.compute(listOf(armed, unplug, beat), 30_000, 60_000)
         assertEquals(TelemetryCalc.compute(listOf(armed, unplug), 30_000, 60_000), withBeat)
         assertTrue(withBeat.gaps.isEmpty())

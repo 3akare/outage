@@ -31,7 +31,7 @@ export function stores(site: Site): Store[] {
 
 const FEATURES: [IconName, string, string, string][] = [
   ['alarm', 'red', 'Light Alarm', 'Rings when power returns at your spot, even at 3 a.m. Works offline.'],
-  ['homeWatch', 'green', 'Home Watch', 'A spare phone charging at home tells you if the power is on.'],
+  ['chart', 'green', 'Power Log', 'Your hours of power each day, kept on your phone. No account, no server needed.'],
   ['freezer', 'teal', 'Freezer Guard', 'Warns you when the power has been off longer than your food can wait.'],
 ];
 

@@ -13,7 +13,7 @@ android/
   outage/     The app people install. Kotlin and Jetpack Compose.
   probe/      Throwaway test app that measured how real phones report charging. Kept for the record.
 web/          One Cloudflare Worker. The phone and the browser both talk to it.
-  api/        The API and the Durable Objects (ingest, areas, alerts, Home Watch, telemetry)
+  api/        The API and the Durable Objects (ingest, areas, alerts, telemetry)
   landing/    Landing page at /
   ui/app/       The stylesheet every page shares
   public/js/    The street map (MapLibre over OpenFreeMap), Insights maths and charts, the app in the browser

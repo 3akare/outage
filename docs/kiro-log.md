@@ -842,3 +842,11 @@ Each entry says what was done and which spec, steering, hook, skill or agent sha
 - Android: every Compose screen rebuilt on shared components (`ui/Daylight.kt`), the same four tabs with Now first, the share card redrawn.
 - Tests: web 338, root 112, Android 251 unit tests, assembleDebug and lintDebug pass; the visual check (phone and desktop, full blackout, Light Alarm, offline reload) passes; Hallmark sloplint 0 FAIL.
 - Not done: Android screens seen on a device or emulator (none available in the build container).
+
+
+## 2026-11-21 chore: remove Home Watch
+- Ordered by the human: remove the Home Watch feature completely. ADR 0055 supersedes ADR 0009, 0044 and 0045; `station-mode` amended (spare-phone role gone, the sensor service stays as the main sensor, ADR 0032); `home-watch` spec deleted.
+- Removed: app screens, Settings items, Home card, `STATION_OFFER` onboarding step, Kotlin `home` package, Worker `api/home` and `api/pairing`, `/v1/pair/*` and `/v1/home/*`, shared `home.ts` and `pairing.ts`, fixtures, tests, the sim scenario, the `homeWatch` icon. Landing tile now Power Log.
+- Data: wrangler migration `v6` deletes `PairingActor`; area actors drop `home_watch`; the app deletes its two Home Watch preference files.
+- Back-compat for installed APKs: the Worker accepts and ignores `DISARMED`/`HEARTBEAT_ON_BATTERY` and a `pairIds` list on `/v1/delete`; onboarding records with unknown step names decode leniently. The phone no longer sends the battery heartbeat.
+- Tests: TS 549 passing (core/shared 131, tools 59, web 275, 35, 49); Android 240 unit tests, assembleDebug and lintDebug pass.

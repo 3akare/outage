@@ -30,8 +30,6 @@ object SettingsItems {
                 Item("followed_area", R.string.settings_followed_area, R.drawable.ic_sym_place, Tokens.Colors.tileBlue),
                 Item("alarm_settings", R.string.settings_alarm, R.drawable.ic_sym_alarm, Tokens.Colors.tileRed),
                 Item("freezer_guard", R.string.settings_freezer, R.drawable.ic_sym_freezer, Tokens.Colors.tileTeal),
-                Item("home_watch", R.string.settings_home_watch, R.drawable.ic_sym_home_watch, Tokens.Colors.tileGreen),
-                Item("station", R.string.settings_station, R.drawable.ic_sym_plug, Tokens.Colors.tileGreen),
             ),
         ),
         Group(

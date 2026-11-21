@@ -1,13 +1,16 @@
 // Ingest wire schema and hand-written strict validator (event-ingest R1, R4, R8, R10; design section 5).
 // No schema library (R11.6). Pure functions, no I/O, no clock.
 import { isValidRes8Cell } from './h3.ts';
-import { isPairId, MAX_PAIR_IDS_PER_DELETE } from './pairing.ts';
 
 export const MAX_ELAPSED_MS = 604_800_000; // 7 days (brief, event-time.md)
 
 export const STATE_TYPES = ['ARMED', 'DISARMED'] as const;
 export const DETECTION_TYPES = ['UNPLUG', 'BATTERY_FULL', 'REPLUG', 'LABEL', 'REPORT'] as const;
-/** home-watch R3: the `reason` of a DISARMED heartbeat sent while a station is on battery. Proof of life only. */
+/**
+ * Legacy: the `reason` of a DISARMED heartbeat that APKs built with the removed Home Watch feature send while on
+ * battery. Current apps never send it. The Worker accepts and ignores it so installed old phones do not log state
+ * changes (ADR 0055).
+ */
 export const HEARTBEAT_ON_BATTERY = 'HEARTBEAT_ON_BATTERY';
 
 export const EVENT_TYPES = ['ARMED', 'UNPLUG', 'BATTERY_FULL', 'REPLUG', 'DISARMED', 'LABEL', 'REPORT'] as const;
@@ -105,9 +108,12 @@ export interface RegisterResponse {
 export interface DeleteRequest {
   installId: string;
   cells: string[];
-  /** Home Watch pairs this install holds as a viewer (optional, home-watch R7.4). */
-  pairIds?: string[];
 }
+
+/** Legacy `pairIds` sent by APKs built with the removed Home Watch feature: accepted when well formed, then ignored. */
+const LEGACY_PAIR_ID = /^[23456789ABCDEFGHJKMNPQRSTVWXYZ]{2}[0-9a-f]{32}$/;
+const MAX_LEGACY_PAIR_IDS = 25;
+const isLegacyPairId = (v: unknown): boolean => typeof v === 'string' && LEGACY_PAIR_ID.test(v);
 
 const BASE_REQUIRED = ['installId', 'seq', 'type', 'elapsedMs', 'cell', 'confidence', 'timeQuality'] as const;
 const BASE_OPTIONAL = ['stopReason', 'reason', 'schedulingDelayMs', 'batteryPct', 'plugType'] as const;
@@ -239,19 +245,17 @@ export function parseEventsRequest(raw: unknown, maxBatch: number): ParsedReques
   return { ok: true, installId: raw.installId, events: raw.events };
 }
 
-export type ParsedDelete = { ok: true; installId: string; cells: string[]; pairIds: string[] } | { ok: false };
+export type ParsedDelete = { ok: true; installId: string; cells: string[] } | { ok: false };
 
-/** `pairIds` is optional (home-watch R7.4): a viewer lists its pairs so their shards can be cleaned. */
+/** An optional `pairIds` array from older APKs is still accepted (validated, then dropped) so their deletes succeed. */
 export function parseDeleteRequest(raw: unknown, maxCells: number): ParsedDelete {
   if (!isRecord(raw)) return { ok: false };
   const keys = Object.keys(raw);
   const withPairs = Object.hasOwn(raw, 'pairIds');
   if (keys.length !== (withPairs ? 3 : 2) || !isInstallId(raw.installId) || !Array.isArray(raw.cells)) return { ok: false };
   if (raw.cells.length > maxCells || !raw.cells.every(isValidRes8Cell)) return { ok: false };
-  let pairIds: string[] = [];
-  if (withPairs) {
-    if (!Array.isArray(raw.pairIds) || raw.pairIds.length > MAX_PAIR_IDS_PER_DELETE || !raw.pairIds.every(isPairId)) return { ok: false };
-    pairIds = raw.pairIds as string[];
+  if (withPairs && (!Array.isArray(raw.pairIds) || raw.pairIds.length > MAX_LEGACY_PAIR_IDS || !raw.pairIds.every(isLegacyPairId))) {
+    return { ok: false };
   }
-  return { ok: true, installId: raw.installId, cells: raw.cells as string[], pairIds };
+  return { ok: true, installId: raw.installId, cells: raw.cells as string[] };
 }

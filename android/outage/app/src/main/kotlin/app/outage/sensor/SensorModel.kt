@@ -63,8 +63,6 @@ object Reason {
     const val USER_STOPPED = "USER_STOPPED"
     const val REBOOT = "REBOOT"
     const val PROCESS_DEATH = "PROCESS_DEATH"
-    /** home-watch R3: proof of life while the station is on battery. Changes no armed interval (the phone is already unarmed after UNPLUG). */
-    const val HEARTBEAT_ON_BATTERY = "HEARTBEAT_ON_BATTERY"
 }
 
 /** Battery level at or above which a charging stop means "full", not "unplugged" (design section 6). */

@@ -112,10 +112,8 @@ object SensorStateMachine {
             Input.Heartbeat ->
                 when (phase) {
                     Phase.ARMED -> Output(state, listOf(draft(EventType.ARMED, Source.RECEIVER)))
-                    // home-watch R3.1: on battery (power cut or a plug that is not a detection plug) the heartbeat is a
-                    // DISARMED event with a reason. The state does not change, so no armed interval or gap is touched.
-                    Phase.DROPPED, Phase.NOT_CHARGING ->
-                        Output(state, listOf(draft(EventType.DISARMED, Source.RECEIVER, reason = Reason.HEARTBEAT_ON_BATTERY)))
+                    // Not armed (on battery, full, or a plug that is not a detection plug): nothing to send. The battery
+                    // heartbeat went with Home Watch (ADR 0055).
                     else -> Output(state)
                 }
 

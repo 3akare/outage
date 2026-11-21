@@ -68,6 +68,6 @@ graph LR
 ```
 
 ## Not in this spec
-- QR pairing and the "Station offline after 30 minutes" display: `home-watch`.
+- Pairing a spare phone to a viewer: none. Home Watch was removed (ADR 0055).
 - Onboarding screens and per-maker text: `onboarding` and the `oem-battery-guide` skill.
 - Armed-state expiry on the server: `area-cells`.

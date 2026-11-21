@@ -21,7 +21,7 @@ export interface FcmOutgoing {
   body: string;
   data: Record<string, string>;
   ttlSeconds: number;
-  /** Android message priority. Default HIGH. Home Watch sends OFFLINE at NORMAL (home-watch R5.7). https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#androidmessagepriority */
+  /** Android message priority. Default HIGH. https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#androidmessagepriority */
   priority?: 'HIGH' | 'NORMAL';
 }
 

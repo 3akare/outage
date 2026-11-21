@@ -10,7 +10,7 @@ Two products, one shared core (ADR 0047). The human-readable map is the root `RE
 android/outage         The Android app people install (Kotlin, Compose): sensor, alarm, log, map, insights
 android/probe          Throwaway Milestone 1 probe, kept whole: app/ (Kotlin), worker/, analyze/, emulator/, contract/
 web/                   One Cloudflare Worker: the API and the whole website
-web/api                What the phone and the pages call: ingest, area, alerts, home, pairing, registry, telemetry, public-index, map
+web/api                What the phone and the pages call: ingest, area, alerts, registry, telemetry, public-index, map
 web/landing            Landing page at /
 web/ui/app             The shared stylesheet (/app.css); /app redirects to the app in the browser
 web/public             Static files: js/ (map, Insights maths and charts, app), vendor/ (MapLibre, copied at build)

@@ -24,7 +24,7 @@ On a normal machine (JDK 17, Android SDK 36): `cd android/outage && ./gradlew :a
 
 ## How a feature plugs in
 
-In `OutageApp.onCreate`, call `graph.features.register(key, titleRes, screen, deleteFn)`. Keys the shell knows: `onboarding`, `log`, `area`, `alarm`, and the Settings items (`alarm_settings`, `notifications`, `battery`, `station`, `home_watch`, `followed_area`, `language`, `diagnostics`). Anything not registered shows "Coming soon". Register the server delete with `graph.deletes.registerServer(...)`. Replace `graph.sources` with a real `StatusSources` for Home.
+In `OutageApp.onCreate`, call `graph.features.register(key, titleRes, screen, deleteFn)`. Keys the shell knows: `onboarding`, `log`, `area`, `alarm`, and the Settings items (`alarm_settings`, `notifications`, `battery`, `followed_area`, `language`, `diagnostics`). Anything not registered shows "Coming soon". Register the server delete with `graph.deletes.registerServer(...)`. Replace `graph.sources` with a real `StatusSources` for Home.
 
 ## Deep links
 
@@ -45,4 +45,4 @@ The first-run button records consent, asks for notifications (API 33 and up) and
 - **Power sensor**: one switch. Off stops the sensor and it stays off until switched on.
 - **Battery setup**: shows whether Outage is exempt from battery optimisation, a button for the system prompt, and the maker's steps from `oem-guide.json`.
 
-Station mode (a spare phone left charging) uses the same service. Unplug at 100%, Doze, maker restrictions and reboot recovery are in the Station section of `docs/probe-checklist.md`. The event `source` field stays on the phone until the Worker schema carries it (ADR 0034).
+The same service runs on every phone (ADR 0032). Unplug at 100%, Doze, maker restrictions and reboot recovery are in the Station section of `docs/probe-checklist.md`. The event `source` field stays on the phone until the Worker schema carries it (ADR 0034).

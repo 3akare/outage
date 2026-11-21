@@ -4,7 +4,7 @@ Status: APPROVED by delegation on 2026-11-14. Design in `design.md`, tasks in `t
 
 ## Introduction
 
-Onboarding takes a new user from first launch to an armed sensor in under 60 seconds. It picks the user's spot, asks consent, registers the install, gets the permissions the alarm needs, shows the exact battery steps for the user's phone maker, runs a 10-second unplug and replug self-test, and offers one-tap Station mode.
+Onboarding takes a new user from first launch to an armed sensor in under 60 seconds. It picks the user's spot, asks consent, registers the install, gets the permissions the alarm needs, shows the exact battery steps for the user's phone maker, runs a 10-second unplug and replug self-test. (The one-tap Station mode offer was removed with Home Watch, ADR 0055.)
 
 It is also the answer to "phones were reset, flashed, broken or swapped and nobody asked to reinstall" from the resurrection table: re-onboarding takes about 30 seconds.
 
@@ -90,6 +90,9 @@ It is also the answer to "phones were reset, flashed, broken or swapped and nobo
 7. THE self-test results SHALL stay on the phone unless diagnostics are on.
 
 ### R9 Station mode
+
+> **Withdrawn 2026-11-21 (ADR 0055).** Home Watch is removed, so there is no station to pair. The `STATION_OFFER` step is gone; after the self-test comes Finish. A saved record that names the old step is read leniently (unknown step names are dropped, an unknown current step becomes Finish). The text below is kept for history.
+
 1. AFTER the self-test, THE app SHALL offer "Make this a station" for a phone that stays plugged in, as one tap.
 2. WHEN the user taps it, THE app SHALL turn on Station mode as in `station-mode` R1 and open the pairing code screen of `home-watch`.
 3. THE app SHALL explain in two lines what a station is.

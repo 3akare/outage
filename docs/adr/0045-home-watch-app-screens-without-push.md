@@ -1,6 +1,6 @@
 # ADR 0045: Home Watch app screens before Firebase Messaging, and the station pair list
 
-Status: ACCEPTED 2026-11-23, under the human's blanket approval (decide, record, proceed). No new stored data.
+Status: SUPERSEDED by ADR 0055 (2026-11-21, Home Watch removed). Was: ACCEPTED 2026-11-23, under the human's blanket approval (decide, record, proceed). No new stored data.
 
 ## Context
 `home-watch` task 8 builds the Compose screens. Three gaps showed up:

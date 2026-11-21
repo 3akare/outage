@@ -12,8 +12,7 @@ flowchart LR
     C --> N[Notifications + alarm checks]
     N --> B[Battery steps by maker]
     B --> T[Self-test]
-    T --> S[Station offer]
-    S --> F[Finish + Alarm check list]
+    T --> F[Finish + Alarm check list]
 ```
 
 A small state machine (`OnboardingFlow`, a pure Kotlin class with no Android types) decides the next step from the facts: consent given, permissions granted, exemption state, previous skips. Screens are thin Jetpack Compose screens (approved 2026-11-14) driven by an `OnboardingViewModel`. State is stored on the phone after every step (R1.5).

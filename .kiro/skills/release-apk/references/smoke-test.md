@@ -17,14 +17,14 @@ Do it from the public link, on a phone that is not the developer's own build mac
 | 3 | First screen | "Try Judge mode" and "Set up my phone" are shown. Judge mode opens in 2 seconds with no permission. |
 | 4 | Judge mode, recorded replay | The banner says "Simulated replay". Normal, Possible, Confirmed, Restored show with the explanation. |
 | 5 | Judge mode, unplug | Unplug the charger. Simulated neighbors are labeled. Confirmed shows within 5 seconds. Plug back: Restored shows. |
-| 6 | Setup | Spot, consent, notifications, battery steps, self-test, Station offer. Total under 60 seconds for a stranger. Note each step's time. |
+| 6 | Setup | Spot, consent, notifications, battery steps, self-test. Total under 60 seconds for a stranger. Note each step's time. |
 | 7 | Battery steps | The steps match the phone maker's entry; note any name that differs (feeds `verified[]` of the OEM guide). The app shows the battery exemption as on after the user does it. |
 | 8 | Self-test | Charger removal seen, sensor armed, charger return seen. The delay is shown. Nothing from the test appears in the history. |
 | 9 | Prompt | Unplug the charger: a quiet "Power just went?" notification with the two actions. |
 | 10 | Light Alarm, offline | Turn on airplane mode. Unplug. Answer "Yes, wake me when it's back". Lock the screen. Close the app. Plug the charger in. The alarm rings, with no network, within the delay shown by the self-test. Stop it. |
 | 11 | "No" path | Unplug, answer "No, I unplugged it", plug in. No alarm. |
 | 12 | Test Light Alarm | The test button rings after 5 seconds and says "Test". |
-| 13 | Station mode | Turn it on. The small notification shows. Pull the charger: an UNPLUG is recorded. The pairing code screen opens. |
+| 13 | Power sensor | Settings, Power sensor is on. The small notification ("Outage is watching") shows. Pull the charger: an UNPLUG is recorded. |
 | 14 | Update path | Install the next release over this one. The app updates without uninstalling and keeps its install ID. (Same signing key.) |
 | 15 | Privacy | Settings, Apps, Outage, Permissions shows no microphone, contacts, phone or fine location. Delete my data works and the app returns to the first screen. |
 | 16 | Web | Open the Worker URL on an iPhone: Judge mode replay, an area page, and the install page with the same link, version and SHA-256. |

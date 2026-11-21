@@ -69,21 +69,13 @@ class IngestApi(private val base: String, private val http: HttpPost) : Transpor
     }.getOrNull()
 
     /** `POST /v1/delete` (event-ingest R12). True only on a confirmed delete. */
-    fun delete(installId: String, token: String, cells: List<String>, pairIds: List<String> = emptyList()): Boolean {
+    fun delete(installId: String, token: String, cells: List<String>): Boolean {
         // All are fixed-format identifiers; anything else is refused rather than escaped.
-        if (!INSTALL_ID.matches(installId) || cells.any { !CELL.matches(it) } || pairIds.any { !PAIR_ID.matches(it) }) return false
-        if (pairIds.size > MAX_PAIR_IDS) return false
+        if (!INSTALL_ID.matches(installId) || cells.any { !CELL.matches(it) }) return false
         val json = buildString {
             append("{\"installId\":\"").append(installId).append("\",\"cells\":[")
             cells.forEachIndexed { i, c -> if (i > 0) append(','); append('"').append(c).append('"') }
-            append("]")
-            // home-watch R7.4: a viewer lists its pairs so the Worker cleans their shards too.
-            if (pairIds.isNotEmpty()) {
-                append(",\"pairIds\":[")
-                pairIds.forEachIndexed { i, c -> if (i > 0) append(','); append('"').append(c).append('"') }
-                append("]")
-            }
-            append("}")
+            append("]}")
         }
         val (code, _) = http.post(url("/v1/delete"), json, token) ?: return false
         return code == 200
@@ -105,8 +97,6 @@ class IngestApi(private val base: String, private val http: HttpPost) : Transpor
     companion object {
         private val INSTALL_ID = Regex("^[a-z2-7]{26}$")
         private val CELL = Regex("^[0-9a-f]{15}$")
-        private val PAIR_ID = Regex("^[23456789ABCDEFGHJKMNPQRSTVWXYZ]{2}[0-9a-f]{32}$")
-        private const val MAX_PAIR_IDS = 25
     }
 }
 

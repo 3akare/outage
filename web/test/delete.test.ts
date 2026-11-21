@@ -29,6 +29,13 @@ describe('R12 delete my data', () => {
     expect(b.store.detection.size).toBe(1); // OTHER was not listed, so its row stays until retention expires it
   });
 
+  it('accepts and ignores the legacy pairIds list that older APKs still send (ADR 0055)', async () => {
+    const world = await seeded();
+    const res = await del(world, { installId: ID, cells: [CELL], pairIds: [`AB${'0'.repeat(32)}`] });
+    expect(res.status).toBe(200);
+    expect(world.areas.values().next().value?.core.armedState(ID)).toBeUndefined();
+  });
+
   it('R12.2 afterwards the token is rejected with 401, and a retried delete still completes', async () => {
     const world = await seeded();
     expect((await del(world, { installId: ID, cells: [CELL, OTHER] })).status).toBe(200);
