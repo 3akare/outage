@@ -135,3 +135,13 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Grid lines fade in from zoom 6 (web) and get thicker as you zoom in; they are thin ink lines at 40% opacity so power colours and street names stay readable.
 - Tests: `web/test/lga-geojson.test.ts` checks all 4,968 cells and every hex edge are in the served grid; `PlacesTest` checks the same for the Android grid layer data.
 - Not run: `web/visual/run.sh` (wrangler dev) and a device check. `npm run lint` already reports errors in untouched files (fcm.ts, sender.ts, store.ts, generated JSON); my files pass biome. Android `:app:testDebugUnitTest`: 223 of 224 pass; the one failure is a Robolectric test that cannot create `/root/.m2` in the sandbox.
+
+## 2026-11-21 tab bar centred, simulation runs on every place in Lagos (ADR 0060 idea, no new ADR file)
+- Dock cause: when Insights was cut (ADR 0058) the phone tab bar in `web/ui/app/design.ts` kept `repeat(4, ...)` columns for 3 buttons, so they sat in the left three quarters. It is now `repeat(3, ...)`. A test checks the column count equals the number of tabs, and `web/visual/check.mjs` measures the left and right gaps. I also measured it in headless Chromium at 390 px wide: 8 px each side.
+- Simulation: it no longer uses the nine made-up places. New `/lagos-sim.json` (`web/ui/simulate/lagos-sim.ts`) carries all 20 LGAs, 376 wards and 4,968 blocks with their corners: 485 KB raw, 87 KB gzipped, cached for a day, cached by the service worker too (cache name `sim-v8`). `web/public/js/places.js` turns it into places (pure code, unit tested).
+- Ways to pick: three drop-downs on Now (LGA, then ward, then block), search by LGA or ward name, the LGA and ward lists in the area sheet, and tapping any block on the map. "Simulate a blackout here" in the sheet picks and starts in one tap.
+- Decision: a block simulates itself and the blocks next door (about 1.1 km), a ward its own blocks, an LGA all its blocks. The outage replay and its states are unchanged. All blocks start as "no data" except the chosen place, which starts as "on".
+- Decision: the old per-area "Last 30 days" numbers are gone from the sheet, because that history was made up for the nine old places and is not made for 376 wards. `data.js` still exists.
+- Not changed: `/demo-city.json`, the Android demo city and the landing page hero map still use the old nine places (the Android code is generated from the same file). Say if you want the landing page switched too.
+- "Use my location" in the welcome box is now "Choose a place" because the old one just picked Yaba.
+- Not run: `web/visual/run.sh` (wrangler dev) and the Android tests (no shared code changed).

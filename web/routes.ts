@@ -26,6 +26,7 @@ import { json, methodNotAllowed, type Rendered } from './site/headers.ts';
 import type { Site } from './site/layout.ts';
 import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './site/status.ts';
 import { redirectToApp, renderAppCss } from './ui/app/app.ts';
+import { renderLagosSim } from './ui/simulate/lagos-sim.ts';
 import { type ReplayData, renderJudgeReplayJson, renderJudgeServiceWorker } from './ui/simulate/replay.ts';
 import { renderDemoCityJson, renderSimulatePage, SIMULATE_PATH } from './ui/simulate/simulate.ts';
 
@@ -86,6 +87,8 @@ const ROUTES: Route[] = [
   // The 20 LGA outlines, so every street map can draw and open on all of Lagos.
   { pattern: /^\/lga-outlines\.json$/, render: () => renderLgaGeoJson() },
   { pattern: /^\/lga-grid\.json$/, render: () => renderLgaGrid() },
+  // Every LGA, ward and hex the simulation can run on (ADR 0060).
+  { pattern: /^\/lagos-sim\.json$/, render: () => renderLagosSim() },
   // The old real-data web app folded into the app in the browser (ADR 0049).
   { pattern: /^\/app(?:\/(?:insights|settings))?$/, render: () => redirectToApp() },
   // The simulation page is static. It fetches the replay JSON itself and never reads the public index (W6).

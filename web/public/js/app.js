@@ -1,8 +1,10 @@
 // The Outage app in the browser (ADR 0054). Simulated data only: the city file (/demo-city.json) and the replay of one
 // blackout built by the real detection engine (/api/v1/public/judge/replay). No storage, no cookies, no tracking.
 // Three tabs as on the phone: Now (one giant answer for your spot), Map (MapLibre over OpenFreeMap, map.js) and Settings.
-import { duration, summary } from './data.js';
+// The simulation runs on any place in Lagos: all 20 local governments, 376 wards and 4,968 blocks (places.js, ADR 0060).
+import { duration } from './data.js';
 import { cellCentre, createMap } from './map.js';
+import { buildPlaces, targetBlocks } from './places.js';
 
 const $ = (id) => document.getElementById(id);
 const QA = (s, r = document) => [...r.querySelectorAll(s)];
@@ -18,7 +20,6 @@ const WORDS = {
 };
 const SHORT = { NORMAL: 'On', POSSIBLE: 'Maybe', CONFIRMED: 'Out', RESTORED: 'Back', NO_DATA: 'No data' };
 const RANK = { CONFIRMED: 4, POSSIBLE: 3, RESTORED: 2, NORMAL: 1, NO_DATA: 0 };
-const TODAY = new Date();
 const app = $('app');
 const wide = () => window.matchMedia('(min-width: 900px)').matches;
 
@@ -44,13 +45,17 @@ function notify(t, b) {
   }, 5000);
 }
 
-const city = await fetch('/demo-city.json').then((r) => r.json());
+const places = buildPlaces(await fetch('/lagos-sim.json').then((r) => r.json()));
+const city = { cells: places.cells };
 const AREA_OF = Object.fromEntries(city.cells.map((c) => [c.id, c.area]));
-const AREAS = Object.fromEntries(city.areas.map((a) => [a.slug, a]));
-const CELL = Object.fromEntries(city.cells.map((c) => [c.id, c]));
-const SPOT = city.spot;
-const SPOT_AREA = AREA_OF[SPOT];
-const SPOT_LL = cellCentre(CELL[SPOT]);
+const AREAS = places.areas;
+const CELL = places.byId;
+// The place the blackout is simulated on: { slug, cell } and its blocks, the spot first. Null until one is chosen.
+let target = null;
+let blocks = [];
+let SPOT = null;
+let SPOT_LL = null;
+const targetName = () => (target ? AREAS[target.slug].name : '');
 
 /* ---- Map ---- */
 const M = createMap($('map'), city, { center: [8, 12], zoom: 1.6 });
@@ -67,8 +72,8 @@ $('zin').onclick = () => M.map.zoomIn();
 $('zout').onclick = () => M.map.zoomOut();
 $('myloc').onclick = () => {
   if (!spotSet) {
-    toast('Choose your spot first: tap a block in Yaba.');
-    flyTo(cellCentre(CELL[AREAS[SPOT_AREA].centre]), 13);
+    toast('Choose a place first: pick one below, or tap any block on the map.');
+    M.showLagos(1500, padding());
     return;
   }
   flyTo(SPOT_LL, 14);
@@ -116,9 +121,8 @@ function spotCard() {
   if (!spotSet) {
     return (
       '<div class="status unset" id="spotcard" data-state="NO_DATA"><div class="status-top">' +
-      `<span class="glyph">${ICON.place}</span><p class="status-word">Choose your spot</p></div>` +
-      '<div class="status-body"><p class="sub">Outage watches one block for you. Only the block is saved, never your position.</p>' +
-      '<button type="button" class="btn primary lg block" id="setspot">Use Yaba as my spot</button></div></div>'
+      `<span class="glyph">${ICON.place}</span><p class="status-word">Choose a place</p></div>` +
+      '<div class="status-body"><p class="sub">Pick any local government, ward or block in Lagos below, or tap a block on the map. The blackout is simulated there.</p></div></div>'
     );
   }
   return (
@@ -128,9 +132,45 @@ function spotCard() {
     `<button type="button" class="btn primary lg block" id="go"${R && !running ? '' : ' disabled'}>${running ? 'Simulating…' : 'Simulate a blackout'}</button></div></div>`
   );
 }
+/* The picker: local government, then ward, then block. Every one of them is an option. */
+const pick3 = { lga: '', ward: '', cell: '' };
+function pickerHtml() {
+  const lgas = places.lgas.map((a) => `<option value="${a.slug}"${a.slug === pick3.lga ? ' selected' : ''}>${esc(a.name)}</option>`).join('');
+  const ws = pick3.lga ? places.wardsOf(pick3.lga) : [];
+  const wards = ws.map((a) => `<option value="${a.slug}"${a.slug === pick3.ward ? ' selected' : ''}>${esc(a.name.split(',')[0])}</option>`).join('');
+  const cs = pick3.ward ? AREAS[pick3.ward].cells : [];
+  const blocksOpt = cs.map((id, i) => `<option value="${id}"${id === pick3.cell ? ' selected' : ''}>Block ${i + 1} of ${cs.length}</option>`).join('');
+  return (
+    '<h2 class="sec">Where to simulate</h2><div class="card picker">' +
+    `<label class="field"><span>Local government (${places.lgas.length})</span><select id="plga"><option value="">Choose one</option>${lgas}</select></label>` +
+    `<label class="field"><span>Ward${pick3.lga ? ` (${ws.length})` : ''}</span><select id="pward"${pick3.lga ? '' : ' disabled'}><option value="">Whole local government</option>${wards}</select></label>` +
+    `<label class="field"><span>Block${pick3.ward ? ` (${cs.length})` : ''}</span><select id="pcell"${pick3.ward ? '' : ' disabled'}><option value="">Whole ward</option>${blocksOpt}</select></label>` +
+    `<button type="button" class="btn primary lg block" id="usepick"${pick3.lga ? '' : ' disabled'}>Use this place</button></div>`
+  );
+}
+function bindPicker() {
+  const redraw = (focus) => {
+    $('picker').innerHTML = pickerHtml();
+    bindPicker();
+    $(focus)?.focus();
+  };
+  $('plga').onchange = (e) => {
+    Object.assign(pick3, { lga: e.target.value, ward: '', cell: '' });
+    redraw('plga');
+  };
+  $('pward').onchange = (e) => {
+    Object.assign(pick3, { ward: e.target.value, cell: '' });
+    redraw('pward');
+  };
+  $('pcell').onchange = (e) => {
+    pick3.cell = e.target.value;
+    redraw('pcell');
+  };
+  $('usepick').onclick = () => setTarget(pick3.ward || pick3.lga, pick3.cell || null);
+}
 function nearbyRows() {
-  return city.areas
-    .filter((a) => a.slug !== SPOT_AREA || !spotSet)
+  return places.lgas
+    .slice()
     .sort((a, b) => RANK[worst(b.slug)] - RANK[worst(a.slug)] || a.name.localeCompare(b.name))
     .map((a) => {
       const w = worst(a.slug);
@@ -141,18 +181,18 @@ function nearbyRows() {
 let whyLines = null;
 let alarmOn = true;
 function renderNow() {
-  const a = AREAS[SPOT_AREA];
   nowBody.innerHTML =
-    `<header class="head"><div><p class="over">${spotSet ? 'Your spot' : 'Welcome'}</p><h1>${spotSet ? esc(a.name) : 'Outage'}</h1></div><span class="tag">Simulated</span></header>` +
+    `<header class="head"><div><p class="over">${spotSet ? 'Your place' : 'Welcome'}</p><h1>${spotSet ? esc(targetName()) : 'Outage'}</h1></div><span class="tag">Simulated</span></header>` +
     spotCard() +
+    `<div id="picker">${pickerHtml()}</div>` +
     `<div class="card why" id="why"${whyLines ? '' : ' hidden'}><h2>How sure is Outage?</h2><ul id="whylist">${(whyLines ?? []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>` +
     (spotSet
       ? '<h2 class="sec">Your power</h2><ul class="group tiles">' +
         `<li><button type="button" class="row" id="alarmrow" role="switch" aria-checked="${alarmOn}"><span class="tile red">${ICON.alarm}</span><span class="txt"><b>Light Alarm</b><span>Rings when power comes back</span></span><span class="switch"></span></button></li></ul>`
       : '') +
-    `<h2 class="sec">${spotSet ? 'Nearby' : 'Areas'}</h2><ul class="group" id="arealist">${nearbyRows()}</ul>` +
+    `<h2 class="sec">Local governments</h2><ul class="group" id="arealist">${nearbyRows()}</ul>` +
     `<ul class="group cards" id="maprow"><li><button type="button" class="row" data-goto="map"><span class="tile blue">${ICON.map}</span><span class="txt"><b>Open the map</b><span>Every block, coloured by power</span></span>${ICON.chevron}</button></li></ul>` +
-    '<p class="foot">Simulated city: real neighbourhoods at their real places, made-up power. Map data from OpenStreetMap contributors, tiles by OpenFreeMap.</p>';
+    '<p class="foot">Simulated power on real Lagos places: 20 local governments, 376 wards, 4,968 blocks. Map data from OpenStreetMap contributors, tiles by OpenFreeMap.</p>';
   bindNow();
 }
 function refreshNowLive() {
@@ -172,8 +212,7 @@ function bindNow() {
   for (const b of QA('[data-goto]', nowBody)) b.onclick = () => tab(b.getAttribute('data-goto'));
   const go = $('go');
   if (go) go.onclick = start;
-  const set = $('setspot');
-  if (set) set.onclick = () => land(true);
+  bindPicker();
   const al = $('alarmrow');
   if (al)
     al.onclick = () => {
@@ -194,7 +233,7 @@ function openArea(slug, fly = true) {
   renderArea(slug);
   sheet.hidden = false;
   const a = AREAS[slug];
-  if (fly) setTimeout(() => flyTo([a.lng, a.lat], 13.2, 1200), 60);
+  if (fly) setTimeout(() => flyTo([a.lng, a.lat], a.kind === 'lga' ? 11.4 : 13.2, 1200), 60);
 }
 function closeArea() {
   current = null;
@@ -206,20 +245,38 @@ function renderArea(slug) {
   const a = AREAS[slug];
   const w = worst(slug);
   const n = areaCounts(slug);
-  const s30 = summary(city, a, TODAY, 30);
+  const keep = sheet.scrollTop;
+  const kids =
+    a.kind === 'lga'
+      ? `<h2 class="sec">Wards (${places.wardsOf(slug).length})</h2><ul class="group">${places
+          .wardsOf(slug)
+          .map((x) => `<li><button type="button" class="row" data-area="${x.slug}"><span class="txt"><b>${esc(x.name.split(',')[0])}</b><span>${esc(areaLine(x.slug))}</span></span>${ICON.chevron}</button></li>`)
+          .join('')}</ul>`
+      : `<h2 class="sec">Blocks (${a.cells.length})</h2><ul class="group">${a.cells
+          .map((id, i) => `<li><button type="button" class="row" data-cell="${id}"><span class="txt"><b>Block ${i + 1}</b><span>Simulate on this block and the ones next to it</span></span><span class="val word" data-state="${state[id]}">${SHORT[state[id]]}</span></button></li>`)
+          .join('')}</ul>`;
   sheetBody.innerHTML =
     `<div class="area-head"><div><h2>${esc(a.name)}</h2><p class="sub"><span class="word" data-state="${w}">${WORDS[w]}</span>, ${esc(areaLine(slug).toLowerCase())}</p></div>` +
     `<button type="button" class="icon-btn" id="close" aria-label="Close">${ICON.close}</button></div>` +
     `<div class="counts">${['CONFIRMED', 'POSSIBLE', 'RESTORED', 'NORMAL'].map((k) => `<div data-state="${k}"><b>${n[k]}</b><span>${SHORT[k]}</span></div>`).join('')}</div>` +
-    `<div class="btns"><button type="button" class="btn" id="follow" aria-pressed="${followed[slug] ? 'true' : 'false'}">${followed[slug] ? `${ICON.check}Following` : `${ICON.notifications}Follow`}</button>` +
-    `</div>` +
-    '<h2 class="sec">Last 30 days</h2><ul class="group">' +
-    `<li><div class="row"><span class="txt"><b>Power a day</b></span><span class="val num">${s30.avgHours} h</span></div></li>` +
-    `<li><div class="row"><span class="txt"><b>Outages</b></span><span class="val num">${s30.outages}</span></div></li>` +
-    `<li><div class="row"><span class="txt"><b>Typical wait for power</b></span><span class="val num">${duration(s30.medianMinutes)}</span></div></li>` +
-    `<li><div class="row"><span class="txt"><b>Longest outage</b></span><span class="val num">${duration(s30.longestMinutes)}</span></div></li></ul>` +
+    `<div class="btns"><button type="button" class="btn primary" id="simhere"${R && !running ? '' : ' disabled'}>Simulate a blackout here</button>` +
+    `<button type="button" class="btn" id="follow" aria-pressed="${followed[slug] ? 'true' : 'false'}">${followed[slug] ? `${ICON.check}Following` : `${ICON.notifications}Follow`}</button></div>` +
+    kids +
     '<p class="foot">Colours show once 3 or more phones in a block agree.</p>';
+  sheet.scrollTop = keep;
   $('close').onclick = closeArea;
+  $('simhere').onclick = () => {
+    setTarget(slug, null, false);
+    start();
+  };
+  for (const b of QA('[data-area]', sheetBody)) b.onclick = () => openArea(b.getAttribute('data-area'));
+  for (const b of QA('[data-cell]', sheetBody))
+    b.onclick = () => {
+      const id = b.getAttribute('data-cell');
+      setTarget(slug, id, false);
+      M.select(id);
+      flyTo(cellCentre(CELL[id]), 14.5, 900);
+    };
   const follow = $('follow');
   follow.onclick = () => {
     const on = follow.getAttribute('aria-pressed') !== 'true';
@@ -231,12 +288,9 @@ function renderArea(slug) {
 }
 M.on('cell', (id) => {
   if (!id) return;
-  if (!spotSet && AREA_OF[id] === SPOT_AREA) {
-    land(true);
-    return;
-  }
-  M.select(id);
+  setTarget(AREA_OF[id], id, false);
   if (current !== AREA_OF[id]) openArea(AREA_OF[id], false);
+  else renderArea(current);
   M.select(id);
 });
 
@@ -251,10 +305,12 @@ function suggestions() {
     q.setAttribute('aria-expanded', 'false');
     return [];
   }
-  const hits = city.areas.filter((a) => a.name.toLowerCase().includes(t) || a.slug.includes(t));
+  const found = places.search(t);
+  const hits = found.slice(0, 60);
   sug.innerHTML = hits.length
-    ? hits.map((a, i) => `<li role="option" id="sg${i}" data-area="${a.slug}"><b>${esc(a.name)}</b><span class="word" data-state="${worst(a.slug)}">${SHORT[worst(a.slug)]}</span></li>`).join('')
-    : `<li class="none">No area called “${esc(q.value.trim())}” in the simulated city.</li>`;
+    ? hits.map((a, i) => `<li role="option" id="sg${i}" data-area="${a.slug}"><b>${esc(a.name)}</b><span class="word" data-state="${worst(a.slug)}">${a.kind === 'lga' ? 'LGA' : SHORT[worst(a.slug)]}</span></li>`).join('') +
+      (found.length > hits.length ? `<li class="none">${found.length - hits.length} more. Type more of the name.</li>` : '')
+    : `<li class="none">No local government or ward called “${esc(q.value.trim())}”.</li>`;
   sug.hidden = false;
   q.setAttribute('aria-expanded', 'true');
   for (const li of QA('[data-area]', sug))
@@ -271,6 +327,7 @@ function pick(slug) {
   q.blur();
   openArea(slug);
 }
+q.placeholder = 'Search 20 LGAs and 376 wards';
 q.addEventListener('input', suggestions);
 q.addEventListener('focus', suggestions);
 q.addEventListener('blur', () => setTimeout(() => (sug.hidden = true), 120));
@@ -295,7 +352,7 @@ let on = {};
 let timer = 0;
 let running = false;
 let last = 'NORMAL';
-const START = { ...state };
+let START = { ...state };
 const pct = (p) => (p < 0.0001 ? 'under 0.01%' : `${(p * 100).toFixed(p < 0.01 ? 2 : 1)}%`);
 const stOf = (f) => (WORDS[f.cells[0]?.state] ? f.cells[0].state : 'NORMAL');
 function applyEvents(f) {
@@ -307,11 +364,32 @@ function applyEvents(f) {
 const offCount = () => phones.filter((p) => !on[p.alias]).length;
 function setSpotArea(s) {
   const next = { [SPOT]: s };
-  const near = s === 'POSSIBLE' ? 2 : city.spotNeighbours.length;
-  city.spotNeighbours.forEach((id, i) => {
+  const rest = blocks.slice(1);
+  const near = s === 'POSSIBLE' ? Math.min(2, rest.length) : rest.length;
+  rest.forEach((id, i) => {
     next[id] = i < near ? s : s === 'POSSIBLE' ? 'NORMAL' : state[id];
   });
   setStates(next);
+}
+/* Choose the place the blackout runs on: a block (and the ones next door), a ward, or a whole local government. */
+function setTarget(slug, cellId = null, fly = true) {
+  clearTimeout(timer);
+  running = false;
+  target = { slug, cell: cellId };
+  blocks = targetBlocks(places, slug, cellId);
+  SPOT = blocks[0];
+  SPOT_LL = cellCentre(CELL[SPOT]);
+  spotSet = true;
+  const on = new Set(blocks);
+  START = Object.fromEntries(city.cells.map((c) => [c.id, on.has(c.id) ? 'NORMAL' : 'NO_DATA']));
+  const a = AREAS[slug];
+  Object.assign(pick3, a.kind === 'lga' ? { lga: slug, ward: '', cell: '' } : { lga: a.lga, ward: slug, cell: cellId ?? '' });
+  reset();
+  M.setSpot(SPOT_LL);
+  renderNow();
+  if (current) renderArea(current);
+  if (fly) flyTo(SPOT_LL, a.kind === 'lga' ? 11.4 : cellId ? 14.5 : 13.2, 1400);
+  toast(`Simulating in ${cellId ? 'a block in ' : ''}${a.name}.`);
 }
 function why(x) {
   whyLines = [
@@ -338,8 +416,8 @@ function show(f) {
   if (f.explanation) why(f.explanation);
   setSpotArea(s);
   if (s !== last) {
-    if (s === 'POSSIBLE') toast('Phones in Yaba stopped charging. Outage is checking.');
-    if (s === 'CONFIRMED') notify('Power cut in Yaba', 'Confirmed by phones at your spot. Outage will ring when it is back.');
+    if (s === 'POSSIBLE') toast(`Phones in ${targetName()} stopped charging. Outage is checking.`);
+    if (s === 'CONFIRMED') notify(`Power cut in ${targetName()}`, 'Confirmed by phones at your place. Outage will ring when it is back.');
     if (s === 'RESTORED' && alarmOn) ring();
   }
   last = s;
@@ -372,6 +450,10 @@ function reset() {
   M.setStates(START);
 }
 function start() {
+  if (!target) {
+    toast('Choose a place first.');
+    return;
+  }
   if (running || !R) return;
   running = true;
   clearTimeout(timer);
@@ -402,7 +484,7 @@ function ring() {
   a.className = 'alarm';
   a.setAttribute('role', 'alertdialog');
   a.setAttribute('aria-label', 'Light Alarm');
-  a.innerHTML = `<div class="alarm-card"><div class="halo">${ICON.alarm}</div><h2>Power is back</h2><p>Power returned at your spot in Yaba.</p><p class="sub">On the phone this rings like an alarm clock, even on silent.</p><button type="button" class="btn primary lg">Stop alarm</button></div>`;
+  a.innerHTML = `<div class="alarm-card"><div class="halo">${ICON.alarm}</div><h2>Power is back</h2><p>Power returned in ${esc(targetName())}.</p><p class="sub">On the phone this rings like an alarm clock, even on silent.</p><button type="button" class="btn primary lg">Stop alarm</button></div>`;
   app.appendChild(a);
   const b = a.querySelector('button');
   b.focus();
@@ -465,41 +547,24 @@ function welcome() {
     '<div class="dialog welcome" role="dialog" aria-modal="true" aria-labelledby="wt">' +
     `<div class="appicon">${ICON.logo}</div><h2 id="wt">See the power around you</h2>` +
     '<p>Outage notices when your phone stops charging because the power went out, checks with phones nearby, and tells you when the lights are back.</p>' +
-    `<div class="note">${ICON.place}<p>Your position is used once to pick your block on the map, then dropped. Only the block is saved.</p></div>` +
-    '<div class="acts"><button type="button" class="btn primary lg" id="useloc">Use my location</button><button type="button" class="btn text" id="notnow">Not now</button></div></div>';
+    `<div class="note">${ICON.place}<p>Pick any of the 20 local governments, 376 wards or 4,968 blocks of Lagos. Your real location is never read.</p></div>` +
+    '<div class="acts"><button type="button" class="btn primary lg" id="useloc">Choose a place</button><button type="button" class="btn text" id="notnow">Not now</button></div></div>';
   app.appendChild(w);
   $('useloc').focus();
   $('useloc').onclick = () => {
-    w.innerHTML =
-      '<div class="dialog perm" role="dialog" aria-modal="true" aria-labelledby="pt">' +
-      `${ICON.place}<p id="pt" class="h">Allow Outage to use this device’s approximate location?</p>` +
-      '<div class="acts"><button type="button" class="btn" data-a="1">While using the app</button><button type="button" class="btn" data-a="1">Only this time</button><button type="button" class="btn" data-a="0">Don’t allow</button></div>' +
-      '<p class="sub">Simulation: your real location is never read.</p></div>';
-    QA('button', w)[0].focus();
-    for (const b of QA('button', w))
-      b.onclick = () => {
-        w.remove();
-        land(b.getAttribute('data-a') === '1');
-      };
+    w.remove();
+    land();
+    $('plga')?.focus();
   };
   $('notnow').onclick = () => {
     w.remove();
-    land(false);
+    land();
   };
 }
-function land(loc) {
-  spotSet = loc;
+function land() {
   app.classList.remove('intro');
-  if (loc) {
-    M.setSpot(SPOT_LL);
-    renderNow();
-    flyTo(SPOT_LL, 14, 3200);
-    toast('Your spot is set to Yaba. Only the block is stored.');
-  } else {
-    M.setSpot(null);
-    renderNow();
-    M.showLagos(3000, padding());
-  }
+  renderNow();
+  M.showLagos(3000, padding());
   if (app.dataset.tab === 'settings') renderSettings();
 }
 
