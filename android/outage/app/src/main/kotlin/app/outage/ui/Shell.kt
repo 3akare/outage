@@ -43,11 +43,11 @@ import kotlinx.coroutines.launch
 
 private class Tab(val route: Route, val labelRes: Int, val iconRes: Int)
 
-// Status first (ADR 0054): Now answers "is my power on?", the map is one tap away, then Insights and Settings.
+// Status first (ADR 0054): Now answers "is my power on?", the map is one tap away, then History and Settings.
 private val tabs = listOf(
     Tab(Route.Home, R.string.nav_now, R.drawable.ic_sym_home),
     Tab(Route.Map, R.string.nav_map, R.drawable.ic_sym_map),
-    Tab(Route.Insights, R.string.nav_insights, R.drawable.ic_sym_insights),
+    Tab(Route.History, R.string.nav_history, R.drawable.ic_sym_insights),
     Tab(Route.Settings, R.string.nav_settings, R.drawable.ic_sym_settings),
 )
 
@@ -109,14 +109,14 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
                 Route.Home -> HomeScreen(
                     home, homeScroll,
                     onOpenAlarm = { shell.go(Route.Feature(FeatureRegistry.ALARM)) },
-                    onOpenSetup = { key -> shell.go(Route.Feature(key)) },
+                    onOpenSetup = { key -> if (key == FeatureRegistry.LOG) shell.tab(Route.History) else shell.go(Route.Feature(key)) },
                     onOpenMap = { shell.tab(Route.Map) },
                     band = graph.band,
                     // A spot from the old area map that is not a Lagos ward cell counts as not chosen (ADR 0056).
                     spotName = { graph.onboarding.load()?.takeUnless { SpotUpgrade.needsRepick(it, PlacesAssets.cachedPlaces()) }?.areaName },
                 )
                 Route.Map -> graph.features.get(FeatureRegistry.AREA)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_map, null)
-                Route.Insights -> graph.features.get(FeatureRegistry.INSIGHTS)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_insights, null)
+                Route.History -> graph.features.get(FeatureRegistry.LOG)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_history, null)
                 Route.Settings -> SettingsScreen(
                     versionName = BuildConfig.VERSION_NAME,
                     alias = graph.store.alias,

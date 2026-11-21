@@ -14,7 +14,7 @@ class MaterialShellTest {
         val shell = ui("Shell.kt")
         val order = Regex("""Tab\(Route\.(\w+),""").findAll(shell).map { it.groupValues[1] }.toList()
         // Status first (ADR 0054): Now (the Home route) leads, the map is one tap away.
-        assertEquals(listOf("Home", "Map", "Insights", "Settings"), order)
+        assertEquals(listOf("Home", "Map", "History", "Settings"), order)
         // The router starts on Now (Route.Home) after first run (Routes.start).
         assertEquals(Route.Home, Routes.start(onboardingNeeded = false, link = null).current)
     }

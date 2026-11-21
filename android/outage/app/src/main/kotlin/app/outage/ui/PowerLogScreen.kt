@@ -184,25 +184,28 @@ private fun MonthCard(v: PowerLogView, progress: Float, onShareText: () -> Unit)
     val score = v.score.score
     LogCard {
         CardTitle(stringResource(R.string.log_month_title, ShareCardText.monthName(v.share)))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-            Ring(
-                fraction = (score ?: 0) / 100f, progress = progress,
-                startColor = LocalStatusColors.current.map.normal, endColor = LocalStatusColors.current.map.normal, trackColor = Day.fill,
-                summary = if (score == null) stringResource(R.string.log_score_summary_none) else stringResource(R.string.log_score_summary, score),
-            ) {
-                if (score == null) {
-                    Text(stringResource(R.string.ins_early_title, Stats.scoreDayNumber(v.score.qualifyingDays)), style = DayType.headline, color = Day.ink)
-                } else {
+        if (score == null) {
+            // Under 7 days of data: no number and no ring, only plain words (ADR 0057).
+            Text(stringResource(R.string.ins_early_title, Stats.scoreDayNumber(v.score.qualifyingDays)), style = DayType.title3, color = Day.ink)
+            MeterBar(v.score.qualifyingDays.coerceAtMost(Stats.MIN_SCORE_DAYS) / Stats.MIN_SCORE_DAYS.toFloat(), Day.ink)
+            Text(stringResource(R.string.log_score_not_enough), style = DayType.subhead, color = Day.muted)
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                Ring(
+                    fraction = score / 100f, progress = progress,
+                    startColor = LocalStatusColors.current.map.normal, endColor = LocalStatusColors.current.map.normal, trackColor = Day.fill,
+                    summary = stringResource(R.string.log_score_summary, score),
+                ) {
                     Text(stringResource(R.string.log_score_value, score), style = DayType.title1Num, color = Day.ink)
                 }
+                Text(
+                    stringResource(R.string.log_score_days, v.score.qualifyingDays),
+                    style = DayType.subhead, color = Day.ink2, modifier = Modifier.weight(1f),
+                )
             }
-            Text(
-                if (score == null) stringResource(R.string.log_score_not_enough) else stringResource(R.string.log_score_days, v.score.qualifyingDays),
-                style = DayType.subhead, color = Day.ink2, modifier = Modifier.weight(1f),
-            )
+            Gap(4.dp)
+            FillButton(stringResource(R.string.log_share), onShareText, Modifier.fillMaxWidth())
         }
-        Gap(4.dp)
-        FillButton(stringResource(R.string.log_share), onShareText, Modifier.fillMaxWidth())
     }
 }
 

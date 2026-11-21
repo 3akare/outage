@@ -6,8 +6,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.outage.freezer.AndroidFreezerAlarms
 import app.outage.freezer.FreezerGuard
-import app.outage.insights.InsightsSources
-import app.outage.insights.LogStoreTimeline
 import app.outage.log.AreaOutageSync
 import app.outage.log.BandChoice
 import app.outage.log.FileOutageCache
@@ -51,7 +49,6 @@ import app.outage.telemetry.TelemetryDriver
 import app.outage.ui.DiagnosticsScreen
 import app.outage.ui.FreezerScreen
 import app.outage.ui.SensorToggleScreen
-import app.outage.ui.InsightsScreen
 import app.outage.ui.MapScreen
 import app.outage.ui.PowerLogScreen
 import app.outage.ui.PowerLogViewModel
@@ -71,7 +68,7 @@ class OutageApp : Application() {
         graph = ShellGraph(this)
         app.outage.alarm.ChannelSetup.ensure(this)
         registerPowerLog()
-        registerMapAndInsights()
+        registerMap()
         registerSensor()
         forgetHomeWatch()
         registerJudgeMode()
@@ -271,20 +268,13 @@ class OutageApp : Application() {
         return true
     }
 
-    /**
-     * Area map and Insights (spec app-map-insights). Demo sources until a Worker address is built in and the Power Log
-     * timeline exists; both screens then carry the Simulated label (R5).
-     */
-    private fun registerMapAndInsights() {
+    /** Area map (spec app-map-insights). History is the Power Log screen, registered in [registerPowerLog] (ADR 0057). */
+    private fun registerMap() {
         val cache = FileMapCache(File(filesDir, "map"))
         val followed = PrefsFollowedArea(this)
         val source = AreaMapSources.choose(BuildConfig.API_BASE, cache) { url -> withContext(Dispatchers.IO) { MapHttp.get(url) } }
         graph.features.register(FeatureRegistry.AREA, R.string.nav_home, { MapScreen(source, followed, spotCell = { graph.onboarding.load()?.cell }) }, null)
         graph.deletes.register("map_cache") { cache.clear() }
         graph.deletes.register("followed_area") { followed.clear() }
-
-        // The real Power Log once it has data; the labelled demo only in a build without a Worker address (R5, R10).
-        val insights = InsightsSources.choose(BuildConfig.API_BASE, { bandChoice.chosen() }, LogStoreTimeline(logStore))
-        graph.features.register(FeatureRegistry.INSIGHTS, R.string.nav_insights, { InsightsScreen(insights) }, null)
     }
 }

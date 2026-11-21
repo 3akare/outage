@@ -6,7 +6,8 @@ sealed interface Route {
     data object Home : Route
     /** The power map, its own tab since the status-first redesign (ADR 0054). */
     data object Map : Route
-    data object Insights : Route
+    /** The one History screen: power now, the last 30 days, outages, the Light Score (ADR 0057). */
+    data object History : Route
     data object Settings : Route
     data class Feature(val key: String) : Route
 }

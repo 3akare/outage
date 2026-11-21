@@ -1,9 +1,5 @@
 package app.outage.log
 
-import app.outage.insights.InsightsCalc
-import app.outage.insights.InsightsInput
-import app.outage.insights.Outage
-import app.outage.insights.Watched
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -12,7 +8,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-/** One Light Score rule for the Power Log and Insights: 7 qualifying days, watched time (ON or OUT) only (power-log R4). */
+/** One Light Score rule for the History screen (ADR 0057): 7 qualifying days, watched time (ON or OUT) only (power-log R4). */
 class LightScoreTest {
     private val utc = ZoneId.of("UTC")
     private val h = 3_600_000L
@@ -49,27 +45,27 @@ class LightScoreTest {
     }
 
     @Test
-    fun insights_and_power_log_give_the_same_score() {
-        val now = at(10, 12)
-        val outs = listOf(Outage(at(2, 18), at(2, 22)), Outage(at(5, 1), at(5, 3)), Outage(at(9, 9), at(9, 10)))
-        // Off the charger all of Mar 6 and 06:00 to 12:00 on Mar 8.
+    fun the_one_score_function_hides_below_seven_days_and_shows_at_seven() {
+        val day = ScoreDay(watchedHours = 10.0, powerHours = 8.0)
+        assertNull(Stats.scoreOf(emptyList()))
+        assertNull(Stats.scoreOf(List(6) { day }))
+        assertEquals(80, Stats.scoreOf(List(7) { day }))
+        assertEquals(80, Stats.scoreOf(List(20) { day }))
+        // Nothing watched at all gives no score, never a division by zero.
+        assertNull(Stats.scoreOf(List(7) { ScoreDay(0.0, 0.0) }))
+    }
+
+    @Test
+    fun the_score_is_the_share_of_watched_time_with_power_over_the_month() {
+        // Mar 1 to 9 watched all day; outages of 4 h, 2 h and 1 h; Mar 10 half watched. Watched 9 * 24 + 12 h, 7 h out.
         val log = listOf(
             on(at(1), at(2, 18)), out(at(2, 18), at(2, 22)), on(at(2, 22), at(5, 1)), out(at(5, 1), at(5, 3)),
-            on(at(5, 3), at(6)), off(at(6), at(7)), on(at(7), at(8, 6)), off(at(8, 6), at(8, 12)), on(at(8, 12), at(9, 9)),
-            out(at(9, 9), at(9, 10)), on(at(9, 10), null),
+            on(at(5, 3), at(9, 9)), out(at(9, 9), at(9, 10)), on(at(9, 10), null),
         )
-        val watched = log.filter { it.state == LogState.ON || it.state == LogState.OUT }.map { Watched(it.startMs, it.endMs) }
-        val logScore = Stats.lightScore(Stats.month(log, march, utc, now), march)
-        val ins = InsightsCalc.compute(InsightsInput(outs, at(1), false, watched), now, utc, 10, null)
-        val insScore = InsightsCalc.lightScore(ins.days, march)
-        assertEquals(logScore.qualifyingDays, insScore.qualifyingDays)
-        assertEquals(logScore.score, insScore.score)
-        // Mar 6 was not watched at all, so it has no power figure in Insights either.
-        assertNull(ins.days[5].powerHours)
-        assertEquals(9, insScore.qualifyingDays)
-        // Watched: 8 full days (Mar 1 to 9 without Mar 6) minus 6 h on Mar 8, plus 12 h today; 7 h of it out.
-        val watchedH = 8 * 24.0 - 6 + 12
-        assertEquals(Math.round(100 * (watchedH - 7) / watchedH).toInt(), insScore.score)
+        val s = Stats.lightScore(Stats.month(log, march, utc, at(10, 12)), march)
+        assertEquals(10, s.qualifyingDays)
+        val watchedH = 9 * 24.0 + 12
+        assertEquals(Math.round(100 * (watchedH - 7) / watchedH).toInt(), s.score)
     }
 
     @Test
