@@ -86,3 +86,8 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Decision: the picture share card is gone (commit 9fe8b88). ADR 0040 is marked superseded; the text share stays.
 - Decision: website download buttons are plain text, no icon.
 - Fixed ADR 0056 spec-lint: it now has an Alternatives section (GPS, hand-placed areas, wards-only grid, NIPOST API).
+
+## 2026-11-21 Lagos places proof and web status
+- Added `core/shared/test/places.test.ts`: 20 LGAs numbered alphabetically (LA-01 to LA-20), 376 wards, 4,968 land hexes each owned by one ward and one LGA, valid res-8 anchors inside their ward (35 hexless wards anchor in a neighbour), a geo ring per hex, no postcode stored. Removing a ward, moving an anchor or swapping two postcode numbers makes it fail.
+- Web ingest checks cells with `isValidRes8Cell` only, so any Lagos land hex is accepted. No change needed.
+- Still on the old nine-area catalog (another agent is converting it, not touched here): `web/areas/catalog/` (source, generated JSON, schema), `web/worker.ts` (CATALOG, LISTED_AREAS), `web/routes.ts` (sitemap and map areas), `web/api/map/map-json.ts`, `web/areas/map-svg.ts`, `web/landing/landing.ts`, and their tests in `web/test/`.
