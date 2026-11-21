@@ -106,6 +106,17 @@ class PlacesGeo(val cells: Map<String, List<LatLng>>, val lgaOutlines: Map<Strin
     /** The middle of a cell: the mean of its corners. */
     fun centre(cell: String): LatLng? = cells[cell]?.let { r -> LatLng(r.sumOf { it.lat } / r.size, r.sumOf { it.lng } / r.size) }
 
+    /**
+     * The four corners of the box that holds every LGA outline, so the map can open with all 20 local governments in view
+     * (Epe and Ibeju-Lekki reach far east, Badagry far west). Empty when there are no outlines.
+     */
+    fun lagosCorners(): List<LatLng> {
+        val pts = lgaOutlines.values.flatten().flatten()
+        if (pts.isEmpty()) return emptyList()
+        val s = pts.minOf { it.lat }; val n = pts.maxOf { it.lat }; val w = pts.minOf { it.lng }; val e = pts.maxOf { it.lng }
+        return listOf(LatLng(s, w), LatLng(s, e), LatLng(n, w), LatLng(n, e))
+    }
+
     companion object {
         fun parse(text: String): PlacesGeo {
             val root = MiniJson.parse(text) as Map<*, *>

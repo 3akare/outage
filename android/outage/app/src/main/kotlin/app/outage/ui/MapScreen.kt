@@ -168,12 +168,21 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
     val statusTop = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
     val barsHeight = statusTop + 128.dp
 
-    // Open over the city, then fly down to the spot once the street map is in, like "my location" in a maps app.
-    LaunchedEffect(spotLL) {
-        controller.flyTo(LAGOS, CITY_ZOOM)
+    // All 20 local governments in view: the box around every LGA outline, below the bars and above the tab bar.
+    val density = LocalDensity.current
+    val showCity: (Int) -> Unit = { ms ->
+        val corners = geo?.lagosCorners().orEmpty()
+        if (corners.isEmpty()) controller.flyTo(LAGOS, CITY_ZOOM, ms)
+        else with(density) { controller.fitTo(corners, ms, 24.dp.roundToPx(), barsHeight.roundToPx() + 12.dp.roundToPx(), inset.roundToPx() + 12.dp.roundToPx()) }
+    }
+    // Open over all of Lagos, then fly down to the spot once the street map is in, like "my location" in a maps app.
+    LaunchedEffect(spotLL, geo != null) {
+        showCity(0)
         controller.awaitReady()
-        delay(400)
-        controller.flyTo(spotLL ?: LAGOS, if (spotLL != null) SPOT_ZOOM else CITY_ZOOM + 0.6, 2200)
+        if (spotLL != null) {
+            delay(400)
+            controller.flyTo(spotLL, SPOT_ZOOM, 2200)
+        }
     }
     fun goToArea(area: MapArea) {
         val c = map.cell(area.centreCell) ?: return
@@ -210,7 +219,7 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
                 MapButton(R.drawable.ic_sym_add, R.string.map_zoom_in) { controller.zoomIn() }
                 MapButton(R.drawable.ic_sym_remove, R.string.map_zoom_out) { controller.zoomOut() }
                 MapButton(R.drawable.ic_sym_my_location, R.string.map_recentre, primary = true) {
-                    controller.flyTo(spotLL ?: LAGOS, if (spotLL != null) SPOT_ZOOM else CITY_ZOOM, 1200)
+                    if (spotLL != null) controller.flyTo(spotLL, SPOT_ZOOM, 1200) else showCity(1200)
                 }
             }
         }

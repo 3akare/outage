@@ -27,6 +27,7 @@ import {
 import { redirectToApp, renderAppCss } from './ui/app/app.ts';
 import { renderFavicon } from './site/brand.ts';
 import { renderDemoCityJson, renderSimulatePage, SIMULATE_PATH } from './ui/simulate/simulate.ts';
+import { renderLgaGeoJson } from './areas/lga-geojson.ts';
 import { renderLanding } from './landing/landing.ts';
 import { buildMapJson, cityFrom } from './api/map/map-json.ts';
 import { areaStatus, HISTORY_WINDOW_MS, historyForCells, statusForCells, statusJson } from './site/status.ts';
@@ -85,6 +86,8 @@ const ROUTES: Route[] = [
   { pattern: /^\/favicon\.(?:svg|ico)$/, render: () => renderFavicon() },
   // The simulated city (real Lagos areas, made-up power and history) for the app in the browser (ADR 0053).
   { pattern: /^\/demo-city\.json$/, render: () => renderDemoCityJson() },
+  // The 20 LGA outlines, so every street map can draw and open on all of Lagos.
+  { pattern: /^\/lga-outlines\.json$/, render: () => renderLgaGeoJson() },
   // The old real-data web app folded into the app in the browser (ADR 0049).
   { pattern: /^\/app(?:\/(?:insights|settings))?$/, render: () => redirectToApp() },
   // The simulation page is static. It fetches the replay JSON itself and never reads the public index (W6).

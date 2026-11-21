@@ -138,4 +138,21 @@ class PlacesTest {
         val c = geo.centre(places.ward("ikeja-opebi")!!.anchor)!!
         assertTrue(c.lat in 6.3..6.8 && c.lng in 2.7..4.4)
     }
+
+    @Test fun everyLgaHasAnOutlineAndTheOpeningViewHoldsAllTwenty() {
+        val geo = PlacesGeo.parse(File(dir, "lagos-geo.json").readText())
+        assertEquals(20, places.lgas.size)
+        val corners = geo.lagosCorners()
+        assertEquals(4, corners.size)
+        val south = corners.minOf { it.lat }; val north = corners.maxOf { it.lat }
+        val west = corners.minOf { it.lng }; val east = corners.maxOf { it.lng }
+        for (lga in places.lgas) {
+            val rings = geo.lgaOutlines[lga.slug].orEmpty()
+            assertTrue("${lga.name} has no outline", rings.isNotEmpty())
+            for (p in rings.flatten()) assertTrue("${lga.name} outside the opening view", p.lat in south..north && p.lng in west..east)
+        }
+        val epe = geo.lgaOutlines.getValue("epe").flatten()
+        assertEquals(epe.maxOf { it.lng }, east, 0.0)
+        assertTrue(west < 2.8)
+    }
 }
