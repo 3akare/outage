@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -120,7 +121,7 @@ fun FirstRunScreen(finish: () -> Boolean, save: (PlacePick) -> Boolean, onDone: 
         if (Build.VERSION.SDK_INT >= 33) askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS) else onDone(area)
     }
     if (picking) {
-        Box(Modifier.fillMaxSize().background(Day.page).statusBarsPadding()) {
+        Box(Modifier.fillMaxSize().background(Day.page).systemBarsPadding()) {
             PlacePicker(
                 onPicked = { pick -> if (save(pick)) { picking = false; next(pick.areaName) } },
                 onExit = { picking = false },

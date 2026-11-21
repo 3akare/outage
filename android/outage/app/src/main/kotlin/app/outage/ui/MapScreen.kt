@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -65,6 +66,9 @@ import app.outage.map.MapArea
 import app.outage.map.MapCell
 import app.outage.map.MapLoad
 import app.outage.map.MapResult
+import app.outage.places.Places
+import app.outage.places.PlacesGeo
+import app.outage.places.Ward
 import app.outage.shell.AgeLabel
 import app.outage.shell.PrefsFollowedArea
 import kotlinx.coroutines.Dispatchers
@@ -83,6 +87,8 @@ val LocalMapBottomInset = compositionLocalOf { 0.dp }
  * the see-through hex grid on top, a floating search capsule and state capsules at the top, round buttons at the bottom
  * right, and a sheet for a tapped area. Loads on open, then at most once a minute while visible (R4.4). Demo or Worker
  * JSON arrives through the same [AreaMapSource]. [spotCell] is the user's own cell; it wins when the source does not know it.
+ * The areas are the Lagos local governments; the search also finds the bundled wards (ADR 0056) and flies to a ward's anchor,
+ * and the LGA boundaries are drawn as a thin dashed line.
  */
 @Composable
 fun MapScreen(source: AreaMapSource, followed: PrefsFollowedArea?, spotCell: () -> String? = { null }) {
@@ -96,7 +102,7 @@ fun MapScreen(source: AreaMapSource, followed: PrefsFollowedArea?, spotCell: () 
                 val r = withContext(Dispatchers.IO) { source.load(DemoAreaMap.CITY, now) }
                 val withSpot = if (r is MapResult.Loaded && r.load.spotCellId == null) {
                     val own = withContext(Dispatchers.IO) { spotCell() }
-                    if (own != null && r.load.map.cell(own) != null) MapResult.Loaded(r.load.copy(spotCellId = own)) else r
+                    if (own != null) MapResult.Loaded(r.load.copy(spotCellId = own)) else r
                 } else r
                 if (withSpot is MapResult.Loaded || result == null) result = withSpot
                 nowMs = System.currentTimeMillis()
@@ -131,6 +137,18 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
     var query by rememberSaveable { mutableStateOf("") }
     var filter by remember { mutableStateOf(emptySet<CellState>()) }
     val controller = remember { OutageMapController() }
+    val places = rememberPlaces()
+    val geo = rememberPlacesGeo()
+    var wardSlug by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // The spot's own hexagon from the bundled outlines when the published map does not carry it, so "my spot" always shows.
+    val spotExtra = remember(map, geo, load.spotCellId) {
+        val id = load.spotCellId
+        if (id == null || map.cell(id) != null) null
+        else geo?.ring(id)?.let { MapCell(id, places?.wardOfCell(id)?.lgaSlug ?: "", CellState.NO_DATA, null, null, emptyList(), it) }
+    }
+    val lgaLines = remember(geo) { geo?.let { g -> HexGeoJson.lines(g.lgaOutlines.values.flatten()) } }
+    val outlines = remember(geo, wardSlug, lgaLines) { wardSlug?.let { geo?.wardOutlines?.get(it) }?.let(HexGeoJson::lines) ?: lgaLines }
 
     val areaStates = remember(map, states) {
         map.areas.map { a -> a to a.cellIds.mapNotNull { states[it] } }
@@ -138,10 +156,13 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
     val out = areaStates.count { (_, s) -> CellState.CONFIRMED in s }
     val possible = areaStates.count { (_, s) -> CellState.CONFIRMED !in s && CellState.POSSIBLE in s }
     val total = map.areas.size
-    val spot = load.spotCellId?.let { map.cell(it) }
+    val spot = load.spotCellId?.let { map.cell(it) } ?: spotExtra
     val spotLL = spot?.let(HexGeoJson::centre)
     // The state capsules narrow the map to the states picked, like map layers; none picked shows everything.
-    val shown = remember(map, states, filter) { if (filter.isEmpty()) map.cells else map.cells.filter { (states[it.id] ?: it.state) in filter } }
+    val shown = remember(map, states, filter, spotExtra) {
+        val base = if (filter.isEmpty()) map.cells else map.cells.filter { (states[it.id] ?: it.state) in filter }
+        if (spotExtra != null && (filter.isEmpty() || CellState.NO_DATA in filter)) base + spotExtra else base
+    }
 
     val inset = LocalMapBottomInset.current
     val statusTop = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
@@ -158,8 +179,18 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
         val c = map.cell(area.centreCell) ?: return
         listView = false
         query = ""
+        wardSlug = null
         selectedId = c.id
         controller.flyTo(HexGeoJson.centre(c), SPOT_ZOOM, 1200)
+    }
+    // A ward from the bundled places: fly to its anchor and draw its boundary. Its hexagon opens only if the map has it.
+    fun goToWard(ward: Ward) {
+        val to = geo?.centre(ward.anchor) ?: map.cell(ward.anchor)?.let(HexGeoJson::centre) ?: return
+        listView = false
+        query = ""
+        wardSlug = ward.slug
+        selectedId = ward.anchor.takeIf { map.cell(it) != null }
+        controller.flyTo(to, SPOT_ZOOM + 0.5, 1200)
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -167,6 +198,7 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
             cells = shown, states = states, spotId = load.spotCellId, selectedId = selectedId, controller = controller,
             modifier = Modifier.fillMaxSize(), top = barsHeight, bottom = inset,
             description = stringResource(R.string.map_summary, total, out, possible),
+            outlines = outlines,
             onTap = { id -> selectedId = id },
         )
         if (listView) {
@@ -188,8 +220,12 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
                 val q = query.trim()
                 if (q.isEmpty()) emptyList() else map.areas.filter { it.name.contains(q, ignoreCase = true) || it.slug.contains(q, ignoreCase = true) }
             }
+            val wardMatches = remember(query, places) {
+                val q = query.trim()
+                if (q.length < 2 || places == null) emptyList() else places.searchWards(q).take(8)
+            }
             if (query.isNotBlank()) {
-                SearchResults(matches, areaStates) { goToArea(it) }
+                SearchResults(matches, areaStates, wardMatches.map { it.ward }, places, { goToArea(it) }, { goToWard(it) })
             } else {
                 if (load.fromCache) {
                     Surface(shape = RoundedCornerShape(Tokens.cornerM), color = LocalStatusColors.current.possible.container) {
@@ -204,11 +240,12 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
         }
     }
 
-    val cell = selectedId?.let { map.cell(it) }
+    val cell = selectedId?.let { map.cell(it) ?: spotExtra?.takeIf { e -> e.id == it } }
     if (cell != null) {
         DaySheet(onDismiss = { selectedId = null }) {
             CellSheet(
                 cell, map, states[cell.id] ?: cell.state, nowMs, load, isSpot = cell.id == load.spotCellId, followedSlug = followedSlug,
+                ward = places?.wardOfCell(cell.id), places = places,
                 onFollow = { slug -> followed?.save(slug); followedSlug = slug },
             )
         }
@@ -248,12 +285,19 @@ private fun SearchBar(query: String, onQuery: (String) -> Unit, listView: Boolea
     }
 }
 
-/** Suggestions under the search capsule: matching areas with their power state. */
+/** Suggestions under the search capsule: matching areas with their power state, then matching wards (ADR 0056). */
 @Composable
-private fun SearchResults(matches: List<MapArea>, areaStates: List<Pair<MapArea, List<CellState>>>, onPick: (MapArea) -> Unit) {
+private fun SearchResults(
+    matches: List<MapArea>,
+    areaStates: List<Pair<MapArea, List<CellState>>>,
+    wards: List<Ward>,
+    places: Places?,
+    onPick: (MapArea) -> Unit,
+    onPickWard: (Ward) -> Unit,
+) {
     Surface(shape = RoundedCornerShape(Tokens.cornerL), color = Day.card, shadowElevation = 6.dp, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(vertical = 6.dp)) {
-            if (matches.isEmpty()) {
+        Column(Modifier.padding(vertical = 6.dp).heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+            if (matches.isEmpty() && wards.isEmpty()) {
                 Text(stringResource(R.string.map_search_none), Modifier.padding(16.dp), style = DayType.subhead, color = Day.muted)
             }
             matches.forEachIndexed { i, a ->
@@ -266,6 +310,19 @@ private fun SearchResults(matches: List<MapArea>, areaStates: List<Pair<MapArea,
                     StateSwatch(worst, 22.dp)
                     Text(a.name, style = DayType.body, color = Day.ink, modifier = Modifier.weight(1f))
                     Text(stateWords(worst), style = DayType.subhead, color = textColour(worst))
+                }
+            }
+            wards.forEachIndexed { i, w ->
+                if (i > 0 || matches.isNotEmpty()) RowDivider(52.dp)
+                Row(
+                    Modifier.fillMaxWidth().clickable { onPickWard(w) }.heightIn(min = 56.dp).padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    Glyph(R.drawable.ic_sym_place, Day.muted, 22.dp)
+                    Column(Modifier.weight(1f)) {
+                        Text(w.name, style = DayType.body, color = Day.ink)
+                        Text(stringResource(R.string.map_search_ward, places?.lga(w.lgaSlug)?.name ?: w.lgaSlug), style = DayType.subhead, color = Day.muted)
+                    }
                 }
             }
         }
@@ -407,15 +464,18 @@ private fun CellSheet(
     load: MapLoad,
     isSpot: Boolean,
     followedSlug: String?,
+    ward: Ward?,
+    places: Places?,
     onFollow: (String) -> Unit,
 ) {
     val area = map.area(cell.areaSlug)
-    val name = area?.name ?: cell.areaSlug
+    val name = area?.name ?: ward?.let { places?.areaName(it) } ?: cell.areaSlug
     Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 32.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Column(Modifier.weight(1f)) {
                 if (isSpot) Text(stringResource(R.string.map_your_spot), style = DayType.subhead, color = Day.muted)
                 Text(name, style = DayType.title1, color = Day.ink)
+                if (area != null && ward != null) Text(stringResource(R.string.map_sheet_ward, ward.name), style = DayType.subhead, color = Day.muted)
             }
             if (map.simulated) SimulatedChip()
         }

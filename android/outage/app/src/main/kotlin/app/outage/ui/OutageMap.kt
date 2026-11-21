@@ -92,7 +92,8 @@ class OutageMapController {
     fun fitTo(points: List<LatLng>, ms: Int = 1200, marginPx: Int = 96) {
         if (points.size < 2) { points.firstOrNull()?.let { flyTo(it, SPOT_ZOOM, ms) }; return }
         val m = map ?: run { pendingFit = points; pending = null; return }
-        m.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds(points), marginPx), ms)
+        val update = CameraUpdateFactory.newLatLngBounds(bounds(points), marginPx)
+        if (ms <= 0) m.moveCamera(update) else m.animateCamera(update, ms)
     }
 
     private fun bounds(points: List<LatLng>): LatLngBounds =

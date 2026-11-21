@@ -395,6 +395,7 @@
     <string name="place_cell_use">Use this spot</string>
     <string name="place_save_failed">Your spot could not be saved. Try again.</string>
     <string name="map_search_ward">Ward in %1$s</string>
+    <string name="map_sheet_ward">%1$s ward</string>
 
     <!-- About: licences of what ships in the app (assets/licenses) -->
     <string name="about_licences">Licences</string>

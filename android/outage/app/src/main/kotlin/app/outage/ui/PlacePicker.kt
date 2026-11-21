@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -174,8 +173,8 @@ fun PlaceSearchField(value: String, onChange: (String) -> Unit, hint: String) {
 
 @Composable
 private fun LgaStep(places: Places, onPick: (Lga) -> Unit) {
-    var query by rememberSaveable { mutableStateOf("") }
-    // The postcode stays in memory only: not saved state, not stored, not sent (privacy.md).
+    // A postcode may be typed here or below; both stay in memory only: not saved state, not stored, not sent (privacy.md).
+    var query by remember { mutableStateOf("") }
     var postcode by remember { mutableStateOf("") }
     val fromQuery = remember(query) { places.lgaForPostcode(query) }
     val results = remember(query) { if (fromQuery != null) listOf(fromQuery) else places.searchLgas(query) }
@@ -317,7 +316,7 @@ private fun CellStep(places: Places, ward: Ward, saving: Boolean, onUse: (PlaceP
                 onTap = { id -> if (id != null && id in ward.cells) chosen = id },
             )
         }
-        Column(Modifier.fillMaxWidth().navigationBarsPadding()) {
+        Column(Modifier.fillMaxWidth()) {
             Text(
                 stringResource(R.string.place_cell_size),
                 style = DayType.footnote, color = Day.muted,
