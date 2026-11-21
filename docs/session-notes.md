@@ -115,3 +115,8 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Wording: the 30-day bar hint is now "Tap a day. A dashed line means not enough data that day." The empty map now says "The map fills in as phones near you report. Connect to the internet once to load it."
 - Icons: `freezer` is removed from `core/shared/design/icons.json` and `tools/icon/lucide.mjs`, and `ic_sym_chart.xml` is generated again. The web still uses `chart`, and the icon test needs every generated file present. That test failed after the cut list commit and passes now.
 - Known flaky test: `.kiro/scripts/test/post-deploy-check.test.mjs` fails now and then on the base commit as well. It was not changed here.
+
+## 2026-11-21 CI fix: /areas map tap targets
+- The visual check failed on /areas at 390 and 1280 px because each LGA outline on the map was a link, and many LGAs are smaller than 44 px. The check was not changed.
+- Decision: the map is now a picture only. Outlines are plain paths (no links, no `<title>`) and the SVG is `aria-hidden`. The "Local governments" list under the map already links every LGA with its state, so nothing is lost for keyboard or screen reader users. Removed the map link hover style. Tests in `web/test/web-map.test.ts` updated.
+- Could not run `web/visual/run.sh` here: Chromium installed, but the sandbox blocks starting `wrangler dev`. Typecheck, lint and TS tests pass. CI will confirm.

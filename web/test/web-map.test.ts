@@ -17,12 +17,12 @@ describe('map renderer (R5, ADR 0056)', () => {
     expect(svg).toContain('class="none"');
   });
 
-  it('map_colours_lgas_by_state_and_carries_text_titles', () => {
+  it('map_colours_lgas_by_state_and_is_decorative', () => {
     const views = [cellView(MAINLAND.cells[0] as string, confirmedNow()), cellView(MAINLAND.cells[1] as string, { status: 'POSSIBLE' })];
     const svg = draw(AREAS, views);
     expect(countOf(svg, 'data-state="CONFIRMED"')).toBe(1); // the worst state in the LGA wins
-    expect(svg).toContain('<title>Lagos Mainland: Power cut</title>');
-    expect(svg).toContain('<title>Ikeja: no phones here yet</title>');
+    expect(svg).toContain('aria-hidden="true"');
+    expect(svg).not.toContain('<a ');
   });
 
   it('map_colours_an_lga_from_a_parent_scope_view_over_its_cells', () => {
@@ -60,7 +60,7 @@ describe('map renderer (R5, ADR 0056)', () => {
 
   it('map_home_page_contains_the_map_and_a_text_list_alternative', () => {
     const out = renderHomePage({ site: SITE, areas: AREAS, views: [], nowMs: NOW }).body;
-    expect(out).toContain('aria-label="Map of local governments');
+    expect(out).toContain('<svg class="map" aria-hidden="true"');
     expect(out).toContain('<h2>Local governments</h2><ul class="plain">');
   });
 });

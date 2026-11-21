@@ -7,7 +7,6 @@ import { escapeHtml } from '../site/escape.ts';
 import type { PublicScopeView } from '../api/public-index/public-view.ts';
 import { areaStatus } from '../site/status.ts';
 import type { PublicStateKey } from '../site/strings.ts';
-import { stateText } from '../site/strings.ts';
 
 const WIDTH = 1000;
 const PAD = 40;
@@ -29,8 +28,9 @@ export function areaStates(areas: readonly MapArea[], views: readonly PublicScop
 const r1 = (n: number): string => (Math.round(n * 10) / 10).toString();
 
 /**
- * Renders the map. Each LGA is a link to its page. An LGA with no public view is drawn grey and says so.
- * The `<title>` of each outline carries the area name and the state label, so the map is readable by screen readers (R5.4).
+ * Renders the map as a picture only. An LGA with no public view is drawn grey. The outlines are not links (many LGAs are
+ * smaller than the 44 px tap size) and the SVG is hidden from screen readers. The list of LGA links under it has the same
+ * names and states (R5.4).
  */
 export function renderMap(areas: readonly MapArea[], outlines: Outlines, states: AreaStates): string {
   const drawn = areas.filter((a) => (outlines[a.slug] ?? []).length > 0);
@@ -64,8 +64,7 @@ export function renderMap(areas: readonly MapArea[], outlines: Outlines, states:
     const d = (outlines[area.slug] ?? [])
       .map((poly) => `${poly.map(([lat, lng], i) => `${i === 0 ? 'M' : 'L'}${r1(px(lng))} ${r1(py(lat))}`).join('')}Z`)
       .join('');
-    const text = st ? `${area.name}: ${stateText(st).label}` : `${area.name}: no phones here yet`;
-    shapes += `<a href="/area/${escapeHtml(area.slug)}"><path d="${d}"${st ? ` data-state="${st}"` : ' class="none"'}><title>${escapeHtml(text)}</title></path></a>`;
+    shapes += `<path d="${d}"${st ? ` data-state="${st}"` : ' class="none"'}></path>`;
   }
 
   let labels = '';
@@ -75,7 +74,7 @@ export function renderMap(areas: readonly MapArea[], outlines: Outlines, states:
   }
 
   return (
-    `<svg class="map" role="group" aria-label="Map of local governments with their power status. The list below has the same information." viewBox="0 0 ${WIDTH} ${height}" xmlns="http://www.w3.org/2000/svg">` +
+    `<svg class="map" aria-hidden="true" focusable="false" viewBox="0 0 ${WIDTH} ${height}" xmlns="http://www.w3.org/2000/svg">` +
     `${shapes}${labels}</svg>`
   );
 }
