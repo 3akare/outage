@@ -125,8 +125,8 @@ try {
     if (map.w < 100 || map.h < 100) fail(where, `street map not drawn: ${JSON.stringify(map)}`);
     else ok(where, `MapLibre street map drawn ${map.w}x${map.h}, flew to the spot`);
     const bar = await pg.locator('nav.rail button').allInnerTexts();
-    if (bar.map((s) => s.trim()).join(',') !== 'Now,Map,Insights,Settings') fail(where, `bar is ${bar.join(',')}`);
-    else ok(where, 'bar is Now, Map, Insights, Settings');
+    if (bar.map((s) => s.trim()).join(',') !== 'Now,Map,Settings') fail(where, `bar is ${bar.join(',')}`);
+    else ok(where, 'bar is Now, Map, Settings');
     await pg.screenshot({ path: `${SHOTS}/simulate-map${tag}.png` });
     await pg.click('#map', { position: { x: Math.round(size.w / 2), y: Math.round((size.h - 140) / 2) } });
     await pg.waitForTimeout(1600);
@@ -157,7 +157,7 @@ try {
     }
     await pg.waitForFunction(() => document.getElementById('go').textContent === 'Simulate again', null, { timeout: 20000 });
     await pg.screenshot({ path: `${SHOTS}/simulate-restored${tag}.png` });
-    for (const tab of ['insights', 'settings']) {
+    for (const tab of ['settings']) {
       await pg.click(`nav.rail button[data-tab="${tab}"]`);
       await pg.waitForTimeout(200);
       await pg.screenshot({ path: `${SHOTS}/simulate-${tab}${tag}.png` });

@@ -4,16 +4,12 @@ import android.app.Application
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import app.outage.freezer.AndroidFreezerAlarms
-import app.outage.freezer.FreezerGuard
 import app.outage.log.AreaOutageSync
-import app.outage.log.BandChoice
 import app.outage.log.FileOutageCache
 import app.outage.log.LogRecorder
 import app.outage.log.LogStore
 import app.outage.log.LogStores
 import app.outage.log.PowerLogService
-import app.outage.log.BandConfig
 import app.outage.map.AreaMapSources
 import app.outage.map.FileMapCache
 import app.outage.map.MapHttp
@@ -46,8 +42,6 @@ import app.outage.ui.JudgeScreen
 import app.outage.ui.loadReplayAsset
 import app.outage.telemetry.PrefsTelemetryConsent
 import app.outage.telemetry.TelemetryDriver
-import app.outage.ui.DiagnosticsScreen
-import app.outage.ui.FreezerScreen
 import app.outage.ui.SensorToggleScreen
 import app.outage.ui.MapScreen
 import app.outage.ui.PowerLogScreen
@@ -81,26 +75,16 @@ class OutageApp : Application() {
     }
 
     private lateinit var logStore: LogStore
-    private lateinit var bandChoice: BandChoice
 
     /**
-     * Power Log (spec power-log): the log database, sensor events into the log, Freezer Guard, the Power Log screen.
-     * Opens nothing at start except a background plan of the Freezer Guard alarm (alarms are lost at reboot).
+     * Power Log (spec power-log): the log database, sensor events into the log, the Power Log screen.
+     * Opens nothing at start.
      */
     private fun registerPowerLog() {
-        val alarms = AndroidFreezerAlarms(this)
         logStore = LogStores.get(this)
-        val freezer = FreezerGuard(logStore, alarms)
-        val config = try {
-            BandConfig.parse(assets.open(BandConfig.ASSET_NAME).bufferedReader().use { it.readText() })
-        } catch (_: Exception) {
-            null
-        }
-        bandChoice = BandChoice(logStore, config)
-        graph.band = { bandChoice.chosen()?.let { it.id to it.promisedMinHoursPerDay } }
         val recorder = LogRecorder(
             store = logStore,
-            onChange = { runCatching { freezer.sync() } },
+            onChange = {},
             onDetectionPlug = { Sensor.get(this).onDetectionPlug() },
             queueReport = { Sensor.get(this).recordReport() != null },
         )
@@ -112,10 +96,9 @@ class OutageApp : Application() {
         }
         val outageCache = FileOutageCache(File(filesDir, "outages"))
         val sync = if (BuildConfig.API_BASE.isNotBlank()) AreaOutageSync(BuildConfig.API_BASE, logStore, outageCache) else null
-        val service = PowerLogService(logStore, recorder, bandChoice, sync, cell = { graph.onboarding.load()?.cell })
+        val service = PowerLogService(logStore, recorder, sync, cell = { graph.onboarding.load()?.cell })
 
         graph.todayPowerHours = { service.load().todayWatchedPowerHours }
-        graph.features.register("freezer_guard", R.string.settings_freezer, { FreezerScreen(freezer, alarms::canScheduleExact) }, null)
         graph.features.register(
             FeatureRegistry.LOG,
             R.string.log_title,
@@ -125,15 +108,13 @@ class OutageApp : Application() {
             },
             null,
         )
-        // Delete-my-data (power-log R1.6): the log and its settings, the Freezer Guard alarm, the cached area outages and the
-        // share picture an older version may have cached. Cancel the alarm after the clear, so a pending alert cannot find an outage to report.
+        // Delete-my-data (power-log R1.6): the log and its settings, the cached area outages and the
+        // share picture an older version may have cached.
         graph.deletes.register("power_log") {
             logStore.clear()
-            alarms.cancel()
             outageCache.clear()
             File(cacheDir, "share").deleteRecursively()
         }
-        Thread { runCatching { freezer.sync() } }.start()
     }
 
     /**
@@ -147,7 +128,6 @@ class OutageApp : Application() {
         var upload: UploadDriver? = null
         val prefs = getSharedPreferences("sensor_switch", MODE_PRIVATE)
         val consent = PrefsTelemetryConsent(this)
-        graph.features.register("diagnostics", R.string.settings_diagnostics, { DiagnosticsScreen(consent::enabled, consent::set) }, null)
         graph.deletes.register("telemetry_consent") { consent.clear() }
         graph.sensorStarter = {
             if (prefs.getBoolean("on", true)) io.execute {

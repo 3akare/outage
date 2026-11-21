@@ -23,7 +23,7 @@ enum class TapResult {
 }
 
 /**
- * Writes inputs into the log and keeps Freezer Guard in step (power-log R1, R7). The clock, the detection plug check and
+ * Writes inputs into the log (power-log R1, R7). The clock, the detection plug check and
  * the upload queue are inputs, so the rules run on the JVM. `queueReport` is called only for "Power is out" and returns
  * whether the report was queued; "Power is back" is never uploaded (R7.3).
  */
@@ -37,7 +37,7 @@ class LogRecorder(
     /** A sensor event heard in this process or read back from the Outbox. Only the log's five event types are kept. */
     fun onSensorEvent(e: SensorEvent) = onSensorEvents(listOf(e))
 
-    /** Several events at once (the Outbox read at start): one write pass, one Freezer Guard plan. */
+    /** Several events at once (the Outbox read at start): one write pass. */
     fun onSensorEvents(events: List<SensorEvent>) {
         val now = clock()
         var any = false
@@ -59,7 +59,7 @@ class LogRecorder(
         onChange()
     }
 
-    /** Call after anything else changed the log (an area sync), so Freezer Guard plans again. */
+    /** Call after anything else changed the log (an area sync). */
     fun afterExternalChange() = onChange()
 
     /** "Power is out" (R7.1, R7.4, R7.6). */

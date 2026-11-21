@@ -1,7 +1,7 @@
-// ADR 0053: the Insights sums over the simulated history (public/js/data.js), the same the phone does in Kotlin.
+// ADR 0053: the history sums over the simulated history (public/js/data.js).
 import { describe, expect, it } from 'vitest';
 import city from '@outage/shared/fixtures/demo-city.json' with { type: 'json' };
-import { calendar, dailyHours, duration, heat, median, offByDay, outagesIn, ranking, summary, weekday, weekly } from '../public/js/data.js';
+import { calendar, dailyHours, duration, median, offByDay, outagesIn, summary, weekday } from '../public/js/data.js';
 
 const C = city as unknown as Parameters<typeof summary>[0];
 const yaba = C.areas.find((a) => a.slug === 'yaba') as (typeof C.areas)[number];
@@ -32,17 +32,6 @@ describe('simulated history laid on the calendar', () => {
     expect(s.outages).toBe(cuts.length);
     expect(s.longestMinutes).toBe(Math.max(...cuts.map((c) => c.minutes)));
     expect(s.medianMinutes).toBe(Math.round(median(cuts.map((c) => c.minutes))));
-    expect(s.promise).toBe(20);
-  });
-
-  it('heatmap shares are 0 to 1; ranking covers every area, most power first', () => {
-    const g = heat(C, yaba, TODAY, 28);
-    expect(g).toHaveLength(7);
-    expect(g.flat().every((v) => v >= 0 && v <= 1)).toBe(true);
-    const r = ranking(C, TODAY, 30);
-    expect(r).toHaveLength(C.areas.length);
-    for (let i = 1; i < r.length; i++) expect(r[i - 1].avgHours).toBeGreaterThanOrEqual(r[i].avgHours);
-    expect(weekly(C, yaba, TODAY, 5)).toHaveLength(5);
   });
 
   it('formats durations', () => {

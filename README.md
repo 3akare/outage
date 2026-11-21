@@ -16,7 +16,7 @@ web/          One Cloudflare Worker. The phone and the browser both talk to it.
   api/        The API and the Durable Objects (ingest, areas, alerts, telemetry)
   landing/    Landing page at /
   ui/app/       The stylesheet every page shares
-  public/js/    The street map (MapLibre over OpenFreeMap), Insights maths and charts, the app in the browser
+  public/js/    The street map (MapLibre over OpenFreeMap), history maths, the app in the browser
   ui/simulate/  The Android app in your browser at /app/simulate, on a simulated city
   areas/      Public pages such as "Is there power in Yaba right now?"
   site/       Helpers every page shares

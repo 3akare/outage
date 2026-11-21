@@ -1,6 +1,6 @@
 # ADR 0057: One History screen
 
-Status: ACCEPTED (2026-11-21). Supersedes ADR 0026 where it says the Power Log merged into Insights. Amends ADR 0054 (the third tab is History, not Insights).
+Status: ACCEPTED (2026-11-21). Supersedes ADR 0026 where it says the Power Log merged into Insights. Amends ADR 0054 (the third tab is History, not Insights). The band picker named below was cut by ADR 0058.
 
 ## Context
 The app had two screens that both showed the person's own power: Insights (a tab) and the Power Log (a pushed screen). They had two ways to work out the Light Score, and they could disagree. Commit 7093f27 made them use one rule, but two screens were still left.

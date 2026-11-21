@@ -1,6 +1,6 @@
-// The Outage app in the browser, for people without an Android phone (ADR 0049, ADR 0054). The same four tabs as the
-// phone: Now (one giant answer for your spot), Map (a street map with see-through hexagons coloured by power),
-// Insights with charts, and Settings. Everything on it is simulated and says so. The
+// The Outage app in the browser, for people without an Android phone (ADR 0049, ADR 0054). The same three tabs as the
+// phone: Now (one giant answer for your spot), Map (a street map with see-through hexagons coloured by power)
+// and Settings. Everything on it is simulated and says so. The
 // blackout is the replay built by tools/sim from the real detection engine; the page never reads the public index (W6).
 // This file renders the shell. The behaviour is in public/js/app.js, served as a static file with MapLibre.
 import city from '@outage/shared/fixtures/demo-city.json' with { type: 'json' };
@@ -31,7 +31,6 @@ export const STATE_WORDS = {
 const NAV: { id: string; label: string; icon: IconName }[] = [
   { id: 'now', label: 'Now', icon: 'home' },
   { id: 'map', label: 'Map', icon: 'map' },
-  { id: 'insights', label: 'Insights', icon: 'insights' },
   { id: 'settings', label: 'Settings', icon: 'settings' },
 ];
 export const NAV_ORDER = NAV.map((n) => n.label);
@@ -48,19 +47,19 @@ export const LEGEND = [
 export const renderDemoCityJson = (): Rendered => json(city, TTL_SECONDS);
 
 // Icons the script builds rows with, inlined so it loads nothing more.
-const SCRIPT_ICONS: IconName[] = ['chevron', 'place', 'alarm', 'notifications', 'phone', 'freezer', 'bolt', 'battery', 'language', 'info', 'delete', 'chart', 'shield', 'arrow', 'close', 'check', 'groups', 'map', 'play', 'plug', 'clock'];
+const SCRIPT_ICONS: IconName[] = ['chevron', 'place', 'alarm', 'notifications', 'phone', 'bolt', 'battery', 'language', 'info', 'delete', 'chart', 'shield', 'arrow', 'close', 'check', 'groups', 'map', 'play', 'plug', 'clock'];
 
 export const legendHtml = (): string =>
   `<div class="maplegend" aria-hidden="true">${LEGEND.map((l) => `<span><i class="sw" data-state="${l.state}"></i>${l.label}</span>`).join('')}</div>`;
 
-/** The app: the Now screen, the map, Insights and Settings. Reads without scripts as a list of areas. */
+/** The app: the Now screen, the map and Settings. Reads without scripts as a list of areas. */
 export function appScreen(): string {
   const rail = `<nav class="rail" aria-label="App"><span class="rail-brand">${LOGO_SVG}Outage</span>${NAV.map(
     (n) =>
       `<button type="button" data-tab="${n.id}"${n.id === 'now' ? ' aria-current="page"' : ''}>${icon(n.icon)}<span>${n.label}</span></button>`,
   ).join('')}</nav>`;
   const areas = city.areas
-    .map((a) => `<li><button type="button" class="row" data-area="${a.slug}"><span class="txt"><b>${e(a.name)}</b><span>Band ${a.band}, ${city.bands[a.band as keyof typeof city.bands]} hours promised</span></span>${icon('chevron')}</button></li>`)
+    .map((a) => `<li><button type="button" class="row" data-area="${a.slug}"><span class="txt"><b>${e(a.name)}</b><span>Simulated area</span></span>${icon('chevron')}</button></li>`)
     .join('');
   const now =
     '<section class="screen" id="now" data-page="now" aria-label="Now"><div class="screen-in" id="nowbody">' +
@@ -90,11 +89,9 @@ export function appScreen(): string {
     controls +
     sheet +
     '</div>' +
-    '<section class="screen" id="insights" data-page="insights" aria-label="Insights" hidden></section>' +
     '<section class="screen" id="settings" data-page="settings" aria-label="Settings" hidden></section>' +
     '<div class="toast" id="toast" role="status" aria-live="polite"></div>' +
     `<div class="notif" id="notif" role="alert" aria-hidden="true"><span class="notif-ico">${LOGO_SVG}</span><div><b id="notift"></b><span id="notifb"></span></div></div>` +
-    '<div class="tip" id="tip" role="tooltip" hidden></div>' +
     '</div>'
   );
 }
@@ -113,7 +110,7 @@ export function renderSimulatePage(site: Site): Rendered {
     '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
     `<title>${SIM_BANNER_TEXT}: the Outage app in your browser</title>` +
-    '<meta name="description" content="Try the Outage Android app in your browser: a street map coloured by power, a simulated blackout, and charts of when the power goes. Not live data.">' +
+    '<meta name="description" content="Try the Outage Android app in your browser: a street map coloured by power, and a simulated blackout. Not live data.">' +
     '<meta name="theme-color" content="#1d1d1f">' +
     `<link rel="canonical" href="${e(site.origin + SIMULATE_PATH)}">${FAVICON_LINK}` +
     `<link rel="modulepreload" href="/vendor/maplibre-gl/maplibre-gl.mjs"><link rel="stylesheet" href="${MAPLIBRE_CSS_PATH}">` +

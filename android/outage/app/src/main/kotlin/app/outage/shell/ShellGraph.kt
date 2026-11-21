@@ -38,9 +38,6 @@ class ShellGraph(context: Context) {
     /** Set by the spot feature: saves the cell and "Ward, LGA" picked in first run (ADR 0056). False when it was not saved. */
     var saveSpot: (PlacePick) -> Boolean = { false }
 
-    /** Set by the Power Log: the chosen tariff band id (A to E) and its promised hours a day, for the Home card. */
-    var band: () -> Pair<String, Int>? = { null }
-
     val sources: StatusSources = object : StatusSources by NoStatusSources {
         override fun areaStatus(): AreaStatus? = areaCache.read()
         override fun sensorState(): SensorState? = this@ShellGraph.sensorState()

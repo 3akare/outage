@@ -111,7 +111,6 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
                     onOpenAlarm = { shell.go(Route.Feature(FeatureRegistry.ALARM)) },
                     onOpenSetup = { key -> if (key == FeatureRegistry.LOG) shell.tab(Route.History) else shell.go(Route.Feature(key)) },
                     onOpenMap = { shell.tab(Route.Map) },
-                    band = graph.band,
                     // A spot from the old area map that is not a Lagos ward cell counts as not chosen (ADR 0056).
                     spotName = { graph.onboarding.load()?.takeUnless { SpotUpgrade.needsRepick(it, PlacesAssets.cachedPlaces()) }?.areaName },
                 )

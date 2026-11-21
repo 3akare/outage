@@ -1,6 +1,8 @@
 # ADR 0020: Tariff band config and its verification status
 
-Status: ACCEPTED (2026-11-15, under the blanket approval).
+Status: SUPERSEDED by ADR 0058 (2026-11-21): the tariff band and promise check are cut.
+
+Earlier status: ACCEPTED (2026-11-15, under the blanket approval).
 
 ## Context
 Power Log compares a user's logged hours of power with their NERC tariff band's promised minimum (power-log R5). The band list must live in a config file with sources and a checked date (R5.5), and the claims rules forbid inventing a number or implying compensation. The service-based bands are widely reported as A 20 h, B 16 h, C 12 h, D 8 h, E 4 h minimum per day, but NERC's authoritative MYTO orders are published as PDFs, which the build tooling (web_fetch) cannot read as text. Only NERC's HTML-indexed notices could be read.

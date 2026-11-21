@@ -43,7 +43,6 @@ fun HomeScreen(
     onOpenAlarm: () -> Unit,
     onOpenSetup: (String) -> Unit,
     onOpenMap: () -> Unit,
-    band: () -> Pair<String, Int>?,
     spotName: () -> String? = { null },
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
@@ -63,7 +62,7 @@ fun HomeScreen(
     val name = remember(state) { spotName() }
     DayPage(scroll = scroll) {
         LargeTitle(name ?: stringResource(R.string.nav_now), supporting = stringResource(if (name != null) R.string.now_your_spot else R.string.now_no_spot), top = 20.dp)
-        HomeContent(state, onOpenAlarm, onOpenSetup, onOpenMap, band(), hasSpot = name != null)
+        HomeContent(state, onOpenAlarm, onOpenSetup, onOpenMap, hasSpot = name != null)
     }
 }
 
@@ -73,7 +72,6 @@ fun HomeContent(
     onOpenAlarm: () -> Unit,
     onOpenSetup: (String) -> Unit,
     onOpenMap: () -> Unit,
-    band: Pair<String, Int>?,
     hasSpot: Boolean = state.area != null,
 ) {
     StatusHero(state)
@@ -104,16 +102,13 @@ fun HomeContent(
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(stringResource(R.string.power_today), style = DayType.body, color = Day.ink, modifier = Modifier.weight(1f))
                     Text(
-                        if (band != null) stringResource(R.string.now_hours_promise, hours, band.second) else stringResource(R.string.now_hours_value, hours),
+                        stringResource(R.string.now_hours_value, hours),
                         style = DayType.subhead, color = Day.muted,
                     )
                 }
-                val promise = band?.second
-                val met = promise == null || hours >= promise
                 MeterBar(
                     fraction = (hours / 24.0).toFloat(),
-                    color = if (met) Tokens.Map.normal else Tokens.Map.possible,
-                    marker = promise?.let { it / 24f },
+                    color = Tokens.Map.normal,
                 )
             }
             RowDivider(16.dp)
@@ -133,12 +128,6 @@ fun HomeContent(
                 chevron = true,
                 onClick = onOpenAlarm,
             )
-        }
-        band?.let { (b, _) ->
-            RowDivider(TileInset)
-            DayRow(stringResource(R.string.band_picker_title), tile = R.drawable.ic_sym_receipt to Tokens.Colors.tileOrange, value = stringResource(R.string.band_name, b), chevron = true) {
-                onOpenSetup(FeatureRegistry.LOG)
-            }
         }
     }
 

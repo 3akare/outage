@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.outage.log.Band
 import app.outage.log.PowerLogService
 import app.outage.log.PowerLogView
 import app.outage.log.TapResult
@@ -18,8 +17,6 @@ import kotlinx.coroutines.withContext
 class PowerLogViewModel(private val service: PowerLogService) : ViewModel() {
     var view: PowerLogView? by mutableStateOf(null)
         private set
-    var band: Band? by mutableStateOf(null)
-        private set
 
     /** The last tap result, shown once under the buttons. */
     var message: TapResult? by mutableStateOf(null)
@@ -28,8 +25,6 @@ class PowerLogViewModel(private val service: PowerLogService) : ViewModel() {
     /** Whole minutes until "Power is out" works again, 0 when it works now (R7.6). */
     var waitMinutes: Int by mutableIntStateOf(0)
         private set
-
-    val bands: List<Band> get() = service.bands.bands
 
     /** Shows what is stored at once, then syncs the area outages and shows the result (R9.1). */
     fun refresh() {
@@ -49,13 +44,6 @@ class PowerLogViewModel(private val service: PowerLogService) : ViewModel() {
 
     fun powerBack() = tap { service.powerBack() }
 
-    fun chooseBand(id: String?) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) { service.bands.choose(id) }
-            reload()
-        }
-    }
-
     private fun tap(action: () -> TapResult) {
         viewModelScope.launch {
             message = withContext(Dispatchers.IO) { action() }
@@ -64,9 +52,8 @@ class PowerLogViewModel(private val service: PowerLogService) : ViewModel() {
     }
 
     private suspend fun reload() {
-        val (v, b, wait) = withContext(Dispatchers.IO) { Triple(service.load(), service.bands.chosen(), service.reportWaitMs()) }
+        val (v, wait) = withContext(Dispatchers.IO) { service.load() to service.reportWaitMs() }
         view = v
-        band = b
         waitMinutes = ((wait + 59_999) / 60_000).toInt()
     }
 }

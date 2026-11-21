@@ -52,7 +52,6 @@
     <string name="settings_battery">Battery setup</string>
     <string name="settings_followed_area">Your spot and alerts</string>
     <string name="settings_language">Language</string>
-    <string name="settings_diagnostics">Share anonymous diagnostics</string>
     <string name="settings_delete">Delete my data</string>
     <string name="settings_about">About and privacy</string>
     <string name="settings_version">Version %1$s</string>
@@ -87,7 +86,6 @@
     <string name="settings_group_power">Your power</string>
     <string name="settings_group_phone">This phone</string>
     <string name="settings_group_about">About</string>
-    <string name="home_band_chip">Band %1$s · %2$d h promised</string>
     <string name="setup_battery_title">Keep Outage running</string>
     <string name="setup_battery_body">Some phones stop apps in the background. Tap to see the steps for your phone.</string>
     <string name="setup_area_title">Choose your area</string>
@@ -135,17 +133,6 @@
     <string name="push_restored_body">Phones are charging again.</string>
     <string name="push_restored_body_wide">Power looks back across a wide area.</string>
 
-    <!-- Power Log: supply promise / tariff band (power-log R5, task 3). Always an estimate; never refund, compensation or claim. -->
-    <string name="band_picker_title">Your supply band</string>
-    <string name="band_picker_hint">Pick your NERC band to compare your logged power with its promise.</string>
-    <string name="band_none">Not set</string>
-    <string name="band_name">Band %1$s</string>
-    <string name="band_promise">Band %1$s is promised at least %2$d hours of power a day.</string>
-    <string name="band_promise_unconfirmed">We have not confirmed this band\'s promised hours with NERC yet.</string>
-    <string name="promise_estimate_note">An estimate from this phone\'s own record, not an official measurement.</string>
-    <string name="promise_days_below">%1$d days below the promise this month.</string>
-    <string name="promise_avg_below">Your average is %1$.1f hours below the promise.</string>
-    <string name="promise_met">You are at or above the promise.</string>
     <!-- Area map (app-map-insights R1 to R6) -->
     <string name="map_title">Power map</string>
     <string name="map_search_hint">Search areas and wards</string>
@@ -203,7 +190,6 @@
     <string name="ins_dur_m">%1$d min</string>
     <string name="ins_ongoing">Still out</string>
     <string name="ins_bars_title">Hours of power per day</string>
-    <string name="ins_bars_promise">%1$d h promise</string>
     <string name="ins_bars_hint">Tap a day. Dashed stubs are days without enough data.</string>
     <string name="ins_day_value">%1$s: %2$.1f h of power, %3$d outages</string>
     <string name="ins_day_no_data">%1$s: not enough data</string>
@@ -227,8 +213,6 @@
     <string name="ins_ring_hint">This month: the share of watched time with power. Needs 7 days with enough data.</string>
     <string name="ins_summary_ring">Light Score %1$d percent</string>
     <string name="ins_ring_none">Light Score not available yet</string>
-    <string name="ins_promise_title">Supply promise check</string>
-    <string name="ins_promise_estimate">Estimate</string>
     <string name="ins_early_title">Day %1$d of 7</string>
     <string name="ins_early_body">Patterns appear after 7 days.</string>
     <string name="ins_empty_title">Your power log starts here</string>
@@ -279,9 +263,6 @@
     <string name="log_share_text">My Light Score for %1$s: %2$s. %3$.1f hours of power and %4$d outages, an estimate from %5$d days.</string>
     <string name="log_share_score_none">not ready yet (it needs 7 days)</string>
     <string name="log_share_text_link">Get Outage: %1$s</string>
-    <!-- Anonymous diagnostics (field-telemetry R1) -->
-    <string name="diag_switch">Share anonymous diagnostics</string>
-    <string name="diag_body">Once a day Outage sends how well it watched your power: charging hours, watching hours, gaps and how late the phone woke the app. It has no location, name, phone number or phone model, and you can turn it off at any time. Delete my data removes it.</string>
     <!-- Screens for the alarm, follow, spot, permissions and self-test (alerts-and-light-alarm task 8, onboarding tasks 5 to 7) -->
     <!-- Light Alarm settings and Alarm check -->
     <string name="alarm_screen_intro">Light Alarm rings when power comes back at your spot, even at night. It works without internet.</string>
@@ -453,36 +434,6 @@
     <string name="demo_how_2">One phone unplugged is normal. Many phones within a few seconds is not chance.</string>
     <string name="demo_how_3">Outage counts the phones, compares with the usual rate and shows the math. Here the math was done by the real engine when the app was built.</string>
     <string name="demo_replay_error">The replay file could not be read, so Judge mode cannot run.</string>
-    <!-- Freezer Guard (power-log R6, copy.md: plain words) -->
-    <string name="settings_freezer">Freezer Guard</string>
-    <string name="freezer_title">Freezer Guard</string>
-    <string name="freezer_intro">Get an alert when the power has been off for too long, so you can check your freezer.</string>
-    <string name="freezer_on">Freezer Guard</string>
-    <string name="freezer_limit_label">Alert after</string>
-    <string name="freezer_hours_value">%1$d h</string>
-    <string name="freezer_quiet_start_label">Starts</string>
-    <string name="freezer_quiet_end_label">Ends</string>
-    <string name="freezer_limit_less">One hour less</string>
-    <string name="freezer_limit_more">One hour more</string>
-    <string name="freezer_late_note">This can arrive later than your limit when the phone is saving battery.</string>
-    <string name="freezer_reboot_note">If the phone restarts, Freezer Guard starts counting again when you open Outage.</string>
-    <string name="freezer_quiet_window">Quiet hours: %1$s to %2$s</string>
-    <string name="freezer_quiet_start_less">Quiet hours start one hour earlier</string>
-    <string name="freezer_quiet_start_more">Quiet hours start one hour later</string>
-    <string name="freezer_quiet_end_less">Quiet hours end one hour earlier</string>
-    <string name="freezer_quiet_end_more">Quiet hours end one hour later</string>
-    <string name="freezer_quiet_sound">Freezer Guard may sound in quiet hours</string>
-    <string name="freezer_exact">Alert on time</string>
-    <string name="freezer_exact_body">Uses an exact alarm, so the alert comes at your limit and not later.</string>
-    <string name="freezer_exact_allow">Allow alarms and reminders</string>
-    <string name="freezer_notifications_off">Notifications are off for Outage, so the alert cannot show. Turn them on in phone settings.</string>
-    <string name="freezer_channel">Freezer Guard</string>
-    <string name="freezer_channel_quiet">Freezer Guard (quiet hours)</string>
-    <string name="freezer_alert_title">Check your freezer</string>
-    <plurals name="freezer_alert_body">
-        <item quantity="one">Power has been off for %1$d hour. Check your freezer.</item>
-        <item quantity="other">Power has been off for %1$d hours. Check your freezer.</item>
-    </plurals>
     <!-- Outage Daylight (ADR 0054): the Now tab, status first. -->
     <string name="nav_now">Now</string>
     <string name="nav_map">Map</string>
@@ -507,7 +458,6 @@
     <string name="now_step_back">Back</string>
     <string name="now_group_today">Today</string>
     <string name="now_group_more">More</string>
-    <string name="now_hours_promise">%1$.1f h of %2$d h promised</string>
     <string name="now_hours_value">%1$.1f h of power</string>
     <string name="now_see_map">See the map</string>
     <string name="now_see_map_body">Every area, block by block</string>

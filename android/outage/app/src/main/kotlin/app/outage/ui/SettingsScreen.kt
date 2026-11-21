@@ -29,7 +29,6 @@ object SettingsItems {
             listOf(
                 Item("followed_area", R.string.settings_followed_area, R.drawable.ic_sym_place, Tokens.Colors.tileBlue),
                 Item("alarm_settings", R.string.settings_alarm, R.drawable.ic_sym_alarm, Tokens.Colors.tileRed),
-                Item("freezer_guard", R.string.settings_freezer, R.drawable.ic_sym_freezer, Tokens.Colors.tileTeal),
             ),
         ),
         Group(
@@ -39,7 +38,6 @@ object SettingsItems {
                 Item("battery", R.string.settings_battery, R.drawable.ic_sym_battery, Tokens.Colors.tileGreen),
                 Item("notifications", R.string.settings_notifications, R.drawable.ic_sym_notifications, Tokens.Colors.tileRed),
                 Item("self_test", R.string.settings_self_test, R.drawable.ic_sym_check, Tokens.Colors.tileIndigo),
-                Item("diagnostics", R.string.settings_diagnostics, R.drawable.ic_sym_chart, Tokens.Colors.tileIndigo),
                 Item("language", R.string.settings_language, R.drawable.ic_sym_language, Tokens.Colors.tileBlue),
             ),
         ),

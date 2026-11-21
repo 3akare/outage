@@ -10,7 +10,7 @@ class MaterialShellTest {
     private fun ui(name: String) = Res.kotlinDir("ui/$name").readText()
 
     @Test
-    fun MD3_dock_is_now_map_insights_settings_and_the_app_opens_on_now() {
+    fun MD3_dock_is_now_map_history_settings_and_the_app_opens_on_now() {
         val shell = ui("Shell.kt")
         val order = Regex("""Tab\(Route\.(\w+),""").findAll(shell).map { it.groupValues[1] }.toList()
         // Status first (ADR 0054): Now (the Home route) leads, the map is one tap away.

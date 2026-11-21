@@ -145,7 +145,7 @@ class MemoryLogStore : LogStore {
     }
 }
 
-/** One [SqliteLogStore] per process, shared by the UI, the sensor listener and the Freezer Guard receiver. */
+/** One [SqliteLogStore] per process, shared by the UI, the sensor listener and the log recorder. */
 object LogStores {
     @Volatile private var instance: LogStore? = null
 

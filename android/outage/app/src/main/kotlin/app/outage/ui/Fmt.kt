@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 
-/** Time and duration text for the Area and Insights screens. Uses the phone's zone and locale; words come from string resources. */
+/** Time and duration text for the Area and History screens. Uses the phone's zone and locale; words come from string resources. */
 object Fmt {
     private fun zone(): ZoneId = ZoneId.systemDefault()
 

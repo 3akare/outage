@@ -32,7 +32,6 @@ export function stores(site: Site): Store[] {
 const FEATURES: [IconName, string, string, string][] = [
   ['alarm', 'red', 'Light Alarm', 'Rings when power returns at your spot, even at 3 a.m. Works offline.'],
   ['chart', 'green', 'Power Log', 'Your hours of power each day, kept on your phone. No account, no server needed.'],
-  ['freezer', 'teal', 'Freezer Guard', 'Warns you when the power has been off longer than your food can wait.'],
 ];
 
 const STEPS: [string, string, string, string][] = [
@@ -75,10 +74,8 @@ export function renderLanding(site: Site): Rendered {
   const features =
     '<section class="section" aria-labelledby="feat-h"><div class="container">' +
     '<h2 id="feat-h">Useful from the first phone.</h2>' +
-    '<ul class="bento"><li class="wide"><span class="tile indigo">' +
-    icon('insights') +
-    '</span><h3>Insights</h3><p id="herostat">Hours of power each day in Yaba against what its tariff band promises. Simulated.</p><div class="plot" id="herochart"></div></li>' +
-    FEATURES.map(([i, c, h, p]) => `<li class="third"><span class="tile ${c}">${icon(i)}</span><h3>${h}</h3><p>${p}</p></li>`).join('') +
+    '<ul class="bento">' +
+    FEATURES.map(([i, c, h, p]) => `<li><span class="tile ${c}">${icon(i)}</span><h3>${h}</h3><p>${p}</p></li>`).join('') +
     '</ul></div></section>';
   const privacy =
     '<section class="section" aria-labelledby="priv-h"><div class="container">' +
@@ -107,6 +104,6 @@ export function renderLanding(site: Site): Rendered {
     '<meta name="theme-color" content="#f5f5f7">' +
     `<link rel="canonical" href="${e(site.origin)}/">${FAVICON_LINK}` +
     `<link rel="stylesheet" href="${MAPLIBRE_CSS_PATH}"><link rel="stylesheet" href="/app.css"></head><body>${nav}<main>${hero}${how}${features}${privacy}${get}</main>${foot}` +
-    `<div class="tip" id="tip" role="tooltip" hidden></div><script type="module" src="${LANDING_JS_PATH}"></script></body></html>`;
+    `<script type="module" src="${LANDING_JS_PATH}"></script></body></html>`;
   return html(page, 3600, { map: true });
 }

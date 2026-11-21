@@ -46,7 +46,7 @@ fun SubScreenHeader(titleRes: Int, onBack: () -> Unit) {
     }
 }
 
-/** The large title of a top-level destination (Insights, Settings). */
+/** The large title of a top-level destination (History, Settings). */
 @Composable
 fun DestinationTitle(titleRes: Int, trailing: @Composable () -> Unit = {}) {
     LargeTitle(stringResource(titleRes), top = 20.dp) { trailing() }

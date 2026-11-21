@@ -126,12 +126,12 @@ Tests in `android/outage/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt
 | R2.2, R2.4 | PL3 | `PL3_no_outage_without_evidence` | 4 | code done; test not written (same) |
 | R3 | PL4 | `PL4_daily_stats` | 6 | code done (`Stats`); test not written (same) |
 | R4 | PL5 | `PL5_light_score` | 6 | code done; test not written (same) |
-| R5 | PL6 | `PL6_promise_copy` | 6 | code done (`Stats.promiseText` checks its own words); test not written (same) |
-| R5.5 | - (band config + copy) | `BandConfigTest` (`android/outage/app/src/test/kotlin/app/outage/log/BandConfigTest.kt`) | 3 | test written |
-| R6 | PL7 | `PL7_freezer_guard_lifecycle` | 7 | code done (`FreezerRules`, `FreezerGuard`, ADR 0038); test not written (same); device checks in `docs/probe-checklist.md` |
+| R5 | PL6 | `PL6_promise_copy` | 6 | cut by ADR 0058 |
+| R5.5 | - (band config + copy) | `BandConfigTest` (`android/outage/app/src/test/kotlin/app/outage/log/BandConfigTest.kt`) | 3 | cut by ADR 0058 |
+| R6 | PL7 | `PL7_freezer_guard_lifecycle` | 7 | cut by ADR 0058 |
 | R1.3, R8.2 | PL8 | `PL8_no_wall_clock_upload` | 8 | code done: the log database is never uploaded and `REPORT` carries `kind` only (`SensorOutbox.toPending`); test not written (same) |
 | R8 | PL9 | `PL9_share_card_privacy` | 8, 9 | code done: `ShareFacts` has no location, area, install ID or name; text in `ShareCardText`, the picture card was removed in 9fe8b88 (ADR 0040 superseded); test not written (same) |
-| R1.6 | - | delete-my-data clears the log, settings and Freezer Guard alarm | 10 | done: `OutageApp.registerPowerLog` registers `power_log`; no dedicated test (same) |
+| R1.6 | - | delete-my-data clears the log and its settings | 10 | done: `OutageApp.registerPowerLog` registers `power_log`; no dedicated test (same) |
 | R7, R10 | - | Power Log screen, taps, rate limit | 8 | done: `PowerLogScreen`, `LogRecorder` (ADR 0039); no dedicated test (same) |
 
 ## home-watch
@@ -294,7 +294,7 @@ Scanned 15 test file(s) under core/detection. A property counts when a test titl
 | R1, R2, R7.2 | PL1, PL2, PL3 | TimelineBuilder | power-log 4 | code done; tests PL1 to PL3 not written |
 | R9 | - | public outage endpoint and phone sync | power-log 5 | done: Worker tests in web-routes.test.ts (empty when not public); phone sync not tested |
 | R3, R4, R5 | PL4, PL5, PL6 | Stats | power-log 6 | code done; tests PL4 to PL6 not written |
-| R6 | PL7 | Freezer Guard | power-log 7 | code done, ADR 0038; test PL7 not written |
+| R6 | PL7 | Freezer Guard | power-log 7 | cut by ADR 0058 |
 | R7, R10 | - | Power Log screen and sensor wiring | power-log 8 | code done, ADR 0039; tests PL8, PL9 not written |
 | R8 | PL9 | image share card | power-log 9 | removed in 9fe8b88, ADR 0040 superseded |
 | R1.6 | - | delete-my-data for the log | power-log 10 | code done |
@@ -317,7 +317,7 @@ Scanned 15 test file(s) under core/detection. A property counts when a test titl
 | R3, R4 | - | device screenshots and TalkBack | 7 | not done: needs a phone or emulator |
 | R6.1, R6.2 | ML1 | hex GeoJSON per block | 13, 14 | done: `HexGeoJsonTest` (JUnit), `web/test/web-app.test.ts`; screens on a device wait for task 7 |
 | R6.3 | ML2 | only OpenFreeMap, only on map pages | 13 | done: `web/test/web-app.test.ts`, `web/visual/check.mjs` |
-| R6.4 | ML3 | Insights sums | 13, 14 | done: `web/test/web-insights.test.ts`, `AreaHistoryTest` (JUnit) |
+| R6.4 | ML3 | Insights sums | 13, 14 | done: `web/test/web-history.test.ts`, `AreaHistoryTest` (JUnit) |
 | R6.4 | ML4 | simulated history current and shared | 13 | done: `.kiro/scripts/test/demo-city.test.mjs` |
 | R1, R2 | - | night palette, new mark, Material skill removed | 8 | done: `tokens.test.mjs`, `icon.test.mjs` |
 | R4, R5 | - | real Lagos city, Hallmark Midnight, Mona Sans | 11, 12 | done: `demo-city.test.mjs`, `MapTest`, `web-app.test.ts` (real places, font, stamp); sloplint not run in the cloud session |

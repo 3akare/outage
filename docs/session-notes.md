@@ -103,3 +103,6 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Insights and Power Log are now one History screen (third tab). One score function, `Stats.scoreOf`; no score before 7 days with enough data, only "Day N of 7" and a bar. Old links `log` and `insights` open History. Removed the `insights` package, `InsightsScreen` and `InsightsTest`.
 - Read commits 81042dd and 7093f27. Now re-reads on plug change (`AndroidPlugObserver` through `RefreshOnPlugOrSensor`, with rechecks at 0, 0.4 and 1.5 s) and on every sensor event and start or stop (`SensorPulse`). Today meter reads `PowerLogView.todayWatchedPowerHours`; the Light Alarm row reads `AlarmHost.state()`. Both are real, nothing to remove. No problems found.
 - Tests: score at 0, 6, 7 and 20 days, month score maths, Now reading new sensor state after a plug change (a fake source in `HomeReducerTest`). A view model test with a fake plug observer needs `kotlinx-coroutines-test` or Robolectric, which are not in the build, so it was not added.
+
+## 2026-11-21 cut list (ADR 0058)
+- Cut Freezer Guard, the tariff band and promise check, the diagnostics settings screen, the web Insights tab and the demo Settings rows that only said "On the phone this opens...". The telemetry opt-in stays (first run and Delete my data). Old `/app/insights` links still redirect.
