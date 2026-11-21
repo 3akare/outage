@@ -130,6 +130,7 @@ class OutageApp : Application() {
         val sync = if (BuildConfig.API_BASE.isNotBlank()) AreaOutageSync(BuildConfig.API_BASE, logStore, outageCache) else null
         val service = PowerLogService(logStore, recorder, bandChoice, sync, cell = { graph.onboarding.load()?.cell })
 
+        graph.todayPowerHours = { service.load().todayWatchedPowerHours }
         graph.features.register("freezer_guard", R.string.settings_freezer, { FreezerScreen(freezer, alarms::canScheduleExact) }, null)
         graph.features.register(
             FeatureRegistry.LOG,
@@ -168,6 +169,8 @@ class OutageApp : Application() {
             if (prefs.getBoolean("on", true)) io.execute {
                 val sensor = Sensor.get(this)
                 sensor.start()
+                // A start while unplugged changes the phase without an event; tell visible screens to read again.
+                app.outage.sensor.SensorPulse.bump()
                 if (upload == null && BuildConfig.API_BASE.isNotBlank()) {
                     upload = UploadDriver(IngestApi(BuildConfig.API_BASE, UrlConnectionPost), credentials, sensor) { onboarding.load()?.cell }
                         .also { it.start() }
@@ -183,7 +186,7 @@ class OutageApp : Application() {
             {
                 SensorToggleScreen({ prefs.getBoolean("on", true) }) { on ->
                     prefs.edit().putBoolean("on", on).apply()
-                    if (on) graph.sensorStarter() else io.execute { Sensor.peek()?.stop() }
+                    if (on) graph.sensorStarter() else io.execute { Sensor.peek()?.stop(); app.outage.sensor.SensorPulse.bump() }
                 }
             },
             null,
@@ -191,6 +194,7 @@ class OutageApp : Application() {
         graph.sensorState = { Sensor.peek()?.state() }
         graph.deletes.register("sensor") { Sensor.get(this).deleteAllData() }
         graph.deletes.register("alarm") { app.outage.alarm.AlarmHost.get(this).deleteAll() }
+        graph.alarmState = { app.outage.alarm.AlarmHost.get(this).state() }
         if (BuildConfig.API_BASE.isNotBlank()) {
             val api = IngestApi(BuildConfig.API_BASE, UrlConnectionPost)
             graph.deletes.registerServer {

@@ -31,7 +31,7 @@ import app.outage.R
  */
 class LightAlarm(private val ctx: Context) {
     private val main = Handler(Looper.getMainLooper())
-    private var player: MediaPlayer? = null
+    @Volatile private var player: MediaPlayer? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private val autoStop = Runnable { stopSound() }
 
@@ -46,6 +46,9 @@ class LightAlarm(private val ctx: Context) {
         main.removeCallbacks(autoStop)
         main.postDelayed(autoStop, AlarmLimits.MAX_RING_MS)
     }
+
+    /** True while the alarm sound plays. */
+    fun isRinging(): Boolean = player != null
 
     /** Stops sound and vibration and removes the notification (R4.4). Never restarts. */
     @Synchronized

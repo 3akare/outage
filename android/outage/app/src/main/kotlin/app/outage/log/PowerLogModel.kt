@@ -35,6 +35,10 @@ data class PowerLogView(
     val share: ShareFacts,
     val hasData: Boolean,
 ) {
+    /** Hours with power seen today so far (time watched, ON or OUT, minus outage). Null with nothing watched today. */
+    val todayWatchedPowerHours: Double?
+        get() = Stats.watchedPowerHours(today)
+
     /** The open `OUT` interval (R10.1). */
     val openOut: OutageRow? get() = outages.firstOrNull { it.endMs == null }
 }

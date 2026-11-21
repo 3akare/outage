@@ -37,6 +37,8 @@ import app.outage.ui.charts.Ring
 @Composable
 fun PowerLogScreen(vm: PowerLogViewModel, shareImage: ((PowerLogView) -> Unit)?) {
     LaunchedEffect(Unit) { vm.refresh() }
+    // "Power now" follows the plug and the sensor within about a second.
+    RefreshOnPlugOrSensor { vm.reloadLocal() }
     val view = vm.view
     val ctx = LocalContext.current
     val progress = remember { Animatable(0f) }

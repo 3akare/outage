@@ -16,6 +16,8 @@ data class LogDayStat(
     val longestMs: Long,
     val coverage: Double,
     val powerHours: Double?,
+    /** Time watched (ON or OUT) in the day. */
+    val watchedMs: Long = 0L,
 )
 
 /** A month's Light Score (R4). [score] is null with fewer than 7 qualifying days: "Not enough days yet" (R4.3). */
@@ -60,8 +62,12 @@ object Stats {
         }
         val coverage = known.toDouble() / len
         val power = if (coverage >= MIN_COVERAGE) (len - outage) / HOUR_MS else null
-        return LogDayStat(day, len, outage, count, longest, coverage, power)
+        return LogDayStat(day, len, outage, count, longest, coverage, power, known)
     }
+
+    /** Hours with power actually seen in the day (watched minus outage), whatever the coverage. Null if nothing was watched. */
+    fun watchedPowerHours(d: LogDayStat): Double? =
+        if (d.watchedMs <= 0L) null else (d.watchedMs - d.outageMs).coerceAtLeast(0L) / HOUR_MS
 
     /** Every day of [month] up to today. */
     fun month(intervals: List<LogInterval>, month: YearMonth, zone: ZoneId, nowMs: Long): List<LogDayStat> {
