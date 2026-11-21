@@ -2,7 +2,7 @@
 // blackout built by the real detection engine (/api/v1/public/judge/replay). No storage, no cookies, no tracking.
 // Three tabs as on the phone: Now (one giant answer for your spot), Map (MapLibre over OpenFreeMap, map.js) and Settings.
 import { duration, summary } from './data.js';
-import { cellCentre, createMap, LAGOS } from './map.js';
+import { cellCentre, createMap } from './map.js';
 
 const $ = (id) => document.getElementById(id);
 const QA = (s, r = document) => [...r.querySelectorAll(s)];
@@ -498,7 +498,7 @@ function land(loc) {
   } else {
     M.setSpot(null);
     renderNow();
-    flyTo(LAGOS, 10.4, 3000);
+    M.showLagos(3000, padding());
   }
   if (app.dataset.tab === 'settings') renderSettings();
 }

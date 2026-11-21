@@ -120,3 +120,10 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - The visual check failed on /areas at 390 and 1280 px because each LGA outline on the map was a link, and many LGAs are smaller than 44 px. The check was not changed.
 - Decision: the map is now a picture only. Outlines are plain paths (no links, no `<title>`) and the SVG is `aria-hidden`. The "Local governments" list under the map already links every LGA with its state, so nothing is lost for keyboard or screen reader users. Removed the map link hover style. Tests in `web/test/web-map.test.ts` updated.
 - Could not run `web/visual/run.sh` here: Chromium installed, but the sandbox blocks starting `wrangler dev`. Typecheck, lint and TS tests pass. CI will confirm.
+
+## 2026-11-21 all 20 LGAs on every map
+- The data was never missing: lagos-geo.json and the web outlines hold all 20 LGAs, Epe included (the "missing" LGAs in the CI log were only the small-tap-target list). The real problem was the view. The Android Map tab opened at zoom 10.2 centred on Lagos, about 27 km wide, so Epe, Ibeju-Lekki, Badagry and Ojo were off screen. The web street maps (landing, simulation) drew only the 10 simulated places and no LGAs at all.
+- Android: the Map tab now opens fitted to the box around every LGA outline (`PlacesGeo.lagosCorners`), and the "my location" button does the same when there is no spot. Test in `PlacesTest` checks all 20 outlines sit inside that box.
+- Web street maps: new `/lga-outlines.json` (`web/areas/lga-geojson.ts`) with the 20 outlines, names and the box around them. `map.js` draws dashed LGA borders and names, and the landing map and the simulation's "no spot" view open fitted to all of Lagos.
+- Tests in `web/test/lga-geojson.test.ts`: all 20 names in the /areas SVG, every path point inside its view box, 20 links, and the street-map box covers every LGA cell.
+- Not run: `web/visual/run.sh` (wrangler dev does not start here) and a device check of the MapLibre fit.

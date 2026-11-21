@@ -76,6 +76,7 @@ class OutageMapController {
     internal var map: MapLibreMap? = null
     private var pending: Pair<LatLng, Double>? = null
     private var pendingFit: List<LatLng>? = null
+    private var pendingFitInsets = intArrayOf(96, 96, 96, 96)
     internal var padding = DoubleArray(4)
     private val readySignal = kotlinx.coroutines.CompletableDeferred<Unit>()
 
@@ -89,10 +90,10 @@ class OutageMapController {
     }
 
     /** Shows all of [points] (a ward's hexagons), with [marginPx] around them. */
-    fun fitTo(points: List<LatLng>, ms: Int = 1200, marginPx: Int = 96) {
+    fun fitTo(points: List<LatLng>, ms: Int = 1200, marginPx: Int = 96, topPx: Int = marginPx, bottomPx: Int = marginPx) {
         if (points.size < 2) { points.firstOrNull()?.let { flyTo(it, SPOT_ZOOM, ms) }; return }
-        val m = map ?: run { pendingFit = points; pending = null; return }
-        val update = CameraUpdateFactory.newLatLngBounds(bounds(points), marginPx)
+        val m = map ?: run { pendingFit = points; pendingFitInsets = intArrayOf(marginPx, topPx, marginPx, bottomPx); pending = null; return }
+        val update = CameraUpdateFactory.newLatLngBounds(bounds(points), marginPx, topPx, marginPx, bottomPx)
         if (ms <= 0) m.moveCamera(update) else m.animateCamera(update, ms)
     }
 
@@ -106,7 +107,7 @@ class OutageMapController {
         map = m
         pending?.let { (to, z) -> m.moveCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(MlLatLng(to.lat, to.lng)).zoom(z).padding(padding).build())) }
         pending = null
-        pendingFit?.let { m.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds(it), 96)) }
+        pendingFit?.let { m.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds(it), pendingFitInsets[0], pendingFitInsets[1], pendingFitInsets[2], pendingFitInsets[3])) }
         pendingFit = null
         readySignal.complete(Unit)
     }

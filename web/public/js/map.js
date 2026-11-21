@@ -70,6 +70,14 @@ export function createMap(container, city, opts = {}) {
   let spot = null;
   const listeners = { cell: [], ready: [] };
   let ready = false;
+  // The 20 local governments: outlines and names on the street map, and the box that holds all of them.
+  let lgaBox = null;
+  const lgaData = fetch('/lga-outlines.json').then((r) => r.json()).catch(() => null);
+  const showLagos = (ms, padding) => {
+    if (!lgaBox) return;
+    const pad = typeof padding === 'number' ? padding : { top: 24, bottom: 24, left: 24, right: 24, ...(padding ?? {}) };
+    map.fitBounds([[lgaBox[0], lgaBox[1]], [lgaBox[2], lgaBox[3]]], { padding: pad, duration: ms, animate: ms > 0, essential: true });
+  };
 
   map.on('style.load', () => {
     if (opts.globe !== false) map.setProjection({ type: 'globe' });
@@ -109,6 +117,24 @@ export function createMap(container, city, opts = {}) {
       source: 'cells',
       filter: ['==', ['get', 'id'], ''],
       paint: { 'line-color': INK, 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 1.5, 15, 3.5] },
+    });
+    lgaData.then((lgas) => {
+      if (!lgas || !map.getStyle()) return;
+      lgaBox = lgas.bbox;
+      map.addSource('lgas', { type: 'geojson', data: lgas });
+      map.addLayer(
+        { id: 'lga-line', type: 'line', source: 'lgas', paint: { 'line-color': INK, 'line-width': 1.2, 'line-opacity': 0.55, 'line-dasharray': [3, 2] } },
+        'cells-selected',
+      );
+      map.addLayer({
+        id: 'lga-label',
+        type: 'symbol',
+        source: 'lgas',
+        maxzoom: 12,
+        layout: { 'text-field': ['get', 'name'], 'text-font': ['Noto Sans Regular'], 'text-size': 11, 'text-allow-overlap': false },
+        paint: { 'text-color': INK, 'text-halo-color': PAPER, 'text-halo-width': 1.5 },
+      });
+      if (opts.fitLagos) showLagos(0, opts.fitPadding);
     });
     map.addSource('spot', { type: 'geojson', data: point(spot) });
     map.addLayer({
@@ -165,6 +191,8 @@ export function createMap(container, city, opts = {}) {
       spot = lngLat;
       if (ready) map.getSource('spot').setData(point(spot));
     },
+    /** Shows all 20 local governments at once. */
+    showLagos,
     flyTo(lngLat, zoom, ms = 2000, padding) {
       map.flyTo({ center: lngLat, zoom, duration: ms, essential: true, ...(padding ? { padding } : {}) });
     },
