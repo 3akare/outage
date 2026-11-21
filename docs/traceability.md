@@ -136,21 +136,9 @@ Tests in `android/outage/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt
 
 ## home-watch
 
-| Requirement | Property | Test | Task | Status |
-|---|---|---|---|---|
-| R2.4, R2.5 | H1 | `H1_offline_never_off` | 3 | passing (`core/shared/test/home.test.ts`) |
-| R2.6, R2.7 | H2 | `H2_state_order_independent` | 3 | passing (`core/shared/test/home.test.ts`) |
-| R2.2, R2.3, R3 | H3 | `H3_non_power_events_ignored` | 1, 3 | task 1 passing (`web/test/home-heartbeat.test.ts`, Kotlin `T6_heartbeat_only_while_armed`, `R3_2_battery_heartbeat_is_not_a_gap`); task 3 passing (`core/shared/test/home.test.ts`) |
-| R2.8 | H4 | `H4_state_independent_of_area` | 3 | passing (`core/shared/test/home.test.ts`) |
-| R1.2, R1.3, R1.5 | H5 (pure part) | `H5_pairing_rules` | 2 | passing (`core/shared/test/pairing.test.ts`) |
-| R1.1 to R1.6, R1.9, R7.2 | H5 (Worker part) | `H5_pairing_rules` | 4 | passing (`web/test/pairing.test.ts`) |
-| R5, R8.3 | H6 | `H6_push_once_per_change` | 6 | passing (`web/test/home-watch.test.ts`, `home-sql.test.ts`) |
-| R6, R8.1, R8.2 | H7 | `H7_alarm_multiplexer` | 5 | passing (`web/test/home-watch.test.ts`) |
-| R4, R7.5 | viewer API | `viewer API GET /v1/home/:pairId` | 7 | passing (`web/test/home-watch.test.ts`, shape in `core/shared/test/home.test.ts`) |
-| R1.1, R1.4, R1.8 to R1.10, R4, R7.6, R9 | app screens | `R1_4_claim_sends_the_normalized_code_and_no_push_token_and_stores_the_name_locally`, `R4_2_fixture_states_map_to_the_spec_wording`, `R4_4_a_failed_refresh_keeps_the_cached_state_and_marks_it_stale`, `R1_9_station_lists_every_pair_and_removes_a_dead_viewer`, `H5_R1_5_every_failed_claim_gives_the_same_answer`, `H8_R7_4_delete_lists_the_viewer_pair_ids` | 8 | passing (`android/outage/app/src/test/kotlin/app/outage/home/HomeWatchTest.kt`; station list and no-push token: `web/test/home-watch.test.ts`) |
-| R2.4 to R2.7 | H1, H2 (scenario) | `H1_offline_never_off: power off with the router down ...`, `H2_state_order_independent: power back before the router ...`, `H1_offline_never_off and H2_state_order_independent: any cut, outage, router delay and upload order` | 9 | passing (`tools/sim/test/home-scenario.test.ts`) |
-| R5.1 | push latency on devices | `docs/probe-checklist.md` Home Watch step 6 | 9 | open: needs Firebase Messaging in the app (ADR 0045) and two phones; left for the human |
-| R1.10, R7.4 | H8 (pair part) | `H8_delete_removes_pairs`, `R1.10 remove a pair` | 4 | passing (`web/test/pairing.test.ts`; state parts: `H8_delete_removes_pairs (state parts, R7.3, R7.4)` in `web/test/home-watch.test.ts`) |
+Removed by ADR 0055 (2026-11-21). Its tests were deleted with the feature. What stays: the Worker accepts and ignores the
+legacy battery heartbeat (`web/test/legacy-heartbeat.test.ts`) and a legacy `pairIds` list on delete
+(`web/test/delete.test.ts`, `core/shared/test/ingest.test.ts`); Kotlin `legacy_battery_heartbeat_is_not_a_gap`.
 
 ## onboarding
 

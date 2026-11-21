@@ -22,7 +22,7 @@ Single-player value comes first (`product.md`): the home screen must be useful w
 **User story:** As a new user, I want the app to take me to setup the first time and to my status every time after.
 1. WHEN the app starts and onboarding has not finished, THE shell SHALL open the onboarding flow.
 2. WHEN the app starts and onboarding has finished, THE shell SHALL open Home.
-3. WHEN the app is opened from a notification (prompt, alarm, outage push, Home Watch), THE shell SHALL open the destination that notification names and SHALL keep Home in the back stack.
+3. WHEN the app is opened from a notification (prompt, alarm, outage push), THE shell SHALL open the destination that notification names and SHALL keep Home in the back stack.
 4. THE shell SHALL NOT start the sensor, the station service or any upload by itself; those start from the feature packages after onboarding.
 
 ### R2 Home screen
@@ -42,7 +42,7 @@ Single-player value comes first (`product.md`): the home screen must be useful w
 
 ### R4 Settings
 **User story:** As a user, I want to control my data and the app in one place.
-1. THE Settings screen SHALL list: Light Alarm settings, notifications, battery setup (re-run the maker steps), Station mode, Home Watch, followed area, language, share anonymous diagnostics, delete my data, about and privacy.
+1. THE Settings screen SHALL list: Light Alarm settings, notifications, battery setup (re-run the maker steps), followed area, language, share anonymous diagnostics, delete my data, about and privacy.
 2. Each item SHALL open the owning feature's screen, or show "Coming soon" when the feature is not built.
 3. THE Settings screen SHALL show the app version and the install's short alias (never the install ID).
 

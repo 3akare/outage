@@ -20,7 +20,6 @@ Single-player value comes first. The map is the bonus. Every feature must be use
 
 ## Hooks that work from one charging phone
 - **Light Alarm**: rings a real alarm, even at 3 a.m., when power returns at your spot. Works offline.
-- **Home Watch**: a spare phone charging at home; your main phone shows "Home: power on since 2:14 p.m." from anywhere. Brings a second install built in.
 - **Freezer Guard**: alert when your spot has been without power past a limit you set.
 - **Power Log and Light Score**: daily hours of power, every outage, a monthly share card carrying the app link.
 - **Supply promise check**: logged hours vs. your tariff band's promise (e.g. Nigeria Band A promises 20 h/day). Never promise compensation.

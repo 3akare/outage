@@ -551,7 +551,6 @@ function renderSettings() {
     row('bolt', 'orange', 'Tariff band', `Band ${a.band}, ${city.bands[a.band]} hours a day`) +
     row('alarm', 'red', 'Light Alarm', 'Ring when power comes back', alarmOn) +
     row('freezer', 'teal', 'Freezer Guard', 'Warn after 4 h without power', toggles['Freezer Guard']) +
-    row('homeWatch', 'green', 'Home Watch', 'Watch a spare phone at home') +
     '</ul><h2 class="sec">This phone</h2><ul class="group tiles">' +
     row('battery', 'green', 'Keep Outage running', 'Battery steps for your phone') +
     row('notifications', 'red', 'Notifications', 'Allowed') +

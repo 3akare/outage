@@ -61,6 +61,6 @@ graph LR
 ```
 
 ## Not in this spec
-- The feature screens themselves: `onboarding`, `alerts-and-light-alarm`, `power-log`, `home-watch`, `demo-mode`.
+- The feature screens themselves: `onboarding`, `alerts-and-light-alarm`, `power-log`, `demo-mode`.
 - The sensor and the uploader: `sensor-android`, `event-ingest`.
 - The web pages: `web-and-area-pages`.

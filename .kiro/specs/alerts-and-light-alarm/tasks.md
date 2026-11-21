@@ -69,6 +69,5 @@ graph LR
 ## Not in this spec
 - Manual "power is out" and "Power is back" reports: `power-log`.
 - Freezer Guard alert (a local alert after N hours without power): `power-log`.
-- Home Watch push within 60 seconds and "Station offline": `home-watch`.
 - Area names in push text come from the catalog in `web-and-area-pages`; until then the text says "your area".
 - Auto-arming the alarm without a "Yes": deliberately excluded, since an unplug at 7 a.m. must not ring at 8 p.m.

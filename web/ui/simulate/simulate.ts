@@ -48,7 +48,7 @@ export const LEGEND = [
 export const renderDemoCityJson = (): Rendered => json(city, TTL_SECONDS);
 
 // Icons the script builds rows with, inlined so it loads nothing more.
-const SCRIPT_ICONS: IconName[] = ['chevron', 'place', 'alarm', 'notifications', 'phone', 'freezer', 'bolt', 'battery', 'language', 'info', 'delete', 'chart', 'shield', 'arrow', 'close', 'check', 'groups', 'map', 'homeWatch', 'play', 'plug', 'clock'];
+const SCRIPT_ICONS: IconName[] = ['chevron', 'place', 'alarm', 'notifications', 'phone', 'freezer', 'bolt', 'battery', 'language', 'info', 'delete', 'chart', 'shield', 'arrow', 'close', 'check', 'groups', 'map', 'play', 'plug', 'clock'];
 
 export const legendHtml = (): string =>
   `<div class="maplegend" aria-hidden="true">${LEGEND.map((l) => `<span><i class="sw" data-state="${l.state}"></i>${l.label}</span>`).join('')}</div>`;

@@ -45,7 +45,6 @@ fun HomeScreen(
     onOpenMap: () -> Unit,
     band: () -> Pair<String, Int>?,
     spotName: () -> String? = { null },
-    homeCard: @Composable () -> Unit,
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     // Refresh when the screen is visible, then once a minute so "Updated 2 min ago" stays true.
@@ -62,7 +61,7 @@ fun HomeScreen(
     val name = remember(state.area) { spotName() }
     DayPage(scroll = scroll) {
         LargeTitle(name ?: stringResource(R.string.nav_now), supporting = stringResource(if (name != null) R.string.now_your_spot else R.string.now_no_spot), top = 20.dp)
-        HomeContent(state, onOpenAlarm, onOpenSetup, onOpenMap, band(), homeCard)
+        HomeContent(state, onOpenAlarm, onOpenSetup, onOpenMap, band())
     }
 }
 
@@ -73,7 +72,6 @@ fun HomeContent(
     onOpenSetup: (String) -> Unit,
     onOpenMap: () -> Unit,
     band: Pair<String, Int>?,
-    homeCard: @Composable () -> Unit = {},
 ) {
     StatusHero(state)
 
@@ -94,7 +92,6 @@ fun HomeContent(
     }
 
     Gap(4.dp)
-    homeCard()
 
     GroupHeader(stringResource(R.string.now_group_today))
     DayCard {

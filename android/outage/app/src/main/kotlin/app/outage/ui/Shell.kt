@@ -117,8 +117,6 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
                     onOpenMap = { shell.tab(Route.Map) },
                     band = graph.band,
                     spotName = { graph.onboarding.load()?.areaName },
-                    // Home Watch card on Now, only when a home is paired (home-watch R4).
-                    homeCard = { graph.features.get(FeatureRegistry.HOME_CARD)?.screen?.invoke() },
                 )
                 Route.Map -> graph.features.get(FeatureRegistry.AREA)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_map, null)
                 Route.Insights -> graph.features.get(FeatureRegistry.INSIGHTS)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_insights, null)
