@@ -6,7 +6,8 @@ import type { IndexReader } from '../api/public-index/reader.ts';
 import type { PublicScopeView } from '../api/public-index/public-view.ts';
 import { handleWeb, isWebPath, robotsTxt, sitemapXml, type WebDeps } from '../routes.ts';
 import { NUM_RUNS } from './runs.ts';
-import { AREAS, cellView, confirmedNow, IKEJA, NOW, SITE, YABA } from './web-helpers.ts';
+import { CATALOG } from '../areas/catalog/index.ts';
+import { AREAS, cellView, confirmedNow, IKEJA, NOW, SITE, MAINLAND } from './web-helpers.ts';
 
 const UNCHECKED: CatalogArea = { ...IKEJA, slug: 'unchecked', name: 'Unchecked', checkedBy: '' };
 
@@ -65,7 +66,7 @@ describe('W7 sitemap and robots', () => {
   });
 
   it('W7_sitemap_robots: /c/ pages carry noindex in a header and in the HTML', async () => {
-    const res = await handleWeb(get(`/c/${YABA.cells[0]}`), deps([]).d);
+    const res = await handleWeb(get(`/c/${MAINLAND.cells[0]}`), deps([]).d);
     expect(res.status).toBe(200);
     expect(res.headers.get('x-robots-tag')).toBe('noindex');
     expect(await res.text()).toContain('<meta name="robots" content="noindex">');
@@ -75,20 +76,20 @@ describe('W7 sitemap and robots', () => {
 describe('task 8 routes and JSON APIs', () => {
   it('R11.3 only GET and HEAD: every other method gets 405 with Allow, on every path', async () => {
     for (const method of ['POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']) {
-      for (const path of ['/', '/area/yaba', '/api/v1/public/map', '/nope']) {
+      for (const path of ['/', '/area/lagos-mainland', '/api/v1/public/map', '/nope']) {
         const res = await handleWeb(get(path, method), deps([]).d);
         expect(res.status).toBe(405);
         expect(res.headers.get('allow')).toBe('GET, HEAD');
       }
     }
-    const head = await handleWeb(get('/area/yaba', 'HEAD'), deps([]).d);
+    const head = await handleWeb(get('/area/lagos-mainland', 'HEAD'), deps([]).d);
     expect(head.status).toBe(200);
     expect(await head.text()).toBe('');
   });
 
   it('R4 size budget: every public HTML page is under 30 KB, app pages under 100 KB in total (ADR 0027)', async () => {
-    const { d } = deps([cellView(YABA.cells[0] as string, confirmedNow())]);
-    const paths = ['/', '/areas', '/install', '/privacy', '/area/yaba', `/c/${YABA.cells[0]}`, '/judge', '/app/simulate'];
+    const { d } = deps([cellView(MAINLAND.cells[0] as string, confirmedNow())]);
+    const paths = ['/', '/areas', '/install', '/privacy', '/area/lagos-mainland', `/c/${MAINLAND.cells[0]}`, '/judge', '/app/simulate'];
     for (const path of paths) {
       const res = await handleWeb(get(path), d);
       const bytes = new TextEncoder().encode(await res.text()).length;
@@ -97,10 +98,10 @@ describe('task 8 routes and JSON APIs', () => {
   });
 
   it('R1.1 R3 routes render, unknown slugs and invalid cells get the 404 page without reading the index', async () => {
-    const { d, reads } = deps([cellView(YABA.cells[0] as string, confirmedNow())]);
-    const area = await handleWeb(get('/area/yaba'), d);
+    const { d, reads } = deps([cellView(MAINLAND.cells[0] as string, confirmedNow())]);
+    const area = await handleWeb(get('/area/lagos-mainland'), d);
     expect(area.status).toBe(200);
-    expect(await area.text()).toContain('Is there power in Yaba right now?');
+    expect(await area.text()).toContain('Is there power in Lagos Mainland right now?');
     expect((await handleWeb(get('/'), d)).status).toBe(200);
     expect((await handleWeb(get('/install'), d)).status).toBe(200);
     expect((await handleWeb(get('/privacy'), d)).status).toBe(200);
@@ -116,16 +117,16 @@ describe('task 8 routes and JSON APIs', () => {
 
   it('R9.3 R9.1 an uncached page reads the index once; the next request within 30 s is served from cache', async () => {
     const { d, reads } = deps([]);
-    const first = await handleWeb(get('/area/yaba'), d);
+    const first = await handleWeb(get('/area/lagos-mainland'), d);
     expect(first.headers.get('cache-control')).toBe('public, max-age=30, s-maxage=30');
     expect(reads()).toBe(1);
-    const second = await handleWeb(get('/area/yaba'), d);
+    const second = await handleWeb(get('/area/lagos-mainland'), d);
     expect(second.headers.get('x-outage-cache')).toBe('isolate');
     expect(reads()).toBe(1);
   });
 
   it('R1.2 JSON APIs: map, area and cell outages; counts and install IDs never appear', async () => {
-    const cell = YABA.cells[0] as string;
+    const cell = MAINLAND.cells[0] as string;
     const v = cellView(cell, {
       ...confirmedNow(),
       history30d: [{ startMs: NOW - 3_600_000, endMs: null, level: 'CONFIRMED', precision: 'CELL' }],
@@ -134,9 +135,9 @@ describe('task 8 routes and JSON APIs', () => {
     const map = (await (await handleWeb(get('/api/v1/public/map'), d)).json()) as {
       areas: { slug: string; state: string | null }[];
     };
-    expect(map.areas.find((a) => a.slug === 'yaba')?.state).toBe('CONFIRMED');
+    expect(map.areas.find((a) => a.slug === 'lagos-mainland')?.state).toBe('CONFIRMED');
     expect(map.areas.find((a) => a.slug === 'ikeja')?.state).toBeNull();
-    const area = (await (await handleWeb(get('/api/v1/public/area/yaba'), d)).json()) as {
+    const area = (await (await handleWeb(get('/api/v1/public/area/lagos-mainland'), d)).json()) as {
       state: string;
       history: unknown[];
     };
@@ -171,7 +172,7 @@ describe('task 8 routes and JSON APIs', () => {
 
   it('design 5 an unavailable index: pages show no status and are cached 5 s; APIs answer 503', async () => {
     const { d } = deps(null);
-    const page = await handleWeb(get('/area/yaba'), d);
+    const page = await handleWeb(get('/area/lagos-mainland'), d);
     expect(page.headers.get('cache-control')).toBe('public, max-age=5, s-maxage=5');
     expect((await handleWeb(get('/api/v1/public/map'), d)).status).toBe(503);
   });
@@ -180,5 +181,51 @@ describe('task 8 routes and JSON APIs', () => {
     expect(isWebPath('/v1/events')).toBe(false);
     expect(isWebPath('/')).toBe(true);
     expect(isWebPath('/api/v1/public/map')).toBe(true);
+  });
+});
+
+describe('ADR 0056 LGA and ward pages, sitemap and search', () => {
+  const full = () => deps([], { areas: CATALOG.areas }).d;
+
+  it('the sitemap lists the 20 LGA pages and every ward page', () => {
+    const xml = sitemapXml(SITE, CATALOG.areas);
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1] as string).filter((l) => l.includes('/area/'));
+    expect(locs).toHaveLength(396);
+    for (const lga of CATALOG.areas.filter((a) => a.kind === 'lga')) expect(locs).toContain(`${SITE.origin}/area/${lga.slug}`);
+    expect(locs).toContain(`${SITE.origin}/area/ikeja-alade`);
+  });
+
+  it('an LGA page lists its wards and a ward page links back to its LGA', async () => {
+    const lga = await (await handleWeb(get('/area/ikeja'), full())).text();
+    expect(lga).toContain('Wards in Ikeja');
+    expect(lga).toContain('<a href="/area/ikeja-alade">Alade</a>');
+    const ward = await (await handleWeb(get('/area/ikeja-alade'), full())).text();
+    expect(ward).toContain('Is there power in Alade, Ikeja right now?');
+    expect(ward).toContain('<a href="/area/ikeja">Ikeja</a>');
+  });
+
+  it('/areas lists the 20 LGAs and finds an LGA or a ward by name', async () => {
+    const home = await (await handleWeb(get('/areas'), full())).text();
+    expect(home.match(/<li><a href="\/area\/[a-z-]+">[^<]+<\/a>: /g)).toHaveLength(20);
+    const byLga = await (await handleWeb(get('/areas?q=surulere'), full())).text();
+    expect(byLga).toContain('<h2>Search results</h2>');
+    expect(byLga).toContain('<a href="/area/surulere">Surulere</a>');
+    const byWard = await (await handleWeb(get('/areas?q=alade%20ikeja'), full())).text();
+    expect(byWard).toContain('<a href="/area/ikeja-alade">Alade, Ikeja</a>');
+    expect(await (await handleWeb(get('/areas?q=zzzqq'), full())).text()).toContain('No place with that name');
+  });
+
+  it('/api/v1/public/search returns names for an LGA and a ward, and nothing for an empty query', async () => {
+    const find = async (q: string) => (await (await handleWeb(get(`/api/v1/public/search?q=${encodeURIComponent(q)}`), full())).json()) as { results: { slug: string; kind: string }[] };
+    expect((await find('ikeja')).results[0]).toMatchObject({ slug: 'ikeja', kind: 'lga' });
+    expect((await find('alade')).results.map((r) => r.slug)).toContain('ikeja-alade');
+    expect((await find('')).results).toEqual([]);
+  });
+
+  it('/api/map.json defaults to the 20 LGAs, with one cell for each of the 4968 hexes', async () => {
+    const res = await handleWeb(get('/api/map.json'), full());
+    const body = (await res.json()) as { areas: unknown[]; cells: unknown[] };
+    expect(body.areas).toHaveLength(20);
+    expect(body.cells).toHaveLength(4968);
   });
 });

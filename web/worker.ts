@@ -13,6 +13,7 @@ import { hashInstallId } from './api/ingest/token.ts';
 import replayFile from '@outage/shared/fixtures/replay.json' with { type: 'json' };
 import { PageCache } from './site/cache.ts';
 import { CATALOG, LISTED_AREAS } from './areas/catalog/index.ts';
+import { lgasOf } from './areas/catalog/schema.ts';
 import { PublicIndex } from './api/public-index/actor.ts';
 import { INDEX_NAME } from './api/public-index/core.ts';
 import { indexReader } from './api/public-index/reader.ts';
@@ -90,7 +91,7 @@ function webDeps(req: Request, env: Env): WebDeps {
         }
       : null,
     areas: LISTED_AREAS,
-    mapAreas: CATALOG.areas,
+    mapAreas: lgasOf(CATALOG.areas),
     index: indexReader(() => env.PUBLIC_INDEX.get(env.PUBLIC_INDEX.idFromName(INDEX_NAME)).getAll()),
     cache: pageCache,
     replay: () => replayFile as unknown as ReplayData,

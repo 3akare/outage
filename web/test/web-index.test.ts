@@ -7,7 +7,7 @@ import type { IngestedItem } from '../api/ingest/ports.ts';
 import { applyBatch, type IndexStore, sanitizeView, snapshot } from '../api/public-index/core.ts';
 import { indexReader } from '../api/public-index/reader.ts';
 import { NUM_RUNS } from './runs.ts';
-import { cellView, YABA } from './web-helpers.ts';
+import { cellView, MAINLAND } from './web-helpers.ts';
 
 class MemIndex implements IndexStore {
   rows = new Map<string, string>();
@@ -35,7 +35,7 @@ class MemIndex implements IndexStore {
   }
 }
 
-const CELL = YABA.cells[0] as string;
+const CELL = MAINLAND.cells[0] as string;
 const PARENT = parentOf(CELL);
 const CHILDREN = childrenOf(PARENT);
 const cfg: AreaConfig = {

@@ -14,8 +14,10 @@ const pages = [
   { path: '/', name: 'landing', expect: ['Your phone charger is a', 'Try the app in your browser', 'GitHub'] },
   { path: '/areas', name: 'areas', expect: ['Install Outage'] },
   { path: '/app/simulate', name: 'simulate', expect: ['simulated data, not live', 'See the power around you', 'Use my location'], app: true },
-  // No area is listed until a person fills in `checkedBy` in the catalog (R10.3), so /area/yaba is the 404 page for now.
-  { path: '/area/yaba', name: 'area-yaba', expect: ['Install Outage'], status: [200, 404] },
+  // The 20 Lagos LGAs and 376 wards are listed (ADR 0056).
+  { path: '/area/lagos-mainland', name: 'area-lagos-mainland', expect: ['Install Outage', 'Wards in Lagos Mainland'], status: [200] },
+  { path: '/area/ikeja-alade', name: 'area-ward', expect: ['Alade, Ikeja'], status: [200] },
+  { path: '/areas?q=alade', name: 'areas-search', expect: ['Alade, Ikeja'], status: [200] },
   { path: '/c/88589c9861fffff', name: 'cell', expect: ['Install Outage'] },
   { path: '/install', name: 'install', expect: ['Install Outage'] },
   { path: '/privacy', name: 'privacy', expect: ['cookies'] },

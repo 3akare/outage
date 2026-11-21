@@ -95,7 +95,9 @@ describe('R7 R8 R12 Worker and area actors in the Workers runtime', () => {
     expect((await server.fetch('/', { method: 'POST' })).status).toBe(405);
     const map = await server.fetch('/api/v1/public/map');
     expect(map.status).toBe(200);
-    expect(await map.json()).toEqual({ areas: [] });
+    const lgas = ((await map.json()) as { areas: { state: string | null }[] }).areas;
+    expect(lgas).toHaveLength(20); // the 20 LGAs, none with a public view yet
+    expect(lgas.every((a) => a.state === null)).toBe(true);
     expect((await server.fetch('/area/nowhere')).status).toBe(404);
   });
 });

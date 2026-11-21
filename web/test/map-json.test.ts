@@ -5,29 +5,15 @@ import fixture from '@outage/shared/fixtures/map/map.json' with { type: 'json' }
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { PageCache } from '../site/cache.ts';
-import { buildCatalog } from '../areas/catalog/build.ts';
 import type { IndexReader } from '../api/public-index/reader.ts';
 import { buildMapJson, cityFrom } from '../api/map/map-json.ts';
 import type { PublicScopeView } from '../api/public-index/public-view.ts';
 import { handleWeb, type WebDeps } from '../routes.ts';
 import { NUM_RUNS } from './runs.ts';
-import { cellView, confirmedNow, HOUR, NOW, SITE } from './web-helpers.ts';
+import { cellView, confirmedNow, HOUR, NOW, SITE, testArea } from './web-helpers.ts';
 
-const AREAS = buildCatalog({
-  areas: [
-    {
-      slug: 'yaba',
-      name: 'Yaba',
-      lat: 6.5068,
-      lng: 3.3755,
-      rings: 1,
-      tzOffsetMin: 60,
-      country: 'NG',
-      source: 'https://example.test/source',
-      checkedBy: 'test person 2026-11-20',
-    },
-  ],
-}).areas;
+// The shared fixture's areas, as catalog areas. The Kotlin parser test reads the same fixture.
+const AREAS = fixture.areas.map((a) => testArea(a.slug, a.name, a.cells));
 const CELLS = AREAS[0]?.cells ?? [];
 const [A, B, C, D] = CELLS as [string, string, string, string];
 
@@ -121,7 +107,7 @@ describe('map.json with an unlisted catalog (live fix: empty map)', () => {
 
   it('keeps unlisted areas out of /area/<slug> (W7)', async () => {
     const d = { ...deps([]), areas: [], mapAreas: AREAS };
-    const res = await handleWeb(new Request('https://outage.test/area/yaba'), d);
+    const res = await handleWeb(new Request(`https://outage.test/area/${AREAS[0]?.slug}`), d);
     expect(res.status).toBe(404);
   });
 });

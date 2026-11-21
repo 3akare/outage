@@ -22,7 +22,7 @@ One Worker, one deploy. `worker.ts` is the entry: it routes `/v1/*` to `api/inge
 | `ui/app/` | `/app.css`, the one stylesheet for every page (Outage Daylight, ADR 0054) (`design.ts`, tokens in `tokens.gen.ts`); `/app`, `/app/insights`, `/app/settings` redirect to `/app/simulate` (ADR 0049) |
 | `ui/simulate/` | `/app/simulate`, the Android app in the browser on a simulated city (`simulate.ts`, `demo-map.ts`); `replay.ts` serves `/api/v1/public/judge/replay`, `/judge-sw.js` and the `/judge` redirect |
 | `areas/` | `/areas`, `/area/<slug>`, `/c/<cell>`, `/install`, `/privacy`, the 404 page (`pages.ts`) and their SVG map (`map-svg.ts`) |
-| `areas/catalog/` | The list of named Lagos areas and its generator |
+| `areas/catalog/` | The 20 Lagos LGAs and 376 wards (built from `core/shared/fixtures/places`) and its generator |
 | `site/` | Shared page parts: headers and CSP nonce, cache, HTML escaping, layout, state strings, status derivation, icons (`icons.ts`), the mark and favicon (`brand.ts`, `logo.gen.ts`) |
 | `config.ts`, `env.ts` | Limits and batch sizes; the Worker's bindings |
 

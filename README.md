@@ -55,7 +55,7 @@ Each folder has its own `README.md` with the detail: `android/outage/README.md`,
 | A detection threshold | `core/detection/src/params.ts` (needs an ADR first) |
 | Colours, type, shapes | `core/shared/design/tokens.json`, then `node tools/tokens/build.mjs` (the system: `docs/design/daylight.md`) |
 | The app icon, the mark, icons | `tools/icon/build.mjs`; icons come from Lucide via `tools/icon/lucide.mjs` into `core/shared/design/icons.json`, then `node tools/icon/build.mjs` |
-| The list of Lagos areas | `web/areas/catalog/catalog.source.json` |
+| The list of Lagos areas | `core/shared/fixtures/places/lagos-places.json` (the web catalog is built from it) |
 
 ## Commands
 
