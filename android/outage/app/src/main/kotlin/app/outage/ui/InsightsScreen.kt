@@ -43,11 +43,6 @@ private val ranges = listOf(7, 30, 90)
  */
 @Composable
 fun InsightsScreen(source: InsightsSource) {
-    // The sample city has its own history for every area (ADR 0053); a real install shows the person's own Power Log.
-    if (source is app.outage.insights.DemoInsightsSource) {
-        AreaInsightsScreen()
-        return
-    }
     var range by rememberSaveable { mutableIntStateOf(30) }
     val zone = remember { ZoneId.systemDefault() }
     val now = remember { System.currentTimeMillis() }
