@@ -58,15 +58,25 @@ let SPOT_LL = null;
 const targetName = () => (target ? AREAS[target.slug].name : '');
 
 /* ---- Map ---- */
-const M = createMap($('map'), city, { fitPadding: 24 });
+const M = createMap($('map'), city, { fitPadding: 8 });
 let spotSet = false;
 
 function padding() {
   const sheet = $('sheet');
   const open = !sheet.hidden;
   if (wide()) return { left: open && app.dataset.tab === 'map' ? 440 : 40, top: 90, right: 40, bottom: 40 };
-  return { left: 32, right: 32, top: 90, bottom: open ? Math.min(window.innerHeight * 0.55, sheet.getBoundingClientRect().height) + 24 : 80 };
+  return { left: 8, right: 8, top: 90, bottom: open ? Math.min(window.innerHeight * 0.55, sheet.getBoundingClientRect().height) + 24 : 80 };
 }
+// Keep Lagos filling the map whenever the map changes size (tab switch, window resize, phone turned) until the person
+// moves the map themselves or a place is chosen.
+let moved = false;
+for (const ev of ['dragstart', 'zoomstart', 'rotatestart'])
+  M.map.on(ev, (e) => {
+    if (e.originalEvent) moved = true;
+  });
+M.map.on('resize', () => {
+  if (!spotSet && !moved) M.showLagos(0, padding());
+});
 const flyTo = (ll, zoom, ms = 1800) => M.flyTo(ll, zoom, ms, padding());
 $('zin').onclick = () => M.map.zoomIn();
 $('zout').onclick = () => M.map.zoomOut();

@@ -226,7 +226,11 @@ try {
     const data = m.getSource('cells')?.serialize().data;
     const feats = data?.features ?? [];
     const coloured = feats.filter((f) => f.properties.state !== 'NO_DATA').length;
-    return { lng: c.lng, lat: c.lat, zoom: m.getZoom(), cells: feats.length, coloured };
+    // The hero on a phone shifts Lagos up to clear the card, so its centre sits south of the box: check Lagos is on screen instead.
+    const p = m.project([3.535, 6.535]);
+    const cv = m.getCanvas();
+    const inView = p.x >= 0 && p.x <= cv.clientWidth && p.y >= 0 && p.y <= cv.clientHeight;
+    return { lng: c.lng, lat: c.lat, zoom: m.getZoom(), cells: feats.length, coloured, inView };
   };
   for (const [path, size, blockOutlines] of [['/app/simulate', 390, false], ['/app/simulate', 1280, false], ['/', 390, false], ['/', 1280, false], ['/app/simulate', 390, true]]) {
     const ctx = await browser.newContext({ viewport: { width: size, height: size === 390 ? 844 : 800 } });
@@ -244,12 +248,42 @@ try {
       await ctx.close();
       continue;
     }
-    const inBox = v.lng >= BOX.w && v.lng <= BOX.e && v.lat >= BOX.s && v.lat <= BOX.n;
+    const inBox = v.inView && v.lng >= BOX.w && v.lng <= BOX.e && v.lat >= BOX.s - 0.6 && v.lat <= BOX.n;
     // On the app the intro is still showing here: the map was built behind it and must already be on Lagos.
     if (!inBox || v.zoom < 7) fail(where, `map is not on Lagos: centre ${v.lng.toFixed(2)},${v.lat.toFixed(2)} zoom ${v.zoom.toFixed(2)}`);
     else ok(where, `centre ${v.lng.toFixed(2)},${v.lat.toFixed(2)} zoom ${v.zoom.toFixed(2)}`);
     if (v.cells !== 4968 || v.coloured / v.cells <= 0.5) fail(where, `cells coloured ${v.coloured} of ${v.cells}`);
     else ok(where, `${v.coloured} of ${v.cells} cells coloured`);
+    if (path === '/app/simulate' && !blockOutlines) {
+      // On the Map tab Lagos fills the map width, even though the map was first sized behind the Now tab.
+      await pg.getByText('Not now').click({ timeout: 2000 }).catch(() => {});
+      await pg.locator('.rail button', { hasText: 'Map' }).click();
+      await pg.waitForTimeout(1500);
+      const span = await pg.evaluate(
+        ([b]) => {
+          const m = window.__outageMap;
+          const a = m.project([b.w, b.s]);
+          const z = m.project([b.e, b.n]);
+          return { span: Math.abs(z.x - a.x), width: m.getCanvas().clientWidth };
+        },
+        [BOX],
+      );
+      if (span.span < span.width * 0.8) fail(where, `Lagos spans ${Math.round(span.span)} of ${span.width}px on the Map tab`);
+      else ok(where, `Lagos spans ${Math.round((span.span / span.width) * 100)}% of the map width on the Map tab`);
+    }
+    if (path === '/') {
+      const hero = await pg.evaluate(() => {
+        const card = document.querySelector('.stage .nowcard');
+        const attrib = document.querySelector('.stage .maplibregl-ctrl-attrib');
+        const c = card.getBoundingClientRect();
+        const a = attrib?.getBoundingClientRect();
+        const overlap = a ? !(a.right <= c.left || a.left >= c.right || a.bottom <= c.top || a.top >= c.bottom) : false;
+        return { bg: getComputedStyle(card).backgroundColor, overlap };
+      });
+      if (/rgba\(0, 0, 0, 0\)|transparent/.test(hero.bg)) fail(where, `hero card background is ${hero.bg}`);
+      else if (hero.overlap) fail(where, 'hero card overlaps the map attribution');
+      else ok(where, `hero card is solid (${hero.bg}) and clear of the attribution`);
+    }
     await ctx.close();
   }
   await playApp({ w: W, h: H }, '');

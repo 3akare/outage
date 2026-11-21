@@ -113,8 +113,9 @@ const SITE = `
 .stage-in{position:relative;height:clamp(440px,58vw,640px);border-radius:var(--r-xl);overflow:hidden;background:var(--c-paper-3)}
 .stage .map{position:absolute;inset:0}
 .stage .nowcard{position:absolute;left:24px;bottom:24px;width:min(340px,calc(100% - 48px));z-index:2;box-shadow:var(--shadow-pop)}
+.stage .nowcard{text-align:left}
 .stage .maplegend{position:absolute;right:16px;top:16px;z-index:2}
-@media (max-width:600px){.stage{padding:0 12px}.stage-in{height:560px}.stage .nowcard{left:12px;bottom:12px;width:calc(100% - 24px)}.stage .nowcard .status-top{padding:16px 20px 16px}.stage .nowcard .status-word{font-size:2.5rem}.stage .nowcard .status-body{padding:16px 20px 16px}.stage .maplegend{display:none}}
+@media (max-width:600px){.stage{padding:0 12px}.stage-in{height:560px}.stage .nowcard{left:12px;bottom:12px;width:calc(100% - 24px)}.stage .nowcard .status-top{padding:16px 20px 16px}.stage .nowcard .status-word{font-size:2.5rem}.stage .nowcard .status-body{padding:16px 20px 16px}.stage .maplegend{display:none}.stage .maplibregl-ctrl-bottom-right{bottom:auto!important;top:8px}}
 
 .section{padding:112px 0 0}
 .section:last-of-type{padding-bottom:112px}
@@ -235,6 +236,16 @@ body.sim{height:100dvh;display:flex;flex-direction:column;overflow:hidden;backgr
 .head .tag{margin-bottom:8px}
 
 /* The status hero: the one answer. */
+.status{border-radius:var(--r-xl);background:var(--c-paper);overflow:hidden}
+.status-top{padding:24px 24px 24px;background:var(--st-bg);transition:background-color .4s var(--ease)}
+.status .glyph{display:block;width:36px;height:36px;color:var(--st);transition:color .4s var(--ease)}
+.status .glyph .mark,.status .glyph .ico{width:36px;height:36px}
+.status-word{margin-top:16px;color:var(--st);font:var(--t-display);letter-spacing:var(--tr-display);font-size:clamp(2.75rem,11vw,3.5rem);line-height:1;overflow-wrap:break-word;min-width:0;transition:color .4s var(--ease)}
+.status-for{margin-top:8px;color:var(--st-on);font:var(--t-title-3);font-weight:500;font-variant-numeric:tabular-nums}
+.status-body{padding:16px 24px 24px}
+.status-body .sub{color:var(--c-ink-2);font:var(--t-callout)}
+.status-body .btn{margin-top:20px}
+.status.unset .status-word{font-size:clamp(2.25rem,9vw,2.75rem);color:var(--c-ink)}
 #maprow{margin-top:28px}
 #maprow .row .txt{flex:1}
 .track{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:16px}
