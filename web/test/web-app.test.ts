@@ -59,6 +59,9 @@ describe('landing /', () => {
     const all = await page('/', { ...SITE, playUrl: 'https://play.google.com/store/apps/details?id=app.outage', aptoideUrl: 'https://outage.en.aptoide.com/app' });
     expect(all.body).toContain('Google Play');
     expect(all.body).toContain('Aptoide');
+    const buttons = [...all.body.matchAll(/<a class="store"[^>]*>.*?<\/a>/g)].map((m) => m[0]);
+    expect(buttons.length).toBeGreaterThan(0);
+    for (const b of buttons) expect(b).not.toContain('<svg');
     expect(stores({ ...SITE, playUrl: 'javascript:alert(1)' }).map((s) => s.label)).toEqual(['Download the APK from GitHub']);
   });
 });

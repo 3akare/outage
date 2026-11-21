@@ -130,8 +130,8 @@ Tests in `android/outage/app/src/test/kotlin/app/outage/sensor/SensorCoreTest.kt
 | R5.5 | - (band config + copy) | `BandConfigTest` (`android/outage/app/src/test/kotlin/app/outage/log/BandConfigTest.kt`) | 3 | test written |
 | R6 | PL7 | `PL7_freezer_guard_lifecycle` | 7 | code done (`FreezerRules`, `FreezerGuard`, ADR 0038); test not written (same); device checks in `docs/probe-checklist.md` |
 | R1.3, R8.2 | PL8 | `PL8_no_wall_clock_upload` | 8 | code done: the log database is never uploaded and `REPORT` carries `kind` only (`SensorOutbox.toPending`); test not written (same) |
-| R8 | PL9 | `PL9_share_card_privacy` | 8, 9 | code done: `ShareFacts` has no location, area, install ID or name; text in `ShareCardText`, picture in `ShareCardImage` (ADR 0040); test not written (same) |
-| R1.6 | - | delete-my-data clears the log, settings, Freezer Guard alarm and cached share picture | 10 | done: `OutageApp.registerPowerLog` registers `power_log`; no dedicated test (same) |
+| R8 | PL9 | `PL9_share_card_privacy` | 8, 9 | code done: `ShareFacts` has no location, area, install ID or name; text in `ShareCardText`, the picture card was removed in 9fe8b88 (ADR 0040 superseded); test not written (same) |
+| R1.6 | - | delete-my-data clears the log, settings and Freezer Guard alarm | 10 | done: `OutageApp.registerPowerLog` registers `power_log`; no dedicated test (same) |
 | R7, R10 | - | Power Log screen, taps, rate limit | 8 | done: `PowerLogScreen`, `LogRecorder` (ADR 0039); no dedicated test (same) |
 
 ## home-watch
@@ -296,7 +296,7 @@ Scanned 15 test file(s) under core/detection. A property counts when a test titl
 | R3, R4, R5 | PL4, PL5, PL6 | Stats | power-log 6 | code done; tests PL4 to PL6 not written |
 | R6 | PL7 | Freezer Guard | power-log 7 | code done, ADR 0038; test PL7 not written |
 | R7, R10 | - | Power Log screen and sensor wiring | power-log 8 | code done, ADR 0039; tests PL8, PL9 not written |
-| R8 | PL9 | image share card | power-log 9 | code done, ADR 0040 |
+| R8 | PL9 | image share card | power-log 9 | removed in 9fe8b88, ADR 0040 superseded |
 | R1.6 | - | delete-my-data for the log | power-log 10 | code done |
 | R5, R10 | IN | real Power Log in Insights, 12-week demo | app-map-insights 6 | done, ADR 0039; demo-days assertion updated to 84 |
 | R1, R2 | F1, F2 (client) | phone aggregator and daily uploader | field-telemetry 4 | code done, ADR 0041; Kotlin tests F1, F2 not written (human asked for no more tests); consent through `TelemetryConsent` |

@@ -1,6 +1,6 @@
 # ADR 0040: The share card is drawn on the phone and shared as a picture
 
-Status: accepted (human blanket approval 2026-11-15). Spec: power-log task 9 (R8). The task was "blocked until the human decides how the image is built"; the blanket approval of 2026-11-15 lets the agent decide and record it.
+Status: SUPERSEDED by the removal in commit 9fe8b88 (the picture share card is gone; the owner asked for it to be removed). Earlier status: accepted (human blanket approval 2026-11-15). Spec: power-log task 9 (R8). The task was "blocked until the human decides how the image is built"; the blanket approval of 2026-11-15 lets the agent decide and record it.
 
 ## Context
 R8 asks for a monthly card with the Light Score, hours of power, outage count and the app link, with no location, area name, install ID or name, marked "estimate" with the number of days. The text fallback shipped with task 8.

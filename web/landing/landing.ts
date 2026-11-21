@@ -15,17 +15,17 @@ export const SIMULATE_HREF = SIMULATE_PATH;
 export const REPO_URL = 'https://github.com/3akare/outage';
 export const LANDING_JS_PATH = '/js/landing.js';
 
-type Store = { href: string; label: string; over: string; icon: IconName };
+type Store = { href: string; label: string; over: string };
 
 /** The download buttons that have a link. GitHub is always there: the APK link, or the releases page. */
 export function stores(site: Site): Store[] {
   const out: Store[] = [];
   const play = site.playUrl ? safeHref(site.playUrl) : null;
   const aptoide = site.aptoideUrl ? safeHref(site.aptoideUrl) : null;
-  if (play) out.push({ href: play, label: 'Get it on Google Play', over: 'Get it on', icon: 'play' });
-  if (aptoide) out.push({ href: aptoide, label: 'Get it on Aptoide', over: 'Get it on', icon: 'store' });
+  if (play) out.push({ href: play, label: 'Get it on Google Play', over: 'Get it on' });
+  if (aptoide) out.push({ href: aptoide, label: 'Get it on Aptoide', over: 'Get it on' });
   const apk = site.apkUrl ? safeHref(site.apkUrl) : null;
-  out.push({ href: apk ?? `${REPO_URL}/releases/latest`, label: 'Download the APK from GitHub', over: 'Download the APK from', icon: 'code' });
+  out.push({ href: apk ?? `${REPO_URL}/releases/latest`, label: 'Download the APK from GitHub', over: 'Download the APK from' });
   return out;
 }
 
@@ -91,7 +91,7 @@ export function renderLanding(site: Site): Rendered {
     '<h2 id="get-h">Get Outage for Android.</h2>' +
     '<p class="lead">Free and open source.</p>' +
     `<div class="stores">${stores(site)
-      .map((s) => `<a class="store" href="${e(s.href)}" aria-label="${s.label}">${icon(s.icon)}<span><small>${s.over}</small><b>${s.label.replace(/^(Get it on |Download the APK from )/, '')}</b></span></a>`)
+      .map((s) => `<a class="store" href="${e(s.href)}" aria-label="${s.label}"><span><small>${s.over}</small><b>${s.label.replace(/^(Get it on |Download the APK from )/, '')}</b></span></a>`)
       .join('')}</div>` +
     `<p class="muted">No Android phone? <a href="${SIMULATE_HREF}">Try the app in your browser</a> on a simulated city.</p>` +
     '</div></section>';

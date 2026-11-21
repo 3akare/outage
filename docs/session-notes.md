@@ -81,3 +81,8 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Decision: report rules the spec left open are in ADR 0017 (ARMED_CRITICAL supersedes LOW per class and day, outage signatures use `other:unknown:normal`, UPLOAD_GAP at two missing days, gap reasons printed only if safe).
 - Open for the human: deploy the Worker (migration v4), `wrangler secret put FIELD_READ_TOKEN`, create the schedule in app.kiro.dev from `.kiro/schedules/field-test.md`. Task 4 (phone aggregator) is not done, so no real device-day exists yet.
 - Note for the orchestrator: a kill-criterion line from one phone and 9 h of charging is what `evaluateGates` (task 2) returns; the probe note called the same run INCOMPLETE. Left as the spec says (R10.2); the report prints the hours so a reader can see the data is thin.
+
+## 2026-11-21 verify LGA picker and share card removal
+- Decision: the picture share card is gone (commit 9fe8b88). ADR 0040 is marked superseded; the text share stays.
+- Decision: website download buttons are plain text, no icon.
+- Fixed ADR 0056 spec-lint: it now has an Alternatives section (GPS, hand-placed areas, wards-only grid, NIPOST API).

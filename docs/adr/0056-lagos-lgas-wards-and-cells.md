@@ -12,6 +12,12 @@ The spot was found with one coarse GPS fix, hit-tested against nine hand-placed 
 4. **NIPOST digital postcode** (live 1 Oct 2026, `LA-NN-DDD-AA-BB`). The `NN` digits are the LGA, numbered alphabetically (`LA-01` Agege ... `LA-20` Surulere), checked against postcode.gov.ng reverse lookups at two points per LGA on 2026-11-21. Typing a postcode is decoded on the phone to pick the LGA; the postcode itself is never stored or sent (privacy.md allows only a prefix). The app links to https://postcode.gov.ng/find for people who do not know theirs. We do not call NIPOST's API from the app: its developer API needs a key and paid credits for anything beyond validity.
 5. **No location permission.** GPS is no longer read; `ACCESS_COARSE_LOCATION` is removed from the manifest.
 
+## Alternatives
+- **Keep GPS.** Coarse fixes in Lagos are often kilometres off or never arrive, and it needs a permission prompt. Lost: it does not work.
+- **Keep the nine hand-placed areas.** Most of Lagos was in none of them, and people could not find their own place. Lost: not complete.
+- **A grid of wards only (one cell per ward).** Wards vary a lot in size, and in the dense core a ward is smaller than a hex. The server already groups phones by H3 resolution 8, so wards alone would change the wire format. Lost: wrong size and a bigger change.
+- **Call the NIPOST postcode API from the app.** It needs a key and paid credits beyond validity checks. Lost: cost and a secret in the app. We decode the postcode on the phone instead.
+
 ## Consequences
 - In the dense core a hex can hold several wards; those wards share a sensor group. That is the right size for detection (more phones per group) and the ward name still says where you are.
 - The rural east and west (Epe 1,448 hexes, Badagry 696) have large wards; the map picker matters there.
