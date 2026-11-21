@@ -13,7 +13,7 @@ mkdirSync(SHOTS, { recursive: true });
 const pages = [
   { path: '/', name: 'landing', expect: ['Your phone charger is a', 'Try the app in your browser', 'GitHub'] },
   { path: '/areas', name: 'areas', expect: ['Install Outage'] },
-  { path: '/app/simulate', name: 'simulate', expect: ['simulated data, not live', 'See the power around you', 'Use my location'], app: true },
+  { path: '/app/simulate', name: 'simulate', expect: ['simulated data, not live', 'See the power around you', 'Choose a place'], app: true },
   // The 20 Lagos LGAs and 376 wards are listed (ADR 0056).
   { path: '/area/lagos-mainland', name: 'area-lagos-mainland', expect: ['Install Outage', 'Wards in Lagos Mainland'], status: [200] },
   { path: '/area/ikeja-alade', name: 'area-ward', expect: ['Alade, Ikeja'], status: [200] },
@@ -115,6 +115,7 @@ try {
     // Every place is an option: pick Ikeja, its first ward, then use it.
     await pg.selectOption('#plga', 'ikeja');
     await pg.selectOption('#pward', { index: 1 });
+    await pg.selectOption('#pcell', { index: 1 });
     await pg.click('#usepick');
     await pg.waitForTimeout(600);
     await pg.waitForTimeout(1600); // the fly-in to the place
@@ -226,7 +227,7 @@ try {
       for (const k of await caches.keys()) for (const r of await (await caches.open(k)).keys()) out.push(new URL(r.url).pathname);
       return out.sort();
     });
-    const allowed = ['/app/simulate', '/fonts/inter.woff2', '/js/app.js', '/js/map.js', '/js/data.js', '/js/charts.js', '/app.css', '/favicon.svg', '/demo-city.json',
+    const allowed = ['/app/simulate', '/fonts/inter.woff2', '/js/app.js', '/js/map.js', '/js/data.js', '/js/charts.js', '/js/places.js', '/lagos-sim.json', '/lga-grid.json', '/lga-outlines.json', '/app.css', '/favicon.svg', '/demo-city.json',
       '/vendor/maplibre-gl/maplibre-gl.mjs', '/vendor/maplibre-gl/maplibre-gl-worker.mjs', '/vendor/maplibre-gl/maplibre-gl.css', '/api/v1/public/judge/replay'];
     if (cached.every((p) => allowed.includes(p))) ok('cache', `only simulation files cached (${cached.join(', ')})`);
     else fail('cache', `unexpected cache entries: ${cached.join(', ')}`);

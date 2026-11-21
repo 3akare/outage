@@ -6,7 +6,7 @@ inclusion: manual
 
 Check the website the way a judge on an iPhone sees it (ADR 0049, spec `material-redesign`). The app in the browser at `/app/simulate` must match the Android app screen for screen.
 1. Open the Worker URL with no login, on a phone-sized viewport (390 x 844). The landing page at `/` says what the product is, offers "Try the app in your browser", and shows download buttons: GitHub always, Google Play and Aptoide only when `PLAY_URL` and `APTOIDE_URL` are set.
-2. Tap Try the app (`/app/simulate`). The banner "Simulation · simulated data, not live" is always visible. First run asks Use my location or Not now; Use my location shows the system dialog and lands on the map centred on Yaba.
+2. Tap Try the app (`/app/simulate`). The banner "Simulation · simulated data, not live" is always visible. First run asks Choose a place or Not now; Choose a place opens the LGA, ward and block pickers for any of the 20 LGAs, 376 wards and 4,968 blocks.
 3. Home: full-screen hex map, top bar with the mark and a Simulated chip, legend chips, zoom and my-spot buttons, a sheet with the spot card. Tap a hex: the cell sheet with Follow.
 4. Press Simulate a blackout: on, then maybe (snackbar), then out (heads-up notification, red dotted cells, pulse), then the full-screen Light Alarm. "How sure is Outage?" shows the engine's numbers.
 5. Insights and Settings from the bar (Insights, Home, Settings). Compare with the phone: same groups, same words.
