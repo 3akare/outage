@@ -32,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,14 +56,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import app.outage.R
 import app.outage.map.AreaMap
 import app.outage.map.AreaMapSource
 import app.outage.map.CellState
 import app.outage.map.CellStates
 import app.outage.map.BlackoutSim
-import app.outage.demo.ReplayFile
 import app.outage.map.DemoAreaMap
 import app.outage.map.LAGOS_BOUNDS
 import app.outage.map.HexGeoJson
@@ -178,47 +178,25 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
     val geo = rememberPlacesGeo()
     var wardSlug by rememberSaveable { mutableStateOf<String?>(null) }
 
-    // The simulated blackout (the website's /app/simulate): the blocks chosen, their colours over time, and the recorded replay.
-    val context = LocalContext.current
-    var replay by remember { mutableStateOf<ReplayFile?>(null) }
-    LaunchedEffect(map.simulated) { if (map.simulated) replay = withContext(Dispatchers.IO) { loadReplayAsset(context) } }
-    val sim = remember(map.simulated, places, geo) { if (map.simulated && places != null && geo != null) BlackoutSim(places, geo) else null }
+    // The simulated blackout (the website's /app/simulate): shared with the Now tab through the DemoSimViewModel.
+    val simVm: DemoSimViewModel = viewModel()
+    val simState by simVm.sim.state.collectAsStateWithLifecycle()
+    val replay = rememberDemoReplay(map.simulated)
+    val sim = rememberBlackoutSim(if (map.simulated) places else null, geo)
     var areaPick by remember { mutableStateOf<String?>(null) }
-    var simBlocks by remember { mutableStateOf<List<String>>(emptyList()) }
-    var overlay by remember { mutableStateOf<Map<String, CellState>>(emptyMap()) }
-    var running by remember { mutableStateOf(false) }
-    var ranOnce by remember { mutableStateOf(false) }
-    var runKey by remember { mutableIntStateOf(0) }
+    val running = simState.running
+    val ranOnce = simState.ranOnce
+    val overlay = remember(simState.overlay) { simState.overlay.mapKeys { DemoAreaMap.PREFIX + it.key } }
     val states = remember(baseStates, overlay) { if (overlay.isEmpty()) baseStates else baseStates + overlay }
-    LaunchedEffect(runKey) {
-        val r = replay
-        if (runKey == 0 || r == null || simBlocks.isEmpty()) return@LaunchedEffect
-        val blocks = simBlocks
-        running = true
-        ranOnce = false
-        try {
-            overlay = blocks.associate { (DemoAreaMap.PREFIX + it) to CellState.NORMAL }
-            delay(1000)
-            var i = BlackoutSim.firstFrame(r).coerceAtLeast(0)
-            while (i < r.frames.size) {
-                val spread = BlackoutSim.spread(blocks, BlackoutSim.stateOf(r.frames[i].state))
-                overlay = spread.mapKeys { DemoAreaMap.PREFIX + it.key }
-                if (i + 1 < r.frames.size) delay(BlackoutSim.gapMs(r.frames[i], r.frames[i + 1]))
-                i++
-            }
-            ranOnce = true
-        } finally {
-            running = false
-        }
-    }
     // Choose the place the blackout runs on: a block (and its neighbours), or a ward or LGA picked from the search.
     fun chooseTarget(cellId: String?) {
         val s = sim ?: return
+        val r = replay ?: return
         val h = cellId?.let(DemoAreaMap::h3)
         val blocks = if (areaPick != null) s.targetBlocks(areaPick!!) else if (h != null) s.targetBlocks("", h) else emptyList()
         if (blocks.isEmpty()) return
-        simBlocks = blocks
-        runKey++
+        val name = areaPick?.let { places?.lga(it)?.name ?: places?.ward(it)?.let { w -> places?.areaName(w) } } ?: h?.let { places?.areaNameForCell(it) }
+        simVm.start(r, blocks, name)
     }
 
     // The spot's own hexagon from the bundled outlines when the published map does not carry it, so "my spot" always shows.
@@ -282,6 +260,18 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
         controller.flyTo(to, SPOT_ZOOM + 0.5, 1200)
     }
 
+    // A place chosen with "Use this place" (here or on the Now tab) is selected on the map, ready for "Simulate a blackout here".
+    LaunchedEffect(simState.pending, sim) {
+        if (!simState.pending || sim == null) return@LaunchedEffect
+        val first = simState.blocks.firstOrNull() ?: return@LaunchedEffect
+        val pick = simState.pick
+        areaPick = if (pick.cell == null) pick.slug else null
+        wardSlug = pick.ward
+        selectedId = DemoAreaMap.PREFIX + first
+        geo?.centre(first)?.let { controller.flyTo(it, SPOT_ZOOM, 1200) }
+        simVm.sim.consumePending()
+    }
+
     Box(Modifier.fillMaxSize()) {
         OutageMap(
             cells = shown, states = states, spotId = load.spotCellId, selectedId = selectedId, controller = controller,
@@ -290,14 +280,20 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
             outlines = outlines, grid = grid,
             onTap = { id -> areaPick = null; selectedId = id },
         )
-        if (map.simulated && !listView && query.isBlank() && selectedId == null && simBlocks.isEmpty()) {
+        if (map.simulated && !listView && query.isBlank() && selectedId == null && !simState.chosen) {
             Surface(
                 Modifier.align(Alignment.BottomStart).padding(start = 16.dp, end = 76.dp, bottom = inset + 20.dp),
                 shape = RoundedCornerShape(Tokens.cornerL), color = Day.card, shadowElevation = 6.dp,
             ) {
-                Column(Modifier.padding(16.dp)) {
+                Column(Modifier.padding(16.dp).heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
                     Text(stringResource(R.string.map_choose_title), style = DayType.title3, color = Day.ink)
-                    Text(stringResource(R.string.map_choose_body), style = DayType.subhead, color = Day.muted, modifier = Modifier.padding(top = 6.dp))
+                    Text(stringResource(R.string.map_choose_body), style = DayType.subhead, color = Day.muted, modifier = Modifier.padding(top = 6.dp, bottom = 12.dp))
+                    if (places != null) {
+                        DemoPlacePicker(places, simState.pick, { simVm.sim.setPick(it) }, {
+                            val blocks = demoTarget(sim, simState.pick)
+                            if (blocks.isNotEmpty()) simVm.sim.use(simState.pick, blocks, simState.pick.name(places))
+                        })
+                    }
                 }
             }
         }

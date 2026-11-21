@@ -107,7 +107,7 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
                     onTryJudge = { shell.go(Route.Feature(FeatureRegistry.JUDGE)) },
                 )
                 Route.Home -> HomeScreen(
-                    home, homeScroll,
+                    home, homeScroll, demo = BuildConfig.API_BASE.isBlank(),
                     onOpenAlarm = { shell.go(Route.Feature(FeatureRegistry.ALARM)) },
                     onOpenSetup = { key -> if (key == FeatureRegistry.LOG) shell.tab(Route.History) else shell.go(Route.Feature(key)) },
                     onOpenMap = { shell.tab(Route.Map) },
