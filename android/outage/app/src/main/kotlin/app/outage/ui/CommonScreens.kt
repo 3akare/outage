@@ -28,13 +28,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.outage.R
+import app.outage.map.AreaMap
 import app.outage.map.DemoAreaMap
+import app.outage.map.LAGOS_BOUNDS
+import app.outage.places.PlacesAssets
 import app.outage.places.PlacePick
 
 /** The top of a pushed screen: a back row, then the screen's large title (iOS navigation). The back row is a 48 dp target (R6.4). */
@@ -130,10 +136,15 @@ fun FirstRunScreen(finish: () -> Boolean, save: (PlacePick) -> Boolean, onDone: 
         return
     }
     // The real street map of Lagos with the simulated blocks (ADR 0053), as a picture of what the app does.
-    val demo = remember { DemoAreaMap.build(System.currentTimeMillis()) }
-    val states = remember(demo) { demo.cells.associate { it.id to it.state } }
+    val appContext = LocalContext.current.applicationContext
+    var demo by remember { mutableStateOf<AreaMap?>(null) }
+    LaunchedEffect(Unit) {
+        demo = withContext(Dispatchers.IO) { PlacesAssets.demoData(appContext)?.let { DemoAreaMap.build(System.currentTimeMillis(), it) } }
+    }
+    val demoCells = demo?.cells.orEmpty()
+    val states = remember(demo) { demoCells.associate { it.id to it.state } }
     val camera = remember { OutageMapController() }
-    LaunchedEffect(Unit) { camera.flyTo(LAGOS, CITY_ZOOM - 0.4) }
+    LaunchedEffect(Unit) { camera.fitTo(LAGOS_BOUNDS.corners(), 0, 16, 16, 16) }
     BoxWithConstraints(Modifier.fillMaxSize().background(Day.page)) {
         val screenH = maxHeight
         Column(
@@ -142,7 +153,7 @@ fun FirstRunScreen(finish: () -> Boolean, save: (PlacePick) -> Boolean, onDone: 
         ) {
             Box(Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 12.dp).clip(RoundedCornerShape(Tokens.cornerXl))) {
                 OutageMap(
-                    demo.cells, states, spotId = null, selectedId = null, controller = camera,
+                    demoCells, states, spotId = null, selectedId = null, controller = camera,
                     modifier = Modifier.fillMaxWidth().height(screenH * 0.36f), interactive = false,
                 )
             }

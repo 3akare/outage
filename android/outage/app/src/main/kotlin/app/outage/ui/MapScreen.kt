@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,12 +45,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -60,7 +63,10 @@ import app.outage.map.AreaMap
 import app.outage.map.AreaMapSource
 import app.outage.map.CellState
 import app.outage.map.CellStates
+import app.outage.map.BlackoutSim
+import app.outage.demo.ReplayFile
 import app.outage.map.DemoAreaMap
+import app.outage.map.LAGOS_BOUNDS
 import app.outage.map.HexGeoJson
 import app.outage.map.MapArea
 import app.outage.map.MapCell
@@ -101,8 +107,10 @@ fun MapScreen(source: AreaMapSource, followed: PrefsFollowedArea?, spotCell: () 
                 val now = System.currentTimeMillis()
                 val r = withContext(Dispatchers.IO) { source.load(DemoAreaMap.CITY, now) }
                 val withSpot = if (r is MapResult.Loaded && r.load.spotCellId == null) {
-                    val own = withContext(Dispatchers.IO) { spotCell() }
-                    if (own != null) MapResult.Loaded(r.load.copy(spotCellId = own)) else r
+                    val raw = withContext(Dispatchers.IO) { spotCell() }
+                    // The demo map's blocks are "sim-" ids, so a real spot is shown on its simulated twin.
+                    val own = if (r.load.map.simulated && raw != null) DemoAreaMap.PREFIX + raw else raw
+                    if (own != null && (!r.load.map.simulated || r.load.map.cell(own) != null)) MapResult.Loaded(r.load.copy(spotCellId = own)) else r
                 } else r
                 if (withSpot is MapResult.Loaded || result == null) result = withSpot
                 nowMs = System.currentTimeMillis()
@@ -112,25 +120,54 @@ fun MapScreen(source: AreaMapSource, followed: PrefsFollowedArea?, spotCell: () 
     }
     Box(Modifier.fillMaxSize().background(Day.page)) {
         when (val r = result) {
-            null -> CenterMessage(R.string.map_loading, null)
-            MapResult.Empty -> CenterMessage(R.string.map_none, R.string.map_none_body)
+            // Lagos with its grid and boundaries is on screen in every state, with the message on a card over it.
+            null -> MapPlaceholder(R.string.map_loading, null)
+            MapResult.Empty -> MapPlaceholder(R.string.map_none, R.string.map_none_body)
             is MapResult.Loaded -> MapContent(r.load, nowMs, followed)
         }
     }
 }
 
+/** Moves the camera so all of Lagos shows between the bars: the box around every LGA outline, or the fixed Lagos box. */
+private fun fitLagos(controller: OutageMapController, geo: PlacesGeo?, density: Density, topPx: Int, bottomPx: Int, ms: Int) {
+    val corners = geo?.lagosCorners().orEmpty().ifEmpty { LAGOS_BOUNDS.corners() }
+    with(density) { controller.fitTo(corners, ms, 24.dp.roundToPx(), topPx + 12.dp.roundToPx(), bottomPx + 12.dp.roundToPx()) }
+}
+
+/** The map before there is anything to colour (loading, nothing to show, a failed load): still Lagos, with the message in a small card. */
 @Composable
-private fun CenterMessage(titleRes: Int, bodyRes: Int?) {
-    Column(Modifier.fillMaxSize().statusBarsPadding().padding(32.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(stringResource(titleRes), style = DayType.title2, color = Day.ink)
-        if (bodyRes != null) Text(stringResource(bodyRes), style = DayType.subhead, color = Day.muted, modifier = Modifier.padding(top = 8.dp))
+private fun MapPlaceholder(titleRes: Int, bodyRes: Int?) {
+    val geo = rememberPlacesGeo()
+    val controller = remember { OutageMapController() }
+    val inset = LocalMapBottomInset.current
+    val density = LocalDensity.current
+    val lgaLines = remember(geo) { geo?.let { g -> HexGeoJson.lines(g.lgaOutlines.values.flatten()) } }
+    val grid = remember(geo) { geo?.let { HexGeoJson.grid(it.cells.values) } }
+    val barsHeight = with(density) { WindowInsets.statusBars.getTop(this).toDp() } + 128.dp
+    LaunchedEffect(geo) {
+        fitLagos(controller, geo, density, with(density) { barsHeight.roundToPx() }, with(density) { inset.roundToPx() }, 0)
+    }
+    Box(Modifier.fillMaxSize()) {
+        OutageMap(
+            cells = emptyList(), states = emptyMap(), spotId = null, selectedId = null, controller = controller,
+            modifier = Modifier.fillMaxSize(), top = barsHeight, bottom = inset, outlines = lgaLines, grid = grid,
+        )
+        Surface(
+            Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(16.dp), shape = RoundedCornerShape(Tokens.cornerL),
+            color = Day.card, shadowElevation = 6.dp,
+        ) {
+            Column(Modifier.padding(16.dp)) {
+                Text(stringResource(titleRes), style = DayType.title3, color = Day.ink)
+                if (bodyRes != null) Text(stringResource(bodyRes), style = DayType.subhead, color = Day.muted, modifier = Modifier.padding(top = 6.dp))
+            }
+        }
     }
 }
 
 @Composable
 private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?) {
     val map = load.map
-    val states = remember(map, nowMs) { map.cells.associate { it.id to CellStates.effective(it, nowMs) } }
+    val baseStates = remember(map, nowMs) { map.cells.associate { it.id to CellStates.effective(it, nowMs) } }
     var listView by rememberSaveable { mutableStateOf(false) }
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     var followedSlug by remember { mutableStateOf(followed?.read()) }
@@ -140,6 +177,49 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
     val places = rememberPlaces()
     val geo = rememberPlacesGeo()
     var wardSlug by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // The simulated blackout (the website's /app/simulate): the blocks chosen, their colours over time, and the recorded replay.
+    val context = LocalContext.current
+    var replay by remember { mutableStateOf<ReplayFile?>(null) }
+    LaunchedEffect(map.simulated) { if (map.simulated) replay = withContext(Dispatchers.IO) { loadReplayAsset(context) } }
+    val sim = remember(map.simulated, places, geo) { if (map.simulated && places != null && geo != null) BlackoutSim(places, geo) else null }
+    var areaPick by remember { mutableStateOf<String?>(null) }
+    var simBlocks by remember { mutableStateOf<List<String>>(emptyList()) }
+    var overlay by remember { mutableStateOf<Map<String, CellState>>(emptyMap()) }
+    var running by remember { mutableStateOf(false) }
+    var ranOnce by remember { mutableStateOf(false) }
+    var runKey by remember { mutableIntStateOf(0) }
+    val states = remember(baseStates, overlay) { if (overlay.isEmpty()) baseStates else baseStates + overlay }
+    LaunchedEffect(runKey) {
+        val r = replay
+        if (runKey == 0 || r == null || simBlocks.isEmpty()) return@LaunchedEffect
+        val blocks = simBlocks
+        running = true
+        ranOnce = false
+        try {
+            overlay = blocks.associate { (DemoAreaMap.PREFIX + it) to CellState.NORMAL }
+            delay(1000)
+            var i = BlackoutSim.firstFrame(r).coerceAtLeast(0)
+            while (i < r.frames.size) {
+                val spread = BlackoutSim.spread(blocks, BlackoutSim.stateOf(r.frames[i].state))
+                overlay = spread.mapKeys { DemoAreaMap.PREFIX + it.key }
+                if (i + 1 < r.frames.size) delay(BlackoutSim.gapMs(r.frames[i], r.frames[i + 1]))
+                i++
+            }
+            ranOnce = true
+        } finally {
+            running = false
+        }
+    }
+    // Choose the place the blackout runs on: a block (and its neighbours), or a ward or LGA picked from the search.
+    fun chooseTarget(cellId: String?) {
+        val s = sim ?: return
+        val h = cellId?.let(DemoAreaMap::h3)
+        val blocks = if (areaPick != null) s.targetBlocks(areaPick!!) else if (h != null) s.targetBlocks("", h) else emptyList()
+        if (blocks.isEmpty()) return
+        simBlocks = blocks
+        runKey++
+    }
 
     // The spot's own hexagon from the bundled outlines when the published map does not carry it, so "my spot" always shows.
     val spotExtra = remember(map, geo, load.spotCellId) {
@@ -171,11 +251,7 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
 
     // All 20 local governments in view: the box around every LGA outline, below the bars and above the tab bar.
     val density = LocalDensity.current
-    val showCity: (Int) -> Unit = { ms ->
-        val corners = geo?.lagosCorners().orEmpty()
-        if (corners.isEmpty()) controller.flyTo(LAGOS, CITY_ZOOM, ms)
-        else with(density) { controller.fitTo(corners, ms, 24.dp.roundToPx(), barsHeight.roundToPx() + 12.dp.roundToPx(), inset.roundToPx() + 12.dp.roundToPx()) }
-    }
+    val showCity: (Int) -> Unit = { ms -> fitLagos(controller, geo, density, with(density) { barsHeight.roundToPx() }, with(density) { inset.roundToPx() }, ms) }
     // Open over all of Lagos, then fly down to the spot once the street map is in, like "my location" in a maps app.
     LaunchedEffect(spotLL, geo != null) {
         showCity(0)
@@ -190,6 +266,7 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
         listView = false
         query = ""
         wardSlug = null
+        areaPick = if (map.simulated) area.slug else null
         selectedId = c.id
         controller.flyTo(HexGeoJson.centre(c), SPOT_ZOOM, 1200)
     }
@@ -199,7 +276,9 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
         listView = false
         query = ""
         wardSlug = ward.slug
-        selectedId = ward.anchor.takeIf { map.cell(it) != null }
+        val anchorId = if (map.simulated) DemoAreaMap.PREFIX + ward.anchor else ward.anchor
+        areaPick = if (map.simulated) ward.slug else null
+        selectedId = anchorId.takeIf { map.cell(it) != null }
         controller.flyTo(to, SPOT_ZOOM + 0.5, 1200)
     }
 
@@ -209,8 +288,19 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
             modifier = Modifier.fillMaxSize(), top = barsHeight, bottom = inset,
             description = stringResource(R.string.map_summary, total, out, possible),
             outlines = outlines, grid = grid,
-            onTap = { id -> selectedId = id },
+            onTap = { id -> areaPick = null; selectedId = id },
         )
+        if (map.simulated && !listView && query.isBlank() && selectedId == null && simBlocks.isEmpty()) {
+            Surface(
+                Modifier.align(Alignment.BottomStart).padding(start = 16.dp, end = 76.dp, bottom = inset + 20.dp),
+                shape = RoundedCornerShape(Tokens.cornerL), color = Day.card, shadowElevation = 6.dp,
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(stringResource(R.string.map_choose_title), style = DayType.title3, color = Day.ink)
+                    Text(stringResource(R.string.map_choose_body), style = DayType.subhead, color = Day.muted, modifier = Modifier.padding(top = 6.dp))
+                }
+            }
+        }
         if (listView) {
             Box(Modifier.fillMaxSize().background(Day.page).padding(top = barsHeight, bottom = inset)) {
                 AreaList(map, areaStates, nowMs) { goToArea(it) }
@@ -255,7 +345,8 @@ private fun MapContent(load: MapLoad, nowMs: Long, followed: PrefsFollowedArea?)
         DaySheet(onDismiss = { selectedId = null }) {
             CellSheet(
                 cell, map, states[cell.id] ?: cell.state, nowMs, load, isSpot = cell.id == load.spotCellId, followedSlug = followedSlug,
-                ward = places?.wardOfCell(cell.id), places = places,
+                ward = places?.wardOfCell(DemoAreaMap.h3(cell.id)), places = places,
+                simulate = if (sim != null && replay != null) ({ chooseTarget(cell.id) }) else null, running = running, ranOnce = ranOnce,
                 onFollow = { slug -> followed?.save(slug); followedSlug = slug },
             )
         }
@@ -403,10 +494,10 @@ fun StateSwatch(state: CellState, sizeDp: Dp) {
 @Composable
 fun stateLabel(state: CellState): String = stringResource(
     when (state) {
-        CellState.NORMAL -> R.string.status_normal
-        CellState.POSSIBLE -> R.string.status_possible
-        CellState.CONFIRMED -> R.string.status_confirmed
-        CellState.RESTORED -> R.string.status_restored
+        CellState.NORMAL -> R.string.map_short_normal
+        CellState.POSSIBLE -> R.string.map_short_possible
+        CellState.CONFIRMED -> R.string.map_short_confirmed
+        CellState.RESTORED -> R.string.map_short_restored
         CellState.NO_DATA -> R.string.map_no_data
     },
 )
@@ -476,6 +567,9 @@ private fun CellSheet(
     followedSlug: String?,
     ward: Ward?,
     places: Places?,
+    simulate: (() -> Unit)?,
+    running: Boolean,
+    ranOnce: Boolean,
     onFollow: (String) -> Unit,
 ) {
     val area = map.area(cell.areaSlug)
@@ -522,6 +616,12 @@ private fun CellSheet(
             }
         }
         Gap(8.dp)
+        if (simulate != null) {
+            InkButton(
+                stringResource(if (running) R.string.map_simulating else if (ranOnce) R.string.map_simulate_again else R.string.map_simulate_here),
+                simulate, Modifier.fillMaxWidth(), enabled = !running,
+            )
+        }
         val following = followedSlug == cell.areaSlug
         if (following) {
             FillButton(stringResource(R.string.map_following), {}, Modifier.fillMaxWidth(), enabled = false)

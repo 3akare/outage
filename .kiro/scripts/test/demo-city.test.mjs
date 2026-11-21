@@ -1,4 +1,4 @@
-// ADR 0052: the committed simulated city (web JSON and the phone's Kotlin) is exactly what the generator builds.
+// ADR 0052: the committed simulated city (web JSON) is exactly what the generator builds.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -10,18 +10,11 @@ test('demo city: the committed JSON is current', () => {
   assert.equal(readFileSync(paths.json, 'utf8'), `${JSON.stringify(city)}\n`, 'run node tools/sim/scripts/build-demo-city.mjs');
 });
 
-test('demo city: the phone has the same blocks and spot as the web', () => {
-  const kt = readFileSync(paths.kt, 'utf8');
-  for (const c of city.cells) assert.ok(kt.includes(`DemoCityCell("${c.id}", "${c.area}", CellState.${c.state},`), c.id);
-  assert.ok(kt.includes(`const val SPOT = "${city.spot}"`));
-});
-
 test('demo city: every block id is marked simulated', () => {
   assert.ok(city.cells.every((c) => c.id.startsWith('sim-')));
 });
 
-test('ADR 0053 simulated history: six weeks per area, inside the days, never overlapping, same on the phone', () => {
-  const kt = readFileSync(paths.kt, 'utf8');
+test('ADR 0053 simulated history: six weeks per area, inside the days, never overlapping', () => {
   const days = city.historyWeeks * 7;
   for (const a of city.areas) {
     assert.ok(a.outages.length > 0, a.slug);
@@ -32,6 +25,5 @@ test('ADR 0053 simulated history: six weeks per area, inside the days, never ove
     });
     ends.sort((x, y) => x[0] - y[0]);
     for (let i = 1; i < ends.length; i++) assert.ok(ends[i][0] >= ends[i - 1][1], `${a.slug} overlaps at ${i}`);
-    assert.ok(kt.includes(`"${a.band}", intArrayOf(${a.outages.flat().join(', ')}))`), `${a.slug} on the phone`);
   }
 });

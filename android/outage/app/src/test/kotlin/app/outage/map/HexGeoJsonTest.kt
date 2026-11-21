@@ -7,14 +7,15 @@ import org.junit.Test
 
 /** ADR 0053: the hex grid handed to MapLibre is valid GeoJSON with [lng, lat] positions, closed rings and the drawn state. */
 class HexGeoJsonTest {
-    private val map = DemoAreaMap.build(1_000_000L)
+    private val map = LagosFixtures.demo(1_000_000L)
+    private val spotId = map.areas.first { it.slug == "ikeja" }.centreCell
 
     @Suppress("UNCHECKED_CAST")
     private fun features(json: String) = (MiniJson.parse(json) as Map<String, Any?>)["features"] as List<Map<String, Any?>>
 
     @Test
     fun everyDemoCellBecomesOneClosedPolygonInLngLatOrder() {
-        val fs = features(HexGeoJson.cells(map.cells, emptyMap(), DemoCity.SPOT))
+        val fs = features(HexGeoJson.cells(map.cells, emptyMap(), spotId))
         assertEquals(map.cells.size, fs.size)
         for ((f, c) in fs.zip(map.cells)) {
             @Suppress("UNCHECKED_CAST")
@@ -24,18 +25,18 @@ class HexGeoJsonTest {
             // Lagos is about 3.4 E, 6.5 N: longitude first.
             assertEquals(c.ring[0].lng, ring[0][0], 1e-6)
             assertEquals(c.ring[0].lat, ring[0][1], 1e-6)
-            assertTrue(ring.all { it[0] in 2.9..4.0 && it[1] in 6.2..6.8 })
+            assertTrue(ring.all { it[0] in 2.6..4.5 && it[1] in 6.2..6.8 })
         }
     }
 
     @Test
     fun propertiesCarryIdAreaStateAndSpot() {
-        val yaba = map.cell(DemoCity.SPOT)!!
+        val yaba = map.cell(spotId)!!
         val fs = features(HexGeoJson.cells(listOf(yaba), mapOf(yaba.id to CellState.CONFIRMED), yaba.id))
         @Suppress("UNCHECKED_CAST")
         val p = fs.single()["properties"] as Map<String, Any?>
         assertEquals(yaba.id, p[HexGeoJson.PROP_ID])
-        assertEquals("yaba", p[HexGeoJson.PROP_AREA])
+        assertEquals("ikeja", p[HexGeoJson.PROP_AREA])
         assertEquals("CONFIRMED", p[HexGeoJson.PROP_STATE])
         assertEquals(true, p[HexGeoJson.PROP_SPOT])
     }

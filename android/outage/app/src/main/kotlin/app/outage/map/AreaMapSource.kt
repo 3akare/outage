@@ -20,10 +20,15 @@ interface MapCache {
     fun clear()
 }
 
-/** Labelled sample map for demo and judges (R5). Never touches the cache (AM6). The sample spot is the Yaba centre block. */
-class DemoAreaMapSource : AreaMapSource {
-    override suspend fun load(city: String, nowMs: Long): MapResult =
-        MapResult.Loaded(MapLoad(DemoAreaMap.build(nowMs), spotCellId = DemoCity.SPOT, fetchedMs = nowMs, fromCache = false))
+/**
+ * Labelled sample map for demo and judges (R5). Never touches the cache (AM6). It has no spot until the person chooses a place,
+ * like the website. [data] reads the bundled Lagos files; when they cannot be read the result is [MapResult.Empty].
+ */
+class DemoAreaMapSource(private val data: () -> LagosDemoData?) : AreaMapSource {
+    override suspend fun load(city: String, nowMs: Long): MapResult {
+        val d = data() ?: return MapResult.Empty
+        return MapResult.Loaded(MapLoad(DemoAreaMap.build(nowMs, d), spotCellId = null, fetchedMs = nowMs, fromCache = false))
+    }
 }
 
 /**
@@ -52,6 +57,6 @@ class NetAreaMapSource(
 
 object AreaMapSources {
     /** Demo until a Worker address is set at build time (`-PoutageApiBase=https://...`). */
-    fun choose(apiBase: String, cache: MapCache, fetch: suspend (String) -> String?): AreaMapSource =
-        if (apiBase.isBlank()) DemoAreaMapSource() else NetAreaMapSource(apiBase, cache, fetch)
+    fun choose(apiBase: String, cache: MapCache, demoData: () -> LagosDemoData? = { null }, fetch: suspend (String) -> String?): AreaMapSource =
+        if (apiBase.isBlank()) DemoAreaMapSource(demoData) else NetAreaMapSource(apiBase, cache, fetch)
 }

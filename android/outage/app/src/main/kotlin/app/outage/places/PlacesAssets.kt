@@ -1,6 +1,8 @@
 package app.outage.places
 
 import android.content.Context
+import app.outage.map.CellState
+import app.outage.map.LagosDemoData
 import app.outage.onboarding.OnboardingRecord
 import app.outage.onboarding.OnboardingStore
 
@@ -11,6 +13,7 @@ import app.outage.onboarding.OnboardingStore
 object PlacesAssets {
     const val PLACES = "lagos-places.json"
     const val GEO = "lagos-geo.json"
+    const val STATES = "lagos-states.json"
 
     @Volatile private var places: Places? = null
     @Volatile private var geo: PlacesGeo? = null
@@ -25,6 +28,17 @@ object PlacesAssets {
 
     fun geo(ctx: Context): PlacesGeo? = geo ?: synchronized(GEO) {
         geo ?: runCatching { PlacesGeo.parse(read(ctx, GEO)) }.getOrNull()?.also { geo = it }
+    }
+
+    /** The simulation's made-up state for every Lagos block (same file as the website). Null when it cannot be read. */
+    fun states(ctx: Context): Map<String, CellState>? = runCatching { LagosStates.parse(read(ctx, STATES)) }.getOrNull()
+
+    /** Everything the demo map is made of, or null when any file cannot be read. Call off the main thread. */
+    fun demoData(ctx: Context): LagosDemoData? {
+        val places = places(ctx) ?: return null
+        val geo = geo(ctx) ?: return null
+        val states = states(ctx) ?: return null
+        return LagosDemoData(places, geo, states)
     }
 
     private fun read(ctx: Context, name: String): String = ctx.assets.open(name).bufferedReader().use { it.readText() }
