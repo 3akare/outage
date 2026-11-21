@@ -8,8 +8,11 @@ import { html, type Rendered } from '../site/headers.ts';
 import { icon, type IconName } from '../site/icons.ts';
 import type { Site } from '../site/layout.ts';
 import { LOGO_SVG } from '../site/logo.gen.ts';
+import { APP_CSS_HREF } from '../ui/app/design.ts';
 import { legendHtml, MAPLIBRE_CSS_PATH, SIMULATE_PATH } from '../ui/simulate/simulate.ts';
-import city from '@outage/shared/fixtures/demo-city.json' with { type: 'json' };
+import lagosStates from '@outage/shared/fixtures/places/lagos-states.json' with { type: 'json' };
+import { CATALOG } from '../areas/catalog/index.ts';
+import { lgasOf } from '../areas/catalog/schema.ts';
 
 export const SIMULATE_HREF = SIMULATE_PATH;
 export const REPO_URL = 'https://github.com/3akare/outage';
@@ -41,14 +44,15 @@ const STEPS: [string, string, string, string][] = [
   ['4:02:17', 'RESTORED', 'Your alarm rings', 'Power is back, so you can switch the pump on.'],
 ];
 
-/** The Now card for Yaba as the simulated city has it, the same component the app shows. */
+/** The Now card for Eti-Osa (Lekki, Ikoyi and Victoria Island) as the simulated Lagos has it, the same component the app shows. */
 function nowCard(): string {
-  const yaba = city.areas.find((a) => a.slug === 'yaba');
-  const cells = yaba ? city.cells.filter((c) => c.area === 'yaba') : [];
-  const on = cells.filter((c) => c.state === 'NORMAL').length;
+  const eti = lgasOf(CATALOG.areas).find((a) => a.slug === 'eti-osa');
+  const states = lagosStates.states as Record<string, string>;
+  const cells = eti?.cells ?? [];
+  const on = cells.filter((c) => states[c] === 'NORMAL').length;
   return (
-    '<div class="status nowcard" data-state="NORMAL" aria-label="The Now screen of the app, for Yaba"><div class="status-top">' +
-    `<span class="glyph">${LOGO_SVG}</span><p class="status-word">Power is on</p><p class="status-for">Yaba, right now</p></div>` +
+    '<div class="status nowcard" data-state="NORMAL" aria-label="The Now screen of the app, for Eti-Osa"><div class="status-top">' +
+    `<span class="glyph">${LOGO_SVG}</span><p class="status-word">Power is on</p><p class="status-for">Eti-Osa, right now</p></div>` +
     `<div class="status-body"><p class="sub">On in ${on} of ${cells.length} blocks. Simulated.</p>` +
     '<ol class="track" aria-hidden="true"><li class="done">On</li><li>Maybe</li><li>Out</li><li>Back</li></ol></div></div>'
   );
@@ -103,7 +107,7 @@ export function renderLanding(site: Site): Rendered {
     '<meta name="description" content="Phones that are charging stop together when the power goes. Outage confirms blackouts block by block on a map and tells you when power is back.">' +
     '<meta name="theme-color" content="#f5f5f7">' +
     `<link rel="canonical" href="${e(site.origin)}/">${FAVICON_LINK}` +
-    `<link rel="stylesheet" href="${MAPLIBRE_CSS_PATH}"><link rel="stylesheet" href="/app.css"></head><body>${nav}<main>${hero}${how}${features}${privacy}${get}</main>${foot}` +
+    `<link rel="stylesheet" href="${MAPLIBRE_CSS_PATH}"><link rel="stylesheet" href="${APP_CSS_HREF}"></head><body>${nav}<main>${hero}${how}${features}${privacy}${get}</main>${foot}` +
     `<script type="module" src="${LANDING_JS_PATH}"></script></body></html>`;
   return html(page, 3600, { map: true });
 }

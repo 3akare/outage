@@ -202,7 +202,7 @@ body.sim{height:100dvh;display:flex;flex-direction:column;overflow:hidden;backgr
 .app.intro .screen,.app.intro .mapwrap{visibility:hidden}
 
 /* Tab bar: phone at the bottom, computer on the left. */
-.rail{grid-area:bar;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:4px 8px calc(4px + env(safe-area-inset-bottom));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--c-rule);z-index:30}
+.rail{grid-area:bar;display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);padding:4px max(8px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--c-rule);z-index:30}
 .rail .rail-brand{display:none}
 .rail button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:52px;color:var(--c-muted);font:var(--t-caption);transition:color .15s var(--ease)}
 .rail button .ico{width:24px;height:24px}
@@ -218,7 +218,7 @@ body.sim{height:100dvh;display:flex;flex-direction:column;overflow:hidden;backgr
   .app[data-tab="now"] .mapwrap .search,.app[data-tab="now"] .mapwrap .sheet{display:none}
   .app[data-tab="now"] #now{border-right:1px solid var(--c-rule)}
   .app[data-tab="now"] #now .screen-in{padding:28px 24px 40px}
-  .rail{grid-template-columns:none;grid-auto-rows:min-content;align-content:start;gap:2px;padding:20px 12px;border-top:0;border-right:1px solid var(--c-rule);background:var(--c-paper-2);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .rail{grid-template-columns:none;grid-auto-flow:row;grid-auto-columns:auto;grid-auto-rows:min-content;align-content:start;gap:2px;padding:20px 12px;border-top:0;border-right:1px solid var(--c-rule);background:var(--c-paper-2);-webkit-backdrop-filter:none;backdrop-filter:none}
   .rail .rail-brand{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;margin-bottom:16px;color:var(--c-ink);font:var(--t-headline)}
   .rail .rail-brand .mark{width:24px;height:24px}
   .rail button{flex-direction:row;justify-content:flex-start;gap:12px;min-height:44px;padding:0 12px;border-radius:var(--r-s);font:var(--t-body);font-weight:500;color:var(--c-ink-2)}
@@ -364,3 +364,15 @@ const MOTION = `
 }`;
 
 export const APP_CSS = `${STAMP}\n${TOKENS_CSS}${FONT}${BASE}${SITE}${APP}${MOTION}`.replace(/\n\s*/g, '\n');
+
+/**
+ * A short fingerprint of the stylesheet text (FNV-1a, 32 bits, in base 36). Every page links `/app.css?v=<this>`, so a
+ * changed stylesheet is a new address and no browser or service worker can keep showing the old one. This is what
+ * left some phones with an old, off-centre tab bar after a deploy (docs/session-notes.md, 2026-11-22).
+ */
+export const CSS_VERSION = (() => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < APP_CSS.length; i++) h = Math.imul(h ^ APP_CSS.charCodeAt(i), 0x01000193) >>> 0;
+  return h.toString(36);
+})();
+export const APP_CSS_HREF = `/app.css?v=${CSS_VERSION}`;

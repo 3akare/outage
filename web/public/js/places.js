@@ -5,13 +5,16 @@
 const KM = 111.32; // kilometres in one degree of latitude
 const NEAR_KM = 1.1; // hex centres on the res-8 grid sit about 0.9 km apart: closer than this means next door
 
+// The letters of `states` in /lagos-sim.json, one per cell (web/ui/simulate/lagos-sim.ts).
+const STATE_OF = { N: 'NORMAL', P: 'POSSIBLE', C: 'CONFIRMED', R: 'RESTORED', D: 'NO_DATA' };
+
 /** Turns the file into places, hexes and the lookups the picker, the search and the replay use. */
 export function buildPlaces(sim) {
-  const cells = sim.cells.map((c) => {
+  const cells = sim.cells.map((c, i) => {
     const [h, la, ln] = c;
     const ring = [];
     for (let i = 3; i < c.length; i += 2) ring.push([(la + c[i]) / 1e5, (ln + c[i + 1]) / 1e5]);
-    return { id: `sim-${h}`, area: '', state: 'NO_DATA', ring, lat: la / 1e5, lng: ln / 1e5 };
+    return { id: `sim-${h}`, area: '', state: STATE_OF[sim.states?.[i]] ?? 'NO_DATA', ring, lat: la / 1e5, lng: ln / 1e5 };
   });
   const byId = Object.fromEntries(cells.map((c) => [c.id, c]));
   const areas = {};

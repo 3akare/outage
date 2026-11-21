@@ -182,6 +182,76 @@ try {
     if (!banner || banner.y > 1) fail(where, 'banner is not pinned at the top');
     await ctx.close();
   }
+  // The tab bar is centred as drawn, and every web map starts on Lagos with its cells coloured.
+  const BOX = { w: 2.7, s: 6.36, e: 4.37, n: 6.71 }; // LAGOS_BOUNDS in public/js/map.js
+  for (const w of [360, 390, 412, 768]) {
+    for (const scheme of ['light', 'dark']) {
+      const ctx = await browser.newContext({ viewport: { width: w, height: 800 }, deviceScaleFactor: 1, colorScheme: scheme });
+      const pg = await ctx.newPage();
+      watch(pg);
+      const where = `dock /app/simulate (${w}${scheme === 'dark' ? ', dark' : ''})`;
+      await pg.goto(`${BASE}/app/simulate`, { waitUntil: 'networkidle' });
+      const d = await pg.evaluate(() => {
+        const rail = document.querySelector('nav.rail').getBoundingClientRect();
+        const b = [...document.querySelectorAll('nav.rail button')].map((e) => e.getBoundingClientRect());
+        return { railL: rail.left, railR: innerWidth - rail.right, firstL: b[0].left - rail.left, lastR: rail.right - b[b.length - 1].right, mid: (b[1].left + b[1].right) / 2, vw: innerWidth, sw: document.documentElement.scrollWidth, n: b.length };
+      });
+      const bad = [];
+      if (Math.abs(d.railL - d.railR) > 1) bad.push(`rail gaps ${d.railL}/${d.railR}`);
+      if (Math.abs(d.firstL - d.lastR) > 1) bad.push(`first button ${d.firstL} vs last ${d.lastR}`);
+      if (Math.abs(d.mid - d.vw / 2) > 1) bad.push(`middle button at ${d.mid}, middle of screen ${d.vw / 2}`);
+      if (d.sw > d.vw) bad.push(`horizontal scroll ${d.sw}`);
+      if (bad.length) fail(where, bad.join('; '));
+      else ok(where, `rail gaps ${d.railL}/${d.railR}, button gaps ${d.firstL}/${d.lastR}, middle button at ${d.mid}`);
+      if (scheme === 'light') await pg.screenshot({ path: `${SHOTS}/dock-${w}.png` });
+      await ctx.close();
+    }
+  }
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const pg = await ctx.newPage();
+    watch(pg);
+    await pg.goto(`${BASE}/app/simulate`, { waitUntil: 'networkidle' });
+    const r = await pg.evaluate(() => {
+      const rail = document.querySelector('nav.rail').getBoundingClientRect();
+      const b = [...document.querySelectorAll('nav.rail button')].map((e) => e.getBoundingClientRect());
+      return { left: rail.left, width: rail.width, tall: rail.height > 300, stacked: b[1].top > b[0].top };
+    });
+    if (r.left === 0 && r.width < 300 && r.tall && r.stacked) ok('dock /app/simulate (1280)', `rail is the left column, ${r.width}px wide`);
+    else fail('dock /app/simulate (1280)', `rail is not a left column: ${JSON.stringify(r)}`);
+    await ctx.close();
+  }
+  const startView = (m) => {
+    const c = m.getCenter();
+    const data = m.getSource('cells')?.serialize().data;
+    const feats = data?.features ?? [];
+    const coloured = feats.filter((f) => f.properties.state !== 'NO_DATA').length;
+    return { lng: c.lng, lat: c.lat, zoom: m.getZoom(), cells: feats.length, coloured };
+  };
+  for (const [path, size, blockOutlines] of [['/app/simulate', 390, false], ['/app/simulate', 1280, false], ['/', 390, false], ['/', 1280, false], ['/app/simulate', 390, true]]) {
+    const ctx = await browser.newContext({ viewport: { width: size, height: size === 390 ? 844 : 800 } });
+    const pg = await ctx.newPage();
+    watch(pg);
+    // Pretend the outlines file fails: the map must still be on Lagos. The browser's own network error for it is expected.
+    if (blockOutlines) await pg.route('**/lga-outlines.json', (route) => route.abort());
+    if (blockOutlines) expected404.add(`${BASE}/lga-outlines.json`);
+    const where = `map start ${path} (${size}${blockOutlines ? ', outlines blocked' : ''})`;
+    await pg.goto(BASE + path, { waitUntil: 'networkidle' });
+    await pg.waitForFunction(() => window.__outageMap?.getSource('cells'), null, { timeout: 15000 }).catch(() => {});
+    const v = await pg.evaluate(`(${startView.toString()})(window.__outageMap)`).catch(() => null);
+    if (!v) {
+      fail(where, 'no map found');
+      await ctx.close();
+      continue;
+    }
+    const inBox = v.lng >= BOX.w && v.lng <= BOX.e && v.lat >= BOX.s && v.lat <= BOX.n;
+    // On the app the intro is still showing here: the map was built behind it and must already be on Lagos.
+    if (!inBox || v.zoom < 7) fail(where, `map is not on Lagos: centre ${v.lng.toFixed(2)},${v.lat.toFixed(2)} zoom ${v.zoom.toFixed(2)}`);
+    else ok(where, `centre ${v.lng.toFixed(2)},${v.lat.toFixed(2)} zoom ${v.zoom.toFixed(2)}`);
+    if (v.cells !== 4968 || v.coloured / v.cells <= 0.5) fail(where, `cells coloured ${v.coloured} of ${v.cells}`);
+    else ok(where, `${v.coloured} of ${v.cells} cells coloured`);
+    await ctx.close();
+  }
   await playApp({ w: W, h: H }, '');
   await playApp({ w: 1280, h: 800 }, '-desktop');
 

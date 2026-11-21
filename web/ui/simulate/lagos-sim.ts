@@ -5,9 +5,13 @@
 import { cellToBoundary, cellToLatLng } from 'h3-js';
 import { CATALOG } from '../../areas/catalog/index.ts';
 import { lgasOf, wardsOf } from '../../areas/catalog/schema.ts';
+import lagosStates from '@outage/shared/fixtures/places/lagos-states.json' with { type: 'json' };
 import { json, type Rendered } from '../../site/headers.ts';
 
 export const LAGOS_SIM_PATH = '/lagos-sim.json';
+
+/** One letter per state in `LagosSim.states`: On, Possible, Confirmed (out), Restored (back), no Data. */
+export const STATE_LETTERS: Record<string, string> = { NORMAL: 'N', POSSIBLE: 'P', CONFIRMED: 'C', RESTORED: 'R', NO_DATA: 'D' };
 
 export type LagosSim = {
   /** [slug, name, indexes into `cells`] for each LGA. */
@@ -16,6 +20,8 @@ export type LagosSim = {
   wards: [string, string, number, number[]][];
   /** [H3 index, lat, lng, then 6 pairs of (lat, lng) offsets], numbers in 1e-5 degrees. */
   cells: (string | number)[][];
+  /** The made-up power state of each cell, one letter per cell in the order of `cells` (STATE_LETTERS). From core/shared/fixtures/places/lagos-states.json, which the phone reads too. */
+  states: string;
 };
 
 const e5 = (n: number): number => Math.round(n * 1e5);
@@ -36,7 +42,9 @@ export function buildLagosSim(): LagosSim {
   lgas.forEach((l, li) => {
     for (const w of wardsOf(CATALOG.areas, l.slug)) wards.push([w.slug, w.name, li, idx(w.cells)]);
   });
-  return { lgas: lgas.map((l) => [l.slug, l.name, idx(l.cells)]), wards, cells };
+  const known = lagosStates.states as Record<string, string>;
+  const states = order.map((id) => STATE_LETTERS[known[id] ?? 'NO_DATA'] ?? 'D').join('');
+  return { lgas: lgas.map((l) => [l.slug, l.name, idx(l.cells)]), wards, cells, states };
 }
 
 let cached: Rendered | undefined;

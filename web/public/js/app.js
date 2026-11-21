@@ -50,7 +50,7 @@ const city = { cells: places.cells };
 const AREA_OF = Object.fromEntries(city.cells.map((c) => [c.id, c.area]));
 const AREAS = places.areas;
 const CELL = places.byId;
-// The place the blackout is simulated on: { slug, cell } and its blocks, the spot first. Null until one is chosen.
+// The place the blackout is simulated on (the rest of Lagos keeps its made-up colours): { slug, cell } and its blocks, the spot first. Null until one is chosen.
 let target = null;
 let blocks = [];
 let SPOT = null;
@@ -58,7 +58,7 @@ let SPOT_LL = null;
 const targetName = () => (target ? AREAS[target.slug].name : '');
 
 /* ---- Map ---- */
-const M = createMap($('map'), city, { center: [8, 12], zoom: 1.6 });
+const M = createMap($('map'), city, { fitPadding: 24 });
 let spotSet = false;
 
 function padding() {
@@ -381,7 +381,7 @@ function setTarget(slug, cellId = null, fly = true) {
   SPOT_LL = cellCentre(CELL[SPOT]);
   spotSet = true;
   const on = new Set(blocks);
-  START = Object.fromEntries(city.cells.map((c) => [c.id, on.has(c.id) ? 'NORMAL' : 'NO_DATA']));
+  START = Object.fromEntries(city.cells.map((c) => [c.id, on.has(c.id) ? 'NORMAL' : c.state]));
   const a = AREAS[slug];
   Object.assign(pick3, a.kind === 'lga' ? { lga: slug, ward: '', cell: '' } : { lga: a.lga, ward: slug, cell: cellId ?? '' });
   reset();

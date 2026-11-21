@@ -1,5 +1,6 @@
 // Page layout for the public area pages: the shared stylesheet (/app.css, same origin) and at most one inline
 // script carrying the nonce placeholder (R1.5, R1.6). No external font, script, image or tracker. Readable with scripts off (R1.4).
+import { APP_CSS_HREF } from '../ui/app/design.ts';
 import { escapeHtml } from './escape.ts';
 import { NONCE_PLACEHOLDER } from './headers.ts';
 import { brandLink, FAVICON_LINK } from './brand.ts';
@@ -36,7 +37,7 @@ export function layout(input: LayoutInput): string {
     `<meta name="description" content="${escapeHtml(input.description)}">` +
     `<link rel="canonical" href="${escapeHtml(canonical)}">` +
     (input.noindex ? '<meta name="robots" content="noindex">' : '') +
-    `${FAVICON_LINK}<link rel="stylesheet" href="/app.css"></head><body>` +
+    `${FAVICON_LINK}<link rel="stylesheet" href="${APP_CSS_HREF}"></head><body>` +
     `<header class="site-top"><div class="container">${brandLink('/')}<nav aria-label="Site"><a class="hide-s" href="/areas">Areas</a><a class="hide-s" href="/install">Install</a><a class="btn primary" href="/app/simulate">Try it</a></nav></div></header>` +
     `<div class="site container">${input.body}</div>` +
     `<footer class="site-foot"><div class="container">${brandLink('/')}<ul><li><a href="/app/simulate">Try the app</a></li><li><a href="/areas">Areas</a></li><li><a href="/install">Install</a></li><li><a href="/privacy">Privacy</a></li></ul></div></footer>` +

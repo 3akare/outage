@@ -4,6 +4,7 @@
 // blackout is the replay built by tools/sim from the real detection engine; the page never reads the public index (W6).
 // This file renders the shell. The behaviour is in public/js/app.js, served as a static file with MapLibre.
 import city from '@outage/shared/fixtures/demo-city.json' with { type: 'json' };
+import { APP_CSS_HREF } from '../app/design.ts';
 import { FAVICON_LINK } from '../../site/brand.ts';
 import { escapeHtml as e, safeHref } from '../../site/escape.ts';
 import { html, json, type Rendered } from '../../site/headers.ts';
@@ -114,6 +115,6 @@ export function renderSimulatePage(site: Site): Rendered {
     '<meta name="theme-color" content="#1d1d1f">' +
     `<link rel="canonical" href="${e(site.origin + SIMULATE_PATH)}">${FAVICON_LINK}` +
     `<link rel="modulepreload" href="/vendor/maplibre-gl/maplibre-gl.mjs"><link rel="stylesheet" href="${MAPLIBRE_CSS_PATH}">` +
-    `<link rel="stylesheet" href="/app.css"></head><body class="sim">${body}</body></html>`;
+    `<link rel="stylesheet" href="${APP_CSS_HREF}"></head><body class="sim">${body}</body></html>`;
   return html(page, TTL_SECONDS, { map: true });
 }
