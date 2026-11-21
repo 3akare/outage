@@ -50,7 +50,7 @@ const city = { cells: places.cells };
 const AREA_OF = Object.fromEntries(city.cells.map((c) => [c.id, c.area]));
 const AREAS = places.areas;
 const CELL = places.byId;
-// The place the blackout is simulated on: { slug, cell } and its blocks, the spot first. Null until one is chosen.
+// The place the blackout is simulated on (the rest of Lagos keeps its made-up colours): { slug, cell } and its blocks, the spot first. Null until one is chosen.
 let target = null;
 let blocks = [];
 let SPOT = null;
@@ -58,15 +58,25 @@ let SPOT_LL = null;
 const targetName = () => (target ? AREAS[target.slug].name : '');
 
 /* ---- Map ---- */
-const M = createMap($('map'), city, { center: [8, 12], zoom: 1.6 });
+const M = createMap($('map'), city, { fitPadding: 8 });
 let spotSet = false;
 
 function padding() {
   const sheet = $('sheet');
   const open = !sheet.hidden;
   if (wide()) return { left: open && app.dataset.tab === 'map' ? 440 : 40, top: 90, right: 40, bottom: 40 };
-  return { left: 32, right: 32, top: 90, bottom: open ? Math.min(window.innerHeight * 0.55, sheet.getBoundingClientRect().height) + 24 : 80 };
+  return { left: 8, right: 8, top: 90, bottom: open ? Math.min(window.innerHeight * 0.55, sheet.getBoundingClientRect().height) + 24 : 80 };
 }
+// Keep Lagos filling the map whenever the map changes size (tab switch, window resize, phone turned) until the person
+// moves the map themselves or a place is chosen.
+let moved = false;
+for (const ev of ['dragstart', 'zoomstart', 'rotatestart'])
+  M.map.on(ev, (e) => {
+    if (e.originalEvent) moved = true;
+  });
+M.map.on('resize', () => {
+  if (!spotSet && !moved) M.showLagos(0, padding());
+});
 const flyTo = (ll, zoom, ms = 1800) => M.flyTo(ll, zoom, ms, padding());
 $('zin').onclick = () => M.map.zoomIn();
 $('zout').onclick = () => M.map.zoomOut();
@@ -381,7 +391,7 @@ function setTarget(slug, cellId = null, fly = true) {
   SPOT_LL = cellCentre(CELL[SPOT]);
   spotSet = true;
   const on = new Set(blocks);
-  START = Object.fromEntries(city.cells.map((c) => [c.id, on.has(c.id) ? 'NORMAL' : 'NO_DATA']));
+  START = Object.fromEntries(city.cells.map((c) => [c.id, on.has(c.id) ? 'NORMAL' : c.state]));
   const a = AREAS[slug];
   Object.assign(pick3, a.kind === 'lga' ? { lga: slug, ward: '', cell: '' } : { lga: a.lga, ward: slug, cell: cellId ?? '' });
   reset();

@@ -2,6 +2,7 @@
 // The page itself is in simulate.ts. The replay is simulated data from a static file. No real route receives it (R6.8, W6).
 import { json, type Rendered } from '../../site/headers.ts';
 import type { StateKey } from '../../site/strings.ts';
+import { CSS_VERSION } from '../app/design.ts';
 
 /** The shape of `replay.json` that this page reads (design section 7). Built by `tools/sim`; never written by hand. */
 export type ReplayData = {
@@ -77,12 +78,15 @@ export function renderJudgeReplayJson(replay: ReplayData | null): Rendered {
 // Service worker (R6.7, ADR 0016 revised in ADR 0029): keeps the simulation page, its script, the stylesheet, the icon and
 // the replay JSON so a refresh works with no network (the street map itself needs the network). It handles only those GET paths, so it never touches a real page or real data.
 // Worker scope and fetch events: https://developer.mozilla.org/docs/Web/API/Service_Worker_API
-const SW = `var K='sim-v8',P=['/app/simulate','/fonts/inter.woff2','/js/app.js','/js/map.js','/js/data.js','/js/places.js','/app.css','/favicon.svg','/demo-city.json','/lagos-sim.json','/lga-outlines.json','/lga-grid.json','/vendor/maplibre-gl/maplibre-gl.mjs','/vendor/maplibre-gl/maplibre-gl-worker.mjs','/vendor/maplibre-gl/maplibre-gl.css','${JUDGE_API_PATH}'];
-self.addEventListener('install',function(e){e.waitUntil(caches.open(K).then(function(c){return c.addAll(P);}).then(function(){return self.skipWaiting();}));});
+// The cache is named after the stylesheet's fingerprint (CSS_VERSION), so each new stylesheet drops the old cache, and
+// `cache:'no-cache'` makes "network first" really ask the network:
+// a plain fetch(e.request) was answered from the browser's own HTTP cache for up to an hour, which kept old files alive.
+const SW = `var K='sim-${CSS_VERSION}',P=['/app/simulate','/fonts/inter.woff2','/js/app.js','/js/map.js','/js/data.js','/js/places.js','/app.css','/favicon.svg','/demo-city.json','/lagos-sim.json','/lga-outlines.json','/lga-grid.json','/vendor/maplibre-gl/maplibre-gl.mjs','/vendor/maplibre-gl/maplibre-gl-worker.mjs','/vendor/maplibre-gl/maplibre-gl.css','${JUDGE_API_PATH}'];
+self.addEventListener('install',function(e){e.waitUntil(caches.open(K).then(function(c){return c.addAll(P.map(function(p){return new Request(p,{cache:'reload'});}));}).then(function(){return self.skipWaiting();}));});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(ks){return Promise.all(ks.filter(function(k){return k!==K;}).map(function(k){return caches.delete(k);}));}).then(function(){return self.clients.claim();}));});
 self.addEventListener('fetch',function(e){var u=new URL(e.request.url);
 if(e.request.method!=='GET'||u.origin!==self.location.origin||P.indexOf(u.pathname)<0)return;
-e.respondWith(fetch(e.request).then(function(r){if(r.ok){var c=r.clone();caches.open(K).then(function(x){x.put(u.pathname,c);});}return r;})
+e.respondWith(fetch(e.request,{cache:'no-cache'}).then(function(r){if(r.ok){var c=r.clone();caches.open(K).then(function(x){x.put(u.pathname,c);});}return r;})
 .catch(function(){return caches.match(u.pathname).then(function(m){return m||Response.error();});}));});
 `;
 

@@ -4,3 +4,8 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Cache-Control: public, max-age=3600
+# The app's own scripts are asked about every time (a cheap 304 when nothing changed), so a deploy reaches everyone at
+# once. Their file names never change, so a long cache here left people on old code.
+/js/*
+  ! Cache-Control
+  Cache-Control: no-cache

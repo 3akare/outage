@@ -87,7 +87,9 @@ class MapTest {
         assertTrue(p.project(LatLng(6.5158, 3.4)).x > 0)
     }
 
-    private val map = DemoAreaMap.build(1_700_000_000_000L)
+    // A slice of the demo map (one LGA's blocks) keeps the pure geometry checks quick.
+    private val full = LagosFixtures.demo()
+    private val map = full.copy(cells = full.cells.filter { it.areaSlug == "ikeja" })
     private val grid = HexGrid.build(map)
     private val vp = MapViewport(grid.bounds!!, 1080.0, 1600.0)
 
@@ -159,7 +161,7 @@ class MapTest {
 
     @Test
     fun focus_view_centres_on_the_spot() {
-        val spot = grid.shape(map.area("yaba")!!.centreCell)!!.centre
+        val spot = grid.shape(full.area("ikeja")!!.centreCell)!!.centre
         val t = MapTransform.focusOn(spot, 0.03, vp)
         val s = t.toScreen(spot)
         assertEquals(vp.viewW / 2, s.x, 1e-6)
@@ -193,18 +195,21 @@ class MapTest {
     }
 
     @Test
-    fun demo_map_is_real_lagos_areas_simulated_and_mixed() {
-        assertTrue(map.simulated)
-        assertEquals(DemoCity.cells.size, map.cells.size)
-        assertTrue(map.areas.size >= 10) // real Lagos areas at their real places (ADR 0052)
-        assertTrue(map.cells.map { it.id }.all { it.startsWith("sim-") })
-        assertEquals(map.cells.size, map.cells.map { it.id }.toSet().size)
-        val states = map.cells.map { it.state }.toSet()
-        assertEquals(CellState.values().toSet(), states)
-        assertTrue(map.cells.all { it.ring.size == 6 })
-        assertNotNull(map.area("yaba"))
-        assertTrue(map.areas.all { a -> a.cellIds.all { map.cell(it) != null } && a.centreCell in a.cellIds })
-        map.cells.filter { it.state == CellState.NO_DATA }.forEach { assertTrue(it.history.isEmpty() && it.sinceMs == null) }
+    fun demo_map_is_every_lagos_block_in_the_twenty_lgas_with_the_shared_states() {
+        assertTrue(full.simulated)
+        assertEquals(4968, full.cells.size)
+        assertEquals(20, full.areas.size)
+        assertTrue(full.cells.all { it.id.startsWith("sim-") })
+        assertEquals(full.cells.size, full.cells.map { it.id }.toSet().size)
+        assertTrue(full.cells.all { it.ring.size == 6 && it.areaSlug.isNotEmpty() })
+        assertEquals(full.cells.size, full.areas.sumOf { it.cellIds.size })
+        assertTrue(full.areas.all { a -> a.cellIds.all { full.cell(it) != null } && a.centreCell in a.cellIds })
+        // The colours are the website's: the same file, cell for cell.
+        for (c in full.cells) assertEquals(c.id, LagosFixtures.states.getValue(DemoAreaMap.h3(c.id)), c.state)
+        val noData = full.cells.count { it.state == CellState.NO_DATA }
+        assertTrue("$noData of 4968 have no data", noData < 4968 * 0.15)
+        assertEquals(CellState.values().toSet(), full.cells.map { it.state }.toSet())
+        full.cells.filter { it.state == CellState.NO_DATA }.forEach { assertTrue(it.history.isEmpty() && it.sinceMs == null) }
     }
 
     @Test

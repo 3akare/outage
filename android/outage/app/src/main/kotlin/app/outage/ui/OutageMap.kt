@@ -25,6 +25,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.outage.map.CellState
+import app.outage.map.LAGOS_BOUNDS
+import app.outage.map.LAGOS_MIN_ZOOM
+import app.outage.map.LAGOS_OPEN_ZOOM
 import app.outage.map.HexGeoJson
 import app.outage.map.LatLng
 import app.outage.map.MapCell
@@ -32,6 +35,7 @@ import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression
@@ -161,7 +165,11 @@ fun OutageMap(
     // MapLibre must be initialised before the first MapView. No key: OpenFreeMap needs none.
     val mapView = remember {
         MapLibre.getInstance(context.applicationContext)
-        MapView(context).apply { onCreate(null) }
+        // Lagos from the very first frame: the camera and the minimum zoom are set before any style or tile loads, so the
+        // world (0, 0, zoom 0) never shows. The website does the same (LAGOS_BOUNDS in web/public/js/app.js).
+        val open = CameraPosition.Builder().target(MlLatLng(LAGOS_BOUNDS.centre.lat, LAGOS_BOUNDS.centre.lng)).zoom(LAGOS_OPEN_ZOOM).build()
+        val options = MapLibreMapOptions.createFromAttributes(context).camera(open).minZoomPreference(LAGOS_MIN_ZOOM)
+        MapView(context, options).apply { onCreate(null) }
     }
 
     // Forward the screen's lifecycle to the MapView, and low memory from the system.
@@ -205,7 +213,7 @@ fun OutageMap(
                 setCompassEnabled(true)
                 setAllGesturesEnabled(interactive)
             }
-            map.setMinZoomPreference(3.0)
+            map.setMinZoomPreference(LAGOS_MIN_ZOOM)
             map.setMaxZoomPreference(18.0)
             map.setStyle(Style.Builder().fromUri(MAP_STYLE_URL)) { s ->
                 s.addSource(GeoJsonSource(SRC_CELLS, HexGeoJson.cells(emptyList(), emptyMap(), null)))

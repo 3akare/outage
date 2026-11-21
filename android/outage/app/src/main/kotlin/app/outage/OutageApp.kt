@@ -252,7 +252,7 @@ class OutageApp : Application() {
     private fun registerMap() {
         val cache = FileMapCache(File(filesDir, "map"))
         val followed = PrefsFollowedArea(this)
-        val source = AreaMapSources.choose(BuildConfig.API_BASE, cache) { url -> withContext(Dispatchers.IO) { MapHttp.get(url) } }
+        val source = AreaMapSources.choose(BuildConfig.API_BASE, cache, demoData = { PlacesAssets.demoData(this) }) { url -> withContext(Dispatchers.IO) { MapHttp.get(url) } }
         graph.features.register(FeatureRegistry.AREA, R.string.nav_home, { MapScreen(source, followed, spotCell = { graph.onboarding.load()?.cell }) }, null)
         graph.deletes.register("map_cache") { cache.clear() }
         graph.deletes.register("followed_area") { followed.clear() }

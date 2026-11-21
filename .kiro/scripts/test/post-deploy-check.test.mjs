@@ -18,6 +18,11 @@ function run(mode) {
       res.end();
       return;
     }
+    if (req.url.startsWith('/js/')) {
+      res.writeHead(200, { 'cache-control': mode === 'jsCached' ? 'public, max-age=3600' : 'no-cache' });
+      res.end('1');
+      return;
+    }
     const nonce = mode === 'repeat' ? 'fixed' : `n${n++}`;
     const body = {
       ok: `<script nonce="${nonce}">1</script><style nonce="${nonce}">a{}</style><link rel="stylesheet" href="/app.css"><script src="/app.js" defer></script>`,
@@ -29,6 +34,7 @@ function run(mode) {
       external: '<script src="https://x.test/a.js"></script>',
       protocolRelative: '<script src="//x.test/a.js"></script>',
       repeat: '<script src="/app.js"></script>',
+      jsCached: '<script src="/app.js"></script>',
       brokenRedirect: '<script src="/app.js"></script>',
     }[mode];
     res.writeHead(200, {
@@ -50,6 +56,6 @@ function run(mode) {
 }
 
 for (const mode of ['ok', 'sameOriginOnly']) test(`post-deploy check passes: ${mode}`, async () => assert.equal(await run(mode), 0));
-for (const mode of ['inlineNoNonce', 'styleNoNonce', 'wrongNonce', 'placeholder', 'external', 'protocolRelative', 'repeat', 'brokenRedirect']) {
+for (const mode of ['inlineNoNonce', 'styleNoNonce', 'wrongNonce', 'placeholder', 'external', 'protocolRelative', 'repeat', 'brokenRedirect', 'jsCached']) {
   test(`post-deploy check fails: ${mode}`, async () => assert.notEqual(await run(mode), 0));
 }

@@ -123,7 +123,7 @@ androidComponents {
         variant.sources.assets?.addGeneratedSourceDirectory(copyReplay, CopyReplay::outputDir)
         val copyPlaces = tasks.register<CopyPlaces>("copyPlaces" + variant.name.replaceFirstChar { it.uppercase() }) {
             val dir = layout.projectDirectory.dir("../../../core/shared/fixtures/places")
-            files.from(dir.file("lagos-places.json"), dir.file("lagos-geo.json"))
+            files.from(dir.file("lagos-places.json"), dir.file("lagos-geo.json"), dir.file("lagos-states.json"))
         }
         variant.sources.assets?.addGeneratedSourceDirectory(copyPlaces, CopyPlaces::outputDir)
     }

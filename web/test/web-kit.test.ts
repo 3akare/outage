@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { escapeHtml, escapeXml, safeHref } from '../site/escape.ts';
 import { contentSecurityPolicy, finalize, html, json, makeNonce, methodNotAllowed, NONCE_PLACEHOLDER } from '../site/headers.ts';
 import { layout } from '../site/layout.ts';
+import { APP_CSS_HREF } from '../ui/app/design.ts';
 import { PUBLIC_STATE_KEYS, STATE_KEYS, stateText } from '../site/strings.ts';
 import { SITE } from './web-helpers.ts';
 
@@ -98,7 +99,7 @@ describe('W8 headers and escaping', () => {
     const out = layout({ site: SITE, title: 't', description: 'd', path: '/', body: '<main></main>', script: 'void 0' });
     expect(out).not.toMatch(/(src|href)="https?:\/\/(?!outage\.test)/);
     // The one stylesheet is the shared same-origin /app.css (ADR 0048); the one font is Inter from this origin (ADR 0054).
-    expect([...out.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/g)].map((m) => m[0])).toEqual(['<link rel="stylesheet" href="/app.css">']);
+    expect([...out.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/g)].map((m) => m[0])).toEqual([`<link rel="stylesheet" href="${APP_CSS_HREF}">`]);
     expect([...out.matchAll(/<link[^>]+rel="preload"[^>]*>/g)].map((m) => m[0])).toEqual([
       '<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>',
     ]);

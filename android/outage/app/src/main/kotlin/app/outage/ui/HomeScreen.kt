@@ -22,6 +22,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import app.outage.R
 import app.outage.sensor.SensorKind
 import app.outage.shell.AgeLabel
@@ -44,8 +45,14 @@ fun HomeScreen(
     onOpenSetup: (String) -> Unit,
     onOpenMap: () -> Unit,
     spotName: () -> String? = { null },
+    demo: Boolean = false,
 ) {
-    val state by vm.state.collectAsStateWithLifecycle()
+    val realState by vm.state.collectAsStateWithLifecycle()
+    // Demo mode: the Now tab answers for the simulated place chosen here or on the Map tab, following the replay.
+    val simVm: DemoSimViewModel = viewModel()
+    val sim by simVm.sim.state.collectAsStateWithLifecycle()
+    val simulatedNow = showsSimulatedNow(demo, sim)
+    val state = if (simulatedNow) simulatedHome(realState, sim) else realState
     // Refresh when the screen is visible, then once a minute so "Updated 2 min ago" stays true.
     // https://developer.android.com/topic/libraries/architecture/coroutines#repeatOnLifecycle
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -59,10 +66,10 @@ fun HomeScreen(
     }
     // Plug, unplug, sensor events and the sensor starting after app open show within about a second.
     RefreshOnPlugOrSensor { vm.refresh() }
-    val name = remember(state) { spotName() }
+    val name = remember(state, simulatedNow, sim.name) { if (simulatedNow) sim.name else spotName() }
     DayPage(scroll = scroll) {
         LargeTitle(name ?: stringResource(R.string.nav_now), supporting = stringResource(if (name != null) R.string.now_your_spot else R.string.now_no_spot), top = 20.dp)
-        HomeContent(state, onOpenAlarm, onOpenSetup, onOpenMap, hasSpot = name != null)
+        HomeContent(state, onOpenAlarm, onOpenSetup, onOpenMap, hasSpot = name != null, afterHero = if (demo) ({ DemoNowControls(simVm, sim) }) else null)
     }
 }
 
@@ -73,8 +80,10 @@ fun HomeContent(
     onOpenSetup: (String) -> Unit,
     onOpenMap: () -> Unit,
     hasSpot: Boolean = state.area != null,
+    afterHero: (@Composable () -> Unit)? = null,
 ) {
     StatusHero(state)
+    afterHero?.invoke()
 
     // Steps that used to block first run wait here until done, and go once they are (ADR 0026).
     // A chosen Lagos ward spot is enough; the area status may still be loading (ADR 0056).

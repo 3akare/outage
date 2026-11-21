@@ -21,6 +21,24 @@ data class MapCell(
     val ring: List<LatLng>,
 )
 
+/**
+ * The box the map opens on and cannot zoom out of: all of Lagos State, the same box as the website (LAGOS_BOUNDS in
+ * web/public/js/map.js, [[2.7, 6.36], [4.37, 6.71]] as lng, lat). The first frame is Lagos, never the world.
+ */
+data class LagosBounds(val south: Double, val west: Double, val north: Double, val east: Double) {
+    val centre: LatLng get() = LatLng((south + north) / 2, (west + east) / 2)
+    fun corners(): List<LatLng> = listOf(LatLng(south, west), LatLng(south, east), LatLng(north, west), LatLng(north, east))
+    fun contains(p: LatLng): Boolean = p.lat in south..north && p.lng in west..east
+}
+
+val LAGOS_BOUNDS = LagosBounds(south = 6.36, west = 2.7, north = 6.71, east = 4.37)
+
+/** The map cannot zoom out past this, so the world never shows (same as the website's min zoom). */
+const val LAGOS_MIN_ZOOM = 7.0
+
+/** The zoom the map opens at before it has been sized, so Lagos fills the first frame. */
+const val LAGOS_OPEN_ZOOM = 8.0
+
 data class MapArea(val slug: String, val name: String, val centreCell: String, val cellIds: List<String>)
 
 data class AreaMap(
@@ -30,7 +48,8 @@ data class AreaMap(
     val areas: List<MapArea>,
     val cells: List<MapCell>,
 ) {
-    fun cell(id: String): MapCell? = cells.firstOrNull { it.id == id }
+    private val cellById: Map<String, MapCell> by lazy { cells.associateBy { it.id } }
+    fun cell(id: String): MapCell? = cellById[id]
     fun area(slug: String): MapArea? = areas.firstOrNull { it.slug == slug }
 }
 

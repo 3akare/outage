@@ -4,6 +4,11 @@ import { PageCache } from '../site/cache.ts';
 import type { IndexReader } from '../api/public-index/reader.ts';
 import { handleWeb, type WebDeps } from '../routes.ts';
 import designSrc from '../ui/app/design.ts?raw';
+import { APP_CSS_HREF, CSS_VERSION } from '../ui/app/design.ts';
+import lagosStates from '@outage/shared/fixtures/places/lagos-states.json' with { type: 'json' };
+import landingJs from '../public/js/landing.js?raw';
+import headersFile from '../public/_headers?raw';
+import mapJs from '../public/js/map.js?raw';
 import appJs from '../public/js/app.js?raw';
 import { NAV_ORDER } from '../ui/simulate/simulate.ts';
 // @ts-expect-error plain browser script, no types
@@ -72,9 +77,76 @@ describe('every Lagos place is an option for the simulation', () => {
 });
 
 describe('the tab bar sits in the middle', () => {
-  it('has exactly as many columns as tabs, so the buttons fill the bar', () => {
-    const phone = /\.rail\{[^}]*grid-template-columns:repeat\((\d+),minmax\(0,1fr\)\)/.exec(designSrc);
+  it('lays the phone bar out as equal columns for however many tabs there are, so it never needs a count', () => {
+    const phone = /\.rail\{[^}]*grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax\(0,1fr\)/.exec(designSrc);
     expect(phone, 'phone tab bar rule').not.toBeNull();
-    expect(Number(phone?.[1])).toBe(NAV_ORDER.length);
+    expect(designSrc).not.toMatch(/\.rail\{[^}]*repeat\(\d/);
+    expect(NAV_ORDER.length).toBeGreaterThan(0);
+  });
+
+  it('keeps landscape phones centred with the safe-area insets, and the computer rail a vertical list', () => {
+    expect(designSrc).toContain('max(8px,env(safe-area-inset-left))');
+    expect(designSrc).toContain('max(8px,env(safe-area-inset-right))');
+    expect(designSrc).toMatch(/@media \(min-width:900px\)\{[\s\S]*\.rail\{grid-template-columns:none;grid-auto-flow:row;/);
+  });
+});
+
+describe('a deploy always reaches people (no old stylesheet or script)', () => {
+  it('links the stylesheet with its fingerprint on the app, the landing page and the area pages', async () => {
+    expect(APP_CSS_HREF).toBe(`/app.css?v=${CSS_VERSION}`);
+    for (const path of ['/app/simulate', '/']) expect((await get(path)).headers && (await (await get(path)).text())).toContain(`href="${APP_CSS_HREF}"`);
+  });
+
+  it('serves the stylesheet at its fingerprinted address and names the service worker cache after it', async () => {
+    const css = await get(APP_CSS_HREF);
+    expect(css.status).toBe(200);
+    const sw = await (await get('/judge-sw.js')).text();
+    expect(sw).toContain(`'sim-${CSS_VERSION}'`);
+    expect(sw).toContain("cache:'no-cache'");
+  });
+
+  it('keeps the map attribution icon at 24px so the 44px summary rule cannot tile it twice', () => {
+    expect(designSrc).toMatch(/summary\.maplibregl-ctrl-attrib-button\{min-height:0;height:24px;/);
+  });
+
+  it('asks for the scripts every time', () => {
+    expect(headersFile).toMatch(/\/js\/\*\n\s+! Cache-Control\n\s+Cache-Control: no-cache/);
+  });
+});
+
+describe('every Lagos block has a made-up power colour', () => {
+  it('the shared file has a state for each of the 4,968 blocks, under 15% with no data, and colour in every LGA', async () => {
+    const states = lagosStates.states as Record<string, string>;
+    expect(Object.keys(states)).toHaveLength(4968);
+    const noData = Object.values(states).filter((s) => s === 'NO_DATA').length;
+    expect(noData / 4968).toBeLessThan(0.15);
+    const p = await load();
+    for (const l of p.lgas) {
+      const own = p.areas[l.slug].cells as string[];
+      expect(own.some((id) => p.byId[id].state !== 'NO_DATA'), l.name).toBe(true);
+      expect(own.some((id) => ['POSSIBLE', 'CONFIRMED', 'RESTORED'].includes(p.byId[id].state)), l.name).toBe(true);
+    }
+  });
+
+  it('the sim file carries those states and places.js uses them, not NO_DATA for everything', async () => {
+    const states = lagosStates.states as Record<string, string>;
+    const p = await load();
+    for (const c of p.cells as { id: string; state: string }[]) expect(c.state).toBe(states[c.id.slice(4)]);
+    expect(p.cells.filter((c: { state: string }) => c.state === 'NO_DATA').length).toBeLessThan(4968 / 2);
+  });
+
+  it('the chosen place starts on, the rest of Lagos keeps its colours, and the landing map draws all of it', () => {
+    expect(appJs).toContain("on.has(c.id) ? 'NORMAL' : c.state");
+    expect(landingJs).toContain('/lagos-sim.json');
+    expect(landingJs).not.toContain('demo-city');
+  });
+});
+
+describe('every web map opens on Lagos', () => {
+  it('is built with the Lagos box, never a world view', () => {
+    expect(mapJs).toContain('bounds: LAGOS_BOUNDS');
+    expect(mapJs).toMatch(/minZoom: MIN_ZOOM/);
+    expect(appJs).not.toMatch(/center: \[8, 12\]|zoom: 1\.6/);
+    expect(landingJs).not.toMatch(/center:/);
   });
 });

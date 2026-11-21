@@ -1,11 +1,16 @@
 // The street map with the power layer on top (ADR 0053, ADR 0054). MapLibre GL JS (BSD-3-Clause), served from this origin, draws
 // OpenFreeMap's "Liberty" street map (OpenStreetMap data, no key). Over it, every block of the simulated city is a
 // see-through hexagon coloured by its power state, laid under the street and place names so they stay readable.
-// Zoomed out, the map is a globe; zoomed in, a flat street map.
+// It opens on Lagos (LAGOS_BOUNDS); zoomed out as far as it goes it is a globe, zoomed in a flat street map.
 import { AttributionControl, Map as MapLibre } from '/vendor/maplibre-gl/maplibre-gl.mjs';
 
 export const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
 export const LAGOS = [3.42, 6.52];
+/** The box that holds all 20 local governments, [[west, south], [east, north]]. Every map starts here, so the first frame is
+ * Lagos and never the world, even if /lga-outlines.json is slow or fails. A test (web/test/lga-geojson.test.ts) checks it still holds the served outlines. */
+export const LAGOS_BOUNDS = [[2.7, 6.36], [4.37, 6.71]];
+/** Nobody needs to zoom out further than this: it still shows all of Lagos State and some of the coast. */
+export const MIN_ZOOM = 7;
 
 // The power colours of the hex layer come from the stylesheet's tokens (tokens.json "map", the same on the phone), so
 // this file holds no colour of its own. MapLibre needs real colour strings, so they are read once from :root.
@@ -51,9 +56,9 @@ export function createMap(container, city, opts = {}) {
   const map = new MapLibre({
     container,
     style: STYLE_URL,
-    center: opts.center ?? LAGOS,
-    zoom: opts.zoom ?? 10.5,
-    minZoom: 1,
+    // Lagos from the first frame. Only a caller that asks for a centre on purpose gets one.
+    ...(opts.center ? { center: opts.center, zoom: opts.zoom ?? 10.5 } : { bounds: LAGOS_BOUNDS, fitBoundsOptions: { padding: opts.fitPadding ?? 24 } }),
+    minZoom: MIN_ZOOM,
     maxZoom: 18,
     interactive: opts.interactive !== false,
     attributionControl: false,
@@ -63,6 +68,7 @@ export function createMap(container, city, opts = {}) {
     touchPitch: false,
   });
   map.touchZoomRotate?.disableRotation();
+  window.__outageMap = map; // read-only handle for the visual check (web/visual/check.mjs)
   if (opts.attribution !== false) map.addControl(new AttributionControl({ compact: true }), 'bottom-right');
 
   let states = {};
@@ -76,15 +82,18 @@ export function createMap(container, city, opts = {}) {
   // Every land hex of Lagos as thin lines (one MultiLineString, shared edges once), under the LGA borders and names.
   const gridData = fetch('/lga-grid.json').then((r) => r.json()).catch(() => null);
   const showLagos = (ms, padding) => {
-    if (!lgaBox) return;
+    const box = lgaBox ? [[lgaBox[0], lgaBox[1]], [lgaBox[2], lgaBox[3]]] : LAGOS_BOUNDS;
     const pad = typeof padding === 'number' ? padding : { top: 24, bottom: 24, left: 24, right: 24, ...(padding ?? {}) };
-    map.fitBounds([[lgaBox[0], lgaBox[1]], [lgaBox[2], lgaBox[3]]], { padding: pad, duration: ms, animate: ms > 0, essential: true });
+    map.fitBounds(box, { padding: pad, duration: ms, animate: ms > 0, essential: true });
   };
 
   map.on('style.load', () => {
     if (opts.globe !== false) map.setProjection({ type: 'globe' });
   });
   map.on('load', () => {
+    // The box given to the constructor is fitted before the page has laid the container out on some phones, which left the
+    // map zoomed far out. Fit again now that the size is known (no animation).
+    if (!opts.center) showLagos(0, opts.fitPadding);
     // Under the first label layer, so street and place names draw on top of the colour.
     const firstLabel = map.getStyle().layers.find((l) => l.type === 'symbol')?.id;
     map.addSource('cells', { type: 'geojson', data: cellsGeoJson(city.cells, states), promoteId: 'id' });

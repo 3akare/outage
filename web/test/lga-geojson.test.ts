@@ -6,6 +6,7 @@ import { buildLgaGeoJson } from '../areas/lga-geojson.ts';
 import { buildLgaGrid, type LgaGridGeoJson, lagosCells, renderLgaGrid } from '../areas/lga-grid.ts';
 import { areaStates, renderMap } from '../areas/map-svg.ts';
 import { renderHomePage } from '../areas/pages.ts';
+import mapJs from '../public/js/map.js?raw';
 import { NOW, SITE } from './web-helpers.ts';
 
 const NAMES = [
@@ -56,6 +57,21 @@ describe('all 20 local governments are on every map', () => {
     const page = renderHomePage({ site: SITE, areas: CATALOG.areas, views: [], nowMs: NOW }).body;
     for (const n of NAMES) expect(page).toContain(`>${n}</text>`);
     for (const a of LGAS) expect(page).toContain(`href="/area/${a.slug}"`);
+  });
+
+  it('every web map starts in the Lagos box, which holds all the outlines and is no bigger than a couple of tenths of a degree more', () => {
+    const m = /LAGOS_BOUNDS = \[\[([\d.]+), ([\d.]+)\], \[([\d.]+), ([\d.]+)\]\]/.exec(mapJs);
+    expect(m, 'LAGOS_BOUNDS in map.js').not.toBeNull();
+    const [bw, bs, be, bn] = (m as RegExpExecArray).slice(1).map(Number) as [number, number, number, number];
+    const [w, s, e, n] = buildLgaGeoJson(new Map(LGAS.map((a) => [a.slug, a.name])), LGA_OUTLINES).bbox;
+    expect(bw).toBeLessThanOrEqual(w);
+    expect(bs).toBeLessThanOrEqual(s);
+    expect(be).toBeGreaterThanOrEqual(e);
+    expect(bn).toBeGreaterThanOrEqual(n);
+    expect(w - bw).toBeLessThan(0.2);
+    expect(be - e).toBeLessThan(0.2);
+    expect(s - bs).toBeLessThan(0.2);
+    expect(bn - n).toBeLessThan(0.2);
   });
 
   it('the street-map outlines hold 20 named features and the box covers every point, Epe and Badagry included', () => {

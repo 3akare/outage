@@ -73,9 +73,12 @@ class MapSourceTest {
 
     @Test
     fun demo_source_is_simulated_and_writes_nothing() = runBlocking {
-        val r = DemoAreaMapSource().load("lagos", 1_000L) as MapResult.Loaded
+        val r = DemoAreaMapSource { LagosFixtures.data }.load("lagos", 1_000L) as MapResult.Loaded
         assertTrue(r.load.map.simulated)
-        assertTrue(r.load.map.cell(r.load.spotCellId!!) != null)
+        assertEquals(4968, r.load.map.cells.size)
+        assertNull(r.load.spotCellId)
+        // Without the bundled files there is nothing to show, never a crash.
+        assertEquals(MapResult.Empty, DemoAreaMapSource { null }.load("lagos", 1_000L))
     }
 
     @Test

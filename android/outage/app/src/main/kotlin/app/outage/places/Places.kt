@@ -1,5 +1,7 @@
 package app.outage.places
 
+import app.outage.map.CellState
+import app.outage.map.CellStates
 import app.outage.map.LatLng
 import app.outage.onboarding.MiniJson
 import java.text.Normalizer
@@ -9,7 +11,9 @@ import java.text.Normalizer
  * `core/shared/fixtures/places/lagos-places.json` (GRID3, CC BY-SA 4.0). Pure Kotlin, so JUnit reads the real file.
  * A person picks LGA, then ward; the ward's anchor is the cell unless they tap another of the ward's cells.
  */
-data class Lga(val slug: String, val name: String, val nipost: String, val centreCell: String, val wardSlugs: List<String>, val cellCount: Int)
+data class Lga(val slug: String, val name: String, val nipost: String, val centreCell: String, val wardSlugs: List<String>, val cells: List<String>) {
+    val cellCount: Int get() = cells.size
+}
 
 data class Ward(val slug: String, val name: String, val alt: List<String>, val lgaSlug: String, val anchor: String, val cells: List<String>) {
     /** A ward with one cell, or none of its own (the anchor then sits in a neighbour), needs no map step. */
@@ -87,7 +91,7 @@ class Places(val lgas: List<Lga>, val wards: List<Ward>, val attribution: String
             val root = MiniJson.parse(text) as Map<*, *>
             val lgas = (root["lgas"] as List<*>).map {
                 val m = it as Map<*, *>
-                Lga(m.s("slug"), m.s("name"), m.s("nipost"), m.s("centreCell"), m.strings("wards"), (m["cells"] as List<*>).size)
+                Lga(m.s("slug"), m.s("name"), m.s("nipost"), m.s("centreCell"), m.strings("wards"), m.strings("cells"))
             }
             val wards = (root["wards"] as List<*>).map {
                 val m = it as Map<*, *>
@@ -125,6 +129,17 @@ class PlacesGeo(val cells: Map<String, List<LatLng>>, val lgaOutlines: Map<Strin
             val cells = (root["cells"] as Map<*, *>).entries.associate { (k, r) -> k as String to ring(r) }
             return PlacesGeo(cells, rings(root["lgas"]), rings(root["wards"]))
         }
+    }
+}
+
+/**
+ * The made-up power state of every Lagos block for the simulation (`core/shared/fixtures/places/lagos-states.json`, built by
+ * tools/sim/scripts/build-lagos-states.mjs): the same file the website reads, so both show the same map. Keyed by H3 index.
+ */
+object LagosStates {
+    fun parse(text: String): Map<String, CellState> {
+        val root = MiniJson.parse(text) as Map<*, *>
+        return (root["states"] as Map<*, *>).entries.associate { (k, v) -> k as String to CellStates.fromPublic(v as? String) }
     }
 }
 
