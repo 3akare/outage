@@ -112,9 +112,15 @@ try {
     await pg.goto(`${BASE}/app/simulate`, { waitUntil: 'networkidle' });
     await pg.screenshot({ path: `${SHOTS}/simulate-welcome${tag}.png` });
     await pg.click('#useloc');
-    await pg.click('.scrim button[data-a="1"]');
+    // Every place is an option: pick Ikeja, its first ward, then use it.
+    await pg.selectOption('#plga', 'ikeja');
+    await pg.selectOption('#pward', { index: 1 });
+    await pg.click('#usepick');
     await pg.waitForTimeout(600);
-    await pg.waitForTimeout(3400); // the fly-in to the spot
+    await pg.waitForTimeout(1600); // the fly-in to the place
+    const counts = await pg.evaluate(() => ({ lgas: document.querySelectorAll('#plga option[value]:not([value=""])').length }));
+    if (counts.lgas !== 20) fail(where, `picker offers ${counts.lgas} LGAs, not 20`);
+    else ok(where, 'picker offers all 20 LGAs');
     await pg.screenshot({ path: `${SHOTS}/simulate-home${tag}.png` });
     await pg.click('nav.rail button[data-tab="map"]');
     await pg.waitForTimeout(1200);
@@ -124,6 +130,15 @@ try {
     });
     if (map.w < 100 || map.h < 100) fail(where, `street map not drawn: ${JSON.stringify(map)}`);
     else ok(where, `MapLibre street map drawn ${map.w}x${map.h}, flew to the spot`);
+    if (size.w < 900) {
+      // The tab bar is centred: the buttons fill it with equal gaps on both sides.
+      const nav = await pg.locator('nav.rail').boundingBox();
+      const btns = await pg.locator('nav.rail button').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
+      const left = btns[0].left - nav.x;
+      const right = nav.x + nav.width - btns[btns.length - 1].right;
+      if (Math.abs(left - right) > 2) fail(where, `tab bar is off centre: ${left}px left, ${right}px right`);
+      else ok(where, 'tab bar is centred');
+    }
     const bar = await pg.locator('nav.rail button').allInnerTexts();
     if (bar.map((s) => s.trim()).join(',') !== 'Now,Map,Settings') fail(where, `bar is ${bar.join(',')}`);
     else ok(where, 'bar is Now, Map, Settings');

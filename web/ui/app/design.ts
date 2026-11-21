@@ -202,7 +202,7 @@ body.sim{height:100dvh;display:flex;flex-direction:column;overflow:hidden;backgr
 .app.intro .screen,.app.intro .mapwrap{visibility:hidden}
 
 /* Tab bar: phone at the bottom, computer on the left. */
-.rail{grid-area:bar;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:4px 8px calc(4px + env(safe-area-inset-bottom));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--c-rule);z-index:30}
+.rail{grid-area:bar;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:4px 8px calc(4px + env(safe-area-inset-bottom));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--c-rule);z-index:30}
 .rail .rail-brand{display:none}
 .rail button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:52px;color:var(--c-muted);font:var(--t-caption);transition:color .15s var(--ease)}
 .rail button .ico{width:24px;height:24px}
@@ -261,6 +261,7 @@ body.sim{height:100dvh;display:flex;flex-direction:column;overflow:hidden;backgr
 .icon-btn[hidden]{display:none}
 .suggest{margin-top:8px;border-radius:var(--r-l);background:var(--c-paper);box-shadow:var(--shadow-float);overflow:hidden}
 .suggest[hidden]{display:none}
+.suggest{max-height:50vh;overflow-y:auto}
 .suggest li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:0 16px;cursor:pointer}
 .suggest li+li{border-top:1px solid var(--c-rule)}
 .suggest li:hover{background:var(--c-paper-2)}
@@ -296,6 +297,14 @@ body.sim{height:100dvh;display:flex;flex-direction:column;overflow:hidden;backgr
 .btns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
 .btns .btn{width:100%}
 .btn[aria-pressed="true"]{background:var(--c-accent);color:var(--c-accent-ink)}
+
+/* The place picker on the Now tab: local government, ward, block. */
+.picker{display:grid;gap:12px}
+.picker .field{display:grid;gap:4px}
+.picker .field span{color:var(--c-muted);font:var(--t-footnote)}
+.picker select{width:100%;min-height:44px;padding:0 12px;border:0;border-radius:var(--r-s);background:var(--c-paper-3);color:var(--c-ink);font:var(--t-body)}
+.picker select:disabled{opacity:.5}
+.picker .btn{margin-top:4px}
 
 .cards{display:grid;gap:12px;margin-top:12px}
 @media (min-width:1100px){.cards.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
