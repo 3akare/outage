@@ -60,10 +60,10 @@ fun HomeScreen(
     }
     // Plug, unplug, sensor events and the sensor starting after app open show within about a second.
     RefreshOnPlugOrSensor { vm.refresh() }
-    val name = remember(state.area) { spotName() }
+    val name = remember(state) { spotName() }
     DayPage(scroll = scroll) {
         LargeTitle(name ?: stringResource(R.string.nav_now), supporting = stringResource(if (name != null) R.string.now_your_spot else R.string.now_no_spot), top = 20.dp)
-        HomeContent(state, onOpenAlarm, onOpenSetup, onOpenMap, band())
+        HomeContent(state, onOpenAlarm, onOpenSetup, onOpenMap, band(), hasSpot = name != null)
     }
 }
 
@@ -74,11 +74,13 @@ fun HomeContent(
     onOpenSetup: (String) -> Unit,
     onOpenMap: () -> Unit,
     band: Pair<String, Int>?,
+    hasSpot: Boolean = state.area != null,
 ) {
     StatusHero(state)
 
     // Steps that used to block first run wait here until done, and go once they are (ADR 0026).
-    val needsArea = state.area == null
+    // A chosen Lagos ward spot is enough; the area status may still be loading (ADR 0056).
+    val needsArea = !hasSpot
     val needsSensor = state.sensor.kind == SensorKind.NOT_ARMED
     if (needsArea || needsSensor) {
         GroupHeader(stringResource(R.string.now_set_up))

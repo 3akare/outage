@@ -78,11 +78,10 @@
     <!-- Onboarding placeholder (debug builds only) -->
     <string name="first_run_title">Your charger is a power sensor</string>
     <string name="first_run_body">Outage notices when your phone stops charging because the power went out. It then tells you when the lights are back, even at night.</string>
-    <string name="first_run_privacy">Your position is used once to pick your area on the map, then dropped. Only the area is saved. You can delete everything in Settings.</string>
-    <string name="first_run_location_title">See power around you</string>
-    <string name="first_run_use_location">Use my location</string>
+    <string name="first_run_privacy">Pick your local government and ward. No GPS and no location permission: only the area is saved, and you can delete it in Settings.</string>
+    <string name="first_run_area_title">See power where you live</string>
+    <string name="first_run_choose_area">Choose my area</string>
     <string name="first_run_not_now">Not now</string>
-    <string name="first_run_spot_saved">Your spot is saved. Only the area is stored.</string>
     <string name="first_run_spot_saved_in">Your spot is set to %1$s. Only the area is stored.</string>
     <string name="first_run_spot_later">You can choose your spot any time in Settings.</string>
     <string name="settings_group_power">Your power</string>
@@ -92,7 +91,7 @@
     <string name="setup_battery_title">Keep Outage running</string>
     <string name="setup_battery_body">Some phones stop apps in the background. Tap to see the steps for your phone.</string>
     <string name="setup_area_title">Choose your area</string>
-    <string name="setup_area_body">Pick an area to follow so Home can show it. No location is stored.</string>
+    <string name="setup_area_body">Pick your local government and ward. No location is read.</string>
 
     <!-- Onboarding: battery step label (R7.4) -->
     <string name="battery_general_steps">General steps. Names may differ on your phone.</string>
@@ -149,7 +148,7 @@
     <string name="promise_met">You are at or above the promise.</string>
     <!-- Area map (app-map-insights R1 to R6) -->
     <string name="map_title">Power map</string>
-    <string name="map_search_hint">Search areas</string>
+    <string name="map_search_hint">Search areas and wards</string>
     <string name="map_search_none">No area by that name on this map</string>
     <string name="map_search_clear">Clear search</string>
     <string name="map_city">%1$s</string>
@@ -326,27 +325,57 @@
     <!-- Spot -->
     <string name="spot_title">Your spot</string>
     <string name="spot_none">No spot chosen yet.</string>
-    <string name="spot_current">Your spot is in %1$s.</string>
     <string name="spot_current_unnamed">Your spot is chosen.</string>
-    <string name="spot_use_location">Use my location once</string>
-    <string name="spot_pick_map">Pick on the map</string>
-    <string name="spot_locating">Finding your area</string>
-    <string name="spot_not_found">We could not find you in a mapped area. Pick on the map instead.</string>
-    <string name="spot_denied">Location was not allowed. Pick on the map instead.</string>
-    <string name="spot_privacy">Your position is used once to choose an area block, then dropped. Only the block is saved.</string>
-    <string name="spot_mocked_ask">Your phone says its position may be fake. Is %1$s your area?</string>
-    <string name="spot_confirm_yes">Yes, use it</string>
-    <string name="spot_confirm_no">No</string>
-    <string name="spot_pick_area">Pick your neighbourhood</string>
-    <string name="spot_pick_cell">Tap the block where your charger is</string>
-    <string name="spot_grid_desc">Map of blocks in %1$s. Tap one to choose it.</string>
-    <string name="spot_saved">Spot saved: %1$s</string>
-    <string name="spot_sample_note">This is the sample map, so your spot cannot be saved yet.</string>
-    <string name="spot_wide_area">Wide area: few phones here so far.</string>
-    <string name="spot_postcode">Postcode start (optional)</string>
-    <string name="spot_postcode_hint">Stays on this phone. Not used to find your block.</string>
+    <string name="spot_current_label">Your local government and ward</string>
+    <string name="spot_choose">Choose my spot</string>
     <string name="spot_change">Change my spot</string>
-    <string name="spot_cancel">Cancel</string>
+    <string name="spot_privacy">Chosen by local government and ward. Outage never reads your location; only the area hexagon is saved.</string>
+    <string name="spot_repick">Your spot is from the old area map. Choose it again so it matches your ward.</string>
+
+    <!-- Place picker (ADR 0056): local government, ward, hexagon -->
+    <string name="place_step_lga">Local government</string>
+    <string name="place_step_ward">Ward</string>
+    <string name="place_step_street">Street</string>
+    <string name="place_loading">Loading Lagos places</string>
+    <string name="place_results">Results</string>
+    <string name="place_lga_title">Where do you live?</string>
+    <string name="place_lga_body">Pick your local government. Only the area is saved, never your location.</string>
+    <string name="place_lga_search">Search local governments</string>
+    <string name="place_lga_count">%1$d local governments in Lagos</string>
+    <string name="place_lga_wards">%1$d wards</string>
+    <string name="place_lga_code">LA %1$s</string>
+    <string name="place_lga_none">No local government matches “%1$s”.</string>
+    <string name="place_lga_none_hint">Check the spelling, or type your postcode, like LA 11.</string>
+    <string name="place_postcode_header">Or use your postcode</string>
+    <string name="place_postcode_label">NIPOST postcode</string>
+    <string name="place_postcode_hint">LA 11 A12 GN 01</string>
+    <string name="place_postcode_found">From your postcode</string>
+    <string name="place_postcode_not_lagos">That postcode is not in Lagos.</string>
+    <string name="place_postcode_invalid">That does not look like a NIPOST postcode. Lagos postcodes start with LA, like LA 11 A12 GN 01.</string>
+    <string name="place_postcode_privacy">Read on this phone only, to find your local government. It is not saved or sent.</string>
+    <string name="place_postcode_find">Don’t know it? Find yours free at postcode.gov.ng</string>
+    <string name="place_ward_title">Which ward?</string>
+    <string name="place_ward_in">In %1$s</string>
+    <string name="place_ward_search">Search wards in %1$s</string>
+    <string name="place_ward_count">%1$d wards</string>
+    <string name="place_ward_alias">Also called %1$s</string>
+    <string name="place_ward_none">No ward in %1$s matches “%2$s”.</string>
+    <string name="place_ward_none_hint">Try another name. Many wards also go by an older name.</string>
+    <string name="place_ward_footer">Ward boundaries: GRID3, CC BY-SA 4.0.</string>
+    <string name="place_cell_title">Which part of %1$s?</string>
+    <string name="place_cell_body">Tap the hexagon where you live. We picked the middle of the ward for you.</string>
+    <string name="place_cell_map_desc">Map of %1$s with its hexagons. Tap one to choose it.</string>
+    <string name="place_cell_size">Each hexagon is about 1 km across. Everyone in it shares one power reading.</string>
+    <string name="place_cell_use">Use this spot</string>
+    <string name="place_save_failed">Your spot could not be saved. Try again.</string>
+    <string name="map_search_ward">Ward in %1$s</string>
+    <string name="map_sheet_ward">%1$s ward</string>
+
+    <!-- About: licences of what ships in the app (assets/licenses) -->
+    <string name="about_licences">Licences</string>
+    <string name="about_grid3">Ward and LGA boundaries: GRID3, CC BY-SA 4.0.</string>
+    <string name="about_osm">Street map: OpenFreeMap, © OpenMapTiles, © OpenStreetMap contributors.</string>
+    <string name="about_inter">Inter typeface: SIL Open Font License 1.1.</string>
 
     <!-- Self-test -->
     <string name="selftest_title">Charger test</string>
