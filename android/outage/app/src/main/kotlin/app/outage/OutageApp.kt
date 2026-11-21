@@ -67,7 +67,6 @@ import app.outage.ui.InsightsScreen
 import app.outage.ui.MapScreen
 import app.outage.ui.PowerLogScreen
 import app.outage.ui.PowerLogViewModel
-import app.outage.ui.ShareCardImage
 import java.io.File
 import java.util.concurrent.Executors
 import kotlinx.coroutines.Dispatchers
@@ -137,17 +136,17 @@ class OutageApp : Application() {
             R.string.log_title,
             {
                 val vm: PowerLogViewModel = viewModel(factory = viewModelFactory { initializer { PowerLogViewModel(service) } })
-                PowerLogScreen(vm, shareImage = { v -> Thread { runCatching { ShareCardImage.share(applicationContext, v.share) } }.start() })
+                PowerLogScreen(vm)
             },
             null,
         )
         // Delete-my-data (power-log R1.6): the log and its settings, the Freezer Guard alarm, the cached area outages and the
-        // cached share picture. Cancel the alarm after the clear, so a pending alert cannot find an outage to report.
+        // share picture an older version may have cached. Cancel the alarm after the clear, so a pending alert cannot find an outage to report.
         graph.deletes.register("power_log") {
             logStore.clear()
             alarms.cancel()
             outageCache.clear()
-            ShareCardImage.clear(this)
+            File(cacheDir, "share").deleteRecursively()
         }
         Thread { runCatching { freezer.sync() } }.start()
     }

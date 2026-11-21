@@ -297,15 +297,10 @@
     <string name="log_score_summary">Light Score %1$d percent</string>
     <string name="log_score_summary_none">Light Score not available yet</string>
     <string name="log_share">Share my month</string>
-    <string name="log_share_picture">Share as a picture</string>
     <string name="log_share_chooser">Share your Light Score</string>
     <string name="log_share_text">My Light Score for %1$s: %2$s. %3$.1f hours of power and %4$d outages, an estimate from %5$d days.</string>
+    <string name="log_share_score_none">not ready yet (it needs 7 days)</string>
     <string name="log_share_text_link">Get Outage: %1$s</string>
-    <string name="log_share_card_title">My power, %1$s</string>
-    <string name="log_share_card_hours">%1$.1f hours of power</string>
-    <string name="log_share_card_outages">%1$d outages</string>
-    <string name="log_share_card_estimate">Estimate from %1$d days</string>
-    <string name="log_share_card_name">Outage</string>
     <!-- Anonymous diagnostics (field-telemetry R1) -->
     <string name="diag_switch">Share anonymous diagnostics</string>
     <string name="diag_body">Once a day Outage sends how well it watched your power: charging hours, watching hours, gaps and how late the phone woke the app. It has no location, name, phone number or phone model, and you can turn it off at any time. Delete my data removes it.</string>
