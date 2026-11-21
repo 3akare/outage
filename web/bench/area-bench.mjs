@@ -20,7 +20,7 @@ const BUDGET_MS = 10;
 const RUNS = 100;
 const WARMUP = 10;
 const PER_CELL = (process.env.PER_CELL ?? '30,100').split(',').map(Number);
-// A Yaba res 8 cell from the area catalog (a public centre cell, not a person's location).
+// A res 8 cell in Lagos Mainland LGA (a public cell, not a person's location).
 const CELL = '88589c9861fffff';
 const PARENT = res7Parent(CELL);
 const CELLS = childrenOf(PARENT);

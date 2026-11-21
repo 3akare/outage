@@ -1,10 +1,12 @@
 // Page renderers: pure (data) -> Rendered. No I/O, no clock (the caller passes nowMs). Every dynamic string goes through escapeHtml.
 // Server-rendered status so the pages work with scripts off (R1.4). Real pages never show "Your spot only" as a status (R2.3).
-import type { CatalogArea } from './catalog/schema.ts';
+import { LGA_OUTLINES } from './catalog/index.ts';
+import { type CatalogArea, lgasOf, wardsOf } from './catalog/schema.ts';
+import { MAX_QUERY, searchAreas } from './catalog/search.ts';
 import { escapeHtml as e, safeHref } from '../site/escape.ts';
 import { html, type Rendered } from '../site/headers.ts';
 import { layout, type Site } from '../site/layout.ts';
-import { cellStates, renderMap } from './map-svg.ts';
+import { areaStates, renderMap } from './map-svg.ts';
 import type { PublicOutage, PublicScopeView } from '../api/public-index/public-view.ts';
 import { areaStatus, formatDateTime, historyForCells, statusForCells, type AreaStatus } from '../site/status.ts';
 import {
@@ -105,11 +107,31 @@ const POLL_SCRIPT =
 
 // ---- pages ----
 
-export type AreaPageInput = { site: Site; area: CatalogArea; views: Views; nowMs: number; lang?: Lang };
+export type AreaPageInput = {
+  site: Site;
+  area: CatalogArea;
+  views: Views;
+  nowMs: number;
+  lang?: Lang;
+  /** The whole catalog, so an LGA page can list its wards and a ward page can link to its LGA. Optional. */
+  areas?: readonly CatalogArea[];
+};
+
+/** Links between an LGA and its wards. Plain links, so the pages work with scripts off. */
+function placeLinks(area: CatalogArea, areas: readonly CatalogArea[]): string {
+  if (area.kind === 'ward') {
+    const lga = areas.find((a) => a.slug === area.lga);
+    return lga ? `<p class="note">This ward is in <a href="/area/${e(lga.slug)}">${e(lga.name)}</a>.</p>` : '';
+  }
+  const wards = wardsOf(areas, area.slug);
+  if (wards.length === 0) return '';
+  const items = wards.map((w) => `<li><a href="/area/${e(w.slug)}">${e(w.name.replace(/,[^,]*$/, ''))}</a></li>`).join('');
+  return `<h2>Wards in ${e(area.name)}</h2><ul class="plain">${items}</ul>`;
+}
 
 /** /area/:slug (R3). The answer is in the first screen: label, sentence, since. */
 export function renderAreaPage(input: AreaPageInput): Rendered {
-  const { site, area, views, nowMs, lang = 'en' } = input;
+  const { site, area, views, nowMs, lang = 'en', areas = [] } = input;
   const status: AreaStatus = views ? areaStatus(area, views, nowMs) : { kind: 'NO_COVERAGE' };
   const title = `Is there power in ${area.name} right now?`;
   const covered = views !== null && status.kind !== 'NO_COVERAGE';
@@ -117,6 +139,7 @@ export function renderAreaPage(input: AreaPageInput): Rendered {
     `<main><h1>${e(title)}</h1>${statusBlock(status, views, area.tzOffsetMin, lang, `/api/v1/public/area/${area.slug}`)}` +
     installButtons(site) +
     (covered ? historyHtml(historyForCells(area.cells, views, nowMs), area.tzOffsetMin) : '') +
+    placeLinks(area, areas) +
     HOW_IT_WORKS +
     PRIVACY_SHORT +
     legendHtml(lang) +
@@ -150,31 +173,43 @@ export function renderCellPage(input: CellPageInput): Rendered {
   return html(layout({ site, title, description: 'Power status for one small area.', path: `/c/${cell}`, noindex: true, body }), views === null ? UNAVAILABLE_TTL : PAGE_TTL, { noindex: true });
 }
 
-export type HomePageInput = { site: Site; areas: readonly CatalogArea[]; views: Views; nowMs: number };
+export type HomePageInput = { site: Site; areas: readonly CatalogArea[]; views: Views; nowMs: number; query?: string };
 
-/** `/areas` (R5.1): hero, simulation and install buttons, the SVG map and the area list. */
+const areaLine = (a: CatalogArea, views: Views, nowMs: number): string => {
+  const s = views ? areaStatus(a, views, nowMs) : ({ kind: 'NO_COVERAGE' } as const);
+  const text = views === null ? UNAVAILABLE_TEXT : s.kind === 'NO_COVERAGE' ? 'No phones here yet' : stateText(s.kind).label;
+  return `<li><a href="/area/${e(a.slug)}">${e(a.name)}</a>: ${e(text)}</li>`;
+};
+
+/** The search box and, when there is a query, its results. A plain GET form, so it works with scripts off. */
+function searchHtml(areas: readonly CatalogArea[], views: Views, nowMs: number, query: string): string {
+  const form =
+    '<form class="search" role="search" action="/areas" method="get"><label for="q">Find your local government or ward</label>' +
+    `<input id="q" name="q" type="search" maxlength="${MAX_QUERY}" value="${e(query)}" autocomplete="off"><button class="btn" type="submit">Search</button></form>`;
+  if (query.trim() === '') return form;
+  const found = searchAreas(areas, query);
+  return `${form}<h2>Search results</h2>${found.length ? `<ul class="plain">${found.map((a) => areaLine(a, views, nowMs)).join('')}</ul>` : '<p>No place with that name. Try part of the name.</p>'}`;
+}
+
+/** `/areas` (R5.1): hero, simulation and install buttons, the SVG map of the 20 LGAs, search, and the LGA list. */
 export function renderHomePage(input: HomePageInput): Rendered {
-  const { site, areas, views, nowMs } = input;
-  const states = cellStates(areas, views ?? [], nowMs);
-  const list = areas
-    .map((a) => {
-      const s = views ? areaStatus(a, views, nowMs) : ({ kind: 'NO_COVERAGE' } as const);
-      const text = views === null ? UNAVAILABLE_TEXT : s.kind === 'NO_COVERAGE' ? 'No phones here yet' : stateText(s.kind).label;
-      return `<li><a href="/area/${e(a.slug)}">${e(a.name)}</a>: ${e(text)}</li>`;
-    })
-    .join('');
+  const { site, areas, views, nowMs, query = '' } = input;
+  const lgas = lgasOf(areas);
+  const states = areaStates(lgas, views ?? [], nowMs);
+  const list = lgas.map((a) => areaLine(a, views, nowMs)).join('');
   const body =
     '<main><h1>Is there power in your area right now?</h1><p>Your phone charger is a power-grid sensor.</p>' +
     '<div class="actions"><a class="btn primary" href="/app/simulate">Try the app in your browser</a>' +
     `<a class="btn" href="${e(site.apkUrl ? (safeHref(site.apkUrl) ?? '/install') : '/install')}">Install Outage (Android)</a></div>` +
     (views === null ? `<p class="note">${e(UNAVAILABLE_TEXT)}</p>` : '') +
-    renderMap(areas, states) +
-    `<h2>Areas</h2>${areas.length ? `<ul class="plain">${list}</ul>` : '<p>Areas appear here once their places are checked.</p>'}` +
+    searchHtml(areas, views, nowMs, query) +
+    renderMap(lgas, LGA_OUTLINES, states) +
+    `<h2>Local governments</h2>${lgas.length ? `<ul class="plain">${list}</ul>` : '<p>Areas appear here once their places are checked.</p>'}` +
     legendHtml() +
-    '</main>';
+    '<p class="note">Ward and local government boundaries: GRID3, CC BY-SA 4.0.</p></main>';
   return html(
-    layout({ site, title: 'Outage: is there power right now?', description: 'Your phone charger is a power-grid sensor. See when power goes and comes back, area by area.', path: '/', body }),
-    views === null ? UNAVAILABLE_TTL : PAGE_TTL,
+    layout({ site, title: 'Outage: is there power right now?', description: 'Your phone charger is a power-grid sensor. See when power goes and comes back in the 20 local governments and 376 wards of Lagos.', path: '/', body }),
+    views === null ? UNAVAILABLE_TTL : query.trim() === '' ? PAGE_TTL : 0,
   );
 }
 
@@ -222,9 +257,9 @@ export function renderPrivacyPage(input: { site: Site }): Rendered {
 
 /** 404 (R3.10): lists the areas and the install button. Gives no hint about why. */
 export function renderNotFound(input: { site: Site; areas: readonly CatalogArea[] }): Rendered {
-  const list = input.areas.map((a) => `<li><a href="/area/${e(a.slug)}">${e(a.name)}</a></li>`).join('');
+  const list = lgasOf(input.areas).map((a) => `<li><a href="/area/${e(a.slug)}">${e(a.name)}</a></li>`).join('');
   const body =
-    '<main><h1>Page not found</h1><p>Try one of these areas, or install Outage to be the first in yours.</p>' +
+    '<main><h1>Page not found</h1><p>Try one of these local governments, or install Outage to be the first in yours.</p>' +
     (list ? `<ul class="plain">${list}</ul>` : '') +
     `${installButtons(input.site)}</main>`;
   return html(layout({ site: input.site, title: 'Page not found', description: 'Page not found.', path: '/', body, noindex: true }), PAGE_TTL, { status: 404, noindex: true });

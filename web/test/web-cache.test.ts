@@ -26,7 +26,7 @@ describe('W4 cache ttl', () => {
     let t = 1_000_000;
     let renders = 0;
     const cache = new PageCache({ now: () => t });
-    const get = () => cache.get(req('/area/yaba'), () => {
+    const get = () => cache.get(req('/area/lagos-mainland'), () => {
       renders++;
       return page(`v${renders}`, 30);
     });

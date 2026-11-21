@@ -87,4 +87,24 @@ class HomeReducerTest {
         )
         assertEquals(HomeUiState.Initial.copy(offline = false), s)
     }
+
+    @Test
+    fun now_follows_the_sensor_when_it_is_read_again_after_a_plug_or_unplug() {
+        // The screen reads the sources again on each plug change and sensor event; each read shows the sensor as it is then.
+        var current = armed
+        val sources = object : StatusSources {
+            override fun sensorState() = current
+            override fun areaStatus(): AreaStatus? = null
+            override fun todayPowerHours() = 6.5
+            override fun alarmState() = AlarmState.OFF
+        }
+        fun read() = HomeReducer.reduce(sources.sensorState(), sources.areaStatus(), sources.todayPowerHours(), sources.alarmState(), true, now)
+        assertEquals(SensorKind.ARMED, read().sensor.kind)
+        current = SensorState(SensorKind.NOT_ARMED, NotArmedReason.NOT_AVAILABLE)
+        assertEquals(SensorKind.NOT_ARMED, read().sensor.kind)
+        current = armed
+        assertEquals(SensorKind.ARMED, read().sensor.kind)
+        assertEquals(6.5, read().todayPowerHours!!, 0.0)
+        assertEquals(AlarmState.OFF, read().alarm)
+    }
 }

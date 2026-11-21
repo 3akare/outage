@@ -4,7 +4,7 @@
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
-    <string name="nav_insights">Insights</string>
+    <string name="nav_history">History</string>
     <string name="nav_settings">Settings</string>
     <string name="back">Back</string>
     <string name="ok">OK</string>
@@ -50,11 +50,8 @@
     <string name="sensor_toggle_label">Detect power cuts on this phone</string>
     <string name="battery_allow_button">Allow Outage to run in the background</string>
     <string name="settings_battery">Battery setup</string>
-    <string name="settings_station">Station mode</string>
-    <string name="settings_home_watch">Home Watch</string>
     <string name="settings_followed_area">Your spot and alerts</string>
     <string name="settings_language">Language</string>
-    <string name="settings_diagnostics">Share anonymous diagnostics</string>
     <string name="settings_delete">Delete my data</string>
     <string name="settings_about">About and privacy</string>
     <string name="settings_version">Version %1$s</string>
@@ -80,21 +77,19 @@
     <!-- Onboarding placeholder (debug builds only) -->
     <string name="first_run_title">Your charger is a power sensor</string>
     <string name="first_run_body">Outage notices when your phone stops charging because the power went out. It then tells you when the lights are back, even at night.</string>
-    <string name="first_run_privacy">Your position is used once to pick your area on the map, then dropped. Only the area is saved. You can delete everything in Settings.</string>
-    <string name="first_run_location_title">See power around you</string>
-    <string name="first_run_use_location">Use my location</string>
+    <string name="first_run_privacy">Pick your local government and ward. No GPS and no location permission: only the area is saved, and you can delete it in Settings.</string>
+    <string name="first_run_area_title">See power where you live</string>
+    <string name="first_run_choose_area">Choose my area</string>
     <string name="first_run_not_now">Not now</string>
-    <string name="first_run_spot_saved">Your spot is saved. Only the area is stored.</string>
     <string name="first_run_spot_saved_in">Your spot is set to %1$s. Only the area is stored.</string>
     <string name="first_run_spot_later">You can choose your spot any time in Settings.</string>
     <string name="settings_group_power">Your power</string>
     <string name="settings_group_phone">This phone</string>
     <string name="settings_group_about">About</string>
-    <string name="home_band_chip">Band %1$s · %2$d h promised</string>
     <string name="setup_battery_title">Keep Outage running</string>
     <string name="setup_battery_body">Some phones stop apps in the background. Tap to see the steps for your phone.</string>
     <string name="setup_area_title">Choose your area</string>
-    <string name="setup_area_body">Pick an area to follow so Home can show it. No location is stored.</string>
+    <string name="setup_area_body">Pick your local government and ward. No location is read.</string>
 
     <!-- Onboarding: battery step label (R7.4) -->
     <string name="battery_general_steps">General steps. Names may differ on your phone.</string>
@@ -138,23 +133,11 @@
     <string name="push_restored_body">Phones are charging again.</string>
     <string name="push_restored_body_wide">Power looks back across a wide area.</string>
 
-    <!-- Power Log: supply promise / tariff band (power-log R5, task 3). Always an estimate; never refund, compensation or claim. -->
-    <string name="band_picker_title">Your supply band</string>
-    <string name="band_picker_hint">Pick your NERC band to compare your logged power with its promise.</string>
-    <string name="band_none">Not set</string>
-    <string name="band_name">Band %1$s</string>
-    <string name="band_promise">Band %1$s is promised at least %2$d hours of power a day.</string>
-    <string name="band_promise_unconfirmed">We have not confirmed this band\'s promised hours with NERC yet.</string>
-    <string name="promise_estimate_note">An estimate from this phone\'s own record, not an official measurement.</string>
-    <string name="promise_days_below">%1$d days below the promise this month.</string>
-    <string name="promise_avg_below">Your average is %1$.1f hours below the promise.</string>
-    <string name="promise_met">You are at or above the promise.</string>
     <!-- Area map (app-map-insights R1 to R6) -->
     <string name="map_title">Power map</string>
-    <string name="map_search_hint">Search areas</string>
+    <string name="map_search_hint">Search areas and wards</string>
     <string name="map_search_none">No area by that name on this map</string>
     <string name="map_search_clear">Clear search</string>
-    <string name="ins_area_picker">Choose an area</string>
     <string name="map_city">%1$s</string>
     <string name="map_headline_out">%1$d of %2$d areas without power</string>
     <string name="map_headline_possible">%1$d of %2$d areas may be without power</string>
@@ -175,7 +158,7 @@
     <string name="map_your_spot">Your spot</string>
     <string name="map_offline_banner">Offline. Last update %1$s</string>
     <string name="map_none">No phones reporting here yet</string>
-    <string name="map_none_body">Areas show up on the map as phones in them start reporting. Connect to the internet once to load the map of your city.</string>
+    <string name="map_none_body">The map fills in as phones near you report. Connect to the internet once to load it.</string>
     <string name="map_loading">Loading the map</string>
     <string name="map_simulated_note">Sample data to show how the map looks. These are not real outages.</string>
     <string name="map_summary">Map of %1$d areas. %2$d without power, %3$d possible. Double tap an area in the list for details.</string>
@@ -207,8 +190,7 @@
     <string name="ins_dur_m">%1$d min</string>
     <string name="ins_ongoing">Still out</string>
     <string name="ins_bars_title">Hours of power per day</string>
-    <string name="ins_bars_promise">%1$d h promise</string>
-    <string name="ins_bars_hint">Tap a day. Dashed stubs are days without enough data.</string>
+    <string name="ins_bars_hint">Tap a day. A dashed line means not enough data that day.</string>
     <string name="ins_day_value">%1$s: %2$.1f h of power, %3$d outages</string>
     <string name="ins_day_no_data">%1$s: not enough data</string>
     <string name="ins_summary_bars">Bar chart of hours of power per day over %1$d days. Average %2$.1f hours.</string>
@@ -228,40 +210,20 @@
     <string name="ins_gap">On average, power goes about every %1$s.</string>
     <string name="ins_ring_title">Light Score</string>
     <string name="ins_ring_value">%1$d%%</string>
-    <string name="ins_ring_hint">Share of the last 30 days with power</string>
+    <string name="ins_ring_hint">This month: the share of watched time with power. Needs 7 days with enough data.</string>
     <string name="ins_summary_ring">Light Score %1$d percent</string>
-    <string name="ins_ring_none">Not enough data</string>
-    <string name="ins_promise_title">Supply promise check</string>
-    <string name="ins_promise_estimate">Estimate</string>
+    <string name="ins_ring_none">Light Score not available yet</string>
     <string name="ins_early_title">Day %1$d of 7</string>
     <string name="ins_early_body">Patterns appear after 7 days.</string>
     <string name="ins_empty_title">Your power log starts here</string>
     <string name="ins_empty_body">Outage logs power while your phone charges. Keep it plugged in at home and your pattern appears here.</string>
     <string name="ins_empty_battery">Check battery setup</string>
-    <string name="ins_area_sub">Power in %1$s over the last 30 days</string>
-    <string name="ins_area_note">Made-up history for the sample city, so you can see how Insights works. These are not real outages.</string>
     <string name="ins_area_pick">Area</string>
-    <string name="ins_kpi_below">Days under Band %1$s</string>
-    <string name="ins_kpi_below_value">%1$d of %2$d</string>
-    <string name="ins_kpi_restore">Typical time until power returns</string>
-    <string name="ins_kpi_without">Without power, 30 days</string>
-    <string name="ins_band_line">Band %1$s promises at least %2$d h of power a day.</string>
-    <string name="ins_compare_title">Area comparison</string>
-    <string name="ins_compare_hint">Average hours of power a day, best first</string>
-    <string name="ins_compare_row">%1$.1f h · %2$d outages</string>
-    <string name="ins_summary_compare">Areas ranked by hours of power a day. %1$s is best with %2$.1f hours.</string>
-    <string name="ins_weekly_title">Hours without power, week by week</string>
-    <string name="ins_weekly_hint">Each point is 7 days, the last ending yesterday. Lower is better.</string>
-    <string name="ins_summary_weekly">Line chart of hours without power in each of the last %1$d weeks. Latest week %2$.1f hours.</string>
-    <string name="ins_history_title">Outage history</string>
-    <string name="ins_history_more">Show all %1$d</string>
-    <string name="ins_history_less">Show fewer</string>
     <string name="ins_history_when">%1$s, %2$s</string>
-    <string name="ins_day_area">%1$s: %2$.1f h of power, %3$d outages</string>
     <string name="ins_simulated_note">Sample data to show the charts. Your own log starts once your phone has watched for a day.</string>
     <!-- Power Log screen (power-log R7, R8, R10; copy.md: plain words, "power") -->
-    <string name="log_title">Power log</string>
-    <string name="home_log_title">Power log</string>
+    <string name="log_title">History</string>
+    <string name="home_log_title">History</string>
     <string name="home_log_body">Power now, today, the last 30 days and your Light Score.</string>
     <string name="log_now_on">Power on since %1$s</string>
     <string name="log_now_out">Power out since %1$s</string>
@@ -292,23 +254,15 @@
     <string name="log_list_unsure">The end time is a guess.</string>
     <string name="log_month_title">Light Score, %1$s</string>
     <string name="log_score_value">%1$d%%</string>
-    <string name="log_score_not_enough">Not enough days yet</string>
-    <string name="log_score_days">An estimate from %1$d days with enough data.</string>
+    <string name="log_score_not_enough">A score after 7 days with enough data.</string>
+    <string name="log_score_days">Share of watched time with power, from %1$d days with enough data.</string>
     <string name="log_score_summary">Light Score %1$d percent</string>
     <string name="log_score_summary_none">Light Score not available yet</string>
     <string name="log_share">Share my month</string>
-    <string name="log_share_picture">Share as a picture</string>
     <string name="log_share_chooser">Share your Light Score</string>
     <string name="log_share_text">My Light Score for %1$s: %2$s. %3$.1f hours of power and %4$d outages, an estimate from %5$d days.</string>
+    <string name="log_share_score_none">not ready yet (it needs 7 days)</string>
     <string name="log_share_text_link">Get Outage: %1$s</string>
-    <string name="log_share_card_title">My power, %1$s</string>
-    <string name="log_share_card_hours">%1$.1f hours of power</string>
-    <string name="log_share_card_outages">%1$d outages</string>
-    <string name="log_share_card_estimate">Estimate from %1$d days</string>
-    <string name="log_share_card_name">Outage</string>
-    <!-- Anonymous diagnostics (field-telemetry R1) -->
-    <string name="diag_switch">Share anonymous diagnostics</string>
-    <string name="diag_body">Once a day Outage sends how well it watched your power: charging hours, watching hours, gaps and how late the phone woke the app. It has no location, name, phone number or phone model, and you can turn it off at any time. Delete my data removes it.</string>
     <!-- Screens for the alarm, follow, spot, permissions and self-test (alerts-and-light-alarm task 8, onboarding tasks 5 to 7) -->
     <!-- Light Alarm settings and Alarm check -->
     <string name="alarm_screen_intro">Light Alarm rings when power comes back at your spot, even at night. It works without internet.</string>
@@ -352,27 +306,57 @@
     <!-- Spot -->
     <string name="spot_title">Your spot</string>
     <string name="spot_none">No spot chosen yet.</string>
-    <string name="spot_current">Your spot is in %1$s.</string>
     <string name="spot_current_unnamed">Your spot is chosen.</string>
-    <string name="spot_use_location">Use my location once</string>
-    <string name="spot_pick_map">Pick on the map</string>
-    <string name="spot_locating">Finding your area</string>
-    <string name="spot_not_found">We could not find you in a mapped area. Pick on the map instead.</string>
-    <string name="spot_denied">Location was not allowed. Pick on the map instead.</string>
-    <string name="spot_privacy">Your position is used once to choose an area block, then dropped. Only the block is saved.</string>
-    <string name="spot_mocked_ask">Your phone says its position may be fake. Is %1$s your area?</string>
-    <string name="spot_confirm_yes">Yes, use it</string>
-    <string name="spot_confirm_no">No</string>
-    <string name="spot_pick_area">Pick your neighbourhood</string>
-    <string name="spot_pick_cell">Tap the block where your charger is</string>
-    <string name="spot_grid_desc">Map of blocks in %1$s. Tap one to choose it.</string>
-    <string name="spot_saved">Spot saved: %1$s</string>
-    <string name="spot_sample_note">This is the sample map, so your spot cannot be saved yet.</string>
-    <string name="spot_wide_area">Wide area: few phones here so far.</string>
-    <string name="spot_postcode">Postcode start (optional)</string>
-    <string name="spot_postcode_hint">Stays on this phone. Not used to find your block.</string>
+    <string name="spot_current_label">Your local government and ward</string>
+    <string name="spot_choose">Choose my spot</string>
     <string name="spot_change">Change my spot</string>
-    <string name="spot_cancel">Cancel</string>
+    <string name="spot_privacy">Chosen by local government and ward. Outage never reads your location; only the area hexagon is saved.</string>
+    <string name="spot_repick">Your spot is from the old area map. Choose it again so it matches your ward.</string>
+
+    <!-- Place picker (ADR 0056): local government, ward, hexagon -->
+    <string name="place_step_lga">Local government</string>
+    <string name="place_step_ward">Ward</string>
+    <string name="place_step_street">Street</string>
+    <string name="place_loading">Loading Lagos places</string>
+    <string name="place_results">Results</string>
+    <string name="place_lga_title">Where do you live?</string>
+    <string name="place_lga_body">Pick your local government. Only the area is saved, never your location.</string>
+    <string name="place_lga_search">Search local governments</string>
+    <string name="place_lga_count">%1$d local governments in Lagos</string>
+    <string name="place_lga_wards">%1$d wards</string>
+    <string name="place_lga_code">LA %1$s</string>
+    <string name="place_lga_none">No local government matches “%1$s”.</string>
+    <string name="place_lga_none_hint">Check the spelling, or type your postcode, like LA 11.</string>
+    <string name="place_postcode_header">Or use your postcode</string>
+    <string name="place_postcode_label">NIPOST postcode</string>
+    <string name="place_postcode_hint">LA 11 A12 GN 01</string>
+    <string name="place_postcode_found">From your postcode</string>
+    <string name="place_postcode_not_lagos">That postcode is not in Lagos.</string>
+    <string name="place_postcode_invalid">That does not look like a NIPOST postcode. Lagos postcodes start with LA, like LA 11 A12 GN 01.</string>
+    <string name="place_postcode_privacy">Read on this phone only, to find your local government. It is not saved or sent.</string>
+    <string name="place_postcode_find">Don’t know it? Find yours free at postcode.gov.ng</string>
+    <string name="place_ward_title">Which ward?</string>
+    <string name="place_ward_in">In %1$s</string>
+    <string name="place_ward_search">Search wards in %1$s</string>
+    <string name="place_ward_count">%1$d wards</string>
+    <string name="place_ward_alias">Also called %1$s</string>
+    <string name="place_ward_none">No ward in %1$s matches “%2$s”.</string>
+    <string name="place_ward_none_hint">Try another name. Many wards also go by an older name.</string>
+    <string name="place_ward_footer">Ward boundaries: GRID3, CC BY-SA 4.0.</string>
+    <string name="place_cell_title">Which part of %1$s?</string>
+    <string name="place_cell_body">Tap the hexagon where you live. We picked the middle of the ward for you.</string>
+    <string name="place_cell_map_desc">Map of %1$s with its hexagons. Tap one to choose it.</string>
+    <string name="place_cell_size">Each hexagon is about 1 km across. Everyone in it shares one power reading.</string>
+    <string name="place_cell_use">Use this spot</string>
+    <string name="place_save_failed">Your spot could not be saved. Try again.</string>
+    <string name="map_search_ward">Ward in %1$s</string>
+    <string name="map_sheet_ward">%1$s ward</string>
+
+    <!-- About: licences of what ships in the app (assets/licenses) -->
+    <string name="about_licences">Licences</string>
+    <string name="about_grid3">Ward and LGA boundaries: GRID3, CC BY-SA 4.0.</string>
+    <string name="about_osm">Street map: OpenFreeMap, © OpenMapTiles, © OpenStreetMap contributors.</string>
+    <string name="about_inter">Inter typeface: SIL Open Font License 1.1.</string>
 
     <!-- Self-test -->
     <string name="selftest_title">Charger test</string>
@@ -388,45 +372,13 @@
     <string name="selftest_return_ok">Charger return seen</string>
     <string name="selftest_return_no">Charger return not seen</string>
     <string name="selftest_delay">Background check lagged by %1$d seconds.</string>
-    <string name="selftest_station">Have a spare phone at home? Turn on Station mode in Settings.</string>
     <string name="settings_self_test">Charger test</string>
     <string name="settings_spot">Your spot</string>
-    <!-- Sensor foreground service (station-mode design section 7). Fixed strings, no variables. -->
+    <!-- Sensor foreground service (ADR 0032, station-mode design section 7). Fixed strings, no variables. -->
     <string name="sensor_channel">Power sensor</string>
-    <string name="sensor_notification_title">Outage station</string>
+    <string name="sensor_notification_title">Outage is watching</string>
     <string name="sensor_notification_body">Watching your power</string>
-    <string name="sensor_notification_stop">Stop station</string>
-
-    <!-- Home Watch (home-watch R4.2 wording) -->
-    <string name="home_on_since">%1$s: power on since %2$s</string>
-    <string name="home_off_since">%1$s: power off since %2$s</string>
-    <string name="home_station_offline">Station offline</string>
-    <string name="home_last_known_on">Last known: power on since %1$s</string>
-    <string name="home_last_known_off">Last known: power off since %1$s</string>
-    <string name="home_waiting">%1$s: waiting for the station</string>
-    <string name="home_age">Updated %1$d min ago</string>
-    <string name="home_remove_pair">Remove</string>
-    <string name="home_default_name">Home</string>
-    <string name="home_intro">See if the power is on at home from anywhere. A spare phone charging at home is the station.</string>
-    <string name="home_enter_code_title">Enter the code from the station</string>
-    <string name="home_code_label">Pairing code</string>
-    <string name="home_name_label">Name for this place</string>
-    <string name="home_pair_button">Pair</string>
-    <string name="home_claim_done">Paired.</string>
-    <string name="home_claim_not_found">That code did not work. Check it, or make a new code on the station.</string>
-    <string name="home_claim_full">This station already has 5 phones paired. Remove one on the station first.</string>
-    <string name="home_claim_failed">Could not reach the server. Try again when you are online.</string>
-    <string name="home_no_server">This build has no Outage server, so Home Watch cannot pair.</string>
-    <string name="home_not_registered">This phone is not connected to the server yet. Open the app online once and try again.</string>
-    <string name="home_setup_spare">Set up a spare phone as the station</string>
-    <string name="home_sim_hint">A SIM card with data lets Home Watch tell you right away.</string>
-    <string name="station_intro">Keep this phone charging at home. Pair it with your main phone to see your home power from anywhere.</string>
-    <string name="station_pair_button">Pair with my phone</string>
-    <string name="station_code_valid_until">Valid until %1$s, for one phone</string>
-    <string name="station_offer_failed">Could not get a code. Try again when you are online.</string>
-    <string name="station_pairs_title">Paired phones</string>
-    <string name="station_pairs_none">No phone is paired yet.</string>
-    <string name="station_pair_row">Phone %1$d, paired %2$s</string>
+    <string name="sensor_notification_stop">Stop watching</string>
 
     <!-- Judge mode (demo-mode). Everything here is simulated and says so. -->
     <string name="demo_try">Try Judge mode</string>
@@ -482,36 +434,6 @@
     <string name="demo_how_2">One phone unplugged is normal. Many phones within a few seconds is not chance.</string>
     <string name="demo_how_3">Outage counts the phones, compares with the usual rate and shows the math. Here the math was done by the real engine when the app was built.</string>
     <string name="demo_replay_error">The replay file could not be read, so Judge mode cannot run.</string>
-    <!-- Freezer Guard (power-log R6, copy.md: plain words) -->
-    <string name="settings_freezer">Freezer Guard</string>
-    <string name="freezer_title">Freezer Guard</string>
-    <string name="freezer_intro">Get an alert when the power has been off for too long, so you can check your freezer.</string>
-    <string name="freezer_on">Freezer Guard</string>
-    <string name="freezer_limit_label">Alert after</string>
-    <string name="freezer_hours_value">%1$d h</string>
-    <string name="freezer_quiet_start_label">Starts</string>
-    <string name="freezer_quiet_end_label">Ends</string>
-    <string name="freezer_limit_less">One hour less</string>
-    <string name="freezer_limit_more">One hour more</string>
-    <string name="freezer_late_note">This can arrive later than your limit when the phone is saving battery.</string>
-    <string name="freezer_reboot_note">If the phone restarts, Freezer Guard starts counting again when you open Outage.</string>
-    <string name="freezer_quiet_window">Quiet hours: %1$s to %2$s</string>
-    <string name="freezer_quiet_start_less">Quiet hours start one hour earlier</string>
-    <string name="freezer_quiet_start_more">Quiet hours start one hour later</string>
-    <string name="freezer_quiet_end_less">Quiet hours end one hour earlier</string>
-    <string name="freezer_quiet_end_more">Quiet hours end one hour later</string>
-    <string name="freezer_quiet_sound">Freezer Guard may sound in quiet hours</string>
-    <string name="freezer_exact">Alert on time</string>
-    <string name="freezer_exact_body">Uses an exact alarm, so the alert comes at your limit and not later.</string>
-    <string name="freezer_exact_allow">Allow alarms and reminders</string>
-    <string name="freezer_notifications_off">Notifications are off for Outage, so the alert cannot show. Turn them on in phone settings.</string>
-    <string name="freezer_channel">Freezer Guard</string>
-    <string name="freezer_channel_quiet">Freezer Guard (quiet hours)</string>
-    <string name="freezer_alert_title">Check your freezer</string>
-    <plurals name="freezer_alert_body">
-        <item quantity="one">Power has been off for %1$d hour. Check your freezer.</item>
-        <item quantity="other">Power has been off for %1$d hours. Check your freezer.</item>
-    </plurals>
     <!-- Outage Daylight (ADR 0054): the Now tab, status first. -->
     <string name="nav_now">Now</string>
     <string name="nav_map">Map</string>
@@ -536,7 +458,6 @@
     <string name="now_step_back">Back</string>
     <string name="now_group_today">Today</string>
     <string name="now_group_more">More</string>
-    <string name="now_hours_promise">%1$.1f h of %2$d h promised</string>
     <string name="now_hours_value">%1$.1f h of power</string>
     <string name="now_see_map">See the map</string>
     <string name="now_see_map_body">Every area, block by block</string>

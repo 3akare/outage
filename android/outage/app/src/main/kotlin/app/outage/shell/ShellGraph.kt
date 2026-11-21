@@ -1,13 +1,14 @@
 package app.outage.shell
 
 import android.content.Context
+import app.outage.alarm.AlarmState
 import app.outage.onboarding.OnboardingFacts
 import app.outage.onboarding.OnboardingFlow
 import app.outage.onboarding.OnboardingStore
 import app.outage.onboarding.PrefsOnboardingStore
 import app.outage.sensor.SensorState
 import app.outage.ui.FeatureRegistry
-import app.outage.ui.SpotOutcome
+import app.outage.places.PlacePick
 
 /**
  * The shell's long-lived objects, built once in [app.outage.OutageApp]. Nothing starts here (R1.4); the sensor starts
@@ -28,15 +29,20 @@ class ShellGraph(context: Context) {
     /** Set by the sensor feature; Home shows it (app-shell R2.1). */
     var sensorState: () -> SensorState? = { null }
 
-    /** Set by the spot feature: reads the position once, saves the cell and drops the position (first run, ADR 0050). */
-    var locateSpot: suspend () -> SpotOutcome = { SpotOutcome.NotFound }
+    /** Set by the Power Log: hours with power seen today, null with nothing watched today. Read off the main thread. */
+    var todayPowerHours: () -> Double? = { null }
 
-    /** Set by the Power Log: the chosen tariff band id (A to E) and its promised hours a day, for the Home card. */
-    var band: () -> Pair<String, Int>? = { null }
+    /** Set by the Light Alarm feature; Home shows it (app-shell R2.5). Read off the main thread. */
+    var alarmState: () -> AlarmState? = { null }
+
+    /** Set by the spot feature: saves the cell and "Ward, LGA" picked in first run (ADR 0056). False when it was not saved. */
+    var saveSpot: (PlacePick) -> Boolean = { false }
 
     val sources: StatusSources = object : StatusSources by NoStatusSources {
         override fun areaStatus(): AreaStatus? = areaCache.read()
         override fun sensorState(): SensorState? = this@ShellGraph.sensorState()
+        override fun todayPowerHours(): Double? = this@ShellGraph.todayPowerHours()
+        override fun alarmState(): AlarmState? = this@ShellGraph.alarmState()
     }
     val onboarding: OnboardingStore = PrefsOnboardingStore(context)
     val deletes = DeleteRegistry(store).also {

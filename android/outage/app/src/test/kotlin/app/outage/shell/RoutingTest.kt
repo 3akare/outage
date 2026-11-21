@@ -12,7 +12,7 @@ class RoutingTest {
     // AS1 (R1.1): not onboarded gives Onboarding, whatever the link says.
     @Test
     fun AS1_start_routing_not_onboarded_opens_onboarding() {
-        for (link in listOf(null, Route.Home, Route.Insights, Route.Settings, Route.Feature("alarm"))) {
+        for (link in listOf(null, Route.Home, Route.History, Route.Settings, Route.Feature("alarm"))) {
             val router = Routes.start(onboardingNeeded = true, link = link)
             assertEquals(listOf<Route>(Route.Onboarding), router.stack)
         }
@@ -28,7 +28,7 @@ class RoutingTest {
     // AS1 (R1.3): a link opens its destination with Home underneath.
     @Test
     fun AS1_start_routing_deep_link_keeps_home_in_back_stack() {
-        for (dest in listOf(Route.Map, Route.Insights, Route.Settings, Route.Feature("alarm"))) {
+        for (dest in listOf(Route.Map, Route.History, Route.Settings, Route.Feature("alarm"))) {
             val router = Routes.start(false, dest)
             assertEquals(listOf(Route.Home, dest), router.stack)
             assertEquals(dest, router.current)
@@ -41,10 +41,10 @@ class RoutingTest {
     fun AS1_start_routing_parses_known_routes() {
         assertEquals(Route.Home, Routes.fromIntent("home"))
         assertEquals(Route.Map, Routes.fromIntent("map"))
-        // Old links still open: Log merged into Insights, Area into Home (ADR 0026).
-        assertEquals(Route.Insights, Routes.fromIntent("log"))
+        // Old links still open: Log and Insights merged into History, Area into Home (ADR 0057).
+        assertEquals(Route.History, Routes.fromIntent("log"))
         assertEquals(Route.Home, Routes.fromIntent("area"))
-        assertEquals(Route.Insights, Routes.fromIntent("insights"))
+        assertEquals(Route.History, Routes.fromIntent("insights"))
         assertEquals(Route.Settings, Routes.fromIntent("settings"))
         assertEquals(Route.Feature("alarm"), Routes.fromIntent("feature:alarm"))
         assertEquals(Route.Settings, Routes.fromIntent("  Settings "))
@@ -53,7 +53,7 @@ class RoutingTest {
     // AS2 (R3.3)
     @Test
     fun AS2_router_back_from_any_tab_returns_home() {
-        for (tab in listOf(Route.Map, Route.Insights, Route.Settings)) {
+        for (tab in listOf(Route.Map, Route.History, Route.Settings)) {
             val router = Router(Route.Home)
             router.tab(tab)
             assertEquals(listOf(Route.Home, tab), router.stack)
@@ -75,8 +75,8 @@ class RoutingTest {
         router.tab(Route.Settings)
         router.go(Route.Feature("battery"))
         assertEquals(listOf(Route.Home, Route.Settings, Route.Feature("battery")), router.stack)
-        router.tab(Route.Insights)
-        assertEquals(listOf(Route.Home, Route.Insights), router.stack)
+        router.tab(Route.History)
+        assertEquals(listOf(Route.Home, Route.History), router.stack)
         router.tab(Route.Home)
         assertEquals(listOf<Route>(Route.Home), router.stack)
     }
@@ -97,7 +97,7 @@ class RoutingTest {
     @Test
     fun AS2_router_back_random_operations_keep_home_at_the_bottom() {
         val rnd = Random(20261114L)
-        val tabs = listOf(Route.Home, Route.Map, Route.Insights, Route.Settings)
+        val tabs = listOf(Route.Home, Route.Map, Route.History, Route.Settings)
         repeat(500) {
             val router = Router(Route.Home)
             repeat(40) {

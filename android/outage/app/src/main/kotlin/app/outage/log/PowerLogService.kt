@@ -9,14 +9,13 @@ import java.time.ZoneId
 class PowerLogService(
     val store: LogStore,
     val recorder: LogRecorder,
-    val bands: BandChoice,
     /** Fetches the spot's public outages when a cell and a Worker address exist (R9). Null in demo builds. */
     private val areaSync: AreaOutageSync?,
     private val cell: () -> String?,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     fun load(zone: ZoneId = ZoneId.systemDefault()): PowerLogView =
-        PowerLogModel.build(store.all(), clock(), zone, bands.chosen())
+        PowerLogModel.build(store.all(), clock(), zone)
 
     /** R9.1: one sync per screen open. A failure keeps the cache (R9.4). */
     fun syncArea() {

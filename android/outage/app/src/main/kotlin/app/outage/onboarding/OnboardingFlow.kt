@@ -66,7 +66,7 @@ class OnboardingFlow private constructor(
         return true
     }
 
-    /** The step is done (permission asked, steps read, self-test passed, station chosen). Does not pass Spot or Consent. */
+    /** The step is done (permission asked, steps read, self-test passed). Does not pass Spot or Consent. */
     fun complete(facts: OnboardingFacts, elapsedMs: Long = 0): Boolean {
         val s = record.step
         if (!canLeave(s)) return false
@@ -134,11 +134,11 @@ class OnboardingFlow private constructor(
         /**
          * Steps that are not shown because their facts are already true (R10.2, R10.3).
          * When all permissions and the exemption are in place (a reset or reinstalled phone), only Spot, Consent and
-         * Finish remain (R10.5, O8); the self-test and Station offer wait in Settings. Open question for the human.
+         * Finish remain (R10.5, O8); the self-test waits in Settings. Open question for the human.
          */
         fun autoSkipped(step: OnboardingStep, facts: OnboardingFacts): Boolean = when (step) {
             OnboardingStep.NOTIFICATIONS -> facts.notificationsOk && facts.fullScreenOk
-            OnboardingStep.BATTERY, OnboardingStep.SELF_TEST, OnboardingStep.STATION_OFFER -> facts.allSet
+            OnboardingStep.BATTERY, OnboardingStep.SELF_TEST -> facts.allSet
             else -> false
         }
 

@@ -7,7 +7,7 @@ import { PageCache } from '../site/cache.ts';
 import type { IndexReader } from '../api/public-index/reader.ts';
 import { explanationLines, provenanceText, type ReplayData } from '../ui/simulate/replay.ts';
 import { handleWeb, type WebDeps } from '../routes.ts';
-import { AREAS, NOW, SITE, YABA } from './web-helpers.ts';
+import { AREAS, NOW, SITE, MAINLAND } from './web-helpers.ts';
 
 const REPLAY = replayFile as unknown as ReplayData;
 const SENTINEL = 'ZZSENTINELZZ';
@@ -77,12 +77,12 @@ describe('W6 simulated separation', () => {
       '/nope',
       '/robots.txt',
       '/sitemap.xml',
-      `/area/${YABA.slug}`,
-      `/c/${YABA.cells[0]}`,
+      `/area/${MAINLAND.slug}`,
+      `/c/${MAINLAND.cells[0]}`,
       '/api/map.json',
       '/api/v1/public/map',
-      `/api/v1/public/area/${YABA.slug}`,
-      `/api/v1/public/cell/${YABA.cells[0]}/outages`,
+      `/api/v1/public/area/${MAINLAND.slug}`,
+      `/api/v1/public/cell/${MAINLAND.cells[0]}/outages`,
     ];
     for (const p of paths) {
       const { body, counts } = await text(p);

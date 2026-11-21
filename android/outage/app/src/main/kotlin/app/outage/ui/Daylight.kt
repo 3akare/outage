@@ -184,6 +184,12 @@ fun DayRow(
     }
 }
 
+/** A switch row named by a string resource; the switch is labelled with the same words. */
+@Composable
+internal fun SwitchRow(labelRes: Int, checked: Boolean, tile: Pair<Int, Color>? = null, onChange: (Boolean) -> Unit) {
+    SwitchRow(title = stringResource(labelRes), checked = checked, tile = tile, onChange = onChange)
+}
+
 /** A row with a switch; the row toggles it too. Green when on, like iOS. */
 @Composable
 fun SwitchRow(title: String, subtitle: String? = null, checked: Boolean, tile: Pair<Int, Color>? = null, enabled: Boolean = true, onChange: (Boolean) -> Unit) {

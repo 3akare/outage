@@ -211,9 +211,28 @@ class OnboardingFlowTest {
             assertEquals(rec, OnboardingCodec.decode(OnboardingCodec.encode(rec)))
         }
         assertNull(OnboardingCodec.decode(emptyMap()))
-        assertNull(OnboardingCodec.decode(mapOf("step" to "NOPE")))
         assertNull(OnboardingCodec.decode(mapOf("step" to "SPOT", "consentAtMs" to "abc")))
         assertNull(OnboardingCodec.decode(mapOf("step" to "SPOT", "stepTimesMs" to "SPOT")))
+        assertNull(OnboardingCodec.decode(mapOf("step" to "SPOT", "stepTimesMs" to "STATION_OFFER=abc")))
+    }
+
+    /** ADR 0055: a record saved by a version that still had STATION_OFFER keeps its progress. */
+    @Test
+    fun O7_resume_record_with_a_removed_step_decodes_leniently() {
+        val old = mapOf(
+            "step" to "STATION_OFFER", "consentVersion" to "1", "consentAtMs" to "5", "cell" to Gen.CELL,
+            "skips" to "BATTERY,STATION_OFFER", "stepTimesMs" to "SPOT=10,STATION_OFFER=20", "completed" to "false",
+        )
+        val rec = OnboardingCodec.decode(old)!!
+        assertEquals(OnboardingStep.FINISH, rec.step)
+        assertEquals(listOf(OnboardingStep.BATTERY), rec.skips)
+        assertEquals(mapOf(OnboardingStep.SPOT to 10L), rec.stepTimesMs)
+        val store = MemoryStore()
+        store.saved = old
+        val none = OnboardingFacts(notificationsOk = false, fullScreenOk = false, batteryExempt = false)
+        assertEquals(OnboardingStep.FINISH, OnboardingFlow.open(store, none).current)
+        // Without consent an unknown step cannot skip ahead: normalize moves it back.
+        assertEquals(OnboardingStep.SPOT, OnboardingFlow.normalize(OnboardingCodec.decode(mapOf("step" to "NOPE"))!!, none).step)
     }
 
     @Test

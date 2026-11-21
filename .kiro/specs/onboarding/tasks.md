@@ -59,5 +59,5 @@ graph LR
 
 ## Not in this spec
 - Demo screens: `demo-mode`.
-- Station pairing screens: `home-watch`.
+- Station pairing screens: none (Home Watch removed, ADR 0055).
 - The `oem-battery-guide` Agent Skill: written in the skills step; it reads the same JSON file.

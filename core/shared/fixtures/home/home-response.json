@@ -1,6 +1,0 @@
-[
-  {"status":"ON","sinceMs":1800000000000,"lastKnown":null,"lastSeenMs":1800000600000,"stationName":"Mum's flat","asOfMs":1800000660000},
-  {"status":"OFF","sinceMs":1800000100000,"lastKnown":null,"lastSeenMs":1800000700000,"stationName":null,"asOfMs":1800000710000},
-  {"status":"OFFLINE","sinceMs":null,"lastKnown":{"state":"ON","sinceMs":1800000000000},"lastSeenMs":1800000600000,"stationName":"Home","asOfMs":1800003000000},
-  {"status":"UNKNOWN","sinceMs":null,"lastKnown":null,"lastSeenMs":null,"stationName":null,"asOfMs":1800000000000}
-]

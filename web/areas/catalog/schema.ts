@@ -1,39 +1,39 @@
-// Catalog schema and validators (R10). The catalog holds named areas only, never user data (R10.4).
-// A person must check each centre before the area is listed: `checkedBy` non-empty (R10.3, W7).
+// Catalog schema and validators (R10, ADR 0056). The catalog holds named places only, never user data (R10.4).
+// The places are the 20 Lagos LGAs and their 376 wards from GRID3 (core/shared/fixtures/places/lagos-places.json).
 import { isValidRes8Cell } from '@outage/shared';
 
-/** One entry of catalog.source.json. The centre is a point from a cited open source, turned into a res-8 cell by the generator. */
-export type CatalogSourceArea = {
-  slug: string;
-  name: string;
-  lat: number;
-  lng: number;
-  rings: number;
-  tzOffsetMin: number;
-  country: string;
-  source: string; // URL that was read to find the centre
-  checkedBy: string; // person and date; empty until a person has checked the centre
+/** The part of lagos-places.json the catalog reads. */
+export type PlacesSource = {
+  source: { name: string; url: string; licence: string };
+  lgas: { slug: string; name: string; centreCell: string; wards: string[]; cells: string[] }[];
+  wards: { slug: string; name: string; alt: string[]; lga: string; anchor: string; cells: string[] }[];
 };
 
-export type CatalogSource = { areas: CatalogSourceArea[] };
+export type AreaKind = 'lga' | 'ward';
 
-/** One entry of catalog.generated.json (design section 10). No point coordinates, only cells. */
+/** One entry of catalog.generated.json. No point coordinates, only cells. */
 export type CatalogArea = {
   slug: string;
+  /** An LGA is "Ikeja". A ward is "Ward, LGA", for example "Alade, Ikeja". */
   name: string;
+  kind: AreaKind;
+  /** Slug of the LGA a ward is in. Null for an LGA. */
+  lga: string | null;
+  /** Other names for the place, used by search only. */
+  alt: string[];
+  /** An LGA's middle hex, or a ward's anchor hex. */
   centreCell: string;
-  rings: number;
   tzOffsetMin: number;
   country: string;
   source: string;
   checkedBy: string;
-  cells: string[]; // gridDisk(centreCell, rings)
+  /** An LGA's hexes, or a ward's own hexes (just the anchor when the ward is smaller than a hex). */
+  cells: string[];
 };
 
 export type Catalog = { areas: CatalogArea[] };
 
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-const MAX_RINGS = 6;
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isHttps = (v: unknown): boolean => {
@@ -44,18 +44,7 @@ const isHttps = (v: unknown): boolean => {
     return false;
   }
 };
-
-function commonErrors(a: Record<string, unknown>, where: string): string[] {
-  const e: string[] = [];
-  if (typeof a.slug !== 'string' || !SLUG.test(a.slug)) e.push(`${where}: slug must be lowercase letters, digits and dashes`);
-  if (typeof a.name !== 'string' || a.name.trim() === '') e.push(`${where}: name is required`);
-  if (!Number.isInteger(a.rings) || (a.rings as number) < 0 || (a.rings as number) > MAX_RINGS) e.push(`${where}: rings must be an integer 0 to ${MAX_RINGS}`);
-  if (!Number.isInteger(a.tzOffsetMin) || Math.abs(a.tzOffsetMin as number) > 14 * 60) e.push(`${where}: tzOffsetMin must be an integer number of minutes within 14 hours`);
-  if (typeof a.country !== 'string' || !/^[A-Z]{2}$/.test(a.country)) e.push(`${where}: country must be a two-letter upper-case code`);
-  if (!isHttps(a.source)) e.push(`${where}: source must be an https URL that was read to find the centre`);
-  if (typeof a.checkedBy !== 'string') e.push(`${where}: checkedBy must be a string (empty until a person has checked)`);
-  return e;
-}
+const allCells = (v: unknown): v is string[] => Array.isArray(v) && v.every((c) => isValidRes8Cell(c));
 
 function duplicateSlugs(areas: unknown[]): string[] {
   const seen = new Set<string>();
@@ -69,37 +58,64 @@ function duplicateSlugs(areas: unknown[]): string[] {
   return out;
 }
 
-/** Returns a list of problems; empty means valid. */
+/** Returns a list of problems with the places file; empty means valid. */
 export function validateCatalogSource(value: unknown): string[] {
-  if (!isObj(value) || !Array.isArray(value.areas)) return ['catalog source must be { areas: [...] }'];
+  if (!isObj(value) || !Array.isArray(value.lgas) || !Array.isArray(value.wards)) return ['places must be { lgas: [...], wards: [...] }'];
   const errors: string[] = [];
-  value.areas.forEach((a, i) => {
-    const where = `areas[${i}]`;
-    if (!isObj(a)) {
+  if (!isObj(value.source) || !isHttps(value.source.url)) errors.push('source.url must be an https URL');
+  const lgaSlugs = new Set<string>();
+  value.lgas.forEach((l, i) => {
+    const where = `lgas[${i}]`;
+    if (!isObj(l)) {
       errors.push(`${where}: must be an object`);
       return;
     }
-    errors.push(...commonErrors(a, where));
-    if (typeof a.lat !== 'number' || !(a.lat >= -90 && a.lat <= 90)) errors.push(`${where}: lat must be a number within -90 and 90`);
-    if (typeof a.lng !== 'number' || !(a.lng >= -180 && a.lng <= 180)) errors.push(`${where}: lng must be a number within -180 and 180`);
+    if (typeof l.slug !== 'string' || !SLUG.test(l.slug)) errors.push(`${where}: slug must be lowercase letters, digits and dashes`);
+    else lgaSlugs.add(l.slug);
+    if (typeof l.name !== 'string' || l.name.trim() === '') errors.push(`${where}: name is required`);
+    if (!isValidRes8Cell(l.centreCell)) errors.push(`${where}: centreCell must be a valid res-8 cell`);
+    if (!allCells(l.cells)) errors.push(`${where}: cells must be valid res-8 cells`);
   });
-  return [...errors, ...duplicateSlugs(value.areas)];
+  value.wards.forEach((w, i) => {
+    const where = `wards[${i}]`;
+    if (!isObj(w)) {
+      errors.push(`${where}: must be an object`);
+      return;
+    }
+    if (typeof w.slug !== 'string' || !SLUG.test(w.slug)) errors.push(`${where}: slug must be lowercase letters, digits and dashes`);
+    if (typeof w.name !== 'string' || w.name.trim() === '') errors.push(`${where}: name is required`);
+    if (!Array.isArray(w.alt) || !w.alt.every((a) => typeof a === 'string')) errors.push(`${where}: alt must be a list of names`);
+    if (typeof w.lga !== 'string' || !lgaSlugs.has(w.lga)) errors.push(`${where}: lga must be one of the LGAs`);
+    if (!isValidRes8Cell(w.anchor)) errors.push(`${where}: anchor must be a valid res-8 cell`);
+    if (!allCells(w.cells)) errors.push(`${where}: cells must be valid res-8 cells`);
+  });
+  return [...errors, ...duplicateSlugs([...value.lgas, ...value.wards])];
 }
 
-/** Returns a list of problems; empty means valid. */
+/** Returns a list of problems with the built catalog; empty means valid. */
 export function validateCatalog(value: unknown): string[] {
   if (!isObj(value) || !Array.isArray(value.areas)) return ['catalog must be { areas: [...] }'];
   const errors: string[] = [];
+  const lgaSlugs = new Set(value.areas.filter((a) => isObj(a) && a.kind === 'lga').map((a) => (a as Record<string, unknown>).slug));
   value.areas.forEach((a, i) => {
     const where = `areas[${i}]`;
     if (!isObj(a)) {
       errors.push(`${where}: must be an object`);
       return;
     }
-    errors.push(...commonErrors(a, where));
+    if (typeof a.slug !== 'string' || !SLUG.test(a.slug)) errors.push(`${where}: slug must be lowercase letters, digits and dashes`);
+    if (typeof a.name !== 'string' || a.name.trim() === '') errors.push(`${where}: name is required`);
+    if (a.kind !== 'lga' && a.kind !== 'ward') errors.push(`${where}: kind must be lga or ward`);
+    if (a.kind === 'lga' && a.lga !== null) errors.push(`${where}: an LGA has no parent`);
+    if (a.kind === 'ward' && !lgaSlugs.has(a.lga)) errors.push(`${where}: a ward needs an LGA from the catalog`);
+    if (!Array.isArray(a.alt) || !a.alt.every((n) => typeof n === 'string')) errors.push(`${where}: alt must be a list of names`);
+    if (!Number.isInteger(a.tzOffsetMin) || Math.abs(a.tzOffsetMin as number) > 14 * 60) errors.push(`${where}: tzOffsetMin must be an integer number of minutes within 14 hours`);
+    if (typeof a.country !== 'string' || !/^[A-Z]{2}$/.test(a.country)) errors.push(`${where}: country must be a two-letter upper-case code`);
+    if (!isHttps(a.source)) errors.push(`${where}: source must be an https URL`);
+    if (typeof a.checkedBy !== 'string') errors.push(`${where}: checkedBy must be a string`);
     if (!isValidRes8Cell(a.centreCell)) errors.push(`${where}: centreCell must be a valid res-8 cell`);
-    if (!Array.isArray(a.cells) || !a.cells.every((c) => isValidRes8Cell(c))) errors.push(`${where}: cells must be valid res-8 cells`);
-    else if (!(a.cells as unknown[]).includes(a.centreCell)) errors.push(`${where}: cells must include the centre cell`);
+    if (!allCells(a.cells) || a.cells.length === 0) errors.push(`${where}: cells must be valid res-8 cells`);
+    else if (!a.cells.includes(a.centreCell as string)) errors.push(`${where}: cells must include the centre cell`);
     else if (new Set(a.cells).size !== a.cells.length) errors.push(`${where}: cells must be unique`);
   });
   return [...errors, ...duplicateSlugs(value.areas)];
@@ -109,3 +125,9 @@ export function validateCatalog(value: unknown): string[] {
 export function listedAreas(catalog: Catalog): CatalogArea[] {
   return catalog.areas.filter((a) => a.checkedBy.trim() !== '');
 }
+
+/** The 20 LGAs, in catalog order. */
+export const lgasOf = (areas: readonly CatalogArea[]): CatalogArea[] => areas.filter((a) => a.kind === 'lga');
+
+/** The wards of one LGA. */
+export const wardsOf = (areas: readonly CatalogArea[], lgaSlug: string): CatalogArea[] => areas.filter((a) => a.lga === lgaSlug);

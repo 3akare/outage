@@ -1,5 +1,5 @@
-// The simulated city's history, worked into what Insights shows (ADR 0053). Pure functions, no DOM: Vitest checks them
-// (web/test/web-insights.test.ts) and the Android app does the same sums in Kotlin. The history is six weeks of made-up
+// The simulated city's history, worked into the numbers the area sheet shows (ADR 0053). Pure functions, no DOM: Vitest checks them
+// (web/test/web-history.test.ts). The history is six weeks of made-up
 // outages per area, day 0 a Monday (tools/sim/scripts/build-demo-city.mjs). It is laid onto the calendar so that its last
 // day falls on yesterday's weekday: a Monday in the data is always shown as a Monday.
 
@@ -66,17 +66,13 @@ export function median(values) {
   return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
 }
 
-/** The numbers at the top of Insights for one area over the last n days. */
+/** The numbers for one area over the last n days. */
 export function summary(city, area, today, n = 30) {
   const days = dailyHours(city, area, today, n);
   const cuts = outagesIn(city, area, today, n);
-  const promise = city.bands[area.band];
   const avg = days.reduce((s, d) => s + d.hours, 0) / days.length;
   return {
-    band: area.band,
-    promise,
     avgHours: Math.round(avg * 10) / 10,
-    daysBelow: days.filter((d) => d.hours < promise).length,
     days: days.length,
     outages: cuts.length,
     medianMinutes: Math.round(median(cuts.map((c) => c.minutes))),
@@ -85,85 +81,10 @@ export function summary(city, area, today, n = 30) {
   };
 }
 
-/**
- * When outages happen: for each weekday (Monday first) and hour, the share of those days in the last n days on which
- * the power was off at some point in that hour. 0 to 1.
- */
-export function heat(city, area, today, n = 28) {
-  const { last } = calendar(city, today);
-  const first = last - n + 1;
-  const offHours = new Map(); // day index -> Set of hours off
-  const mark = (day, hour) => {
-    if (day < first || day > last) return;
-    if (!offHours.has(day)) offHours.set(day, new Set());
-    offHours.get(day).add(hour);
-  };
-  for (const [d, s, m] of area.outages) {
-    for (let t = s; t < s + m; t += 1) {
-      if (t % 60 === 0 || t === s) mark(d + Math.floor(t / DAY_MIN), Math.floor((t % DAY_MIN) / 60));
-    }
-  }
-  const grid = Array.from({ length: 7 }, () => new Array(24).fill(0));
-  const count = new Array(7).fill(0);
-  for (let i = first; i <= last; i++) {
-    const wd = i % 7; // day 0 of the history is a Monday
-    count[wd] += 1;
-    for (const h of offHours.get(i) ?? []) grid[wd][h] += 1;
-  }
-  return grid.map((row, wd) => row.map((x) => (count[wd] ? x / count[wd] : 0)));
-}
-
-/** The hours of the day when power is most often off, as [from, to) hours, across all days. */
-export function worstHours(grid, width = 3) {
-  const byHour = new Array(24).fill(0).map((_, h) => grid.reduce((s, row) => s + row[h], 0) / grid.length);
-  let best = 0;
-  let at = 0;
-  for (let h = 0; h < 24; h++) {
-    let sum = 0;
-    for (let k = 0; k < width; k++) sum += byHour[(h + k) % 24];
-    if (sum > best) {
-      best = sum;
-      at = h;
-    }
-  }
-  return { from: at, to: (at + width) % 24, share: best / width };
-}
-
-/** Every area ranked by average hours of power a day over the last n days, most first. */
-export function ranking(city, today, n) {
-  return city.areas
-    .map((a) => {
-      const s = summary(city, a, today, n);
-      return { slug: a.slug, name: a.name, band: a.band, promise: s.promise, avgHours: s.avgHours, outages: s.outages };
-    })
-    .sort((a, b) => b.avgHours - a.avgHours || a.name.localeCompare(b.name));
-}
-
-/** Hours without power in each of the last `weeks` 7-day spans, oldest first, ending yesterday. */
-export function weekly(city, area, today, weeks = 5) {
-  const { last, dateOf } = calendar(city, today);
-  const off = offByDay(area, daysOf(city));
-  const out = [];
-  for (let w = weeks - 1; w >= 0; w--) {
-    const end = last - w * 7;
-    let sum = 0;
-    for (let i = end - 6; i <= end; i++) sum += off[i] ?? 0;
-    out.push({ from: dateOf(end - 6), to: dateOf(end), offHours: Math.round((sum / 60) * 10) / 10 });
-  }
-  return out;
-}
-
 /** "2 h 05 min", "45 min". */
 export function duration(minutes) {
   const h = Math.floor(minutes / 60);
   const m = Math.round(minutes % 60);
   if (h === 0) return `${m} min`;
   return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, '0')} min`;
-}
-
-/** "7 pm", "12 am". */
-export function hourLabel(h) {
-  const x = ((h % 24) + 24) % 24;
-  const n = x % 12 === 0 ? 12 : x % 12;
-  return `${n} ${x < 12 ? 'am' : 'pm'}`;
 }

@@ -1,6 +1,8 @@
 # ADR 0038: Freezer Guard uses AlarmManager, inexact by default
 
-Status: accepted (human blanket approval 2026-11-15). Spec: power-log task 7 (R6, design section 6).
+Status: SUPERSEDED by ADR 0058 (2026-11-21): Freezer Guard is cut.
+
+Earlier status: accepted (human blanket approval 2026-11-15). Spec: power-log task 7 (R6, design section 6).
 
 ## Context
 The sensor's job does not run when the phone is unplugged, which is exactly when a freezer alert is needed. The alert must work offline and with the app closed (R6.9). Android 12 and later gate exact alarms behind special app access.

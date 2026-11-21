@@ -81,3 +81,42 @@ Decisions and open questions go here as they arise. The pre-compaction hook adds
 - Decision: report rules the spec left open are in ADR 0017 (ARMED_CRITICAL supersedes LOW per class and day, outage signatures use `other:unknown:normal`, UPLOAD_GAP at two missing days, gap reasons printed only if safe).
 - Open for the human: deploy the Worker (migration v4), `wrangler secret put FIELD_READ_TOKEN`, create the schedule in app.kiro.dev from `.kiro/schedules/field-test.md`. Task 4 (phone aggregator) is not done, so no real device-day exists yet.
 - Note for the orchestrator: a kill-criterion line from one phone and 9 h of charging is what `evaluateGates` (task 2) returns; the probe note called the same run INCOMPLETE. Left as the spec says (R10.2); the report prints the hours so a reader can see the data is thin.
+
+## 2026-11-21 verify LGA picker and share card removal
+- Decision: the picture share card is gone (commit 9fe8b88). ADR 0040 is marked superseded; the text share stays.
+- Decision: website download buttons are plain text, no icon.
+- Fixed ADR 0056 spec-lint: it now has an Alternatives section (GPS, hand-placed areas, wards-only grid, NIPOST API).
+
+## 2026-11-21 Lagos places proof and web status
+- Added `core/shared/test/places.test.ts`: 20 LGAs numbered alphabetically (LA-01 to LA-20), 376 wards, 4,968 land hexes each owned by one ward and one LGA, valid res-8 anchors inside their ward (35 hexless wards anchor in a neighbour), a geo ring per hex, no postcode stored. Removing a ward, moving an anchor or swapping two postcode numbers makes it fail.
+- Web ingest checks cells with `isValidRes8Cell` only, so any Lagos land hex is accepted. No change needed.
+- Still on the old nine-area catalog (another agent is converting it, not touched here): `web/areas/catalog/` (source, generated JSON, schema), `web/worker.ts` (CATALOG, LISTED_AREAS), `web/routes.ts` (sitemap and map areas), `web/api/map/map-json.ts`, `web/areas/map-svg.ts`, `web/landing/landing.ts`, and their tests in `web/test/`.
+
+## 2026-11-21 web converted to Lagos LGAs and wards (ADR 0056)
+- The web catalog is now the 20 LGAs and 376 wards from `core/shared/fixtures/places/lagos-places.json`. `node web/areas/catalog/generate.mjs` builds `catalog.generated.json` (396 areas, about 310 KB) and `outlines.generated.json` (LGA outlines only, about 50 KB). `catalog.source.json` is gone. Ward names read "Ward, LGA". A ward smaller than a hex uses its anchor hex as its one cell.
+- `/areas` draws the 20 LGA outlines (one path each, not one per hex), lists the LGAs, and has a plain search form (`/areas?q=`). `/area/<slug>` works for LGAs and wards: an LGA page lists its wards, a ward page links to its LGA. `GET /api/v1/public/search?q=` finds an LGA or ward by name or alternative name. The sitemap lists all 396 pages.
+- Decision: `/api/map.json` and `/api/v1/public/map` carry the 20 LGAs (4,968 cells), not wards, to keep them small. Ward geometry stays out of the Worker.
+- Decision: all areas are listed (checked) because the data is the official GRID3 boundaries accepted in ADR 0056. The `checkedBy` gate still exists in the code.
+- Not changed on purpose: the simulated city (landing page map, `/app/simulate`, `demo-city.json`, `DemoCity.kt`) is made-up data with its own places. Its nine place coordinates moved into `tools/sim/scripts/build-demo-city.mjs`, and the output is identical. `core/shared/fixtures/map/map.json` is the Kotlin parser contract and keeps its own sample area, so the web tests read their area from that file.
+
+## 2026-11-21 one History screen (ADR 0057)
+- Insights and Power Log are now one History screen (third tab). One score function, `Stats.scoreOf`; no score before 7 days with enough data, only "Day N of 7" and a bar. Old links `log` and `insights` open History. Removed the `insights` package, `InsightsScreen` and `InsightsTest`.
+- Read commits 81042dd and 7093f27. Now re-reads on plug change (`AndroidPlugObserver` through `RefreshOnPlugOrSensor`, with rechecks at 0, 0.4 and 1.5 s) and on every sensor event and start or stop (`SensorPulse`). Today meter reads `PowerLogView.todayWatchedPowerHours`; the Light Alarm row reads `AlarmHost.state()`. Both are real, nothing to remove. No problems found.
+- Tests: score at 0, 6, 7 and 20 days, month score maths, Now reading new sensor state after a plug change (a fake source in `HomeReducerTest`). A view model test with a fake plug observer needs `kotlinx-coroutines-test` or Robolectric, which are not in the build, so it was not added.
+
+## 2026-11-21 cut list (ADR 0058)
+- Cut Freezer Guard, the tariff band and promise check, the diagnostics settings screen, the web Insights tab and the demo Settings rows that only said "On the phone this opens...". The telemetry opt-in stays (first run and Delete my data). Old `/app/insights` links still redirect.
+
+## 2026-11-21 polish (ADR 0059)
+- Screenshots of Now, the spot picker and History are made on the JVM with Robolectric and saved in `docs/visual/android-*.png` (ADR 0059). Roborazzi and kotlinx-coroutines-test were allowed but not needed, so they are not added. The Map tab cannot be drawn on the JVM (MapLibre is native code), so it has no screenshot.
+- Hexless ward anchors: `tools/places/build_lagos.py` now stops if a ward with no hex of its own gets an anchor more than 500 m from the ward. The GRID3 file was downloaded and the script re-run: the fixtures came out byte for byte the same, so no Android or web catalog copy changed. The widest of the 35 is 384 m. `places.test.ts` checks the 500 m limit and the old 25-step rule is now 5 steps.
+- `places.test.ts`: the weak "exactly one cell" test is replaced by one that checks every cell has one ward, every anchor resolves back to its ward, the land cells equal the map file, two known points fall in Ikeja and Surulere, and open sea has no ward.
+- ADR 0040 now reads as history: the picture card is described in the past tense and as removed.
+- Wording: the 30-day bar hint is now "Tap a day. A dashed line means not enough data that day." The empty map now says "The map fills in as phones near you report. Connect to the internet once to load it."
+- Icons: `freezer` is removed from `core/shared/design/icons.json` and `tools/icon/lucide.mjs`, and `ic_sym_chart.xml` is generated again. The web still uses `chart`, and the icon test needs every generated file present. That test failed after the cut list commit and passes now.
+- Known flaky test: `.kiro/scripts/test/post-deploy-check.test.mjs` fails now and then on the base commit as well. It was not changed here.
+
+## 2026-11-21 CI fix: /areas map tap targets
+- The visual check failed on /areas at 390 and 1280 px because each LGA outline on the map was a link, and many LGAs are smaller than 44 px. The check was not changed.
+- Decision: the map is now a picture only. Outlines are plain paths (no links, no `<title>`) and the SVG is `aria-hidden`. The "Local governments" list under the map already links every LGA with its state, so nothing is lost for keyboard or screen reader users. Removed the map link hover style. Tests in `web/test/web-map.test.ts` updated.
+- Could not run `web/visual/run.sh` here: Chromium installed, but the sandbox blocks starting `wrangler dev`. Typecheck, lint and TS tests pass. CI will confirm.

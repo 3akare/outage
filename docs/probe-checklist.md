@@ -242,7 +242,7 @@ Not part of the probe. Do this once on a real phone with the debug build of `and
 
 ## Station section (station-mode R6)
 
-Spare phone, left plugged in. Check each on the real phone, write the result in the log sheet:
+Any phone left plugged in (a spare phone is easiest). Check each on the real phone, write the result in the log sheet:
 
 1. Leave it charging past 100%. Unplug it: one UNPLUG event within seconds. Replug: one REPLUG.
 2. Screen off, no touching for 2 hours (Doze). The ongoing notification stays and a heartbeat lands about every 10 minutes while armed.
@@ -250,27 +250,3 @@ Spare phone, left plugged in. Check each on the real phone, write the result in 
 4. Reboot the phone. After boot the sensor re-arms without opening the app, and the gap is recorded.
 5. Switch Power sensor off in Settings. Nothing is recorded or uploaded until it is switched on.
 
-## Home Watch section (home-watch task 9)
-
-Two phones: a station (spare phone, plugged in at home) and a viewer (main phone). A build with a Worker address (`-PoutageApiBase=...`). Write the result in the log sheet:
-
-1. Station: Settings, Station mode, "Pair with my phone". A 10-symbol code shows, with "Valid until" 10 minutes ahead.
-2. Viewer: Settings, Home Watch, type the code and a name, Pair. "Paired." shows, and a card "Home: power on since ..." appears in Home Watch and on Home under the map.
-3. Unplug the station's charger. Open the viewer app: within a minute the card says "Home: power off since ..." with the unplug time. Replug: "Home: power on since ...".
-4. Router down: switch the home router off, then unplug the station (no SIM data). After about 30 minutes the viewer says "Station offline" and "Last known: power on since ...", never "power off". Switch the router on: within 10 minutes the card says "power off since" the real unplug time, or "power on since" the replug time.
-5. Station, Station mode: the paired phone is listed. Remove it. The viewer card disappears on its next refresh.
-6. **Push latency (open, needs Firebase Messaging, ADR 0045):** with the viewer app closed, unplug the station and time the push "Home: power off since ...". Target: under 60 seconds from the event reaching the Worker (R5.1). Until Firebase Messaging is in the app, the viewer only refreshes while open, so this step cannot pass yet.
-
-## Freezer Guard (power-log R6, ADR 0038)
-
-Real phone, debug build. Set the limit to 1 hour for the checks, then put it back.
-
-1. Settings, Freezer Guard: switch on, limit 1 h. Make an outage interval: tap "Power is out" on the Log screen with the phone off the charger. Wait 1 hour with the screen off. The alert "Check your freezer" appears. Write down how many minutes late it was.
-2. Tap "Power is back" before the hour ends. No alert appears.
-3. Repeat step 1 and close the app from recents. The alert still appears (R6.9).
-4. Repeat step 1 with the phone in airplane mode. The alert still appears.
-5. Set quiet hours to include the current time. The alert arrives silent. Switch on "Freezer Guard may sound in quiet hours": the next alert makes a sound.
-6. Switch on "Alert on time". The system "Alarms & reminders" page opens. Allow it, come back, repeat step 1: the alert arrives within a minute of the limit. Revoke the access in system settings and repeat: the alert still arrives (late is fine).
-7. Android 14 and later: with the access allowed, force-stop the app from system settings. Note that no alert arrives after a force stop (the system cancels the alarm) and write it on the log sheet.
-8. Reboot during an outage. Open Outage: the alarm is planned again from the log.
-9. Tecno, Infinix, itel, Xiaomi: repeat step 3 and write down how late the alert was. Late is a finding, not a failure.

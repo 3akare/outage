@@ -22,15 +22,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-    <!-- Onboarding spot (R3.2): coarse only, asked once in context when the user taps "Use my location once". Never fine location. -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-
-    <!-- Freezer Guard (power-log R6): optional exact alarm. The user grants it in "Alarms & reminders" and can revoke it;
-         the app checks canScheduleExactAlarms() before each use and falls back to an inexact alarm.
-         https://developer.android.com/develop/background-work/services/alarms/schedule#exact-permission-declare -->
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:name=".OutageApp"
@@ -85,22 +78,6 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
-
-        <!-- Share card picture (power-log R8). Not exported; each share grants read access to one file.
-             https://developer.android.com/training/secure-file-sharing/setup-sharing -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.share"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/share_paths" />
-        </provider>
-
-        <receiver
-            android:name=".freezer.FreezerReceiver"
-            android:exported="false" />
     </application>
 
 </manifest>

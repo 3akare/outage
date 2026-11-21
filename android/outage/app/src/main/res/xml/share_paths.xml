@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Only the share card picture, in the cache folder "share" (power-log R8, ADR 0040). -->
-<paths>
-    <cache-path name="share" path="share/" />
-</paths>

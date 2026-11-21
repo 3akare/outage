@@ -35,17 +35,19 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.outage.BuildConfig
 import app.outage.R
+import app.outage.places.PlacesAssets
+import app.outage.places.SpotUpgrade
 import app.outage.shell.Route
 import app.outage.shell.ShellGraph
 import kotlinx.coroutines.launch
 
 private class Tab(val route: Route, val labelRes: Int, val iconRes: Int)
 
-// Status first (ADR 0054): Now answers "is my power on?", the map is one tap away, then Insights and Settings.
+// Status first (ADR 0054): Now answers "is my power on?", the map is one tap away, then History and Settings.
 private val tabs = listOf(
     Tab(Route.Home, R.string.nav_now, R.drawable.ic_sym_home),
     Tab(Route.Map, R.string.nav_map, R.drawable.ic_sym_map),
-    Tab(Route.Insights, R.string.nav_insights, R.drawable.ic_sym_insights),
+    Tab(Route.History, R.string.nav_history, R.drawable.ic_sym_insights),
     Tab(Route.Settings, R.string.nav_settings, R.drawable.ic_sym_settings),
 )
 
@@ -68,10 +70,8 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
     }
 
     val snackbar = remember { SnackbarHostState() }
-    val spotSaved = stringResource(R.string.first_run_spot_saved)
     val spotSavedIn = stringResource(R.string.first_run_spot_saved_in)
-    val spotMissing = stringResource(R.string.spot_not_found)
-    val spotDenied = stringResource(R.string.first_run_spot_later)
+    val spotLater = stringResource(R.string.first_run_spot_later)
     val scope = rememberCoroutineScope()
 
     Scaffold(
@@ -98,14 +98,10 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
             when (current) {
                 Route.Onboarding -> FirstRunScreen(
                     finish = { graph.completeFirstRun(System.currentTimeMillis()) || !graph.onboardingNeeded() },
-                    locate = { graph.locateSpot() },
-                    onDone = { outcome ->
+                    save = { pick -> graph.saveSpot(pick) },
+                    onDone = { area ->
                         shell.onboardingDone()
-                        val message = when (outcome) {
-                            is SpotOutcome.Saved -> outcome.area?.let { String.format(spotSavedIn, it) } ?: spotSaved
-                            SpotOutcome.NotFound -> spotMissing
-                            SpotOutcome.Denied, SpotOutcome.Skipped -> spotDenied
-                        }
+                        val message = if (area != null) String.format(spotSavedIn, area) else spotLater
                         scope.launch { snackbar.showSnackbar(message) }
                     },
                     onTryJudge = { shell.go(Route.Feature(FeatureRegistry.JUDGE)) },
@@ -113,15 +109,13 @@ fun Shell(graph: ShellGraph, shell: ShellViewModel) {
                 Route.Home -> HomeScreen(
                     home, homeScroll,
                     onOpenAlarm = { shell.go(Route.Feature(FeatureRegistry.ALARM)) },
-                    onOpenSetup = { key -> shell.go(Route.Feature(key)) },
+                    onOpenSetup = { key -> if (key == FeatureRegistry.LOG) shell.tab(Route.History) else shell.go(Route.Feature(key)) },
                     onOpenMap = { shell.tab(Route.Map) },
-                    band = graph.band,
-                    spotName = { graph.onboarding.load()?.areaName },
-                    // Home Watch card on Now, only when a home is paired (home-watch R4).
-                    homeCard = { graph.features.get(FeatureRegistry.HOME_CARD)?.screen?.invoke() },
+                    // A spot from the old area map that is not a Lagos ward cell counts as not chosen (ADR 0056).
+                    spotName = { graph.onboarding.load()?.takeUnless { SpotUpgrade.needsRepick(it, PlacesAssets.cachedPlaces()) }?.areaName },
                 )
                 Route.Map -> graph.features.get(FeatureRegistry.AREA)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_map, null)
-                Route.Insights -> graph.features.get(FeatureRegistry.INSIGHTS)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_insights, null)
+                Route.History -> graph.features.get(FeatureRegistry.LOG)?.screen?.invoke() ?: ComingSoonScreen(R.string.nav_history, null)
                 Route.Settings -> SettingsScreen(
                     versionName = BuildConfig.VERSION_NAME,
                     alias = graph.store.alias,

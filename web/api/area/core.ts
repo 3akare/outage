@@ -8,7 +8,10 @@ import type { DetectionPort, IngestedItem } from '../ingest/ports.ts';
 import { SeqWindow } from '../ingest/seqwindow.ts';
 import { HEARTBEAT_ON_BATTERY, isStateType, type EventType, type RejectCode } from '@outage/shared';
 
-/** home-watch R3.2, R3.3: a DISARMED with this reason is proof of life only. It never changes the armed flag and never reaches the engine. */
+/**
+ * Legacy (ADR 0055): APKs built with the removed Home Watch feature send a DISARMED with this reason while on battery.
+ * It is accepted as proof of life only: it never changes the armed flag and never reaches the engine.
+ */
 export const isBatteryHeartbeat = (ev: Pick<AreaEvent, 'type' | 'reason'>): boolean =>
   ev.type === 'DISARMED' && ev.reason === HEARTBEAT_ON_BATTERY;
 
@@ -23,7 +26,7 @@ export interface AreaEvent {
   schedulingDelayMs: number | null;
   refSeq?: number;
   answer?: 'YES' | 'NO';
-  /** Only `HEARTBEAT_ON_BATTERY` is carried (home-watch R3). Every other reason stays at the Worker edge. */
+  /** Only the legacy `HEARTBEAT_ON_BATTERY` is carried. Every other reason stays at the Worker edge. */
   reason?: string;
 }
 export interface AreaIngestInput {

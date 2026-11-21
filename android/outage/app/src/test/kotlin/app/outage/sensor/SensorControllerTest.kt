@@ -117,14 +117,14 @@ class SensorControllerTest {
         assertEquals(1, ctl.getDiagnostics().stopReasonCounts["TIMEOUT"])
     }
 
-    /** home-watch R3.2: the battery heartbeat is not a gap and does not end the charging run or any armed interval. */
+    /** A battery heartbeat recorded by an older version (ADR 0055) is still not a gap after an update. */
     @Test
-    fun R3_2_battery_heartbeat_is_not_a_gap() {
+    fun legacy_battery_heartbeat_is_not_a_gap() {
         fun ev(seq: Long, type: EventType, at: Long, plug: Plug, reason: String? = null) =
             SensorEvent(seq, type, 0, at, TimeQuality.OK, Confidence.HIGH, null, 50, plug, null, reason, Source.RECEIVER)
         val armed = ev(1, EventType.ARMED, 0, Plug.AC)
         val unplug = ev(2, EventType.UNPLUG, 10_000, Plug.NONE)
-        val beat = ev(3, EventType.DISARMED, 20_000, Plug.NONE, Reason.HEARTBEAT_ON_BATTERY)
+        val beat = ev(3, EventType.DISARMED, 20_000, Plug.NONE, "HEARTBEAT_ON_BATTERY")
         val withBeat = TelemetryCalc.compute(listOf(armed, unplug, beat), 30_000, 60_000)
         assertEquals(TelemetryCalc.compute(listOf(armed, unplug), 30_000, 60_000), withBeat)
         assertTrue(withBeat.gaps.isEmpty())
@@ -184,13 +184,12 @@ class SensorControllerTest {
 
     /**
      * R12, station-mode R10.2: the manifest asks for no microphone, motion, fine or background location, advertising permission
-     * and no dataSync service. Coarse location is the one exception (onboarding R3.2, ADR 0037): asked once, in context,
-     * on the Spot screen, never by the sensor.
+     * and no dataSync service. Since ADR 0056 no location permission at all: the spot is picked by LGA and ward.
      */
     @Test
     fun R12_manifest_privacy_check() {
         val m = File("src/main/AndroidManifest.xml").readText()
-        for (bad in listOf("RECORD_AUDIO", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION",
+        for (bad in listOf("RECORD_AUDIO", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION", "ACCESS_COARSE_LOCATION",
             "BODY_SENSORS", "ACTIVITY_RECOGNITION", "HIGH_SAMPLING_RATE_SENSORS", "AD_ID", "READ_PHONE_STATE", "dataSync")) {
             assertFalse("manifest must not contain $bad", m.contains(bad))
         }

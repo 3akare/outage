@@ -22,23 +22,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * Bars of hours of power per day with an optional dashed promise line (R7.2). A null value is a day without enough data:
- * it is drawn as a faint dashed stub, never as a zero bar (R7.3, IN4). Bars below the promise use [lowColor].
+ * Bars of hours of power per day. A null value is a day without enough data:
+ * it is drawn as a faint dashed stub, never as a zero bar (R7.3, IN4).
  * Tap a bar to select it. [progress] 0..1 drives the draw-in animation. Text summary is [summary] (R6.5).
  */
 @Composable
 fun BarChart(
     values: List<Double?>,
     maxValue: Double,
-    promise: Double?,
-    promiseLabel: String,
     yTicks: List<Pair<Double, String>>,
     xLabels: List<Pair<Int, String>>,
     selected: Int?,
     onSelect: (Int?) -> Unit,
     progress: Float,
     okColor: Color,
-    lowColor: Color,
     gridColor: Color,
     textColor: Color,
     summary: String,
@@ -85,17 +82,8 @@ fun BarChart(
             } else {
                 val full = h * (v / maxValue).toFloat().coerceIn(0f, 1f)
                 val bh = full * progress
-                val c = if (promise != null && v < promise) lowColor else okColor
-                drawRoundRect(c.copy(alpha = dim), Offset(x, top + h - bh), Size(bw, bh.coerceAtLeast(0f)), CornerRadius(bw / 3))
+                drawRoundRect(okColor.copy(alpha = dim), Offset(x, top + h - bh), Size(bw, bh.coerceAtLeast(0f)), CornerRadius(bw / 3))
             }
-        }
-        if (promise != null) {
-            drawLine(
-                textColor, Offset(left, y(promise)), Offset(size.width - right, y(promise)), 1.5.dp.toPx(),
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 9f)),
-            )
-            val t = measurer.measure(promiseLabel, label)
-            drawText(t, textColor, Offset(size.width - right - t.size.width, y(promise) - t.size.height - 1.dp.toPx()))
         }
         for ((i, text) in xLabels) {
             val t = measurer.measure(text, label)

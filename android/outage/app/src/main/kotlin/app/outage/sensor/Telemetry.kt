@@ -23,6 +23,8 @@ data class Telemetry(
  */
 object TelemetryCalc {
     private val NOT_CHARGING_REASONS = setOf(Reason.NON_DETECTION_PLUG, Reason.USER_STOPPED)
+    /** The reason older versions gave a heartbeat on battery. Current versions never record it (ADR 0055). */
+    private const val LEGACY_BATTERY_HEARTBEAT = "HEARTBEAT_ON_BATTERY"
 
     fun compute(events: List<SensorEvent>, nowElapsedMs: Long, periodMs: Long): Telemetry {
         val from = nowElapsedMs - periodMs
@@ -49,8 +51,8 @@ object TelemetryCalc {
                     if (e.type == EventType.REPLUG && t >= from) e.schedulingDelayMs?.let { delays += it }
                 }
                 EventType.UNPLUG -> { endArmed(t); endCharging(t); endGap(t) }
-                // home-watch R3.2: the battery heartbeat is proof of life only. It is not a gap and changes no interval.
-                EventType.DISARMED -> if (e.reason != Reason.HEARTBEAT_ON_BATTERY) {
+                // A battery heartbeat stored by an older version (Home Watch, removed in ADR 0055) is not a gap.
+                EventType.DISARMED -> if (e.reason != LEGACY_BATTERY_HEARTBEAT) {
                     endArmed(t)
                     if (e.reason in NOT_CHARGING_REASONS) { endCharging(t); endGap(t) } else {
                         if (chargingSince == null) chargingSince = t

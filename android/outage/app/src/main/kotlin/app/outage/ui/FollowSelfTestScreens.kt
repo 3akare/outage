@@ -158,7 +158,6 @@ fun SelfTestScreen() {
                 CheckRow(stringResource(if (r.returnSeen) R.string.selftest_return_ok else R.string.selftest_return_no), r.returnSeen)
             }
             r.jobDelayMs?.let { GroupFooter(stringResource(R.string.selftest_delay, (it / 1000).toInt())) }
-            GroupFooter(stringResource(R.string.selftest_station))
         }
     }
 }

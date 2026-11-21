@@ -57,7 +57,7 @@ Rules:
 - `Dropped` ignores a late `JobStopped`. This gives exactly one `UNPLUG` when both drivers fire (R4.2).
 - `Dropped` plus `JobStarted` on a detection plug emits `REPLUG` only if no `REPLUG` was emitted by the Receiver driver for the same drop. Otherwise it is ignored (R4.3).
 - In `Armed`, a `JobStopped(CONSTRAINT_CHARGING)` while the plug state is still a detection plug and battery is 95 or more gives `BATTERY_FULL` and moves to `Full`, as today. The Receiver driver stays active in `Full`.
-- `Heartbeat` in `Armed` emits `ARMED` (R5.4). In `Dropped` and `NotCharging` it emits `DISARMED` with reason `HEARTBEAT_ON_BATTERY` and leaves the state unchanged (home-watch R3.1, R3.2). In other phases it emits nothing.
+- `Heartbeat` in `Armed` emits `ARMED` (R5.4). In every other phase it emits nothing and leaves the state unchanged (R5.5; the battery heartbeat went with Home Watch, ADR 0055).
 - Mode changes are not inputs. They start or stop the service; they do not change state (R1.2, R4.5).
 
 The state machine takes a `Source` on each event draft. No other logic differs by source.
@@ -193,7 +193,7 @@ Station properties use IDs `T1` to `T7`. Kotlin JVM unit tests (JUnit 4) with se
 | T3 | `PowerDisconnected` while facts still show a detection plug emits nothing and increments the mismatch counter. | R3.6 | `T3_mismatch_emits_nothing` |
 | T4 | `REPLUG` is only emitted after an `UNPLUG`, and exactly once per drop across both drivers. | R3.3, R4.3 | `T4_single_replug_per_drop` |
 | T5 | Mode on/off at any point in a random event stream does not change emitted events and keeps sequence numbers strictly increasing (supports S7). | R1.2, R4.5 | `T5_mode_changes_are_silent` |
-| T6 | With a fake clock, while armed, heartbeats are `ARMED` at the configured interval. On battery (`Dropped`, `NotCharging`) they are `DISARMED(HEARTBEAT_ON_BATTERY)` and the state never changes. Other phases emit none. | R5, home-watch R3 | `T6_heartbeat_only_while_armed` |
+| T6 | With a fake clock, while armed, heartbeats are `ARMED` at the configured interval. Every other phase emits none and the state never changes. | R5 | `T6_heartbeat_only_while_armed` |
 | T7 | Heartbeat interval times 3 is at most 30 minutes for any configured value allowed by the config validator. | R5.2 | `T7_heartbeat_vs_silence_limit` |
 
 Other tests: manifest check (no `dataSync`, only listed permissions, no mic/location) as a script run by the `verify-on-stop` hook; JVM unit test for `StationController` (`setStationMode` and `getStationState`) with a fake service launcher; device checklist in `docs/probe-checklist.md` for R1, R2, R6 and the probe items above.

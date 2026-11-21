@@ -13,10 +13,10 @@ android/
   outage/     The app people install. Kotlin and Jetpack Compose.
   probe/      Throwaway test app that measured how real phones report charging. Kept for the record.
 web/          One Cloudflare Worker. The phone and the browser both talk to it.
-  api/        The API and the Durable Objects (ingest, areas, alerts, Home Watch, telemetry)
+  api/        The API and the Durable Objects (ingest, areas, alerts, telemetry)
   landing/    Landing page at /
   ui/app/       The stylesheet every page shares
-  public/js/    The street map (MapLibre over OpenFreeMap), Insights maths and charts, the app in the browser
+  public/js/    The street map (MapLibre over OpenFreeMap), history maths, the app in the browser
   ui/simulate/  The Android app in your browser at /app/simulate, on a simulated city
   areas/      Public pages such as "Is there power in Yaba right now?"
   site/       Helpers every page shares
@@ -55,7 +55,7 @@ Each folder has its own `README.md` with the detail: `android/outage/README.md`,
 | A detection threshold | `core/detection/src/params.ts` (needs an ADR first) |
 | Colours, type, shapes | `core/shared/design/tokens.json`, then `node tools/tokens/build.mjs` (the system: `docs/design/daylight.md`) |
 | The app icon, the mark, icons | `tools/icon/build.mjs`; icons come from Lucide via `tools/icon/lucide.mjs` into `core/shared/design/icons.json`, then `node tools/icon/build.mjs` |
-| The list of Lagos areas | `web/areas/catalog/catalog.source.json` |
+| The list of Lagos areas | `core/shared/fixtures/places/lagos-places.json` (the web catalog is built from it) |
 
 ## Commands
 

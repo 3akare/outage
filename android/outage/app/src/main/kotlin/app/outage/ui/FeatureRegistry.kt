@@ -25,11 +25,7 @@ class FeatureRegistry(private val deletes: DeleteRegistry) {
         const val ONBOARDING = "onboarding"
         const val LOG = "log"
         const val AREA = "area"
-        const val INSIGHTS = "insights"
         const val ALARM = "alarm"
-        const val HOME_WATCH = "home_watch"
-        const val STATION = "station"
-        const val HOME_CARD = "home_card"
         const val JUDGE = "judge"
     }
 }

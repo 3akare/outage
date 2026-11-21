@@ -4,39 +4,25 @@ import android.app.Application
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import app.outage.home.HomeApi
-import app.outage.home.HomeCredentials
-import app.outage.home.HomeWatchModel
-import app.outage.home.PrefsPairBook
-import app.outage.home.UrlConnectionHomeHttp
-import app.outage.freezer.AndroidFreezerAlarms
-import app.outage.freezer.FreezerGuard
-import app.outage.insights.InsightsSources
-import app.outage.insights.LogStoreTimeline
 import app.outage.log.AreaOutageSync
-import app.outage.log.BandChoice
 import app.outage.log.FileOutageCache
 import app.outage.log.LogRecorder
 import app.outage.log.LogStore
 import app.outage.log.LogStores
 import app.outage.log.PowerLogService
-import app.outage.log.BandConfig
 import app.outage.map.AreaMapSources
 import app.outage.map.FileMapCache
 import app.outage.map.MapHttp
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.runtime.Composable
-import app.outage.map.DemoAreaMap
-import app.outage.map.MapResult
 import app.outage.net.IngestApi
 import app.outage.net.PushHost
 import app.outage.onboarding.OnboardingFacts
 import app.outage.onboarding.OnboardingFlow
-import app.outage.onboarding.SpotChoice
-import app.outage.onboarding.LocationSource
-import app.outage.onboarding.Spot
-import app.outage.ui.SpotOutcome
+import app.outage.places.PlacePick
+import app.outage.places.PlacesAssets
+import app.outage.places.SpotUpgrade
 import app.outage.ui.AlarmSettingsScreen
 import app.outage.ui.FollowSection
 import app.outage.ui.PermissionsScreen
@@ -54,20 +40,12 @@ import app.outage.ui.DemoViewModel
 import app.outage.ui.FeatureRegistry
 import app.outage.ui.JudgeScreen
 import app.outage.ui.loadReplayAsset
-import app.outage.ui.HomeWatchCard
-import app.outage.ui.HomeWatchScreen
-import app.outage.ui.HomeWatchViewModel
-import app.outage.ui.StationPairScreen
 import app.outage.telemetry.PrefsTelemetryConsent
 import app.outage.telemetry.TelemetryDriver
-import app.outage.ui.DiagnosticsScreen
-import app.outage.ui.FreezerScreen
 import app.outage.ui.SensorToggleScreen
-import app.outage.ui.InsightsScreen
 import app.outage.ui.MapScreen
 import app.outage.ui.PowerLogScreen
 import app.outage.ui.PowerLogViewModel
-import app.outage.ui.ShareCardImage
 import java.io.File
 import java.util.concurrent.Executors
 import kotlinx.coroutines.Dispatchers
@@ -84,9 +62,9 @@ class OutageApp : Application() {
         graph = ShellGraph(this)
         app.outage.alarm.ChannelSetup.ensure(this)
         registerPowerLog()
-        registerMapAndInsights()
+        registerMap()
         registerSensor()
-        registerHomeWatch()
+        forgetHomeWatch()
         registerJudgeMode()
         registerAlarmAndSpot()
         // A server delete that failed earlier is retried here, off the main thread (R5.3). After registerSensor,
@@ -97,26 +75,16 @@ class OutageApp : Application() {
     }
 
     private lateinit var logStore: LogStore
-    private lateinit var bandChoice: BandChoice
 
     /**
-     * Power Log (spec power-log): the log database, sensor events into the log, Freezer Guard, the Power Log screen.
-     * Opens nothing at start except a background plan of the Freezer Guard alarm (alarms are lost at reboot).
+     * Power Log (spec power-log): the log database, sensor events into the log, the Power Log screen.
+     * Opens nothing at start.
      */
     private fun registerPowerLog() {
-        val alarms = AndroidFreezerAlarms(this)
         logStore = LogStores.get(this)
-        val freezer = FreezerGuard(logStore, alarms)
-        val config = try {
-            BandConfig.parse(assets.open(BandConfig.ASSET_NAME).bufferedReader().use { it.readText() })
-        } catch (_: Exception) {
-            null
-        }
-        bandChoice = BandChoice(logStore, config)
-        graph.band = { bandChoice.chosen()?.let { it.id to it.promisedMinHoursPerDay } }
         val recorder = LogRecorder(
             store = logStore,
-            onChange = { runCatching { freezer.sync() } },
+            onChange = {},
             onDetectionPlug = { Sensor.get(this).onDetectionPlug() },
             queueReport = { Sensor.get(this).recordReport() != null },
         )
@@ -128,27 +96,25 @@ class OutageApp : Application() {
         }
         val outageCache = FileOutageCache(File(filesDir, "outages"))
         val sync = if (BuildConfig.API_BASE.isNotBlank()) AreaOutageSync(BuildConfig.API_BASE, logStore, outageCache) else null
-        val service = PowerLogService(logStore, recorder, bandChoice, sync, cell = { graph.onboarding.load()?.cell })
+        val service = PowerLogService(logStore, recorder, sync, cell = { graph.onboarding.load()?.cell })
 
-        graph.features.register("freezer_guard", R.string.settings_freezer, { FreezerScreen(freezer, alarms::canScheduleExact) }, null)
+        graph.todayPowerHours = { service.load().todayWatchedPowerHours }
         graph.features.register(
             FeatureRegistry.LOG,
             R.string.log_title,
             {
                 val vm: PowerLogViewModel = viewModel(factory = viewModelFactory { initializer { PowerLogViewModel(service) } })
-                PowerLogScreen(vm, shareImage = { v -> Thread { runCatching { ShareCardImage.share(applicationContext, v.share) } }.start() })
+                PowerLogScreen(vm)
             },
             null,
         )
-        // Delete-my-data (power-log R1.6): the log and its settings, the Freezer Guard alarm, the cached area outages and the
-        // cached share picture. Cancel the alarm after the clear, so a pending alert cannot find an outage to report.
+        // Delete-my-data (power-log R1.6): the log and its settings, the cached area outages and the
+        // share picture an older version may have cached.
         graph.deletes.register("power_log") {
             logStore.clear()
-            alarms.cancel()
             outageCache.clear()
-            ShareCardImage.clear(this)
+            File(cacheDir, "share").deleteRecursively()
         }
-        Thread { runCatching { freezer.sync() } }.start()
     }
 
     /**
@@ -162,12 +128,13 @@ class OutageApp : Application() {
         var upload: UploadDriver? = null
         val prefs = getSharedPreferences("sensor_switch", MODE_PRIVATE)
         val consent = PrefsTelemetryConsent(this)
-        graph.features.register("diagnostics", R.string.settings_diagnostics, { DiagnosticsScreen(consent::enabled, consent::set) }, null)
         graph.deletes.register("telemetry_consent") { consent.clear() }
         graph.sensorStarter = {
             if (prefs.getBoolean("on", true)) io.execute {
                 val sensor = Sensor.get(this)
                 sensor.start()
+                // A start while unplugged changes the phase without an event; tell visible screens to read again.
+                app.outage.sensor.SensorPulse.bump()
                 if (upload == null && BuildConfig.API_BASE.isNotBlank()) {
                     upload = UploadDriver(IngestApi(BuildConfig.API_BASE, UrlConnectionPost), credentials, sensor) { onboarding.load()?.cell }
                         .also { it.start() }
@@ -183,7 +150,7 @@ class OutageApp : Application() {
             {
                 SensorToggleScreen({ prefs.getBoolean("on", true) }) { on ->
                     prefs.edit().putBoolean("on", on).apply()
-                    if (on) graph.sensorStarter() else io.execute { Sensor.peek()?.stop() }
+                    if (on) graph.sensorStarter() else io.execute { Sensor.peek()?.stop(); app.outage.sensor.SensorPulse.bump() }
                 }
             },
             null,
@@ -191,23 +158,30 @@ class OutageApp : Application() {
         graph.sensorState = { Sensor.peek()?.state() }
         graph.deletes.register("sensor") { Sensor.get(this).deleteAllData() }
         graph.deletes.register("alarm") { app.outage.alarm.AlarmHost.get(this).deleteAll() }
+        graph.alarmState = { app.outage.alarm.AlarmHost.get(this).state() }
         if (BuildConfig.API_BASE.isNotBlank()) {
             val api = IngestApi(BuildConfig.API_BASE, UrlConnectionPost)
             graph.deletes.registerServer {
                 val id = credentials.installId()
                 val token = credentials.token()
                 if (id == null || token == null) true
-                else api.delete(id, token, credentials.cells(), pendingDeletePairIds()).also { ok ->
-                    if (ok) {
-                        credentials.clear()
-                        pendingDeleteIds().edit().clear().apply()
-                    }
-                }
+                else api.delete(id, token, credentials.cells()).also { ok -> if (ok) credentials.clear() }
             }
         }
     }
 
-    /** Set by [registerHomeWatch]; the server delete lists its pair ids (home-watch R7.4). */
+    /**
+     * Home Watch was removed (ADR 0055). Its two preference files (saved pairs, pair ids awaiting a server delete) are
+     * dropped off the main thread. Safe on every start: deleting a missing file does nothing.
+     * https://developer.android.com/reference/android/content/Context#deleteSharedPreferences(java.lang.String)
+     */
+    private fun forgetHomeWatch() {
+        Thread {
+            deleteSharedPreferences("home_watch")
+            deleteSharedPreferences("home_watch_pending_delete")
+        }.start()
+    }
+
     /**
      * Judge mode (demo-mode task 6): reads only the bundled replay asset, writes nothing, so it has no delete function.
      * Opens from the first screen and from Settings.
@@ -219,52 +193,6 @@ class OutageApp : Application() {
         }, null)
     }
 
-    /** Pair ids kept on disk until the server delete succeeds, so a retry after a restart still cleans the station shards (review issue 1). */
-    private fun pendingDeleteIds() = getSharedPreferences("home_watch_pending_delete", MODE_PRIVATE)
-
-    private fun pendingDeletePairIds(): List<String> = pendingDeleteIds().getStringSet("ids", emptySet()).orEmpty().toList()
-
-    /**
-     * Home Watch (home-watch task 8): viewer screen in Settings > Home Watch, station screen in Settings > Station mode,
-     * and a card on Home. Pairing needs the Worker; without an address the screens say so (ADR 0024).
-     */
-    private fun registerHomeWatch() {
-        val credentials = PrefsCredentials(this)
-        val book = PrefsPairBook(this)
-        val api = BuildConfig.API_BASE.takeIf { it.isNotBlank() }?.let { HomeApi(it, UrlConnectionHomeHttp) }
-        val model = HomeWatchModel(
-            api = api,
-            credentials = object : HomeCredentials {
-                override fun installId() = credentials.installId()
-                override fun token() = credentials.token()
-            },
-            book = book,
-            cell = { graph.onboarding.load()?.cell },
-            nowMs = System::currentTimeMillis,
-            tzOffsetMin = { java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 60_000 },
-        )
-        val vm: @androidx.compose.runtime.Composable () -> HomeWatchViewModel = {
-            viewModel(
-                factory = viewModelFactory { initializer { HomeWatchViewModel(model) } },
-            )
-        }
-        graph.features.register(
-            FeatureRegistry.HOME_WATCH,
-            R.string.settings_home_watch,
-            { HomeWatchScreen(vm(), onBack = { graph.goBack() }, onOpenStation = { graph.openFeature(FeatureRegistry.STATION) }) },
-            // The phone side runs before the server call (app-shell R5), so keep the ids on disk until the server call succeeds.
-            {
-                val ids = model.pairIdsForDelete().toSet() + pendingDeletePairIds()
-                pendingDeleteIds().edit().putStringSet("ids", ids).commit()
-                book.clear()
-            },
-        )
-        graph.features.register(FeatureRegistry.STATION, R.string.settings_station, { StationPairScreen(vm(), onBack = { graph.goBack() }) }, null)
-        graph.features.register(FeatureRegistry.HOME_CARD, R.string.settings_home_watch, {
-            HomeWatchCard(vm(), onOpen = { graph.openFeature(FeatureRegistry.HOME_WATCH) })
-        }, null)
-    }
-
     /**
      * Light Alarm settings, notification permission, spot, follow and charger test screens (alerts-and-light-alarm task 8,
      * onboarding tasks 5 to 7). Each is opened from Settings or a Home card. Push is off without Firebase config (ADR 0036).
@@ -272,8 +200,6 @@ class OutageApp : Application() {
     private fun registerAlarmAndSpot() {
         val credentials = PrefsCredentials(this)
         val push = PushHost.get(this)
-        val mapCache = FileMapCache(File(filesDir, "map"))
-        val mapSource = AreaMapSources.choose(BuildConfig.API_BASE, mapCache) { url -> withContext(Dispatchers.IO) { MapHttp.get(url) } }
         val openBatteryList = {
             startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
@@ -287,12 +213,11 @@ class OutageApp : Application() {
             R.string.settings_followed_area,
             {
                 SpotScreen(
-                    loadMap = { (mapSource.load(DemoAreaMap.CITY, System.currentTimeMillis()) as? MapResult.Loaded)?.load?.map },
                     current = {
                         val r = graph.onboarding.load()
-                        SpotState(r?.cell, r?.areaName, r?.postcodePrefix)
+                        SpotState(r?.cell, r?.areaName, SpotUpgrade.needsRepick(r, PlacesAssets.cachedPlaces()))
                     },
-                    save = { choice, postcode -> saveSpot(push, choice, postcode) },
+                    save = { pick -> saveSpot(push, pick) },
                     below = { spot -> FollowSection(spot) },
                 )
             },
@@ -300,46 +225,36 @@ class OutageApp : Application() {
         )
         graph.deletes.register("follow") { push.deleteLocal() }
 
-        // First run: "Use my location" reads one coarse position, turns it into a cell of the published map, saves the
-        // cell only and drops the position (onboarding O2, ADR 0037, ADR 0050). A mocked position or a place outside the
-        // map is not saved here; the person can confirm or pick on the map in Settings.
-        graph.locateSpot = {
-            withContext(Dispatchers.IO) {
-                val fix = LocationSource.readOnce(this@OutageApp)
-                val map = (mapSource.load(DemoAreaMap.CITY, System.currentTimeMillis()) as? MapResult.Loaded)?.load?.map
-                val choice = if (fix != null && map != null) Spot.resolve(map, fix.lat, fix.lng, fix.mocked) else null
-                when {
-                    choice == null || choice.needsConfirm || !Spot.isRealCell(choice.cell) -> SpotOutcome.NotFound
-                    saveSpot(push, choice, null) -> SpotOutcome.Saved(choice.areaName)
-                    else -> SpotOutcome.NotFound
-                }
-            }
-        }
-    }
+        // First run picks the spot by local government and ward (ADR 0056): no position is ever read.
+        graph.saveSpot = { pick -> saveSpot(push, pick) }
 
-    /** Stores the cell only (O2). A follow on the old cell moves to the new one. */
-    private fun saveSpot(push: PushHost, choice: SpotChoice, postcode: String?): Boolean {
-        val flow = OnboardingFlow.open(graph.onboarding, OnboardingFacts(notificationsOk = true, fullScreenOk = true, batteryExempt = false))
-        if (!flow.changeSpot(choice.cell, choice.areaName, postcode)) return false
-        val old = push.store.read()
-        if (old != null && old.cell != choice.cell) push.follow(old.copy(cell = choice.cell)) { }
-        return true
+        // Upgrade from the nine-area map: a saved Lagos land cell gets its "Ward, LGA" name. Parsing the places is the only
+        // work, off the main thread, and it warms the cache the spot picker and the map search use.
+        Thread {
+            val places = PlacesAssets.places(this) ?: return@Thread
+            runCatching { SpotUpgrade.run(graph.onboarding, places) }
+        }.start()
     }
 
     /**
-     * Area map and Insights (spec app-map-insights). Demo sources until a Worker address is built in and the Power Log
-     * timeline exists; both screens then carry the Simulated label (R5).
+     * Stores the cell and "Ward, LGA" only (O2, ADR 0056). No postcode is kept: the old prefix, if any, is cleared. A follow
+     * on the old cell moves to the new one.
      */
-    private fun registerMapAndInsights() {
+    private fun saveSpot(push: PushHost, pick: PlacePick): Boolean {
+        val flow = OnboardingFlow.open(graph.onboarding, OnboardingFacts(notificationsOk = true, fullScreenOk = true, batteryExempt = false))
+        if (!flow.changeSpot(pick.cell, pick.areaName, null)) return false
+        val old = push.store.read()
+        if (old != null && old.cell != pick.cell) push.follow(old.copy(cell = pick.cell)) { }
+        return true
+    }
+
+    /** Area map (spec app-map-insights). History is the Power Log screen, registered in [registerPowerLog] (ADR 0057). */
+    private fun registerMap() {
         val cache = FileMapCache(File(filesDir, "map"))
         val followed = PrefsFollowedArea(this)
         val source = AreaMapSources.choose(BuildConfig.API_BASE, cache) { url -> withContext(Dispatchers.IO) { MapHttp.get(url) } }
         graph.features.register(FeatureRegistry.AREA, R.string.nav_home, { MapScreen(source, followed, spotCell = { graph.onboarding.load()?.cell }) }, null)
         graph.deletes.register("map_cache") { cache.clear() }
         graph.deletes.register("followed_area") { followed.clear() }
-
-        // The real Power Log once it has data; the labelled demo only in a build without a Worker address (R5, R10).
-        val insights = InsightsSources.choose(BuildConfig.API_BASE, { bandChoice.chosen() }, LogStoreTimeline(logStore))
-        graph.features.register(FeatureRegistry.INSIGHTS, R.string.nav_insights, { InsightsScreen(insights) }, null)
     }
 }

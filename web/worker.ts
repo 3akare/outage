@@ -6,8 +6,6 @@ import type { Env } from './env.ts';
 import { REGISTRY_NAME, TELEMETRY_NAME } from './env.ts';
 import { type Deps, handleRequest } from './api/ingest/handlers.ts';
 import { RegisterLimiter } from './api/ingest/limiter.ts';
-import { HomeViewCache } from './api/home/cache.ts';
-import { PairingActor } from './api/pairing/actor.ts';
 import { RevocationCache } from './api/registry/revocation.ts';
 import { RegistryActor } from './api/registry/actor.ts';
 import { TelemetryActor } from './api/telemetry/actor.ts';
@@ -15,6 +13,7 @@ import { hashInstallId } from './api/ingest/token.ts';
 import replayFile from '@outage/shared/fixtures/replay.json' with { type: 'json' };
 import { PageCache } from './site/cache.ts';
 import { CATALOG, LISTED_AREAS } from './areas/catalog/index.ts';
+import { lgasOf } from './areas/catalog/schema.ts';
 import { PublicIndex } from './api/public-index/actor.ts';
 import { INDEX_NAME } from './api/public-index/core.ts';
 import { indexReader } from './api/public-index/reader.ts';
@@ -22,13 +21,12 @@ import type { ReplayData } from './ui/simulate/replay.ts';
 import { handleWeb, isWebPath, type WebDeps } from './routes.ts';
 
 export type { Env };
-export { AreaActor, PairingActor, PublicIndex, RegistryActor, TelemetryActor };
+export { AreaActor, PublicIndex, RegistryActor, TelemetryActor };
 
 // Isolate-level state: lenient after an isolate restart, never stricter (same direction as the actors' memory state).
 const limiter = new RegisterLimiter(CONFIG.REGISTER_PER_SOURCE_PER_HOUR);
 const telemetryLimiter = new RegisterLimiter(CONFIG.TELEMETRY_PER_INSTALL_PER_HOUR); // keyed by install ID, memory only
 const followLimiter = new RegisterLimiter(CONFIG.FOLLOW_PER_INSTALL_PER_HOUR); // keyed by install ID, memory only
-const homeCache = new HomeViewCache(); // 10 s per pair and viewer (home-watch task 7)
 let cache: RevocationCache | undefined;
 
 function makeDeps(env: Env): Deps {
@@ -56,28 +54,12 @@ function makeDeps(env: Env): Deps {
     area: {
       ingest: (parent, input) => env.AREA.get(env.AREA.idFromName(parent)).ingest(input),
       deleteInstall: (parent, installId) => env.AREA.get(env.AREA.idFromName(parent)).deleteInstall(installId),
-      watchStation: (parent, installId, shard) => env.AREA.get(env.AREA.idFromName(parent)).watchStation(installId, shard),
     },
     alerts: {
       follow: (parent, request) => env.AREA.get(env.AREA.idFromName(parent)).follow(request),
       unfollow: (parent, installId, cell) => env.AREA.get(env.AREA.idFromName(parent)).unfollow(installId, cell),
     },
     followLimiter,
-    pairing: {
-      createOffer: (shard, input) => env.PAIRING.get(env.PAIRING.idFromName(shard)).createOffer(input),
-      claim: (shard, input) => env.PAIRING.get(env.PAIRING.idFromName(shard)).claim(input),
-      removePair: (shard, pairId, installId) => env.PAIRING.get(env.PAIRING.idFromName(shard)).removePair(pairId, installId),
-      deleteInstall: (shard, installId) => env.PAIRING.get(env.PAIRING.idFromName(shard)).deleteInstall(installId),
-      stationPairs: (shard, installId) => env.PAIRING.get(env.PAIRING.idFromName(shard)).stationPairs(installId),
-      home: async (shard, pairId, viewerInstall, nowMs) => {
-        const hit = homeCache.get(pairId, viewerInstall, nowMs);
-        if (hit) return hit;
-        const view = await env.PAIRING.get(env.PAIRING.idFromName(shard)).view(pairId, viewerInstall, nowMs);
-        if (view) homeCache.put(pairId, viewerInstall, view, nowMs);
-        return view;
-      },
-      forgetPair: (pairId) => homeCache.drop(pairId),
-    },
     registry: {
       isRevoked: async (installId) => revocations.has(await hashInstallId(installId), Date.now()),
       revoke: async (installId) => {
@@ -109,7 +91,7 @@ function webDeps(req: Request, env: Env): WebDeps {
         }
       : null,
     areas: LISTED_AREAS,
-    mapAreas: CATALOG.areas,
+    mapAreas: lgasOf(CATALOG.areas),
     index: indexReader(() => env.PUBLIC_INDEX.get(env.PUBLIC_INDEX.idFromName(INDEX_NAME)).getAll()),
     cache: pageCache,
     replay: () => replayFile as unknown as ReplayData,

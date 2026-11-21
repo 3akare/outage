@@ -111,6 +111,8 @@ object Sensor {
             // The Light Alarm hears every event in this process, with no network (alerts-and-light-alarm R3.3).
             val alarm = app.outage.alarm.AlarmHost.get(ctx)
             it.addListener { e -> alarm.core.onSensorEvent(e) }
+            // Visible screens read the sensor again on each event (Now, Power Log).
+            it.addListener { SensorPulse.bump() }
             it.recoverOnProcessStart()
         }
     }

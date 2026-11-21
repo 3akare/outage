@@ -1,6 +1,6 @@
 # ADR 0009: Home Watch pairing and stored links
 
-Status: ACCEPTED 2026-11-15, under the human's blanket approval. Stored data accepted. Routing scheme: option 1 (the code carries the shard), as the Decision section recommends; `home-watch` task 2 may refine it and moves to option 2 only if the field test shows collisions.
+Status: SUPERSEDED by ADR 0055 (2026-11-21, Home Watch removed). Was: ACCEPTED 2026-11-15, under the human's blanket approval. Stored data accepted. Routing scheme: option 1 (the code carries the shard), as the Decision section recommends; `home-watch` task 2 may refine it and moves to option 2 only if the field test shows collisions.
 
 ## Context
 A viewer must find the station's area actor from a short code. Areas are sharded by res-7 parent (ADR 0006), and a viewer's phone does not know the station's cell until it is paired. Pairing creates new stored data: a viewer-to-station link and the viewer's push token. The privacy rules say to ask the human before changing what is stored.

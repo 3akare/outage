@@ -41,6 +41,7 @@ import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.sources.GeoJsonSource
+import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.geometry.LatLng as MlLatLng
 
 /**
@@ -54,6 +55,8 @@ const val MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty"
 
 private const val SRC_CELLS = "outage-cells"
 private const val SRC_SPOT = "outage-spot"
+private const val SRC_OUTLINE = "outage-outline"
+private const val LAYER_OUTLINE = "outage-outline-line"
 private const val LAYER_FILL = "outage-fill"
 private const val LAYER_LINE = "outage-line"
 private const val LAYER_SELECTED = "outage-selected"
@@ -72,6 +75,7 @@ val LAGOS = LatLng(6.52, 3.40)
 class OutageMapController {
     internal var map: MapLibreMap? = null
     private var pending: Pair<LatLng, Double>? = null
+    private var pendingFit: List<LatLng>? = null
     internal var padding = DoubleArray(4)
     private val readySignal = kotlinx.coroutines.CompletableDeferred<Unit>()
 
@@ -79,10 +83,21 @@ class OutageMapController {
     suspend fun awaitReady() = readySignal.await()
 
     fun flyTo(to: LatLng, zoom: Double = SPOT_ZOOM, ms: Int = 1600) {
-        val m = map ?: run { pending = to to zoom; return }
+        val m = map ?: run { pending = to to zoom; pendingFit = null; return }
         val pos = CameraPosition.Builder().target(MlLatLng(to.lat, to.lng)).zoom(zoom).padding(padding).build()
         m.animateCamera(CameraUpdateFactory.newCameraPosition(pos), ms)
     }
+
+    /** Shows all of [points] (a ward's hexagons), with [marginPx] around them. */
+    fun fitTo(points: List<LatLng>, ms: Int = 1200, marginPx: Int = 96) {
+        if (points.size < 2) { points.firstOrNull()?.let { flyTo(it, SPOT_ZOOM, ms) }; return }
+        val m = map ?: run { pendingFit = points; pending = null; return }
+        val update = CameraUpdateFactory.newLatLngBounds(bounds(points), marginPx)
+        if (ms <= 0) m.moveCamera(update) else m.animateCamera(update, ms)
+    }
+
+    private fun bounds(points: List<LatLng>): LatLngBounds =
+        LatLngBounds.Builder().includes(points.map { MlLatLng(it.lat, it.lng) }).build()
 
     fun zoomIn() { map?.animateCamera(CameraUpdateFactory.zoomIn()) }
     fun zoomOut() { map?.animateCamera(CameraUpdateFactory.zoomOut()) }
@@ -91,6 +106,8 @@ class OutageMapController {
         map = m
         pending?.let { (to, z) -> m.moveCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(MlLatLng(to.lat, to.lng)).zoom(z).padding(padding).build())) }
         pending = null
+        pendingFit?.let { m.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds(it), 96)) }
+        pendingFit = null
         readySignal.complete(Unit)
     }
 }
@@ -112,6 +129,7 @@ private fun selectedFilter(id: String?): Expression = Expression.eq(Expression.g
 
 /**
  * [cells] with their drawn [states]; [spotId] gets the blue "you are here" dot; [selectedId] a dark outline.
+ * [outlines] is GeoJSON from [HexGeoJson.lines] (LGA or ward boundaries), drawn as a thin dashed line under the labels.
  * [top] and [bottom] are how much of the map other things cover (the search bar, the sheet), so the camera centres
  * places in the part people can see. [onTap] gets the tapped cell id, or null for a tap on no cell.
  */
@@ -127,6 +145,7 @@ fun OutageMap(
     bottom: Dp = 0.dp,
     interactive: Boolean = true,
     description: String = "",
+    outlines: String? = null,
     onTap: (String?) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -186,6 +205,13 @@ fun OutageMap(
             map.setStyle(Style.Builder().fromUri(MAP_STYLE_URL)) { s ->
                 s.addSource(GeoJsonSource(SRC_CELLS, HexGeoJson.cells(emptyList(), emptyMap(), null)))
                 s.addSource(GeoJsonSource(SRC_SPOT, HexGeoJson.point(null)))
+                s.addSource(GeoJsonSource(SRC_OUTLINE, HexGeoJson.lines(emptyList())))
+                val outline = LineLayer(LAYER_OUTLINE, SRC_OUTLINE).withProperties(
+                    PropertyFactory.lineColor(Tokens.Colors.ink.toArgb()),
+                    PropertyFactory.lineWidth(byZoom(9 to 0.8, 13 to 1.6, 16 to 2.4)),
+                    PropertyFactory.lineOpacity(0.45f),
+                    PropertyFactory.lineDasharray(arrayOf(2f, 1.5f)),
+                )
                 val fill = FillLayer(LAYER_FILL, SRC_CELLS).withProperties(
                     PropertyFactory.fillColor(stateColour(colors)),
                     PropertyFactory.fillOpacity(byZoom(9 to 0.45, 13 to 0.35, 16 to 0.25)),
@@ -200,7 +226,7 @@ fun OutageMap(
                     PropertyFactory.lineWidth(3.5f),
                 )
                 val firstLabel = s.layers.firstOrNull { it is SymbolLayer }?.id
-                for (layer in listOf(fill, line, selected)) {
+                for (layer in listOf(fill, line, outline, selected)) {
                     if (firstLabel != null) s.addLayerBelow(layer, firstLabel) else s.addLayer(layer)
                 }
                 s.addLayer(
@@ -249,6 +275,9 @@ fun OutageMap(
         s.getSourceAs<GeoJsonSource>(SRC_CELLS)?.setGeoJson(HexGeoJson.cells(cells, states, spotId))
         val spot = spotId?.let { id -> cells.firstOrNull { it.id == id } }?.let(HexGeoJson::centre)
         s.getSourceAs<GeoJsonSource>(SRC_SPOT)?.setGeoJson(HexGeoJson.point(spot))
+    }
+    LaunchedEffect(style, outlines) {
+        style?.getSourceAs<GeoJsonSource>(SRC_OUTLINE)?.setGeoJson(outlines ?: HexGeoJson.lines(emptyList()))
     }
     LaunchedEffect(style, selectedId) {
         (style?.getLayer(LAYER_SELECTED) as? LineLayer)?.setFilter(selectedFilter(selectedId))

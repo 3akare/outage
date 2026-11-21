@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The simulated city the app shows without real data (ADR 0052): real Lagos areas at their real places, as real H3
-// resolution-8 blocks, with made-up power states. Areas come from the catalog (OpenStreetMap coordinates, each with its
+// resolution-8 blocks, with made-up power states. Areas are listed below (OpenStreetMap coordinates, each with its
 // source) plus Lekki. Writes:
 //   core/shared/fixtures/demo-city.json                        read by the web's app in the browser
 //   android/outage/app/src/main/kotlin/app/outage/map/DemoCity.kt  the same data for the phone (generated, do not edit)
@@ -17,7 +17,18 @@ export const paths = {
   kt: join(root, 'android/outage/app/src/main/kotlin/app/outage/map/DemoCity.kt'),
 };
 
-const catalog = JSON.parse(readFileSync(join(root, 'web/areas/catalog/catalog.source.json'), 'utf8')).areas;
+// The simulated city's own places (OpenStreetMap coordinates). The web catalog no longer holds them: it lists the 20 Lagos LGAs and 376 wards (ADR 0056).
+const catalog = [
+  { slug: 'yaba', name: 'Yaba', lat: 6.5068212, lng: 3.3754881, source: 'https://nominatim.openstreetmap.org/search?q=Yaba,+Lagos,+Nigeria&format=json&limit=3' },
+  { slug: 'surulere', name: 'Surulere', lat: 6.5008027, lng: 3.3571159, source: 'https://nominatim.openstreetmap.org/search?q=Surulere,+Lagos,+Nigeria&format=json&limit=2' },
+  { slug: 'ikeja', name: 'Ikeja', lat: 6.601627, lng: 3.3515981, source: 'https://nominatim.openstreetmap.org/search?q=Ikeja,+Lagos,+Nigeria&format=json&limit=2' },
+  { slug: 'maryland', name: 'Maryland', lat: 6.5771463, lng: 3.3661931, source: 'https://nominatim.openstreetmap.org/search?q=Maryland,+Lagos,+Nigeria&format=json&limit=3' },
+  { slug: 'victoria-island', name: 'Victoria Island', lat: 6.4300279, lng: 3.4259904, source: 'https://nominatim.openstreetmap.org/search?q=Victoria+Island,+Lagos,+Nigeria&format=json&limit=3' },
+  { slug: 'ikoyi', name: 'Ikoyi', lat: 6.4523431, lng: 3.4280523, source: 'https://nominatim.openstreetmap.org/search?q=Ikoyi,+Lagos,+Nigeria&format=json&limit=2' },
+  { slug: 'ajah', name: 'Ajah', lat: 6.4694716, lng: 3.5623861, source: 'https://nominatim.openstreetmap.org/search?q=Ajah,+Lagos,+Nigeria&format=json&limit=2' },
+  { slug: 'ikorodu', name: 'Ikorodu', lat: 6.6191233, lng: 3.5041271, source: 'https://nominatim.openstreetmap.org/search?q=Ikorodu,+Lagos,+Nigeria&format=json&limit=2' },
+  { slug: 'festac', name: 'Festac', lat: 6.4682727, lng: 3.2839374, source: 'https://nominatim.openstreetmap.org/search?q=Festac+Town,+Lagos,+Nigeria&format=json&limit=2' },
+];
 const EXTRA = [
   {
     slug: 'lekki',

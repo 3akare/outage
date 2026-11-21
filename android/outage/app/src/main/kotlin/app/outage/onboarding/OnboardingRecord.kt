@@ -28,8 +28,15 @@ interface OnboardingStore {
     fun clear()
 }
 
-/** Flat string form of a record, so a key-value store can hold it. Unreadable data decodes to null (start over, design section 9). */
+/**
+ * Flat string form of a record, so a key-value store can hold it. Unreadable data decodes to null (start over, design
+ * section 9). Step names are read leniently: a step this version no longer has (STATION_OFFER, removed with Home Watch
+ * in ADR 0055) is dropped from skips and step times, and as the current step it becomes FINISH, so a saved record from
+ * an older version does not restart onboarding. [OnboardingFlow.normalize] still moves an unearned FINISH back.
+ */
 object OnboardingCodec {
+    private fun stepOf(name: String): OnboardingStep? = OnboardingStep.entries.firstOrNull { it.name == name }
+
     fun encode(r: OnboardingRecord): Map<String, String> {
         val m = LinkedHashMap<String, String>()
         m["step"] = r.step.name
@@ -47,7 +54,7 @@ object OnboardingCodec {
 
     fun decode(m: Map<String, String>): OnboardingRecord? {
         return try {
-            val step = OnboardingStep.valueOf(m["step"] ?: return null)
+            val step = stepOf(m["step"] ?: return null) ?: OnboardingStep.FINISH
             OnboardingRecord(
                 step = step,
                 consentVersion = m["consentVersion"]?.toInt() ?: 0,
@@ -56,11 +63,12 @@ object OnboardingCodec {
                 areaName = m["areaName"],
                 postcodePrefix = m["postcodePrefix"],
                 diagnosticsOptIn = m["diagnosticsOptIn"] == "true",
-                skips = m["skips"].orEmpty().split(',').filter { it.isNotEmpty() }.map { OnboardingStep.valueOf(it) },
-                stepTimesMs = m["stepTimesMs"].orEmpty().split(',').filter { it.isNotEmpty() }.associate {
+                skips = m["skips"].orEmpty().split(',').filter { it.isNotEmpty() }.mapNotNull { stepOf(it) },
+                stepTimesMs = m["stepTimesMs"].orEmpty().split(',').filter { it.isNotEmpty() }.mapNotNull {
                     val (k, v) = it.split('=')
-                    OnboardingStep.valueOf(k) to v.toLong()
-                },
+                    val ms = v.toLong() // a bad number is still unreadable data
+                    stepOf(k)?.let { s -> s to ms }
+                }.toMap(),
                 completed = m["completed"] == "true",
             )
         } catch (e: IllegalArgumentException) {

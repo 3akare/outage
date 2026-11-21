@@ -43,9 +43,7 @@ fun HomeScreen(
     onOpenAlarm: () -> Unit,
     onOpenSetup: (String) -> Unit,
     onOpenMap: () -> Unit,
-    band: () -> Pair<String, Int>?,
     spotName: () -> String? = { null },
-    homeCard: @Composable () -> Unit,
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     // Refresh when the screen is visible, then once a minute so "Updated 2 min ago" stays true.
@@ -59,10 +57,12 @@ fun HomeScreen(
             }
         }
     }
-    val name = remember(state.area) { spotName() }
+    // Plug, unplug, sensor events and the sensor starting after app open show within about a second.
+    RefreshOnPlugOrSensor { vm.refresh() }
+    val name = remember(state) { spotName() }
     DayPage(scroll = scroll) {
         LargeTitle(name ?: stringResource(R.string.nav_now), supporting = stringResource(if (name != null) R.string.now_your_spot else R.string.now_no_spot), top = 20.dp)
-        HomeContent(state, onOpenAlarm, onOpenSetup, onOpenMap, band(), homeCard)
+        HomeContent(state, onOpenAlarm, onOpenSetup, onOpenMap, hasSpot = name != null)
     }
 }
 
@@ -72,13 +72,13 @@ fun HomeContent(
     onOpenAlarm: () -> Unit,
     onOpenSetup: (String) -> Unit,
     onOpenMap: () -> Unit,
-    band: Pair<String, Int>?,
-    homeCard: @Composable () -> Unit = {},
+    hasSpot: Boolean = state.area != null,
 ) {
     StatusHero(state)
 
     // Steps that used to block first run wait here until done, and go once they are (ADR 0026).
-    val needsArea = state.area == null
+    // A chosen Lagos ward spot is enough; the area status may still be loading (ADR 0056).
+    val needsArea = !hasSpot
     val needsSensor = state.sensor.kind == SensorKind.NOT_ARMED
     if (needsArea || needsSensor) {
         GroupHeader(stringResource(R.string.now_set_up))
@@ -94,7 +94,6 @@ fun HomeContent(
     }
 
     Gap(4.dp)
-    homeCard()
 
     GroupHeader(stringResource(R.string.now_group_today))
     DayCard {
@@ -103,16 +102,13 @@ fun HomeContent(
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(stringResource(R.string.power_today), style = DayType.body, color = Day.ink, modifier = Modifier.weight(1f))
                     Text(
-                        if (band != null) stringResource(R.string.now_hours_promise, hours, band.second) else stringResource(R.string.now_hours_value, hours),
+                        stringResource(R.string.now_hours_value, hours),
                         style = DayType.subhead, color = Day.muted,
                     )
                 }
-                val promise = band?.second
-                val met = promise == null || hours >= promise
                 MeterBar(
                     fraction = (hours / 24.0).toFloat(),
-                    color = if (met) Tokens.Map.normal else Tokens.Map.possible,
-                    marker = promise?.let { it / 24f },
+                    color = Tokens.Map.normal,
                 )
             }
             RowDivider(16.dp)
@@ -132,12 +128,6 @@ fun HomeContent(
                 chevron = true,
                 onClick = onOpenAlarm,
             )
-        }
-        band?.let { (b, _) ->
-            RowDivider(TileInset)
-            DayRow(stringResource(R.string.band_picker_title), tile = R.drawable.ic_sym_receipt to Tokens.Colors.tileOrange, value = stringResource(R.string.band_name, b), chevron = true) {
-                onOpenSetup(FeatureRegistry.LOG)
-            }
         }
     }
 

@@ -15,24 +15,23 @@ export const SIMULATE_HREF = SIMULATE_PATH;
 export const REPO_URL = 'https://github.com/3akare/outage';
 export const LANDING_JS_PATH = '/js/landing.js';
 
-type Store = { href: string; label: string; over: string; icon: IconName };
+type Store = { href: string; label: string; over: string };
 
 /** The download buttons that have a link. GitHub is always there: the APK link, or the releases page. */
 export function stores(site: Site): Store[] {
   const out: Store[] = [];
   const play = site.playUrl ? safeHref(site.playUrl) : null;
   const aptoide = site.aptoideUrl ? safeHref(site.aptoideUrl) : null;
-  if (play) out.push({ href: play, label: 'Get it on Google Play', over: 'Get it on', icon: 'play' });
-  if (aptoide) out.push({ href: aptoide, label: 'Get it on Aptoide', over: 'Get it on', icon: 'store' });
+  if (play) out.push({ href: play, label: 'Get it on Google Play', over: 'Get it on' });
+  if (aptoide) out.push({ href: aptoide, label: 'Get it on Aptoide', over: 'Get it on' });
   const apk = site.apkUrl ? safeHref(site.apkUrl) : null;
-  out.push({ href: apk ?? `${REPO_URL}/releases/latest`, label: 'Download the APK from GitHub', over: 'Download the APK from', icon: 'code' });
+  out.push({ href: apk ?? `${REPO_URL}/releases/latest`, label: 'Download the APK from GitHub', over: 'Download the APK from' });
   return out;
 }
 
 const FEATURES: [IconName, string, string, string][] = [
   ['alarm', 'red', 'Light Alarm', 'Rings when power returns at your spot, even at 3 a.m. Works offline.'],
-  ['homeWatch', 'green', 'Home Watch', 'A spare phone charging at home tells you if the power is on.'],
-  ['freezer', 'teal', 'Freezer Guard', 'Warns you when the power has been off longer than your food can wait.'],
+  ['chart', 'green', 'Power Log', 'Your hours of power each day, kept on your phone. No account, no server needed.'],
 ];
 
 const STEPS: [string, string, string, string][] = [
@@ -75,10 +74,8 @@ export function renderLanding(site: Site): Rendered {
   const features =
     '<section class="section" aria-labelledby="feat-h"><div class="container">' +
     '<h2 id="feat-h">Useful from the first phone.</h2>' +
-    '<ul class="bento"><li class="wide"><span class="tile indigo">' +
-    icon('insights') +
-    '</span><h3>Insights</h3><p id="herostat">Hours of power each day in Yaba against what its tariff band promises. Simulated.</p><div class="plot" id="herochart"></div></li>' +
-    FEATURES.map(([i, c, h, p]) => `<li class="third"><span class="tile ${c}">${icon(i)}</span><h3>${h}</h3><p>${p}</p></li>`).join('') +
+    '<ul class="bento">' +
+    FEATURES.map(([i, c, h, p]) => `<li><span class="tile ${c}">${icon(i)}</span><h3>${h}</h3><p>${p}</p></li>`).join('') +
     '</ul></div></section>';
   const privacy =
     '<section class="section" aria-labelledby="priv-h"><div class="container">' +
@@ -91,7 +88,7 @@ export function renderLanding(site: Site): Rendered {
     '<h2 id="get-h">Get Outage for Android.</h2>' +
     '<p class="lead">Free and open source.</p>' +
     `<div class="stores">${stores(site)
-      .map((s) => `<a class="store" href="${e(s.href)}" aria-label="${s.label}">${icon(s.icon)}<span><small>${s.over}</small><b>${s.label.replace(/^(Get it on |Download the APK from )/, '')}</b></span></a>`)
+      .map((s) => `<a class="store" href="${e(s.href)}" aria-label="${s.label}"><span><small>${s.over}</small><b>${s.label.replace(/^(Get it on |Download the APK from )/, '')}</b></span></a>`)
       .join('')}</div>` +
     `<p class="muted">No Android phone? <a href="${SIMULATE_HREF}">Try the app in your browser</a> on a simulated city.</p>` +
     '</div></section>';
@@ -107,6 +104,6 @@ export function renderLanding(site: Site): Rendered {
     '<meta name="theme-color" content="#f5f5f7">' +
     `<link rel="canonical" href="${e(site.origin)}/">${FAVICON_LINK}` +
     `<link rel="stylesheet" href="${MAPLIBRE_CSS_PATH}"><link rel="stylesheet" href="/app.css"></head><body>${nav}<main>${hero}${how}${features}${privacy}${get}</main>${foot}` +
-    `<div class="tip" id="tip" role="tooltip" hidden></div><script type="module" src="${LANDING_JS_PATH}"></script></body></html>`;
+    `<script type="module" src="${LANDING_JS_PATH}"></script></body></html>`;
   return html(page, 3600, { map: true });
 }

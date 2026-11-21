@@ -14,8 +14,10 @@ const pages = [
   { path: '/', name: 'landing', expect: ['Your phone charger is a', 'Try the app in your browser', 'GitHub'] },
   { path: '/areas', name: 'areas', expect: ['Install Outage'] },
   { path: '/app/simulate', name: 'simulate', expect: ['simulated data, not live', 'See the power around you', 'Use my location'], app: true },
-  // No area is listed until a person fills in `checkedBy` in the catalog (R10.3), so /area/yaba is the 404 page for now.
-  { path: '/area/yaba', name: 'area-yaba', expect: ['Install Outage'], status: [200, 404] },
+  // The 20 Lagos LGAs and 376 wards are listed (ADR 0056).
+  { path: '/area/lagos-mainland', name: 'area-lagos-mainland', expect: ['Install Outage', 'Wards in Lagos Mainland'], status: [200] },
+  { path: '/area/ikeja-alade', name: 'area-ward', expect: ['Alade, Ikeja'], status: [200] },
+  { path: '/areas?q=alade', name: 'areas-search', expect: ['Alade, Ikeja'], status: [200] },
   { path: '/c/88589c9861fffff', name: 'cell', expect: ['Install Outage'] },
   { path: '/install', name: 'install', expect: ['Install Outage'] },
   { path: '/privacy', name: 'privacy', expect: ['cookies'] },
@@ -123,8 +125,8 @@ try {
     if (map.w < 100 || map.h < 100) fail(where, `street map not drawn: ${JSON.stringify(map)}`);
     else ok(where, `MapLibre street map drawn ${map.w}x${map.h}, flew to the spot`);
     const bar = await pg.locator('nav.rail button').allInnerTexts();
-    if (bar.map((s) => s.trim()).join(',') !== 'Now,Map,Insights,Settings') fail(where, `bar is ${bar.join(',')}`);
-    else ok(where, 'bar is Now, Map, Insights, Settings');
+    if (bar.map((s) => s.trim()).join(',') !== 'Now,Map,Settings') fail(where, `bar is ${bar.join(',')}`);
+    else ok(where, 'bar is Now, Map, Settings');
     await pg.screenshot({ path: `${SHOTS}/simulate-map${tag}.png` });
     await pg.click('#map', { position: { x: Math.round(size.w / 2), y: Math.round((size.h - 140) / 2) } });
     await pg.waitForTimeout(1600);
@@ -155,7 +157,7 @@ try {
     }
     await pg.waitForFunction(() => document.getElementById('go').textContent === 'Simulate again', null, { timeout: 20000 });
     await pg.screenshot({ path: `${SHOTS}/simulate-restored${tag}.png` });
-    for (const tab of ['insights', 'settings']) {
+    for (const tab of ['settings']) {
       await pg.click(`nav.rail button[data-tab="${tab}"]`);
       await pg.waitForTimeout(200);
       await pg.screenshot({ path: `${SHOTS}/simulate-${tab}${tag}.png` });

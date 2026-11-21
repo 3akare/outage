@@ -39,6 +39,22 @@ object HexGeoJson {
         return sb.append("]}").toString()
     }
 
+    /** Outline rings (LGA or ward boundaries) as one MultiLineString Feature, or an empty collection. */
+    fun lines(rings: List<List<LatLng>>): String {
+        if (rings.isEmpty()) return "{\"type\":\"FeatureCollection\",\"features\":[]}"
+        val sb = StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"MultiLineString\",\"coordinates\":[")
+        rings.forEachIndexed { r, ring ->
+            if (r > 0) sb.append(',')
+            sb.append('[')
+            ring.forEachIndexed { i, p ->
+                if (i > 0) sb.append(',')
+                sb.append('[').append(num(p.lng)).append(',').append(num(p.lat)).append(']')
+            }
+            sb.append(']')
+        }
+        return sb.append("]}}]}").toString()
+    }
+
     /** One Point Feature at [at] (the spot marker), or an empty collection when there is no spot. */
     fun point(at: LatLng?): String =
         if (at == null) "{\"type\":\"FeatureCollection\",\"features\":[]}"

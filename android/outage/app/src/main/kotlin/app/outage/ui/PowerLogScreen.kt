@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.outage.R
 import app.outage.log.NowKind
+import app.outage.log.Stats
 import app.outage.log.PowerLogView
 import app.outage.log.TapResult
 import app.outage.ui.charts.BarChart
@@ -31,12 +32,14 @@ import app.outage.ui.charts.Ring
 
 /**
  * The Power Log (power-log R7, R8, R10): power now, today, the last 30 days, the open outage, the month's Light Score,
- * the band picker and the share buttons. The numbers come from [app.outage.log.PowerLogModel]; this file only words and
+ * the share button. The numbers come from [app.outage.log.PowerLogModel]; this file only words and
  * draws them. Only this phone's own data is shown (R10.3).
  */
 @Composable
-fun PowerLogScreen(vm: PowerLogViewModel, shareImage: ((PowerLogView) -> Unit)?) {
+fun PowerLogScreen(vm: PowerLogViewModel) {
     LaunchedEffect(Unit) { vm.refresh() }
+    // "Power now" follows the plug and the sensor within about a second.
+    RefreshOnPlugOrSensor { vm.reloadLocal() }
     val view = vm.view
     val ctx = LocalContext.current
     val progress = remember { Animatable(0f) }
@@ -49,11 +52,10 @@ fun PowerLogScreen(vm: PowerLogViewModel, shareImage: ((PowerLogView) -> Unit)?)
         GroupHeader(stringResource(R.string.log_today_title))
         TodayCard(view)
         Gap(20.dp)
-        ThirtyDaysCard(view, vm.band?.promisedMinHoursPerDay, progress.value)
+        ThirtyDaysCard(view, progress.value)
         OutageList(view)
         Gap(20.dp)
-        MonthCard(view, progress.value, onShareText = { shareText(ctx, view) }, onShareImage = shareImage?.let { share -> { share(view) } })
-        BandCard(vm)
+        MonthCard(view, progress.value, onShareText = { shareText(ctx, view) })
     }
 }
 
@@ -131,19 +133,18 @@ private fun TodayCard(v: PowerLogView) {
 }
 
 @Composable
-private fun ThirtyDaysCard(v: PowerLogView, promise: Int?, progress: Float) {
+private fun ThirtyDaysCard(v: PowerLogView, progress: Float) {
     var selected by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf<Int?>(null) }
     val values = v.last30.map { it.powerHours }
     val avg = values.filterNotNull().let { if (it.isEmpty()) 0.0 else it.average() }
     LogCard {
         CardTitle(stringResource(R.string.log_30_title))
         BarChart(
-            values = values, maxValue = 24.0, promise = promise?.toDouble(),
-            promiseLabel = promise?.let { stringResource(R.string.ins_bars_promise, it) } ?: "",
+            values = values, maxValue = 24.0,
             yTicks = listOf(0.0, 12.0, 24.0).map { it to stringResource(R.string.ins_hours_whole, it.toInt()) },
             xLabels = listOf(0, values.size / 2, values.size - 1).distinct().map { it to Fmt.day(v.last30[it].day.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()) },
             selected = selected, onSelect = { selected = it }, progress = progress,
-            okColor = Day.ink, lowColor = LocalStatusColors.current.map.possible, gridColor = Day.rule, textColor = Day.muted,
+            okColor = Day.ink, gridColor = Day.rule, textColor = Day.muted,
             summary = stringResource(R.string.ins_summary_bars, values.size, avg),
         )
         val d = selected?.let { v.last30.getOrNull(it) }
@@ -177,63 +178,36 @@ private fun OutageList(v: PowerLogView) {
 }
 
 @Composable
-private fun MonthCard(v: PowerLogView, progress: Float, onShareText: () -> Unit, onShareImage: (() -> Unit)?) {
+private fun MonthCard(v: PowerLogView, progress: Float, onShareText: () -> Unit) {
     val score = v.score.score
     LogCard {
         CardTitle(stringResource(R.string.log_month_title, ShareCardText.monthName(v.share)))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-            Ring(
-                fraction = (score ?: 0) / 100f, progress = progress,
-                startColor = LocalStatusColors.current.map.normal, endColor = LocalStatusColors.current.map.normal, trackColor = Day.fill,
-                summary = if (score == null) stringResource(R.string.log_score_summary_none) else stringResource(R.string.log_score_summary, score),
-            ) {
-                Text(if (score == null) stringResource(R.string.ins_none_value) else stringResource(R.string.log_score_value, score), style = DayType.title1Num, color = Day.ink)
-            }
-            Text(
-                if (score == null) stringResource(R.string.log_score_not_enough) else stringResource(R.string.log_score_days, v.score.qualifyingDays),
-                style = DayType.subhead, color = Day.ink2, modifier = Modifier.weight(1f),
-            )
-        }
-        Gap(4.dp)
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            FillButton(stringResource(R.string.log_share), onShareText, Modifier.weight(1f))
-            if (onShareImage != null) FillButton(stringResource(R.string.log_share_picture), onShareImage, Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-private fun BandCard(vm: PowerLogViewModel) {
-    val chosen = vm.band
-    val promise = vm.view?.promise
-    GroupHeader(stringResource(R.string.band_picker_title))
-    DayCard(padding = 16.dp) {
-        // "Not set", then each band's letter, as one segmented control.
-        val options = listOf(stringResource(R.string.band_none)) + vm.bands.map { it.id }
-        val picked = if (chosen == null) 0 else vm.bands.indexOfFirst { it.id == chosen.id } + 1
-        Segmented(options, picked, { i -> vm.chooseBand(if (i == 0) null else vm.bands[i - 1].id) })
-        if (chosen != null) {
-            Column(Modifier.padding(top = 14.dp, start = 4.dp, end = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(stringResource(R.string.band_promise, chosen.id, chosen.promisedMinHoursPerDay), style = DayType.callout, color = Day.ink)
-                if (!chosen.verified) Text(stringResource(R.string.band_promise_unconfirmed), style = DayType.footnote, color = LocalStatusColors.current.possible.color)
-                if (promise?.avgPowerHours != null) {
-                    Text(
-                        when {
-                            promise.daysBelow > 0 -> stringResource(R.string.promise_days_below, promise.daysBelow)
-                            promise.avgPowerHours < promise.promisedHours -> stringResource(R.string.promise_avg_below, promise.promisedHours - promise.avgPowerHours)
-                            else -> stringResource(R.string.promise_met)
-                        },
-                        style = DayType.headline, color = Day.ink,
-                    )
-                    Text(stringResource(R.string.promise_estimate_note), style = DayType.footnote, color = Day.muted)
+        if (score == null) {
+            // Under 7 days of data: no number and no ring, only plain words (ADR 0057).
+            Text(stringResource(R.string.ins_early_title, Stats.scoreDayNumber(v.score.qualifyingDays)), style = DayType.title3, color = Day.ink)
+            MeterBar(v.score.qualifyingDays.coerceAtMost(Stats.MIN_SCORE_DAYS) / Stats.MIN_SCORE_DAYS.toFloat(), Day.ink)
+            Text(stringResource(R.string.log_score_not_enough), style = DayType.subhead, color = Day.muted)
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                Ring(
+                    fraction = score / 100f, progress = progress,
+                    startColor = LocalStatusColors.current.map.normal, endColor = LocalStatusColors.current.map.normal, trackColor = Day.fill,
+                    summary = stringResource(R.string.log_score_summary, score),
+                ) {
+                    Text(stringResource(R.string.log_score_value, score), style = DayType.title1Num, color = Day.ink)
                 }
+                Text(
+                    stringResource(R.string.log_score_days, v.score.qualifyingDays),
+                    style = DayType.subhead, color = Day.ink2, modifier = Modifier.weight(1f),
+                )
             }
+            Gap(4.dp)
+            FillButton(stringResource(R.string.log_share), onShareText, Modifier.fillMaxWidth())
         }
     }
-    GroupFooter(stringResource(R.string.band_picker_hint))
 }
 
-/** Text fallback of the share card (R8.4): the same facts as the picture, no location, name or ID (R8.2). */
+/** The share card as text (R8.4): no location, name or ID (R8.2). */
 private fun shareText(ctx: Context, v: PowerLogView) {
     val text = ShareCardText.build(ctx, v.share)
     val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)

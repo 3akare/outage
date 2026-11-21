@@ -9,7 +9,6 @@ import { stores } from '../landing/landing.ts';
 import { AREAS, NOW, SITE } from './web-helpers.ts';
 import city from '@outage/shared/fixtures/demo-city.json' with { type: 'json' };
 import appJs from '../public/js/app.js?raw';
-import chartsJs from '../public/js/charts.js?raw';
 import dataJs from '../public/js/data.js?raw';
 import landingJs from '../public/js/landing.js?raw';
 import mapJs from '../public/js/map.js?raw';
@@ -31,7 +30,7 @@ const page = async (path: string, site?: Site) => {
 // Nothing is loaded from another origin: no src, no stylesheet, no form action, no script import. Plain links out are fine.
 const LOADS_ELSEWHERE = /(?:src|action)="https?:\/\/|<link[^>]+href="https?:\/\/(?!outage\.test\/)|(?:fetch|import)\(['"]https?:/;
 // The page scripts are static files (public/js), served by Workers Static Assets.
-const FILES: Record<string, string> = { 'app.js': appJs, 'map.js': mapJs, 'data.js': dataJs, 'charts.js': chartsJs, 'landing.js': landingJs };
+const FILES: Record<string, string> = { 'app.js': appJs, 'map.js': mapJs, 'data.js': dataJs, 'landing.js': landingJs };
 const client = (f: string) => FILES[f];
 const CLIENT = Object.keys(FILES);
 
@@ -59,17 +58,20 @@ describe('landing /', () => {
     const all = await page('/', { ...SITE, playUrl: 'https://play.google.com/store/apps/details?id=app.outage', aptoideUrl: 'https://outage.en.aptoide.com/app' });
     expect(all.body).toContain('Google Play');
     expect(all.body).toContain('Aptoide');
+    const buttons = [...all.body.matchAll(/<a class="store"[^>]*>.*?<\/a>/g)].map((m) => m[0]);
+    expect(buttons.length).toBeGreaterThan(0);
+    for (const b of buttons) expect(b).not.toContain('<svg');
     expect(stores({ ...SITE, playUrl: 'javascript:alert(1)' }).map((s) => s.label)).toEqual(['Download the APK from GitHub']);
   });
 });
 
 describe('the app in the browser /app/simulate', () => {
-  it('UX1: the tabs are Now, Map, Insights, Settings, with Now first and selected (ADR 0054)', async () => {
+  it('UX1: the tabs are Now, Map, Settings, with Now first and selected (ADR 0054)', async () => {
     const { res, body } = await page('/app/simulate');
     expect(res.status).toBe(200);
-    expect(NAV_ORDER).toEqual(['Now', 'Map', 'Insights', 'Settings']);
+    expect(NAV_ORDER).toEqual(['Now', 'Map', 'Settings']);
     const nav = /<nav class="rail"[^>]*>(.*?)<\/nav>/.exec(body)?.[1] ?? '';
-    expect([...nav.matchAll(/data-tab="(\w+)"/g)].map((m) => m[1])).toEqual(['now', 'map', 'insights', 'settings']);
+    expect([...nav.matchAll(/data-tab="(\w+)"/g)].map((m) => m[1])).toEqual(['now', 'map', 'settings']);
     expect(nav).toMatch(/data-tab="now" aria-current="page"/);
   });
 

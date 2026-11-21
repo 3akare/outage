@@ -4,7 +4,8 @@
 import { isValidRes8Cell } from '@outage/shared';
 import type { PageCache } from './site/cache.ts';
 import { PAGE_TTL_SECONDS, STATIC_TTL_SECONDS } from './site/cache.ts';
-import type { CatalogArea } from './areas/catalog/schema.ts';
+import { type CatalogArea, lgasOf } from './areas/catalog/schema.ts';
+import { MAX_QUERY, searchAreas } from './areas/catalog/search.ts';
 import { escapeXml } from './site/escape.ts';
 import { json, methodNotAllowed, type Rendered } from './site/headers.ts';
 import type { IndexReader } from './api/public-index/reader.ts';
@@ -34,7 +35,7 @@ export interface WebDeps {
   site: Site;
   install: InstallInfo | null;
   areas: readonly CatalogArea[];
-  /** Every catalog area, checked or not, for the phone's map. Cells with no view are NO_DATA, so nothing unverified is claimed. Defaults to `areas`. */
+  /** Every LGA, checked or not, for the phone's map. Cells with no view are NO_DATA, so nothing unverified is claimed. Defaults to `areas`. */
   mapAreas?: readonly CatalogArea[];
   index: IndexReader;
   cache: PageCache;
@@ -90,15 +91,15 @@ const ROUTES: Route[] = [
   { pattern: /^\/app\/simulate$/, render: (_m, _u, d) => renderSimulatePage(d.site) },
   {
     pattern: /^\/areas$/,
-    render: async (_m, _u, d) =>
-      renderHomePage({ site: d.site, areas: d.areas, views: await d.index.views(), nowMs: d.now() }),
+    render: async (_m, u, d) =>
+      renderHomePage({ site: d.site, areas: d.areas, views: await d.index.views(), nowMs: d.now(), query: (u.searchParams.get('q') ?? '').slice(0, MAX_QUERY) }),
   },
   {
     pattern: /^\/area\/([a-z0-9-]{1,64})$/,
     render: async (m, _u, d) => {
       const area = d.areas.find((a) => a.slug === m[1]);
       if (!area) return renderNotFound({ site: d.site, areas: d.areas });
-      return renderAreaPage({ site: d.site, area, views: await d.index.views(), nowMs: d.now() });
+      return renderAreaPage({ site: d.site, area, views: await d.index.views(), nowMs: d.now(), areas: d.areas });
     },
   },
   {
@@ -129,7 +130,7 @@ const ROUTES: Route[] = [
     render: async (_m, url, d) => {
       const views = await d.index.views();
       if (views === null) return apiUnavailable();
-      return json(buildMapJson(cityFrom(url.searchParams.get('city')), d.mapAreas ?? d.areas, views, d.now()), PAGE_TTL_SECONDS);
+      return json(buildMapJson(cityFrom(url.searchParams.get('city')), d.mapAreas ?? lgasOf(d.areas), views, d.now()), PAGE_TTL_SECONDS);
     },
   },
   {
@@ -138,8 +139,16 @@ const ROUTES: Route[] = [
       const views = await d.index.views();
       if (views === null) return apiUnavailable();
       const now = d.now();
-      const areas = d.areas.map((a) => ({ slug: a.slug, name: a.name, ...statusJson(areaStatus(a, views, now)) }));
+      const areas = lgasOf(d.areas).map((a) => ({ slug: a.slug, name: a.name, ...statusJson(areaStatus(a, views, now)) }));
       return json({ areas }, PAGE_TTL_SECONDS);
+    },
+  },
+  {
+    // Find an LGA or ward by name, including a ward's other names. Names only, no status, so no index read. Not cached: every query differs.
+    pattern: /^\/api\/v1\/public\/search$/,
+    render: (_m, url, d) => {
+      const found = searchAreas(d.areas, (url.searchParams.get('q') ?? '').slice(0, MAX_QUERY));
+      return json({ results: found.map((a) => ({ slug: a.slug, name: a.name, kind: a.kind })) }, 0);
     },
   },
   {

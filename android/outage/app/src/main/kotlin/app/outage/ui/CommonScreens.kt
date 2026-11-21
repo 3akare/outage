@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -25,7 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,9 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.outage.R
 import app.outage.map.DemoAreaMap
-import app.outage.map.DemoCity
-import app.outage.map.HexGeoJson
-import kotlinx.coroutines.launch
+import app.outage.places.PlacePick
 
 /** The top of a pushed screen: a back row, then the screen's large title (iOS navigation). The back row is a 48 dp target (R6.4). */
 @Composable
@@ -47,7 +46,7 @@ fun SubScreenHeader(titleRes: Int, onBack: () -> Unit) {
     }
 }
 
-/** The large title of a top-level destination (Insights, Settings). */
+/** The large title of a top-level destination (History, Settings). */
 @Composable
 fun DestinationTitle(titleRes: Int, trailing: @Composable () -> Unit = {}) {
     LargeTitle(stringResource(titleRes), top = 20.dp) { trailing() }
@@ -84,6 +83,15 @@ fun AboutScreen(onBack: () -> Unit) {
             RowDivider(TileInset)
             AboutLine(R.drawable.ic_sym_delete, Tokens.Colors.tileRed, R.string.privacy_delete)
         }
+        // Licences of what ships inside the app (assets/licenses): the ward and LGA boundaries, the street map, the typeface.
+        GroupHeader(stringResource(R.string.about_licences))
+        DayCard {
+            AboutLine(R.drawable.ic_sym_map, Tokens.Colors.tileGreen, R.string.about_grid3)
+            RowDivider(TileInset)
+            AboutLine(R.drawable.ic_sym_layers, Tokens.Colors.tileBlue, R.string.about_osm)
+            RowDivider(TileInset)
+            AboutLine(R.drawable.ic_sym_info, Tokens.Colors.tileGrey, R.string.about_inter)
+        }
     }
 }
 
@@ -95,45 +103,37 @@ private fun AboutLine(icon: Int, color: androidx.compose.ui.graphics.Color, text
     }
 }
 
-/** What first run found when it looked for the spot. [area] is the place name to show, never a coordinate. */
-sealed interface SpotOutcome {
-    data class Saved(val area: String?) : SpotOutcome
-    data object NotFound : SpotOutcome
-    data object Denied : SpotOutcome
-    data object Skipped : SpotOutcome
-}
-
 /**
- * First run (ADR 0050, ADR 0054): one welcome screen. The street map of Lagos sits in a rounded card at the top; under it the
- * promise, one privacy line and the actions. "Use my location" records consent, asks for coarse location once, turns it
- * into a map cell and drops it (onboarding O2, ADR 0037), then asks for notifications where the phone needs it. "Not now"
- * skips the location. Either way the app opens on Now. [finish] records consent; [locate] reads the position once and
- * saves the cell.
+ * First run (ADR 0050, ADR 0054, ADR 0056): one welcome screen. The street map of Lagos sits in a rounded card at the top;
+ * under it the promise, one privacy line and the actions. "Choose my area" records consent and opens [PlacePicker]: local
+ * government, ward, and the hexagon for a large ward. No location is read and no location permission exists. Then the
+ * phone asks for notifications where it needs to. "Not now" skips the area. Either way the app opens on Now. [finish]
+ * records consent; [save] stores the picked cell and its name; [onDone] gets the saved "Ward, LGA", or null when skipped.
  */
 @Composable
-fun FirstRunScreen(finish: () -> Boolean, locate: suspend () -> SpotOutcome, onDone: (SpotOutcome) -> Unit, onTryJudge: (() -> Unit)? = null) {
-    val scope = rememberCoroutineScope()
-    var busy by remember { mutableStateOf(false) }
-    var outcome by remember { mutableStateOf<SpotOutcome>(SpotOutcome.Skipped) }
+fun FirstRunScreen(finish: () -> Boolean, save: (PlacePick) -> Boolean, onDone: (String?) -> Unit, onTryJudge: (() -> Unit)? = null) {
+    var picking by rememberSaveable { mutableStateOf(false) }
+    var saved by remember { mutableStateOf<String?>(null) }
     // https://developer.android.com/training/permissions/requesting (POST_NOTIFICATIONS is a runtime permission from API 33)
-    val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { onDone(outcome) }
-    fun next(o: SpotOutcome) {
-        outcome = o
-        busy = false
-        if (Build.VERSION.SDK_INT >= 33) askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS) else onDone(o)
+    val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { onDone(saved) }
+    fun next(area: String?) {
+        saved = area
+        if (Build.VERSION.SDK_INT >= 33) askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS) else onDone(area)
     }
-    val askLocation = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (!granted) next(SpotOutcome.Denied) else scope.launch { next(locate()) }
+    if (picking) {
+        Box(Modifier.fillMaxSize().background(Day.page).systemBarsPadding()) {
+            PlacePicker(
+                onPicked = { pick -> if (save(pick)) { picking = false; next(pick.areaName) } },
+                onExit = { picking = false },
+            )
+        }
+        return
     }
-    // The real street map of Lagos with the simulated blocks (ADR 0053). It flies to Yaba when the person chooses
-    // "Use my location", like a maps app finding them; the saved spot comes from [locate], never from here.
+    // The real street map of Lagos with the simulated blocks (ADR 0053), as a picture of what the app does.
     val demo = remember { DemoAreaMap.build(System.currentTimeMillis()) }
     val states = remember(demo) { demo.cells.associate { it.id to it.state } }
     val camera = remember { OutageMapController() }
     LaunchedEffect(Unit) { camera.flyTo(LAGOS, CITY_ZOOM - 0.4) }
-    LaunchedEffect(busy) {
-        if (busy) demo.cell(DemoCity.SPOT)?.let { camera.flyTo(HexGeoJson.centre(it), SPOT_ZOOM - 0.5, 2400) }
-    }
     BoxWithConstraints(Modifier.fillMaxSize().background(Day.page)) {
         val screenH = maxHeight
         Column(
@@ -155,35 +155,26 @@ fun FirstRunScreen(finish: () -> Boolean, locate: suspend () -> SpotOutcome, onD
                 Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     IconTile(R.drawable.ic_sym_place, Tokens.Colors.tileBlue)
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(stringResource(R.string.first_run_location_title), style = DayType.headline, color = Day.ink)
+                        Text(stringResource(R.string.first_run_area_title), style = DayType.headline, color = Day.ink)
                         Text(stringResource(R.string.first_run_privacy), style = DayType.subhead, color = Day.muted)
                     }
                 }
             }
             Gap(20.dp)
             ActionStack {
-                if (busy) {
-                    Text(stringResource(R.string.spot_locating), style = DayType.subhead, color = Day.muted, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
-                }
                 InkButton(
-                    stringResource(R.string.first_run_use_location),
-                    onClick = {
-                        if (busy || !finish()) return@InkButton
-                        busy = true
-                        askLocation.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
-                    },
+                    stringResource(R.string.first_run_choose_area),
+                    onClick = { if (finish()) picking = true },
                     modifier = Modifier.fillMaxWidth(),
-                    busy = busy,
                 )
                 // demo-mode R1.1, R1.2: Judge mode from the first screen, with no consent, permission or network.
                 if (onTryJudge != null) {
-                    FillButton(stringResource(R.string.demo_try), onTryJudge, Modifier.fillMaxWidth(), enabled = !busy)
+                    FillButton(stringResource(R.string.demo_try), onTryJudge, Modifier.fillMaxWidth())
                 }
                 TextAction(
                     stringResource(R.string.first_run_not_now),
-                    onClick = { if (!busy && finish()) next(SpotOutcome.Skipped) },
+                    onClick = { if (finish()) next(null) },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !busy,
                 )
             }
         }

@@ -1,6 +1,6 @@
 // Test doubles for the web tests. The public index (task 7) is not built, so PublicScopeView values are made here.
 import { cellToParent } from 'h3-js';
-import { buildCatalog } from '../areas/catalog/build.ts';
+import { CATALOG } from '../areas/catalog/index.ts';
 import type { CatalogArea } from '../areas/catalog/schema.ts';
 import type { Site } from '../site/layout.ts';
 import type { PublicScopeView } from '../api/public-index/public-view.ts';
@@ -10,23 +10,30 @@ export const HOUR = 3_600_000;
 
 export const SITE: Site = { origin: 'https://outage.test', apkUrl: 'https://github.com/example/outage/releases/download/v1/outage.apk' };
 
-const sourceArea = (slug: string, name: string, lat: number, lng: number) => ({
+const lga = (slug: string): CatalogArea => {
+  const area = CATALOG.areas.find((a) => a.slug === slug && a.kind === 'lga');
+  if (!area) throw new Error(`no LGA ${slug}`);
+  return area;
+};
+
+/** A test area with the given cells, for tests that need cells of their own. */
+export const testArea = (slug: string, name: string, cells: string[]): CatalogArea => ({
   slug,
   name,
-  lat,
-  lng,
-  rings: 2,
+  kind: 'lga',
+  lga: null,
+  alt: [],
+  centreCell: cells[0] as string,
   tzOffsetMin: 60,
   country: 'NG',
   source: 'https://example.test/source',
   checkedBy: 'test person 2026-11-20',
+  cells,
 });
 
-export const AREAS: CatalogArea[] = buildCatalog({
-  areas: [sourceArea('yaba', 'Yaba', 6.5068, 3.3755), sourceArea('ikeja', 'Ikeja', 6.6016, 3.3516)],
-}).areas;
-export const YABA = AREAS[0] as CatalogArea;
-export const IKEJA = AREAS[1] as CatalogArea;
+export const MAINLAND = lga('lagos-mainland');
+export const IKEJA = lga('ikeja');
+export const AREAS: CatalogArea[] = [MAINLAND, IKEJA];
 
 export function view(over: Partial<PublicScopeView> & Pick<PublicScopeView, 'boundary'>): PublicScopeView {
   return { scopeKind: 'CELL', precision: 'CELL', status: 'NORMAL', history30d: [], phones: '3+', ...over };

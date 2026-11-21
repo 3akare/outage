@@ -6,18 +6,18 @@ import { renderAreaPage, renderCellPage, renderHomePage, renderInstallPage, rend
 import type { PublicScopeView } from '../api/public-index/public-view.ts';
 import { areaStatus, END_UNKNOWN_AFTER_MS, formatClock, historyForCells, RESTORED_DISPLAY_MS, statusJson } from '../site/status.ts';
 import { stateText } from '../site/strings.ts';
-import { AREAS, bodyOf, cellView, confirmedNow, HOUR, IKEJA, NOW, parentView, SITE, view, YABA } from './web-helpers.ts';
+import { AREAS, bodyOf, cellView, confirmedNow, HOUR, IKEJA, NOW, parentView, SITE, view, MAINLAND } from './web-helpers.ts';
 
 const runs = Number(process.env.FC_NUM_RUNS ?? 100);
-const cell0 = YABA.cells[0] as string;
-const cell1 = YABA.cells[1] as string;
+const cell0 = MAINLAND.cells[0] as string;
+const cell1 = MAINLAND.cells[1] as string;
 
 const statusOf = (html: string) => /<section id="status"[^>]*?(?: data-state="([A-Z_]+)")?[^>]*>/.exec(html)?.[0] ?? '';
 
-// Arbitrary public views over Yaba and Ikeja cells, optionally parent-scoped.
+// Arbitrary public views over Lagos Mainland and Ikeja cells, optionally parent-scoped.
 const arbView: fc.Arbitrary<PublicScopeView> = fc
   .record({
-    cells: fc.subarray([...YABA.cells, ...IKEJA.cells], { minLength: 1, maxLength: 4 }),
+    cells: fc.subarray([...MAINLAND.cells, ...IKEJA.cells], { minLength: 1, maxLength: 4 }),
     parent: fc.boolean(),
     precision: fc.constantFrom('CELL', 'LINKED', 'COARSE' as const),
     status: fc.constantFrom('NORMAL', 'POSSIBLE', 'CONFIRMED' as const),
@@ -41,10 +41,10 @@ describe('W1 page without script', () => {
   it('W1_page_without_script: area page shows title, label, sentence and install link for any status', () => {
     fc.assert(
       fc.property(fc.array(arbView, { maxLength: 5 }), (views) => {
-        const out = bodyOf(renderAreaPage({ site: SITE, area: YABA, views, nowMs: NOW }));
-        const status = areaStatus(YABA, views, NOW);
-        expect(out).toContain('<title>Is there power in Yaba right now?</title>');
-        expect(out).toContain('<h1>Is there power in Yaba right now?</h1>');
+        const out = bodyOf(renderAreaPage({ site: SITE, area: MAINLAND, views, nowMs: NOW }));
+        const status = areaStatus(MAINLAND, views, NOW);
+        expect(out).toContain('<title>Is there power in Lagos Mainland right now?</title>');
+        expect(out).toContain('<h1>Is there power in Lagos Mainland right now?</h1>');
         expect(out).toContain(SITE.apkUrl);
         expect(out).toContain('href="/app/simulate"');
         expect(out).toContain('rel="canonical"');
@@ -61,19 +61,19 @@ describe('W1 page without script', () => {
   });
 
   it('W1_page_without_script: the only script is optional and carries the nonce; the status is in HTML', () => {
-    const out = renderAreaPage({ site: SITE, area: YABA, views: [cellView(cell0, confirmedNow())], nowMs: NOW }).body;
+    const out = renderAreaPage({ site: SITE, area: MAINLAND, views: [cellView(cell0, confirmedNow())], nowMs: NOW }).body;
     expect(out.match(/<script/g)?.length).toBe(1);
     expect(out).toContain('<script nonce="__OUTAGE_NONCE__">');
     expect(out).toContain('Power cut');
   });
 
   it('W1_page_without_script: install button falls back to /install when no APK link is configured', () => {
-    const out = renderAreaPage({ site: { ...SITE, apkUrl: null }, area: YABA, views: [], nowMs: NOW }).body;
+    const out = renderAreaPage({ site: { ...SITE, apkUrl: null }, area: MAINLAND, views: [], nowMs: NOW }).body;
     expect(out).toContain('href="/install"');
   });
 
   it('W1_page_without_script: area with no public status says so and shows no status, boundary or count', () => {
-    const out = bodyOf(renderAreaPage({ site: SITE, area: YABA, views: [], nowMs: NOW }));
+    const out = bodyOf(renderAreaPage({ site: SITE, area: MAINLAND, views: [], nowMs: NOW }));
     expect(out).toContain('No phones here yet. Install Outage to be the first.');
     expect(statusOf(out)).not.toContain('data-state=');
     expect(out).not.toContain('3+ phones');
@@ -83,22 +83,22 @@ describe('W1 page without script', () => {
   });
 
   it('W1_page_without_script: unavailable index shows the message with a short TTL', () => {
-    const r = renderAreaPage({ site: SITE, area: YABA, views: null, nowMs: NOW });
+    const r = renderAreaPage({ site: SITE, area: MAINLAND, views: null, nowMs: NOW });
     expect(r.body).toContain('Status is not available right now.');
     expect(r.ttlSeconds).toBeLessThanOrEqual(5);
     expect(r.body).toContain('href="/app/simulate"');
   });
 
   it('W1_page_without_script: wider scope shows the precision label', () => {
-    const out = renderAreaPage({ site: SITE, area: YABA, views: [parentView(cell0, { status: 'POSSIBLE' })], nowMs: NOW }).body;
+    const out = renderAreaPage({ site: SITE, area: MAINLAND, views: [parentView(cell0, { status: 'POSSIBLE' })], nowMs: NOW }).body;
     expect(out).toContain('Based on a wider area');
-    const cellOut = renderAreaPage({ site: SITE, area: YABA, views: [cellView(cell0, { status: 'POSSIBLE' })], nowMs: NOW }).body;
+    const cellOut = renderAreaPage({ site: SITE, area: MAINLAND, views: [cellView(cell0, { status: 'POSSIBLE' })], nowMs: NOW }).body;
     expect(cellOut).not.toContain('Based on a wider area');
   });
 
   it('W1_page_without_script: history lists start, end or unknown, level and precision; since time in catalog offset', () => {
     const open = cellView(cell0, { ...confirmedNow(NOW - 2 * HOUR), history30d: [{ startMs: NOW - 50 * HOUR, endMs: null, level: 'POSSIBLE', precision: 'LINKED' }] });
-    const out = renderAreaPage({ site: SITE, area: YABA, views: [open], nowMs: NOW }).body;
+    const out = renderAreaPage({ site: SITE, area: MAINLAND, views: [open], nowMs: NOW }).body;
     expect(out).toContain('Last 30 days');
     expect(out).toContain('to unknown');
     expect(out).toContain('Linked nearby areas');
@@ -109,7 +109,7 @@ describe('W1 page without script', () => {
 
   it('W1_page_without_script: unknown outage end after 12 hours is shown as End unknown', () => {
     const v = cellView(cell0, confirmedNow(NOW - END_UNKNOWN_AFTER_MS - HOUR));
-    expect(renderAreaPage({ site: SITE, area: YABA, views: [v], nowMs: NOW }).body).toContain('End unknown');
+    expect(renderAreaPage({ site: SITE, area: MAINLAND, views: [v], nowMs: NOW }).body).toContain('End unknown');
   });
 
   it('W1_page_without_script: home page has hero, Judge button, install button, map and list', () => {
@@ -117,7 +117,7 @@ describe('W1 page without script', () => {
     expect(out).toContain('Your phone charger is a power-grid sensor.');
     expect(out).toContain('href="/app/simulate"');
     expect(out).toContain('<svg class="map"');
-    expect(out).toContain('<a href="/area/yaba">Yaba</a>: Power cut');
+    expect(out).toContain('<a href="/area/lagos-mainland">Lagos Mainland</a>: Power cut');
     expect(out).toContain('<a href="/area/ikeja">Ikeja</a>: No phones here yet');
   });
 
@@ -131,7 +131,7 @@ describe('W1 page without script', () => {
   it('W1_page_without_script: unknown slug page lists areas and the install button', () => {
     const r = renderNotFound({ site: SITE, areas: AREAS });
     expect(r.status).toBe(404);
-    expect(r.body).toContain('/area/yaba');
+    expect(r.body).toContain('/area/lagos-mainland');
     expect(r.body).toContain('Install Outage');
   });
 
@@ -160,7 +160,7 @@ describe('W1 page without script', () => {
 
   it('W1_page_without_script: area page stays under 30 KB with a full history', () => {
     const history = Array.from({ length: 40 }, (_, i) => ({ startMs: NOW - (i + 1) * 15 * HOUR, endMs: NOW - (i + 1) * 15 * HOUR + HOUR, level: 'CONFIRMED' as const, precision: 'COARSE' as const }));
-    const r = renderAreaPage({ site: SITE, area: YABA, views: [parentView(cell0, { status: 'CONFIRMED', ...confirmedNow(), history30d: history })], nowMs: NOW });
+    const r = renderAreaPage({ site: SITE, area: MAINLAND, views: [parentView(cell0, { status: 'CONFIRMED', ...confirmedNow(), history30d: history })], nowMs: NOW });
     expect(new TextEncoder().encode(r.body).length).toBeLessThan(30 * 1024);
   });
 });
@@ -173,9 +173,9 @@ describe('W2 public privacy', () => {
         // A view built by buggy code could carry extra fields; renderers must never print them.
         const tainted = views.map((v) => ({ ...v, installId: 'INSTALL-SECRET-1', pushToken: 'PUSH-SECRET-2', members: 1 }) as PublicScopeView);
         const outputs = [
-          renderAreaPage({ site: SITE, area: YABA, views: tainted, nowMs: NOW }),
+          renderAreaPage({ site: SITE, area: MAINLAND, views: tainted, nowMs: NOW }),
           renderCellPage({ site: SITE, cell: cell0, views: tainted, nowMs: NOW, areas: AREAS }),
-          renderHomePage({ site: SITE, areas: [YABA], views: tainted, nowMs: NOW }),
+          renderHomePage({ site: SITE, areas: [MAINLAND], views: tainted, nowMs: NOW }),
         ].map((r) => r.body);
         for (const out of outputs) {
           expect(out).not.toMatch(/INSTALL-SECRET|PUSH-SECRET/);
@@ -184,7 +184,7 @@ describe('W2 public privacy', () => {
           // Ikeja is not in the pages above, so none of its cells may appear.
           expect(out).not.toContain(outsider);
         }
-        // The home page with only Yaba listed never draws a cell outside Yaba, even if a view covers it.
+        // The home page with only Lagos Mainland listed never draws a cell outside Lagos Mainland, even if a view covers it.
         expect(outputs[2]).not.toContain(IKEJA.centreCell);
       }),
       { numRuns: runs },
@@ -192,19 +192,19 @@ describe('W2 public privacy', () => {
   });
 
   it('W2_public_privacy: the area JSON shape holds counts of nothing and no cells', () => {
-    const j = statusJson(areaStatus(YABA, [cellView(cell0, confirmedNow())], NOW));
+    const j = statusJson(areaStatus(MAINLAND, [cellView(cell0, confirmedNow())], NOW));
     expect(Object.keys(j).sort()).toEqual(['endUnknown', 'precision', 'sinceMs', 'state']);
   });
 
   it('W2_public_privacy: the page script is static and has no request data', () => {
-    const a = renderAreaPage({ site: SITE, area: YABA, views: [cellView(cell0, confirmedNow())], nowMs: NOW }).body;
+    const a = renderAreaPage({ site: SITE, area: MAINLAND, views: [cellView(cell0, confirmedNow())], nowMs: NOW }).body;
     const b = renderAreaPage({ site: SITE, area: IKEJA, views: [cellView(IKEJA.cells[0] as string, confirmedNow())], nowMs: NOW }).body;
     const script = (s: string) => /<script[^>]*>([\s\S]*?)<\/script>/.exec(s)?.[1];
     expect(script(a)).toBe(script(b));
   });
 
   it('W2_public_privacy: dynamic strings are escaped in pages', () => {
-    const evil = { ...YABA, name: '<img src=x onerror=alert(1)>', slug: 'a"b' };
+    const evil = { ...MAINLAND, name: '<img src=x onerror=alert(1)>', slug: 'a"b' };
     const out = renderAreaPage({ site: SITE, area: evil, views: [], nowMs: NOW }).body + renderHomePage({ site: SITE, areas: [evil], views: [], nowMs: NOW }).body + renderNotFound({ site: SITE, areas: [evil] }).body;
     expect(out).not.toContain('<img');
     expect(out).not.toContain('a"b');
@@ -218,9 +218,9 @@ describe('W3 five states', () => {
   it('W3_five_states: every status is exactly one of Normal, Possible, Confirmed, Restored or no coverage; spot-only never', () => {
     fc.assert(
       fc.property(fc.array(arbView, { maxLength: 6 }), (views) => {
-        const s = areaStatus(YABA, views, NOW);
+        const s = areaStatus(MAINLAND, views, NOW);
         expect(['NO_COVERAGE', 'NORMAL', 'POSSIBLE', 'CONFIRMED', 'RESTORED']).toContain(s.kind);
-        const out = renderAreaPage({ site: SITE, area: YABA, views, nowMs: NOW }).body;
+        const out = renderAreaPage({ site: SITE, area: MAINLAND, views, nowMs: NOW }).body;
         const block = /<section id="status"[^>]*>/.exec(out)?.[0] ?? '';
         expect(block).not.toContain('SPOT_ONLY');
         const m = /data-state="([A-Z_]+)"/.exec(block);
@@ -238,17 +238,17 @@ describe('W3 five states', () => {
   it('W3_five_states: highest of covering views wins, ordered Confirmed, Possible, Restored, Normal', () => {
     const restored = cellView(cell0, { lastRestoredAtMs: NOW - HOUR });
     const possible = cellView(cell1, { status: 'POSSIBLE', openOutage: { startMs: NOW - HOUR, level: 'POSSIBLE', precision: 'CELL' } });
-    const confirmed = cellView(YABA.cells[2] as string, confirmedNow());
-    const normal = cellView(YABA.cells[3] as string);
-    expect(areaStatus(YABA, [normal, restored], NOW).kind).toBe('RESTORED');
-    expect(areaStatus(YABA, [normal, restored, possible], NOW).kind).toBe('POSSIBLE');
-    expect(areaStatus(YABA, [restored, possible, confirmed, normal], NOW).kind).toBe('CONFIRMED');
-    expect(areaStatus(YABA, [normal], NOW).kind).toBe('NORMAL');
-    expect(areaStatus(YABA, [], NOW).kind).toBe('NO_COVERAGE');
+    const confirmed = cellView(MAINLAND.cells[2] as string, confirmedNow());
+    const normal = cellView(MAINLAND.cells[3] as string);
+    expect(areaStatus(MAINLAND, [normal, restored], NOW).kind).toBe('RESTORED');
+    expect(areaStatus(MAINLAND, [normal, restored, possible], NOW).kind).toBe('POSSIBLE');
+    expect(areaStatus(MAINLAND, [restored, possible, confirmed, normal], NOW).kind).toBe('CONFIRMED');
+    expect(areaStatus(MAINLAND, [normal], NOW).kind).toBe('NORMAL');
+    expect(areaStatus(MAINLAND, [], NOW).kind).toBe('NO_COVERAGE');
   });
 
   it('W3_five_states: restored shows for 24 hours then the area is Normal', () => {
-    const at = (ago: number) => areaStatus(YABA, [cellView(cell0, { lastRestoredAtMs: NOW - ago })], NOW).kind;
+    const at = (ago: number) => areaStatus(MAINLAND, [cellView(cell0, { lastRestoredAtMs: NOW - ago })], NOW).kind;
     expect(at(RESTORED_DISPLAY_MS - 1)).toBe('RESTORED');
     expect(at(RESTORED_DISPLAY_MS)).toBe('NORMAL');
     expect(at(-1)).toBe('NORMAL'); // a restore time in the future (clock skew) is not shown
@@ -258,7 +258,7 @@ describe('W3 five states', () => {
     const coarse = parentView(cell0, { status: 'CONFIRMED', ...confirmedNow() });
     const cellV = cellView(cell0, confirmedNow());
     const linked = view({ scopeKind: 'GROUP', precision: 'LINKED', boundary: [cell0, cell1], ...confirmedNow() });
-    const s = (v: PublicScopeView[]) => areaStatus(YABA, v, NOW);
+    const s = (v: PublicScopeView[]) => areaStatus(MAINLAND, v, NOW);
     expect(s([coarse, linked])).toMatchObject({ kind: 'CONFIRMED', precision: 'LINKED' });
     expect(s([coarse, linked, cellV])).toMatchObject({ precision: 'CELL' });
     // a calmer precise view does not hide a worse wider one
@@ -266,14 +266,14 @@ describe('W3 five states', () => {
   });
 
   it('W3_five_states: a parent boundary covers every child cell, a view elsewhere covers nothing', () => {
-    expect(areaStatus(YABA, [parentView(cell0, { status: 'POSSIBLE' })], NOW).kind).toBe('POSSIBLE');
-    expect(areaStatus(YABA, [cellView(IKEJA.centreCell, confirmedNow())], NOW).kind).toBe('NO_COVERAGE');
+    expect(areaStatus(MAINLAND, [parentView(cell0, { status: 'POSSIBLE' })], NOW).kind).toBe('POSSIBLE');
+    expect(areaStatus(MAINLAND, [cellView(IKEJA.centreCell, confirmedNow())], NOW).kind).toBe('NO_COVERAGE');
   });
 
   it('W3_five_states: legend shows all five labels and sentences, and Pidgin Restored when asked', () => {
-    const out = renderAreaPage({ site: SITE, area: YABA, views: [], nowMs: NOW }).body;
+    const out = renderAreaPage({ site: SITE, area: MAINLAND, views: [], nowMs: NOW }).body;
     for (const label of ['Power on', 'Your spot only', 'Possible power cut', 'Power cut', 'Power is back']) expect(out).toContain(label);
-    const pcm = renderAreaPage({ site: SITE, area: YABA, views: [cellView(cell0, { lastRestoredAtMs: NOW - HOUR })], nowMs: NOW, lang: 'pcm' }).body;
+    const pcm = renderAreaPage({ site: SITE, area: MAINLAND, views: [cellView(cell0, { lastRestoredAtMs: NOW - HOUR })], nowMs: NOW, lang: 'pcm' }).body;
     expect(pcm).toContain('Light don come!');
   });
 
@@ -283,7 +283,7 @@ describe('W3 five states', () => {
       ...confirmedNow(NOW - 3 * HOUR),
       history30d: [dup, { startMs: NOW - 40 * 24 * HOUR, endMs: NOW - 39 * 24 * HOUR, level: 'POSSIBLE', precision: 'CELL' }, { startMs: NOW - 10 * HOUR, endMs: NOW - 9 * HOUR, level: 'POSSIBLE', precision: 'CELL' }],
     });
-    const h = historyForCells(YABA.cells, [v], NOW);
+    const h = historyForCells(MAINLAND.cells, [v], NOW);
     expect(h.map((o) => o.startMs)).toEqual([NOW - 3 * HOUR, NOW - 10 * HOUR]);
   });
 

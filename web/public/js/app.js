@@ -1,9 +1,7 @@
 // The Outage app in the browser (ADR 0054). Simulated data only: the city file (/demo-city.json) and the replay of one
 // blackout built by the real detection engine (/api/v1/public/judge/replay). No storage, no cookies, no tracking.
-// Four tabs as on the phone: Now (one giant answer for your spot), Map (MapLibre over OpenFreeMap, map.js), Insights
-// (computed in data.js, drawn in charts.js) and Settings.
-import { bindTips, dailyBars, fmtLong, heatLegend, heatmap, miniBars, ranked, weeklyLine } from './charts.js';
-import { dailyHours, duration, heat, hourLabel, outagesIn, ranking, summary, weekly, worstHours } from './data.js';
+// Three tabs as on the phone: Now (one giant answer for your spot), Map (MapLibre over OpenFreeMap, map.js) and Settings.
+import { duration, summary } from './data.js';
 import { cellCentre, createMap, LAGOS } from './map.js';
 
 const $ = (id) => document.getElementById(id);
@@ -144,21 +142,17 @@ let whyLines = null;
 let alarmOn = true;
 function renderNow() {
   const a = AREAS[SPOT_AREA];
-  const s = summary(city, a, TODAY, 7);
   nowBody.innerHTML =
     `<header class="head"><div><p class="over">${spotSet ? 'Your spot' : 'Welcome'}</p><h1>${spotSet ? esc(a.name) : 'Outage'}</h1></div><span class="tag">Simulated</span></header>` +
     spotCard() +
     `<div class="card why" id="why"${whyLines ? '' : ' hidden'}><h2>How sure is Outage?</h2><ul id="whylist">${(whyLines ?? []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>` +
     (spotSet
       ? '<h2 class="sec">Your power</h2><ul class="group tiles">' +
-        `<li><button type="button" class="row" id="alarmrow" role="switch" aria-checked="${alarmOn}"><span class="tile red">${ICON.alarm}</span><span class="txt"><b>Light Alarm</b><span>Rings when power comes back</span></span><span class="switch"></span></button></li>` +
-        `<li><button type="button" class="row" data-goto="insights"><span class="tile orange">${ICON.bolt}</span><span class="txt"><b>Band ${a.band}</b><span>${s.avgHours} h a day this week, ${city.bands[a.band]} h promised</span></span>${ICON.chevron}</button></li>` +
-        `<li class="weekbars"><div class="mini" data-mini="${SPOT_AREA}"></div></li></ul>`
+        `<li><button type="button" class="row" id="alarmrow" role="switch" aria-checked="${alarmOn}"><span class="tile red">${ICON.alarm}</span><span class="txt"><b>Light Alarm</b><span>Rings when power comes back</span></span><span class="switch"></span></button></li></ul>`
       : '') +
     `<h2 class="sec">${spotSet ? 'Nearby' : 'Areas'}</h2><ul class="group" id="arealist">${nearbyRows()}</ul>` +
     `<ul class="group cards" id="maprow"><li><button type="button" class="row" data-goto="map"><span class="tile blue">${ICON.map}</span><span class="txt"><b>Open the map</b><span>Every block, coloured by power</span></span>${ICON.chevron}</button></li></ul>` +
     '<p class="foot">Simulated city: real neighbourhoods at their real places, made-up power. Map data from OpenStreetMap contributors, tiles by OpenFreeMap.</p>';
-  drawMini();
   bindNow();
 }
 function refreshNowLive() {
@@ -171,13 +165,6 @@ function refreshNowLive() {
   if (list) {
     list.innerHTML = nearbyRows();
     bindNow();
-  }
-}
-function drawMini() {
-  for (const el of QA('[data-mini]')) {
-    const a = AREAS[el.getAttribute('data-mini')];
-    if (!el.clientWidth) continue;
-    el.innerHTML = miniBars(dailyHours(city, a, TODAY, 7), city.bands[a.band], el.clientWidth);
   }
 }
 function bindNow() {
@@ -225,21 +212,14 @@ function renderArea(slug) {
     `<button type="button" class="icon-btn" id="close" aria-label="Close">${ICON.close}</button></div>` +
     `<div class="counts">${['CONFIRMED', 'POSSIBLE', 'RESTORED', 'NORMAL'].map((k) => `<div data-state="${k}"><b>${n[k]}</b><span>${SHORT[k]}</span></div>`).join('')}</div>` +
     `<div class="btns"><button type="button" class="btn" id="follow" aria-pressed="${followed[slug] ? 'true' : 'false'}">${followed[slug] ? `${ICON.check}Following` : `${ICON.notifications}Follow`}</button>` +
-    `<button type="button" class="btn" id="toinsights">${ICON.chart}Insights</button></div>` +
-    `<h2 class="sec">Last 7 days</h2><div class="card"><div class="mini" data-mini="${slug}"></div></div>` +
+    `</div>` +
     '<h2 class="sec">Last 30 days</h2><ul class="group">' +
     `<li><div class="row"><span class="txt"><b>Power a day</b></span><span class="val num">${s30.avgHours} h</span></div></li>` +
-    `<li><div class="row"><span class="txt"><b>Band ${a.band} promise</b></span><span class="val num">${s30.promise} h</span></div></li>` +
     `<li><div class="row"><span class="txt"><b>Outages</b></span><span class="val num">${s30.outages}</span></div></li>` +
     `<li><div class="row"><span class="txt"><b>Typical wait for power</b></span><span class="val num">${duration(s30.medianMinutes)}</span></div></li>` +
     `<li><div class="row"><span class="txt"><b>Longest outage</b></span><span class="val num">${duration(s30.longestMinutes)}</span></div></li></ul>` +
-    '<p class="foot">Colours show once 3 or more phones in a block agree. The band is made up for the simulation.</p>';
-  drawMini();
+    '<p class="foot">Colours show once 3 or more phones in a block agree.</p>';
   $('close').onclick = closeArea;
-  $('toinsights').onclick = () => {
-    insightsArea = slug;
-    tab('insights');
-  };
   const follow = $('follow');
   follow.onclick = () => {
     const on = follow.getAttribute('aria-pressed') !== 'true';
@@ -440,126 +420,22 @@ function tab(id) {
     else b.removeAttribute('aria-current');
   }
   $('now').hidden = id !== 'now';
-  $('insights').hidden = id !== 'insights';
   $('settings').hidden = id !== 'settings';
-  if (id === 'insights') renderInsights();
   if (id === 'settings') renderSettings();
-  if (id === 'now') drawMini();
   if (id === 'map' || (id === 'now' && wide())) requestAnimationFrame(() => M.map.resize());
 }
 for (const b of QA('.rail button')) b.onclick = () => tab(b.getAttribute('data-tab'));
 
-/* ---- Insights ---- */
-let insightsArea = SPOT_AREA;
-let rankDays = 7;
-let redrawInsights = null;
-const tile = (value, label, sub, tone = '') =>
-  `<div class="stat"${tone ? ` data-tone="${tone}"` : ''}><b>${esc(value)}</b><span>${esc(label)}</span>${sub ? `<small>${esc(sub)}</small>` : ''}</div>`;
-function renderInsights() {
-  const page = $('insights');
-  const a = AREAS[insightsArea];
-  const s = summary(city, a, TODAY, 30);
-  const days = dailyHours(city, a, TODAY, 30);
-  const grid = heat(city, a, TODAY, 28);
-  const peak = worstHours(grid);
-  const weeks = weekly(city, a, TODAY, 5);
-  const cuts = outagesIn(city, a, TODAY, 30);
-  const prev = weeks[weeks.length - 2]?.offHours ?? 0;
-  const lastW = weeks[weeks.length - 1].offHours;
-  const change = prev ? Math.round(((lastW - prev) / prev) * 100) : 0;
-  const yesterday = days[days.length - 1].date;
-  const opts = city.areas.map((x) => `<option value="${x.slug}"${x.slug === insightsArea ? ' selected' : ''}>${esc(x.name)}${x.slug === SPOT_AREA && spotSet ? ' (your spot)' : ''}</option>`).join('');
-  page.innerHTML =
-    '<div class="screen-in wide">' +
-    `<header class="head"><div><p class="over">Last 30 days, to ${fmtLong(yesterday)}</p><h1>Insights</h1></div><span class="tag">Simulated</span></header>` +
-    `<div class="toolbar"><label class="select"><span class="visually-hidden">Area</span>${ICON.place}<select id="iarea">${opts}</select></label></div>` +
-    '<div class="stats">' +
-    tile(`${s.avgHours} h`, 'Power a day', `Band ${s.band} promises ${s.promise} h`, s.avgHours < s.promise ? 'below' : '') +
-    tile(`${s.daysBelow} of ${s.days}`, 'Days below the promise', s.daysBelow ? `${Math.round((s.daysBelow / s.days) * 100)}% of days` : 'Every day met it') +
-    tile(`${s.outages}`, 'Outages', `${s.offHours} h without power`) +
-    tile(duration(s.medianMinutes), 'Typical wait', `Half end sooner. Longest ${duration(s.longestMinutes)}`) +
-    '</div><div class="cards">' +
-    `<section class="card"><h2>Hours of power each day</h2><p class="sub">${s.daysBelow} of ${s.days} days below Band ${s.band}'s ${s.promise} h</p>` +
-    `<div class="legend-inline"><span><i class="sw met"></i>Met the promise</span><span><i class="sw below"></i>Below the promise</span><span><i class="sw dash"></i>Band ${s.band} promise</span></div>` +
-    '<div class="plot" data-chart="daily"></div>' +
-    `<details><summary>Show as a table</summary><table><thead><tr><th>Day</th><th>Hours of power</th></tr></thead><tbody>${days
-      .slice()
-      .reverse()
-      .map((d) => `<tr><td>${fmtLong(d.date)}</td><td>${d.hours} h</td></tr>`)
-      .join('')}</tbody></table></details></section>` +
-    `<section class="card"><h2>When the power goes</h2><p class="sub">Most often off ${hourLabel(peak.from)} to ${hourLabel(peak.to)}, on ${Math.round(peak.share * 100)}% of days. Last 4 weeks.</p>` +
-    `<div class="plot" data-chart="heat"></div>${heatLegend()}</section>` +
-    '</div><div class="cards two">' +
-    `<section class="card"><div class="toolbar"><div><h2>Areas compared</h2><p class="sub">Hours of power a day. The red tick is each area's promise.</p></div>` +
-    `<div class="seg" role="group" aria-label="Period"><button type="button" data-days="7" aria-pressed="${rankDays === 7}">7 days</button><button type="button" data-days="30" aria-pressed="${rankDays === 30}">30 days</button></div></div>` +
-    '<div class="plot" data-chart="rank"></div></section>' +
-    `<section class="card"><h2>Hours without power each week</h2><p class="sub">${change === 0 ? 'Same as the week before' : `${Math.abs(change)}% ${change < 0 ? 'less' : 'more'} than the week before`}</p>` +
-    '<div class="plot" data-chart="weekly"></div></section>' +
-    '</div><div class="cards">' +
-    `<section class="card"><h2>Outage history</h2><p class="sub">${cuts.length} outages in ${esc(a.name)} in the last 30 days, newest first</p>` +
-    `<table class="log"><thead><tr><th>Day</th><th>Went off</th><th>Came back</th><th>Length</th></tr></thead><tbody>${cuts
-      .map((c, i) => {
-        const end = new Date(c.start.getTime() + c.minutes * 60000);
-        const t = (d) => d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' });
-        return `<tr${i >= 8 ? ' class="more" hidden' : ''}><td>${fmtLong(c.start)}</td><td>${t(c.start)}</td><td>${t(end)}${end.getDate() !== c.start.getDate() ? ' next day' : ''}</td><td><span class="len${c.minutes === s.longestMinutes ? ' longest' : ''}">${duration(c.minutes)}</span></td></tr>`;
-      })
-      .join('')}</tbody></table>` +
-    (cuts.length > 8 ? `<button type="button" class="btn" id="moreLog">Show all ${cuts.length}</button>` : '') +
-    '</section></div>' +
-    '<p class="foot">Simulated history for a simulated city. Tariff bands are NERC’s minimum hours a day; the band of each area is made up. On the phone these numbers come from your own phone’s record.</p>' +
-    '</div>';
-  const draw = () => {
-    const w = (k) => Math.max(260, page.querySelector(`[data-chart="${k}"]`).clientWidth);
-    page.querySelector('[data-chart="daily"]').innerHTML = dailyBars(days, s.promise, s.band, w('daily'));
-    page.querySelector('[data-chart="heat"]').innerHTML = heatmap(grid, w('heat'));
-    page.querySelector('[data-chart="rank"]').innerHTML = ranked(ranking(city, TODAY, rankDays), insightsArea, w('rank'));
-    page.querySelector('[data-chart="weekly"]').innerHTML = weeklyLine(weeks, w('weekly'));
-  };
-  draw();
-  redrawInsights = draw;
-  $('iarea').onchange = (ev) => {
-    insightsArea = ev.target.value;
-    renderInsights();
-  };
-  for (const b of QA('.seg button', page))
-    b.onclick = () => {
-      rankDays = Number(b.getAttribute('data-days'));
-      for (const x of QA('.seg button', page)) x.setAttribute('aria-pressed', String(x === b));
-      page.querySelector('[data-chart="rank"]').innerHTML = ranked(ranking(city, TODAY, rankDays), insightsArea, page.querySelector('[data-chart="rank"]').clientWidth);
-    };
-  const more = $('moreLog');
-  if (more)
-    more.onclick = () => {
-      for (const r of QA('tr.more', page)) r.hidden = false;
-      more.remove();
-    };
-}
-bindTips($('insights'), $('tip'));
-bindTips($('now'), $('tip'));
-bindTips(sheet, $('tip'));
-
 /* ---- Settings, as iOS-style grouped lists ---- */
-const toggles = { 'Freezer Guard': true, 'Share anonymous diagnostics': false };
 function renderSettings() {
-  const a = AREAS[SPOT_AREA];
   const row = (ic, colour, t, s, sw) =>
     `<li><button type="button" class="row" data-t="${esc(t)}"${sw === undefined ? '' : ` role="switch" aria-checked="${sw}"`}><span class="tile ${colour}">${ICON[ic]}</span><span class="txt"><b>${t}</b>${s ? `<span>${s}</span>` : ''}</span>${sw === undefined ? ICON.chevron : '<span class="switch"></span>'}</button></li>`;
   $('settings').innerHTML =
     '<div class="screen-in"><header class="head"><div><p class="over">Outage 1.0</p><h1>Settings</h1></div><span class="tag">Simulated</span></header>' +
     '<h2 class="sec">Your power</h2><ul class="group tiles">' +
-    row('place', 'blue', 'Your spot', spotSet ? a.name : 'Not set') +
-    row('bolt', 'orange', 'Tariff band', `Band ${a.band}, ${city.bands[a.band]} hours a day`) +
     row('alarm', 'red', 'Light Alarm', 'Ring when power comes back', alarmOn) +
-    row('freezer', 'teal', 'Freezer Guard', 'Warn after 4 h without power', toggles['Freezer Guard']) +
-    row('homeWatch', 'green', 'Home Watch', 'Watch a spare phone at home') +
-    '</ul><h2 class="sec">This phone</h2><ul class="group tiles">' +
-    row('battery', 'green', 'Keep Outage running', 'Battery steps for your phone') +
-    row('notifications', 'red', 'Notifications', 'Allowed') +
-    row('chart', 'indigo', 'Share anonymous diagnostics', 'Helps fix missed outages', toggles['Share anonymous diagnostics']) +
-    row('language', 'blue', 'Language', 'English') +
     '</ul><h2 class="sec">About</h2><ul class="group tiles">' +
     row('play', 'pink', 'Replay a blackout', 'The simulation on the Now tab') +
-    row('shield', 'grey', 'About and privacy', 'No account. Only a map cell, never your position.') +
     `</ul><ul class="group cards"><li><button type="button" class="row danger" data-t="Delete my data"><span class="txt"><b>Delete my data</b><span>From this phone and the server</span></span></button></li></ul>` +
     '<p class="foot">Outage 1.0, simulated. Map data from OpenStreetMap contributors, tiles by OpenFreeMap.</p></div>';
   for (const b of QA('.row', $('settings')))
@@ -568,8 +444,7 @@ function renderSettings() {
       if (b.hasAttribute('aria-checked')) {
         const v = b.getAttribute('aria-checked') !== 'true';
         b.setAttribute('aria-checked', String(v));
-        if (t === 'Light Alarm') alarmOn = v;
-        else toggles[t] = v;
+        alarmOn = v;
         toast(`${t} ${v ? 'on' : 'off'}.`);
         return;
       }
@@ -578,7 +453,7 @@ function renderSettings() {
         start();
         return;
       }
-      toast(t === 'Delete my data' ? 'Simulation: there is nothing to delete.' : `On the phone this opens ${t}.`);
+      toast('Simulation: there is nothing to delete.');
     };
 }
 
@@ -632,14 +507,6 @@ function land(loc) {
 renderNow();
 app.classList.add('intro');
 welcome();
-let rz = 0;
-window.addEventListener('resize', () => {
-  clearTimeout(rz);
-  rz = setTimeout(() => {
-    if (app.dataset.tab === 'insights' && redrawInsights) redrawInsights();
-    drawMini();
-  }, 120);
-});
 fetch('/api/v1/public/judge/replay', { headers: { accept: 'application/json' } })
   .then((r) => {
     if (!r.ok) throw new Error(String(r.status));

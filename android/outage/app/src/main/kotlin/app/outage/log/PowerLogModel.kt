@@ -30,11 +30,13 @@ data class PowerLogView(
     val outages: List<OutageRow>,
     val month: YearMonth,
     val score: LightScore,
-    val promise: PromiseComparison?,
-    val promiseText: String?,
     val share: ShareFacts,
     val hasData: Boolean,
 ) {
+    /** Hours with power seen today so far (time watched, ON or OUT, minus outage). Null with nothing watched today. */
+    val todayWatchedPowerHours: Double?
+        get() = Stats.watchedPowerHours(today)
+
     /** The open `OUT` interval (R10.1). */
     val openOut: OutageRow? get() = outages.firstOrNull { it.endMs == null }
 }
@@ -44,14 +46,13 @@ object PowerLogModel {
     const val LIST_DAYS = 30
     const val MAX_ROWS = 50
 
-    fun build(inputs: List<LogInput>, nowMs: Long, zone: ZoneId, band: Band?): PowerLogView {
+    fun build(inputs: List<LogInput>, nowMs: Long, zone: ZoneId): PowerLogView {
         val intervals = TimelineBuilder.build(inputs, nowMs)
         val today = Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate()
         val month = YearMonth.from(today)
         val last30 = (LIST_DAYS - 1 downTo 0).map { Stats.day(intervals, today.minusDays(it.toLong()), zone, nowMs) }
         val monthDays = Stats.month(intervals, month, zone, nowMs)
         val score = Stats.lightScore(monthDays, month)
-        val promise = Stats.promise(last30, band)
 
         val from = nowMs - LIST_DAYS * 86_400_000L
         val outages = intervals.filter { it.state == LogState.OUT && (it.endMs ?: nowMs) > from }
@@ -77,23 +78,8 @@ object PowerLogModel {
             outages = outages,
             month = month,
             score = score,
-            promise = promise,
-            promiseText = promise?.let(Stats::promiseText),
             share = ShareFacts(month, score.score, withData.sumOf { it.powerHours ?: 0.0 }, monthOutages, withData.size),
             hasData = intervals.any { it.state == LogState.ON || it.state == LogState.OUT },
         )
-    }
-}
-
-/** The tariff band choice is stored with the log's settings (R5.1). Null means none chosen (R5.6). */
-class BandChoice(private val store: LogStore, private val config: BandConfig?) {
-    val bands: List<Band> get() = config?.bands.orEmpty()
-
-    fun chosen(): Band? = store.getSetting(KEY)?.let { id -> config?.band(id) }
-
-    fun choose(id: String?) = store.putSetting(KEY, id?.takeIf { config?.band(it) != null })
-
-    private companion object {
-        const val KEY = "band"
     }
 }

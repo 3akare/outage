@@ -168,4 +168,13 @@ describe('R1 R4 R10 other codes', () => {
     expect(parseDeleteRequest({ installId: INSTALL, cells: [base.cell, base.cell] }, 1).ok).toBe(false);
     expect(parseDeleteRequest({ installId: INSTALL }, 1).ok).toBe(false);
   });
+
+  it('delete envelope: legacy pairIds from old APKs are accepted and dropped', () => {
+    const pairId = `AB${'0'.repeat(32)}`;
+    expect(parseDeleteRequest({ installId: INSTALL, cells: [], pairIds: [pairId] }, 10)).toEqual({ ok: true, installId: INSTALL, cells: [] });
+    expect(parseDeleteRequest({ installId: INSTALL, cells: [], pairIds: [] }, 10).ok).toBe(true);
+    expect(parseDeleteRequest({ installId: INSTALL, cells: [], pairIds: ['x'] }, 10).ok).toBe(false);
+    expect(parseDeleteRequest({ installId: INSTALL, cells: [], pairIds: new Array(26).fill(pairId) }, 10).ok).toBe(false);
+    expect(parseDeleteRequest({ installId: INSTALL, cells: [], other: [] }, 10).ok).toBe(false);
+  });
 });

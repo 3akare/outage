@@ -19,7 +19,6 @@ const MAP = {
   lock: 'lock',
   shield: 'shield',
   download: 'download',
-  freezer: 'snowflake',
   phone: 'smartphone',
   chart: 'trending-up',
   info: 'info',
@@ -46,7 +45,6 @@ const MAP = {
   share: 'share',
   sun: 'sun',
   moon: 'moon',
-  homeWatch: 'house-plug',
   alert: 'circle-alert',
 };
 const num = (a, k) => Number(a.match(new RegExp(`\\b${k}="([^"]+)"`))?.[1] ?? 0);

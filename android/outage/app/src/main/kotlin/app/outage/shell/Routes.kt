@@ -17,10 +17,10 @@ object Routes {
         return when (value) {
             "home" -> Route.Home
             "map" -> Route.Map
-            // Log merged into Insights and Area into Home (ADR 0026), so old links still open.
-            "log" -> Route.Insights
+            // Log and Insights merged into History and Area into Home (ADRs 0026, 0057), so old links still open.
+            "log" -> Route.History
             "area" -> Route.Home
-            "insights" -> Route.Insights
+            "insights", "history" -> Route.History
             "settings" -> Route.Settings
             else -> {
                 if (!value.startsWith("feature:")) return null

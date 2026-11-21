@@ -8,7 +8,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 /**
- * The share card as text (power-log R8.4) and the facts both card forms use. Carries the Light Score, hours of power,
+ * The share card, as text only (power-log R8.4). Carries the Light Score, hours of power,
  * outage count, the number of days covered, the word "estimate" and the app link, and nothing else (R8.1 to R8.3).
  */
 object ShareCardText {
@@ -19,7 +19,7 @@ object ShareCardText {
     fun monthName(f: ShareFacts): String = f.month.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
 
     fun scoreText(ctx: Context, f: ShareFacts): String =
-        f.score?.let { ctx.getString(R.string.log_score_value, it) } ?: ctx.getString(R.string.log_score_not_enough)
+        f.score?.let { ctx.getString(R.string.log_score_value, it) } ?: ctx.getString(R.string.log_share_score_none)
 
     fun build(ctx: Context, f: ShareFacts): String {
         val head = ctx.getString(R.string.log_share_text, monthName(f), scoreText(ctx, f), f.powerHours, f.outageCount, f.daysCovered)

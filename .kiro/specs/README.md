@@ -14,7 +14,7 @@ Build order follows the master brief, Part I. The probe comes first and gates th
 | 5 | `station-mode` | 2 | T1 to T7 | sensor, ingest |
 | 6 | `alerts-and-light-alarm` | 3 | L1 to L12 | sensor, ingest, area-cells |
 | 7 | `power-log` | 3 | PL1 to PL9 | sensor, alerts |
-| 8 | `home-watch` | 3 | H1 to H8 | station, ingest, alerts |
+| 8 | ~~`home-watch`~~ | - | - | removed by ADR 0055; the spec folder is deleted (see git history) |
 | 9 | `onboarding` | 3 | O1 to O8 | sensor, ingest, alerts |
 | 10 | `web-and-area-pages` | 4 | W1 to W9 | area-cells, engine |
 | 11 | `demo-mode` | 4 | DM1 to DM7 | engine, web |
@@ -35,7 +35,7 @@ Bugfix Specs (`bugfix-YYYYMMDD-<slug>`) are added by the daily field run and by 
 | `DetectionPort` also carries `ARMED` and `DISARMED` | `detection-engine` | `event-ingest` design 9, task 5 |
 | `LABEL` event type | `alerts-and-light-alarm` | `sensor-android` design, `event-ingest` wire schema |
 | `REPORT` event type (kind `OUT`) | `power-log` | `sensor-android`, `event-ingest`, `area-cells` hint |
-| `source` field, `HEARTBEAT_ON_BATTERY` | `station-mode`, `home-watch` | sensor and ingest schemas, station R5.5 |
+| `source` field; `HEARTBEAT_ON_BATTERY` (phone no longer sends it, Worker accepts and ignores it from old APKs, ADR 0055) | `station-mode`, `home-watch` | sensor and ingest schemas, station R5.5 |
 | No prompt or alarm in Station mode | `alerts-and-light-alarm` | `station-mode` R2.6 |
 | `beginSelfTest`, `PlugObserver`, `setDemoSession` | `onboarding`, `demo-mode` | `sensor-android` module API |
 | Public index actor | `web-and-area-pages` | `area-cells` publisher |
@@ -43,7 +43,7 @@ Bugfix Specs (`bugfix-YYYYMMDD-<slug>`) are added by the daily field run and by 
 ## What needs the human
 
 - Run Analyze Requirements on each spec. It runs in Kiro IDE and in the Kiro CLI, not in Kiro Web (https://kiro.dev/docs/specs/). Run the Correctness pass in Kiro IDE for `detection-engine`.
-- Review ADR 0005 (detection parameters), ADR 0006 and 0007 (sharding, public map floor), ADR 0008 (Firebase and push storage), ADR 0009 (Home Watch pairing data), ADR 0011 (telemetry data).
+- Review ADR 0005 (detection parameters), ADR 0006 and 0007 (sharding, public map floor), ADR 0008 (Firebase and push storage), ADR 0009 (Home Watch pairing data, superseded by ADR 0055), ADR 0011 (telemetry data).
 - Approve new dependencies when a task asks: `com.uber:h3`, Firebase Messaging, QR libraries, share-card libraries (ADR 0012).
 - Create secrets: `INSTALL_TOKEN_SECRET`, `PROBE_TOKEN`, `FIELD_READ_TOKEN`, `FCM_SERVICE_ACCOUNT` (Firebase service-account key, Wrangler secret); the Firebase project for push; `.kiroignore`.
 - Verify facts used in public text: the tariff bands (NERC), the Lagos area centre coordinates, the GridWatch figures.

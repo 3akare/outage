@@ -5,12 +5,6 @@ import { AreaCore, type AreaIngestInput, type AreaResponse, type AreaStore, type
 import { CONFIG, type Tunables } from '../config.ts';
 import type { Deps } from '../api/ingest/handlers.ts';
 import { RegisterLimiter } from '../api/ingest/limiter.ts';
-import { type OfferRow, type PairRow, PairingCore, type PairStore } from '../api/pairing/core.ts';
-import { forwardable } from '../api/home/forward.ts';
-import { HomeCore, type StationRow } from '../api/home/core.ts';
-import { HomeViewCache } from '../api/home/cache.ts';
-import type { HomeKind } from '../api/home/planner.ts';
-import type { FcmOutgoing, PushSender, SendResult } from '../api/alerts/fcm.ts';
 import { NoopDetectionPort } from '../api/ingest/ports.ts';
 import { fieldDump, uploadDay } from '../api/telemetry/core.ts';
 import { mintToken } from '../api/ingest/token.ts';
@@ -84,111 +78,6 @@ export class MemoryStore implements AreaStore {
   }
 }
 
-/** A push sender that records what it was given and answers from a script (default: ok). */
-export class FakeSender implements PushSender {
-  sent: FcmOutgoing[] = [];
-  results: SendResult[] = [];
-  async send(msg: FcmOutgoing): Promise<SendResult> {
-    this.sent.push(msg);
-    return this.results.shift() ?? { kind: 'ok', name: 'projects/x/messages/1' };
-  }
-}
-
-export class MemoryPairStore implements PairStore {
-  offers = new Map<string, OfferRow>();
-  pairs = new Map<string, PairRow>();
-  stations = new Map<string, StationRow>();
-  sentKeys = new Set<string>();
-  stationWrites = 0;
-  listStations() {
-    return [...this.stations.values()];
-  }
-  putStation(row: StationRow) {
-    this.stations.set(row.stationInstall, row);
-    this.stationWrites += 1;
-    return 1;
-  }
-  deleteStation(id: string) {
-    return this.stations.delete(id) ? 1 : 0;
-  }
-  pairsOfStation(id: string) {
-    return [...this.pairs.values()].filter((p) => p.stationInstall === id);
-  }
-  hasSent(pairId: string, version: number, kind: HomeKind) {
-    return this.sentKeys.has(`${pairId}|${version}|${kind}`);
-  }
-  markSent(pairId: string, version: number, kind: HomeKind) {
-    this.sentKeys.add(`${pairId}|${version}|${kind}`);
-    return 1;
-  }
-  pruneSent(before: number) {
-    let n = 0;
-    for (const k of [...this.sentKeys]) if (Number(k.split('|')[1]) < before) n += this.sentKeys.delete(k) ? 1 : 0;
-    return n;
-  }
-  markPushFailed(pairId: string, at: number) {
-    const p = this.pairs.get(pairId);
-    if (!p || p.pushFailedMs !== null) return 0;
-    this.pairs.set(pairId, { ...p, pushFailedMs: at });
-    return 1;
-  }
-  removePairsFailedBefore(before: number) {
-    return this.dropPairs((p) => p.pushFailedMs !== null && p.pushFailedMs < before);
-  }
-  getOffer(key: string) {
-    return this.offers.get(key);
-  }
-  putOffer(row: OfferRow) {
-    this.offers.set(row.key, row);
-  }
-  deleteOffer(key: string) {
-    return this.offers.delete(key) ? 1 : 0;
-  }
-  deleteOffersOfStation(id: string) {
-    return this.dropOffers((o) => o.stationInstall === id);
-  }
-  deleteExpiredOffers(now: number) {
-    return this.dropOffers((o) => o.expiresMs <= now);
-  }
-  nextOfferExpiry() {
-    const all = [...this.offers.values()].map((o) => o.expiresMs);
-    return all.length ? Math.min(...all) : null;
-  }
-  countViewers(station: string, except: string) {
-    return [...this.pairs.values()].filter((p) => p.stationInstall === station && p.viewerInstall !== except).length;
-  }
-  getPair(id: string) {
-    return this.pairs.get(id);
-  }
-  putPair(row: PairRow) {
-    this.pairs.set(row.pairId, row);
-  }
-  deletePair(id: string) {
-    return this.dropPairs((p) => p.pairId === id);
-  }
-  deletePairsBetween(station: string, viewer: string) {
-    return this.dropPairs((p) => p.stationInstall === station && p.viewerInstall === viewer);
-  }
-  deleteInstall(id: string) {
-    const stations = this.stations.delete(id) ? 1 : 0;
-    return this.dropOffers((o) => o.stationInstall === id) + stations + this.dropPairs((p) => p.stationInstall === id || p.viewerInstall === id);
-  }
-  private dropOffers(f: (o: OfferRow) => boolean) {
-    let n = 0;
-    for (const [k, o] of this.offers) if (f(o)) n += this.offers.delete(k) ? 1 : 0;
-    return n;
-  }
-  private dropPairs(f: (p: PairRow) => boolean) {
-    let n = 0;
-    for (const [k, p] of this.pairs) {
-      if (!f(p)) continue;
-      n += this.pairs.delete(k) ? 1 : 0;
-      for (const s of [...this.sentKeys]) if (s.startsWith(`${k}|`)) this.sentKeys.delete(s);
-    }
-    return n;
-  }
-}
-
 export function makeCore(cfg: Tunables = CONFIG) {
   const store = new MemoryStore();
   const port = new NoopDetectionPort();
@@ -200,10 +89,6 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
   const areas = new Map<string, ReturnType<typeof makeCore>>();
   const areaCalls: { parent: string; input: AreaIngestInput }[] = [];
   const revoked = new Set<string>();
-  const shards = new Map<string, { store: MemoryPairStore; core: PairingCore; home: HomeCore }>();
-  const sender = new FakeSender();
-  const watched = new Map<string, Map<string, string>>(); // parent -> install -> shard (the area actor's WatchList)
-  const homeCache = new HomeViewCache();
   const telemetryStore = new MemoryTelemetryStore();
   const alertStores = new Map<string, MemAlertsStore>();
   const alertsOf = (parent: string) => {
@@ -218,20 +103,7 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
     telemetryStore,
     alertsOf,
     now: NOW,
-    sender,
-    watched,
-    shards,
-    shard(name: string) {
-      let s = shards.get(name);
-      if (!s) {
-        const store = new MemoryPairStore();
-        s = { store, core: new PairingCore(store, cfg), home: new HomeCore(store, sender, world.now) };
-        shards.set(name, s);
-      }
-      return s;
-    },
     failParents: new Set<string>(),
-    failShards: new Set<string>(),
     areaCalls,
     areas,
     revoked,
@@ -269,23 +141,10 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
       async ingest(parent, input): Promise<AreaResponse> {
         areaCalls.push({ parent, input });
         if (world.failParents.has(parent)) throw new Error('actor down');
-        const res = await world.area(parent).core.ingest(input);
-        // The area actor's forwarding to the pairing shard (web/api/area/actor.ts `forwardToHome`).
-        const watch = watched.get(parent) ?? new Map<string, string>();
-        for (const [install, events] of forwardable(watch, input.events, res.results)) {
-          const needed = await world.shard(watch.get(install) as string).home.observe(install, events, input.receiveTimeMs);
-          if (!needed) watch.delete(install);
-        }
-        return res;
-      },
-      async watchStation(parent, installId, shard) {
-        const m = watched.get(parent) ?? new Map<string, string>();
-        m.set(installId, shard);
-        watched.set(parent, m);
+        return world.area(parent).core.ingest(input);
       },
       async deleteInstall(parent, installId) {
         if (world.failParents.has(parent)) throw new Error('actor down');
-        watched.get(parent)?.delete(installId);
         return world.area(parent).core.deleteInstall(installId) + alertsOf(parent).deleteInstall(installId);
       },
     },
@@ -299,40 +158,6 @@ export function makeWorld(cfg: Tunables = ROOMY, secret: string | null = SECRET)
       },
     },
     followLimiter: new RegisterLimiter(cfg.FOLLOW_PER_INSTALL_PER_HOUR),
-    pairing: {
-      async createOffer(shard, input) {
-        return world.shard(shard).core.createOffer(input);
-      },
-      async claim(shard, input) {
-        return world.shard(shard).core.claim(input);
-      },
-      async removePair(shard, pairId, installId) {
-        const s = world.shard(shard);
-        const pair = s.store.getPair(pairId);
-        const removed = s.core.removePair(pairId, installId);
-        if (removed && pair) s.home.dropIfUnpaired(pair.stationInstall);
-        return removed;
-      },
-      async stationPairs(shard, installId) {
-        return world.shard(shard).store.pairsOfStation(installId).map((p) => ({ pairId: p.pairId, createdMs: p.createdMs }));
-      },
-      async deleteInstall(shard, installId) {
-        if (world.failShards.has(shard)) throw new Error('shard down');
-        const s = world.shard(shard);
-        const n = s.core.deleteInstall(installId);
-        s.home.forget(installId);
-        s.home.sweep();
-        return n;
-      },
-      async home(shard, pairId, viewerInstall, nowMs) {
-        const hit = homeCache.get(pairId, viewerInstall, nowMs);
-        if (hit) return hit;
-        const view = world.shard(shard).home.view(pairId, viewerInstall, nowMs);
-        if (view) homeCache.put(pairId, viewerInstall, view, nowMs);
-        return view;
-      },
-      forgetPair: (pairId) => homeCache.drop(pairId),
-    },
     registry: {
       async isRevoked(id) {
         return revoked.has(id);
