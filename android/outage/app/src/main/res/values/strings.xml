@@ -228,9 +228,9 @@
     <string name="ins_gap">On average, power goes about every %1$s.</string>
     <string name="ins_ring_title">Light Score</string>
     <string name="ins_ring_value">%1$d%%</string>
-    <string name="ins_ring_hint">Share of the last 30 days with power</string>
+    <string name="ins_ring_hint">This month: the share of watched time with power. Needs 7 days with enough data.</string>
     <string name="ins_summary_ring">Light Score %1$d percent</string>
-    <string name="ins_ring_none">Not enough data</string>
+    <string name="ins_ring_none">Light Score not available yet</string>
     <string name="ins_promise_title">Supply promise check</string>
     <string name="ins_promise_estimate">Estimate</string>
     <string name="ins_early_title">Day %1$d of 7</string>
@@ -292,8 +292,8 @@
     <string name="log_list_unsure">The end time is a guess.</string>
     <string name="log_month_title">Light Score, %1$s</string>
     <string name="log_score_value">%1$d%%</string>
-    <string name="log_score_not_enough">Not enough days yet</string>
-    <string name="log_score_days">An estimate from %1$d days with enough data.</string>
+    <string name="log_score_not_enough">A score after 7 days with enough data.</string>
+    <string name="log_score_days">Share of watched time with power, from %1$d days with enough data.</string>
     <string name="log_score_summary">Light Score %1$d percent</string>
     <string name="log_score_summary_none">Light Score not available yet</string>
     <string name="log_share">Share my month</string>

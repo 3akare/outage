@@ -8,7 +8,8 @@ import app.outage.log.TimelineBuilder
 /**
  * The real Power Log timeline for Insights (app-map-insights task 6, R5, R10). Outages are the `OUT` intervals the
  * [TimelineBuilder] rebuilds from the raw inputs; observation starts at the first interval with a known state. Time with
- * the phone off the charger or not watching counts as observed power here, so Insights is an estimate, as the log is.
+ * the phone off the charger or not watching is not watched time and never counts as power, the same rule as the log's
+ * Light Score ([app.outage.log.Stats.scoreOf]).
  */
 class LogStoreTimeline(private val store: LogStore, private val clock: () -> Long = System::currentTimeMillis) : PowerLogTimeline {
     private fun intervals() = TimelineBuilder.build(store.all(), clock())
@@ -18,6 +19,9 @@ class LogStoreTimeline(private val store: LogStore, private val clock: () -> Lon
 
     override fun observedFromMs(nowMs: Long): Long =
         intervals().firstOrNull { it.state == LogState.ON || it.state == LogState.OUT }?.startMs ?: nowMs
+
+    override fun watched(): List<Watched> =
+        intervals().filter { it.state == LogState.ON || it.state == LogState.OUT }.map { Watched(it.startMs, it.endMs) }
 }
 
 /** The real log once it holds data, otherwise the labelled demo (demo builds only; a build with a Worker address never shows the demo). */

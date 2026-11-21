@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.outage.R
 import app.outage.log.NowKind
+import app.outage.log.Stats
 import app.outage.log.PowerLogView
 import app.outage.log.TapResult
 import app.outage.ui.charts.BarChart
@@ -189,7 +190,11 @@ private fun MonthCard(v: PowerLogView, progress: Float, onShareText: () -> Unit,
                 startColor = LocalStatusColors.current.map.normal, endColor = LocalStatusColors.current.map.normal, trackColor = Day.fill,
                 summary = if (score == null) stringResource(R.string.log_score_summary_none) else stringResource(R.string.log_score_summary, score),
             ) {
-                Text(if (score == null) stringResource(R.string.ins_none_value) else stringResource(R.string.log_score_value, score), style = DayType.title1Num, color = Day.ink)
+                if (score == null) {
+                    Text(stringResource(R.string.ins_early_title, Stats.scoreDayNumber(v.score.qualifyingDays)), style = DayType.headline, color = Day.ink)
+                } else {
+                    Text(stringResource(R.string.log_score_value, score), style = DayType.title1Num, color = Day.ink)
+                }
             }
             Text(
                 if (score == null) stringResource(R.string.log_score_not_enough) else stringResource(R.string.log_score_days, v.score.qualifyingDays),

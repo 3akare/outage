@@ -22,6 +22,9 @@ interface PowerLogTimeline {
     fun outages(): List<Outage>
     fun observedFromMs(nowMs: Long): Long
 
+    /** The time actually watched (ON or OUT); null when every moment since [observedFromMs] was watched. */
+    fun watched(): List<Watched>? = null
+
     object None : PowerLogTimeline {
         override fun outages(): List<Outage> = emptyList()
         override fun observedFromMs(nowMs: Long): Long = nowMs
@@ -36,7 +39,7 @@ class PowerLogInsightsSource(private val timeline: PowerLogTimeline, private val
     constructor(timeline: PowerLogTimeline, band: Band?) : this(timeline, { band })
 
     override fun input(nowMs: Long, zone: ZoneId): InsightsInput =
-        InsightsInput(timeline.outages(), timeline.observedFromMs(nowMs), simulated = false)
+        InsightsInput(timeline.outages(), timeline.observedFromMs(nowMs), simulated = false, watched = timeline.watched())
     override fun band(): Band? = bandProvider()
 }
 

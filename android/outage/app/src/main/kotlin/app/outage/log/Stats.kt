@@ -7,7 +7,10 @@ import java.time.ZoneId
 import java.util.Locale
 import kotlin.math.roundToInt
 
-/** One local day (R3, design section 5). [powerHours] is null when coverage is below 50% (R3.2). An estimate (R3.4). */
+/**
+ * One local day (R3, design section 5). [powerHours] is the time watched (ON or OUT) minus outage time; time off the
+ * charger or not watched never counts as power. Null when coverage is below 50% (R3.2). An estimate (R3.4).
+ */
 data class LogDayStat(
     val day: LocalDate,
     val dayLengthMs: Long,
@@ -20,8 +23,11 @@ data class LogDayStat(
     val watchedMs: Long = 0L,
 )
 
-/** A month's Light Score (R4). [score] is null with fewer than 7 qualifying days: "Not enough days yet" (R4.3). */
+/** A month's Light Score (R4). [score] is null with fewer than 7 qualifying days: "Day N of 7" (R4.3). */
 data class LightScore(val month: YearMonth, val qualifyingDays: Int, val score: Int?)
+
+/** One qualifying day for [Stats.scoreOf]: hours watched (ON or OUT) and, of those, hours with power. */
+data class ScoreDay(val watchedHours: Double, val powerHours: Double)
 
 /** The phone's own record against a band's promise (R5.2). Always an estimate (R5.3). */
 data class PromiseComparison(
@@ -61,7 +67,7 @@ object Stats {
             if (i.state == LogState.OUT || i.state == LogState.ON) known += o
         }
         val coverage = known.toDouble() / len
-        val power = if (coverage >= MIN_COVERAGE) (len - outage) / HOUR_MS else null
+        val power = if (coverage >= MIN_COVERAGE) (known - outage) / HOUR_MS else null
         return LogDayStat(day, len, outage, count, longest, coverage, power, known)
     }
 
@@ -77,10 +83,24 @@ object Stats {
     }
 
     fun lightScore(days: List<LogDayStat>, month: YearMonth): LightScore {
-        val ph = days.filter { YearMonth.from(it.day) == month }.mapNotNull { it.powerHours }
-        val score = if (ph.size >= MIN_SCORE_DAYS) (100 * ph.average() / 24).roundToInt() else null
-        return LightScore(month, ph.size, score)
+        val q = days.filter { YearMonth.from(it.day) == month && it.powerHours != null }
+            .map { ScoreDay(watchedHours = it.watchedMs / HOUR_MS, powerHours = it.powerHours!!) }
+        return LightScore(month, q.size, scoreOf(q))
     }
+
+    /**
+     * The one Light Score rule, used by the Power Log and Insights: over the qualifying days (at least 50% watched, R3.2),
+     * the share of watched time that had power, as a whole percent. Null below [MIN_SCORE_DAYS] qualifying days (R4.3).
+     */
+    fun scoreOf(days: List<ScoreDay>): Int? {
+        if (days.size < MIN_SCORE_DAYS) return null
+        val watched = days.sumOf { it.watchedHours }
+        if (watched <= 0.0) return null
+        return (100 * days.sumOf { it.powerHours } / watched).roundToInt().coerceIn(0, 100)
+    }
+
+    /** "Day N of 7" while the score waits for days: the day being collected now, never past 7. */
+    fun scoreDayNumber(qualifyingDays: Int): Int = (qualifyingDays + 1).coerceAtMost(MIN_SCORE_DAYS)
 
     /** Null when no band is chosen (R5.6). */
     fun promise(days: List<LogDayStat>, band: Band?): PromiseComparison? {
